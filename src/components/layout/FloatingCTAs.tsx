@@ -1,13 +1,15 @@
 "use client";
 
-import React from "react";
+import React, { Suspense } from "react";
+
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Menu, X, Phone, Globe, LogIn, Loader2 } from "lucide-react";
 import { BPlenLogo } from "../shared/BPlenLogo";
 import { useAuth } from "@/hooks/use-auth";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+
 
 import { ServiceSelectionModal } from "./ServiceSelectionModal";
 
@@ -16,10 +18,40 @@ import { ServiceSelectionModal } from "./ServiceSelectionModal";
  * No Mobile: Transforma-se em um Menu Sanduíche elegante no topo direito.
  * No Desktop: Mantém os CTAs principais no canto inferior direito.
  */
+/**
+ * Sub-componente para lidar com a lógica de "Autenticação Requerida"
+ * Isolado para permitir o uso de Suspense e evitar bail-out de hydration.
+ */
+function AuthRequiredHandler() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const { user, loading, isLoggingIn, signInWithGoogle } = useAuth();
+
+  React.useEffect(() => {
+    const authStatus = searchParams.get("auth");
+    
+    if (authStatus === "required" && !loading && !isLoggingIn) {
+      if (!user) {
+        const triggerAutoLogin = async () => {
+          try {
+            await signInWithGoogle();
+            router.push("/hub");
+          } catch (err) {
+            console.error("Falha no login automático via query param:", err);
+          }
+        };
+        triggerAutoLogin();
+      } else {
+        router.push("/hub");
+      }
+    }
+  }, [searchParams, user, loading, isLoggingIn, signInWithGoogle, router]);
+
+  return null;
+}
+
 export function FloatingCTAs() {
   const pathname = usePathname();
-  const router = useRouter();
-  const { user, isLoggingIn, signInWithGoogle } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const [isServiceModalOpen, setIsServiceModalOpen] = React.useState(false);
 
@@ -31,6 +63,8 @@ export function FloatingCTAs() {
   }, []);
   
   const isHomePage = pathname === "/";
+  const { user, isLoggingIn, signInWithGoogle } = useAuth();
+  const router = useRouter();
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const toggleServiceModal = () => setIsServiceModalOpen(!isServiceModalOpen);
@@ -65,6 +99,10 @@ export function FloatingCTAs() {
 
   return (
     <>
+      <Suspense fallback={null}>
+        <AuthRequiredHandler />
+      </Suspense>
+
       <ServiceSelectionModal 
         isOpen={isServiceModalOpen} 
         onClose={() => setIsServiceModalOpen(false)} 
