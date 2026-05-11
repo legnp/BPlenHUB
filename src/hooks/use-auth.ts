@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { 
   signInWithPopup, 
-  GoogleAuthProvider, 
-  signOut as firebaseSignOut 
+  GoogleAuthProvider 
 } from "firebase/auth";
+
 import { auth } from "@/lib/firebase";
 import { useAuthContext } from "@/context/AuthContext";
 // Server Action call (somos use client, então o Next cuidará com RPC fetch)
@@ -19,7 +19,7 @@ import { syncUserPermissionsOnLogin } from "@/actions/auth-permissions";
  */
 
 export function useAuth() {
-  const { user, loading, isAdmin } = useAuthContext();
+  const { user, loading, isAdmin, logout } = useAuthContext();
   const [error, setError] = useState<string | null>(null);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
@@ -53,21 +53,6 @@ export function useAuth() {
     }
   };
 
-  /**
-   * Logout
-   * Encerra a sessão no Firebase Client.
-   */
-  const signOut = async () => {
-    try {
-      await firebaseSignOut(auth);
-    } catch (err: unknown) {
-      const error = err as Error;
-      console.error("Erro no Logout:", error);
-      setError(error.message || "Erro inesperado ao sair.");
-      throw error;
-    }
-  };
-
   return {
     user,
     loading,
@@ -75,6 +60,6 @@ export function useAuth() {
     isLoggingIn,
     isAdmin,
     signInWithGoogle,
-    signOut,
+    signOut: logout, // Mapeado para o logout global que limpa cookies 🛡️
   };
 }

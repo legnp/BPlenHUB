@@ -25,13 +25,26 @@ import { ServiceSelectionModal } from "./ServiceSelectionModal";
 function AuthRequiredHandler() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { user, loading, isLoggingIn, signInWithGoogle } = useAuth();
+  const { user, loading, isLoggingIn, signInWithGoogle, signOut } = useAuth();
 
   React.useEffect(() => {
     const authStatus = searchParams.get("auth");
     
     if (authStatus === "required" && !loading && !isLoggingIn) {
-      if (!user) {
+      if (user) {
+        // Cenário: Usuário existe no client mas foi barrado pelo server (sessão stale).
+        // Forçamos o logout para limpar o estado e permitir o login fresco no próximo ciclo.
+        const resetSession = async () => {
+          console.warn("🛡️ [Soberania] Sessão stale detectada. Forçando reset...");
+          try {
+            await signOut();
+          } catch (err) {
+            console.error("Erro ao resetar sessão stale:", err);
+          }
+        };
+        resetSession();
+      } else {
+        // Cenário: Não há usuário. Abrimos o popup de login.
         const triggerAutoLogin = async () => {
           try {
             await signInWithGoogle();
@@ -41,11 +54,9 @@ function AuthRequiredHandler() {
           }
         };
         triggerAutoLogin();
-      } else {
-        router.push("/hub");
       }
     }
-  }, [searchParams, user, loading, isLoggingIn, signInWithGoogle, router]);
+  }, [searchParams, user, loading, isLoggingIn, signInWithGoogle, signOut, router]);
 
   return null;
 }
