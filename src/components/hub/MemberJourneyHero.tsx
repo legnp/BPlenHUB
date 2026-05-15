@@ -44,8 +44,9 @@ export function MemberJourneyHero({ showAction = false, variant = "default" }: M
     );
   }, [progress?.steps]);
 
-  if (loading && !stages.length) return null; // Ou um skeleton sutil
-
+  // Removido o return null para suportar renderização progressiva.
+  // O JourneyNav interno lidará com o estado vazio se necessário.
+  
   const isMinimal = variant === "minimal";
 
   return (

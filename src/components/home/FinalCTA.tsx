@@ -1,7 +1,4 @@
-"use client";
-
-import React from "react";
-import { motion } from "framer-motion";
+import { ScrollReveal } from "@/components/shared/ScrollReveal";
 import Link from "next/link";
 import { ArrowRight, Calendar } from "lucide-react";
 import { LANDING_TOKENS } from "@/constants/landing-tokens";
@@ -15,11 +12,9 @@ export function FinalCTA() {
     <section className={`${LANDING_TOKENS.section} border-none pt-0 pb-32`}>
       <div className={LANDING_TOKENS.container + " text-center"}>
         
-        <motion.div
-           initial={{ opacity: 0, y: 30 }}
-           whileInView={{ opacity: 1, y: 0 }}
-           viewport={{ once: true }}
-           transition={{ duration: 1.2, ease: "easeOut" }}
+        <ScrollReveal
+           animation="fade-up"
+           duration={1.2}
            className="space-y-10"
         >
           {/* Headline de Conversão */}
@@ -48,9 +43,10 @@ export function FinalCTA() {
             </Link>
           </div>
 
-        </motion.div>
+        </ScrollReveal>
 
       </div>
     </section>
   );
 }
+

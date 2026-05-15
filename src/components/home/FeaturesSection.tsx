@@ -1,6 +1,4 @@
-"use client";
-
-import { motion } from "framer-motion";
+import { ScrollReveal } from "@/components/shared/ScrollReveal";
 import { Database, Zap, Target, RefreshCw } from "lucide-react";
 import { LANDING_TOKENS } from "@/constants/landing-tokens";
 
@@ -55,11 +53,9 @@ export function FeaturesSection() {
 
         {/* Header — Empilhado Verticalmente */}
         <div className={LANDING_TOKENS.header.left}>
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 1.2, ease: "easeOut" }}
+          <ScrollReveal
+            animation="slide-left"
+            duration={1.2}
           >
             <span className={LANDING_TOKENS.header.kicker + " border-l border-[#ff0080] pl-4 mb-0"}>
               Diferenciais
@@ -70,17 +66,16 @@ export function FeaturesSection() {
                 posicionamento
               </span>
             </h2>
-          </motion.div>
+          </ScrollReveal>
 
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 1.2, delay: 0.2, ease: "easeOut" }}
+          <ScrollReveal
+            animation="fade-up"
+            duration={1.2}
+            delay={0.2}
             className={LANDING_TOKENS.header.description + " max-w-xl"}
           >
             Quatro pilares fundamentais que transformam a consultoria tradicional em uma parceria estratégica de alto nível.
-          </motion.p>
+          </ScrollReveal>
         </div>
 
         {/* Features Grid — Reduzido para 768px (max-w-3xl) */}
@@ -88,12 +83,11 @@ export function FeaturesSection() {
           {forces.map((force, index) => {
             const Icon = force.icon;
             return (
-              <motion.div
+              <ScrollReveal
                 key={force.title}
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 1.5, delay: force.delay }}
+                animation="fade-in"
+                duration={1.5}
+                delay={force.delay}
                 className={LANDING_TOKENS.card.container + " group bg-[#030303] rounded-none border-none"}
               >
                 {/* 💡 Hover Light Effect */}
@@ -128,7 +122,7 @@ export function FeaturesSection() {
                 <div className="absolute bottom-0 left-0 w-full h-[3px] scale-x-0 group-hover:scale-x-100 transition-transform duration-700 origin-left">
                   <div className={`w-full h-full bg-gradient-to-r ${force.color}`} />
                 </div>
-              </motion.div>
+              </ScrollReveal>
             );
           })}
         </div>
@@ -137,3 +131,4 @@ export function FeaturesSection() {
     </section>
   );
 }
+

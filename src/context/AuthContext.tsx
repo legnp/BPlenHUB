@@ -70,7 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setPhotoUrl(null);
         setServices({});
         await clearSessionCookie();
-        setLoading(false);
+        setLoading(false); // Libera o render (usuário deslogado)
         return;
       }
       
@@ -82,6 +82,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.error("⚠️ [AuthContext] Falha ao criar cookie assinado:", cookieErr);
       }
 
+      // IMPORTANTE: Liberamos o render assim que temos o usuário, 
+      // permitindo carregamento progressivo do perfil/permissões em background.
+      setLoading(false); 
+
       try {
         const uidMapRef = doc(db, "_AuthMap", currentUser.uid);
         const uidMapSnap = await getDoc(uidMapRef);
@@ -91,16 +95,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setMatricula(mat);
           
           if (mat) {
-            // Controle de Bootstrap: Aguardar o primeiro snapshot de cada listener 🛡️
-            let profileReady = false;
-            let permissionsReady = false;
-
-            const checkBootstrapDone = () => {
-              if (profileReady && permissionsReady) {
-                setLoading(false);
-              }
-            };
-
             // listener em tempo real para o Perfil
             const userRef = doc(db, "User", mat);
             unsubscribeProfile.current = onSnapshot(userRef, (userSnap) => {
@@ -110,12 +104,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                   setNickname(resolvedNick);
                   setPhotoUrl(d.photoUrl || null);
                }
-               profileReady = true;
-               checkBootstrapDone();
             }, (err) => {
                console.error("❌ [AuthContext] Erro no listener de perfil:", err);
-               profileReady = true; // Resolve para evitar travamento
-               checkBootstrapDone();
             });
 
             // Listener de Permissões
@@ -128,23 +118,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               } else {
                 setIsAdmin(false);
               }
-              permissionsReady = true;
-              checkBootstrapDone();
             }, (err) => {
                console.error("❌ [AuthContext] Erro no listener de permissões:", err);
-               permissionsReady = true; // Resolve para evitar travamento
-               checkBootstrapDone();
             });
-          } else {
-            setLoading(false);
           }
-        } else {
-          // Usuário sem mapeamento de matrícula (Visitante/Lead)
-          setLoading(false);
         }
       } catch (err: unknown) {
         console.error("❌ [AuthContext] Erro ao inicializar estado global:", err);
-        setLoading(false);
       }
     });
 

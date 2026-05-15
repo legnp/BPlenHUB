@@ -1,6 +1,4 @@
-"use client";
-
-import { motion } from "framer-motion";
+import { ScrollReveal } from "@/components/shared/ScrollReveal";
 import { User, Building2, Handshake, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { LANDING_TOKENS } from "@/constants/landing-tokens";
@@ -50,11 +48,9 @@ export function ServicesSection() {
       <div className={`${LANDING_TOKENS.container} relative z-10`}>
         
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 1.2, ease: "easeOut" }}
+        <ScrollReveal
+          animation="fade-up"
+          duration={1.2}
           className={LANDING_TOKENS.header.centered}
         >
           <span className={LANDING_TOKENS.header.kicker}>
@@ -69,19 +65,18 @@ export function ServicesSection() {
           <p className={LANDING_TOKENS.header.descriptionCentered}>
             Atuamos em três frentes que vão do técnico ao humano, dos dados às pessoas, com foco no desenvolvimento real.
           </p>
-        </motion.div>
+        </ScrollReveal>
 
         {/* Services Triad */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {services.map((service, index) => {
             const Icon = service.icon;
             return (
-              <motion.div
+              <ScrollReveal
                 key={service.id}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.8, delay: index * 0.2, ease: "easeOut" }}
+                animation="fade-up"
+                duration={0.8}
+                delay={index * 0.2}
                 className={`${LANDING_TOKENS.card.container} group relative flex flex-col h-full rounded-[2.5rem]`}
               >
                 {/* Visual Glass Glow on Hover */}
@@ -129,7 +124,7 @@ export function ServicesSection() {
                   className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-[2px] group-hover:w-1/3 transition-all duration-700 rounded-full"
                   style={{ background: `linear-gradient(90deg, transparent, ${service.color}, transparent)` }}
                 />
-              </motion.div>
+              </ScrollReveal>
             );
           })}
         </div>
@@ -137,3 +132,4 @@ export function ServicesSection() {
     </section>
   );
 }
+

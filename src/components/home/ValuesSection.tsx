@@ -1,6 +1,4 @@
-"use client";
-
-import { motion } from "framer-motion";
+import { ScrollReveal } from "@/components/shared/ScrollReveal";
 import { Handshake, BarChart3, MessageCircle, BookOpen, Users } from "lucide-react";
 import { LANDING_TOKENS } from "@/constants/landing-tokens";
 
@@ -51,11 +49,9 @@ export function ValuesSection() {
       <div className={LANDING_TOKENS.container}>
 
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 1.2, ease: "easeOut" }}
+        <ScrollReveal
+          animation="fade-up"
+          duration={1.2}
           className={LANDING_TOKENS.header.centered}
         >
           <span className={LANDING_TOKENS.header.kicker}>
@@ -67,23 +63,18 @@ export function ValuesSection() {
               atitudes coerentes
             </span>
           </h2>
-        </motion.div>
+        </ScrollReveal>
 
         {/* Cards Grid — 2 colunas, última linha full-width */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-full sm:max-w-[70%] mx-auto">
           {values.map((value, index) => {
             const Icon = value.icon;
             return (
-              <motion.div
+              <ScrollReveal
                 key={value.title}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-60px" }}
-                transition={{
-                  duration: 1.0,
-                  delay: index * 0.12,
-                  ease: "easeOut",
-                }}
+                animation="fade-up"
+                duration={1.0}
+                delay={index * 0.12}
                 className={`${LANDING_TOKENS.card.container} ${index === 4 ? "sm:col-span-2" : ""}`}
               >
                 <div className="flex items-start gap-6">
@@ -115,7 +106,7 @@ export function ValuesSection() {
                     background: `linear-gradient(90deg, transparent, ${value.accent}, transparent)`,
                   }}
                 />
-              </motion.div>
+              </ScrollReveal>
             );
           })}
         </div>
@@ -124,3 +115,4 @@ export function ValuesSection() {
     </section>
   );
 }
+

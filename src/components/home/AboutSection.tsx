@@ -1,6 +1,4 @@
-"use client";
-
-import { motion } from "framer-motion";
+import { ScrollReveal } from "@/components/shared/ScrollReveal";
 import Image from "next/image";
 import { ArrowRight, Sparkles, User, Briefcase, GraduationCap, Building } from "lucide-react";
 import { LANDING_TOKENS } from "@/constants/landing-tokens";
@@ -20,11 +18,9 @@ export function AboutSection() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
           
           {/* Header Texto Principal */}
-          <motion.div 
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 1.2, ease: "easeOut" }}
+          <ScrollReveal 
+            animation="fade-up"
+            duration={1.2}
             className="space-y-8"
           >
             <span className={LANDING_TOKENS.header.kicker}>
@@ -55,14 +51,13 @@ export function AboutSection() {
                 </div>
               </div>
             </div>
-          </motion.div>
+          </ScrollReveal>
 
           {/* Cards Glass Vision/Mission */}
-          <motion.div 
-            initial={{ opacity: 0, x: 40 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 1.2, delay: 0.2, ease: "easeOut" }}
+          <ScrollReveal 
+            animation="slide-right"
+            duration={1.2}
+            delay={0.2}
             className="space-y-6 lg:mt-16"
           >
             <div className={LANDING_TOKENS.card.container}>
@@ -80,7 +75,7 @@ export function AboutSection() {
                 Integramos dados, métodos e desenvolvimento humano para transformar conflitos em oportunidades e potencializar performance junto à qualidade de vida.
               </p>
             </div>
-          </motion.div>
+          </ScrollReveal>
         </div>
 
         {/* ==============================
@@ -90,11 +85,9 @@ export function AboutSection() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
             
             {/* Foto / Perfil */}
-            <motion.div 
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 1.2, ease: "easeOut" }}
+            <ScrollReveal 
+              animation="fade-up"
+              duration={1.2}
               className="lg:col-span-4 flex flex-col"
             >
             <span className={LANDING_TOKENS.header.kicker + " text-[var(--text-muted)] mb-8"}>
@@ -124,14 +117,13 @@ export function AboutSection() {
                   Administração de Empresas, MBA em Gestão de Negócios, Especialização em RH e Coaching.
                 </p>
               </div>
-            </motion.div>
+            </ScrollReveal>
 
             {/* Timeline Histórica */}
-            <motion.div 
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 1.2, delay: 0.3, ease: "easeOut" }}
+            <ScrollReveal 
+              animation="slide-left"
+              duration={1.2}
+              delay={0.3}
               className="lg:col-span-8 space-y-8"
             >
                <h4 className="text-2xl font-semibold text-white">Linha do Tempo e Experiência</h4>
@@ -214,7 +206,7 @@ export function AboutSection() {
                  </div>
 
                </div>
-            </motion.div>
+            </ScrollReveal>
 
           </div>
         </div>
@@ -223,3 +215,4 @@ export function AboutSection() {
     </section>
   );
 }
+

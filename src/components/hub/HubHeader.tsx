@@ -106,7 +106,8 @@ export function HubHeader() {
                }}
                className={cn(
                   "w-22 h-22 rounded-full border-2 transition-all duration-500 overflow-hidden flex items-center justify-center group bg-black/10 backdrop-blur-md shadow-2xl",
-                  isSocialMenuOpen ? "border-[var(--accent-start)] scale-105 shadow-[0_0_25px_rgba(var(--accent-start-rgb),0.4)]" : "border-white/10 hover:border-white/30"
+                  isSocialMenuOpen ? "border-[var(--accent-start)] scale-105 shadow-[0_0_25px_rgba(var(--accent-start-rgb),0.4)]" : "border-white/10 hover:border-white/30",
+                  !photoUrl && user ? "animate-pulse" : ""
                )}
             >
                {photoUrl ? (
@@ -135,8 +136,18 @@ export function HubHeader() {
                        <p className="px-2 text-[8px] font-black text-gray-500 uppercase tracking-[0.2em]">{BPLEN_NOMENCLATURE.navigation.member_area}</p>
                        
                        <div className="px-2 space-y-1">
-                          <p className="text-[14px] font-black text-[var(--text-primary)] leading-tight uppercase truncate">{user?.displayName || "Membro BPlen"}</p>
-                          <p className="text-[10px] font-bold text-[var(--accent-start)] italic">@{nickname || "membro"}</p>
+                          <p className={cn(
+                            "text-[14px] font-black text-[var(--text-primary)] leading-tight uppercase truncate",
+                            !user?.displayName && "animate-pulse bg-white/5 rounded h-4 w-3/4"
+                          )}>
+                            {user?.displayName || "Membro BPlen"}
+                          </p>
+                          <p className={cn(
+                            "text-[10px] font-bold text-[var(--accent-start)] italic",
+                            !nickname && "animate-pulse bg-[var(--accent-start)]/10 rounded h-3 w-1/2 mt-1"
+                          )}>
+                            {nickname ? `@${nickname}` : "carregando..."}
+                          </p>
                        </div>
 
                        <div className="space-y-1">
