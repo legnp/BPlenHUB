@@ -9,7 +9,7 @@ import { Home, Menu, X, Phone, Globe, LogIn, Loader2 } from "lucide-react";
 import { BPlenLogo } from "../shared/BPlenLogo";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter, useSearchParams } from "next/navigation";
-
+import { useTheme } from "@/context/ThemeContext";
 
 import { ServiceSelectionModal } from "./ServiceSelectionModal";
 
@@ -65,6 +65,7 @@ export function FloatingCTAs() {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const [isServiceModalOpen, setIsServiceModalOpen] = React.useState(false);
+  const { theme } = useTheme();
 
   // Escutar evento global para abrir o modal de serviços
   React.useEffect(() => {
@@ -85,24 +86,27 @@ export function FloatingCTAs() {
     open: { opacity: 1, x: 0 }
   };
 
+  // Condicional de contraste: se for tema 'light' (fundo claro), inverter ícones (que são brancos/transparentes originais)
+  const iconFilterClass = theme === "light" ? "invert opacity-70" : "";
+
   const socialLinks = [
     { 
-      icon: <img src="/linkedin.webp" alt="LinkedIn" className="w-5 h-5 object-contain" />, 
+      icon: <img src="/linkedin.webp" alt="LinkedIn" className={`w-5 h-5 object-contain ${iconFilterClass}`} />, 
       url: "https://www.linkedin.com/in/lisandralencina/", 
       name: "LinkedIn" 
     },
     { 
-      icon: <img src="/insta.png" alt="Instagram" className="w-5 h-5 object-contain" />, 
+      icon: <img src="/insta.png" alt="Instagram" className={`w-5 h-5 object-contain ${iconFilterClass}`} />, 
       url: "https://www.instagram.com/lis_lencina", 
       name: "Instagram" 
     },
     { 
-      icon: <img src="/whatsapp.png" alt="WhatsApp" className="w-5 h-5 object-contain" />, 
+      icon: <img src="/whatsapp.png" alt="WhatsApp" className={`w-5 h-5 object-contain ${iconFilterClass}`} />, 
       url: "https://wa.me/5511945152088", 
       name: "WhatsApp" 
     },
     { 
-      icon: <img src="/tiktok.png" alt="TikTok" className="w-5 h-5 object-contain" />, 
+      icon: <img src="/tiktok.png" alt="TikTok" className={`w-5 h-5 object-contain ${iconFilterClass}`} />, 
       url: "https://www.tiktok.com/@lis.lencina", 
       name: "TikTok" 
     }, 
