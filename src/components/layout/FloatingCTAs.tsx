@@ -86,8 +86,9 @@ export function FloatingCTAs() {
     open: { opacity: 1, x: 0 }
   };
 
-  // Condicional de contraste: se for tema 'light' (fundo claro), inverter ícones (que são brancos/transparentes originais)
-  const iconFilterClass = theme === "light" ? "invert opacity-70" : "";
+  // Condicional de contraste: inverter os ícones em todos os modos claros (todos exceto dark/bplen e daltonico/alto contraste)
+  const isDarkTheme = theme === "dark" || theme === "daltonico";
+  const iconFilterClass = !isDarkTheme ? "invert opacity-70" : "";
 
   const socialLinks = [
     { 

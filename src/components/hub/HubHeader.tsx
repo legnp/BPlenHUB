@@ -76,8 +76,9 @@ export function HubHeader() {
     return nickname.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase();
   };
 
-  // Condicional de contraste: inverter os ícones no modo "light" (pois originais são brancos)
-  const iconFilterClass = theme === "light" ? "invert opacity-70" : "";
+  // Condicional de contraste: inverter os ícones em todos os modos claros (todos exceto dark/bplen e daltonico/alto contraste)
+  const isDarkTheme = theme === "dark" || theme === "daltonico";
+  const iconFilterClass = !isDarkTheme ? "invert opacity-70" : "";
 
   const socialLinks = [
     { icon: <img src="/linkedin.webp" alt="LinkedIn" className={`w-5 h-5 object-contain ${iconFilterClass}`} />, url: "https://www.linkedin.com/in/lisandralencina/", name: "LinkedIn" },
