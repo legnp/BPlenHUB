@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @next/next/no-img-element */
 
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -75,11 +76,14 @@ export function HubHeader() {
     return nickname.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase();
   };
 
+  // Condicional de contraste: inverter os ícones no modo "light" (pois originais são brancos)
+  const iconFilterClass = theme === "light" ? "invert opacity-70" : "";
+
   const socialLinks = [
-    { icon: <img src="/linkedin.webp" alt="LinkedIn" className="w-5 h-5 object-contain" />, url: "https://www.linkedin.com/in/lisandralencina/", name: "LinkedIn" },
-    { icon: <img src="/insta.png" alt="Instagram" className="w-5 h-5 object-contain" />, url: "https://www.instagram.com/lis_lencina", name: "Instagram" },
-    { icon: <img src="/whatsapp.png" alt="WhatsApp" className="w-5 h-5 object-contain" />, url: "https://wa.me/5511945152088", name: "WhatsApp" },
-    { icon: <img src="/tiktok.png" alt="TikTok" className="w-5 h-5 object-contain" />, url: "https://www.tiktok.com/@lis.lencina", name: "TikTok" },
+    { icon: <img src="/linkedin.webp" alt="LinkedIn" className={`w-5 h-5 object-contain ${iconFilterClass}`} />, url: "https://www.linkedin.com/in/lisandralencina/", name: "LinkedIn" },
+    { icon: <img src="/insta.png" alt="Instagram" className={`w-5 h-5 object-contain ${iconFilterClass}`} />, url: "https://www.instagram.com/lis_lencina", name: "Instagram" },
+    { icon: <img src="/whatsapp.png" alt="WhatsApp" className={`w-5 h-5 object-contain ${iconFilterClass}`} />, url: "https://wa.me/5511945152088", name: "WhatsApp" },
+    { icon: <img src="/tiktok.png" alt="TikTok" className={`w-5 h-5 object-contain ${iconFilterClass}`} />, url: "https://www.tiktok.com/@lis.lencina", name: "TikTok" },
   ];
 
   return (
