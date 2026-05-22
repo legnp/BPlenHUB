@@ -43,7 +43,7 @@ export async function submitSupportTicket(rawInput: SubmitTicketInput) {
     // 🛡️ Validação Zod (Sensor Atômico — ARCHITECTURE.md §4)
     const parsed = SubmitTicketSchema.safeParse(rawInput);
     if (!parsed.success) {
-      const firstError = parsed.error.errors[0]?.message ?? "Dados inválidos.";
+      const firstError = parsed.error.issues[0]?.message ?? "Dados inválidos.";
       return { success: false, error: firstError };
     }
 
