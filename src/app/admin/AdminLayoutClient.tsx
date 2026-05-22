@@ -22,15 +22,17 @@ import { HubHeader } from "@/components/hub/HubHeader";
 import { BPlenLogo } from "@/components/shared/BPlenLogo";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { user, isAdmin, loading } = useAuthContext();
+  const { user, isAdmin, loading, loadingPermissions } = useAuthContext();
   const { theme } = useTheme();
 
-  if (loading) {
+  // Aguarda tanto o estado de autenticação quanto o primeiro snapshot de permissões
+  // antes de tomar qualquer decisão de redirect, evitando race condition.
+  if (loading || loadingPermissions) {
     return (
       <div className="flex h-screen items-center justify-center bg-[var(--bg-primary)] text-[var(--text-primary)]">
         <div className="animate-pulse flex flex-col items-center">
           <div className="h-10 w-10 border-4 border-t-[var(--accent-start)] border-[var(--accent-soft)] rounded-full animate-spin"></div>
-          <p className="mt-4 text-[var(--text-muted)] font-medium tracking-wide text-xs uppercase">Autenticando Acesso...</p>
+          <p className="mt-4 text-[var(--text-muted)] font-medium tracking-wide text-xs uppercase">Verificando Acesso...</p>
         </div>
       </div>
     );

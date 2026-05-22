@@ -16,6 +16,7 @@ import { createSignedSessionCookie, clearSessionCookie } from "@/actions/auth-se
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  loadingPermissions: boolean;
   isAdmin: boolean;
   matricula: string | null;
   nickname: string | null;
@@ -27,6 +28,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
+  loadingPermissions: true,
   isAdmin: false,
   matricula: null,
   nickname: null,
@@ -38,6 +40,7 @@ const AuthContext = createContext<AuthContextType>({
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingPermissions, setLoadingPermissions] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [matricula, setMatricula] = useState<string | null>(null);
   const [nickname, setNickname] = useState<string | null>(null);
@@ -70,7 +73,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setPhotoUrl(null);
         setServices({});
         await clearSessionCookie();
-        setLoading(false); // Libera o render (usuário deslogado)
+        setLoading(false);
+        setLoadingPermissions(false); // Usuário deslogado: permissões resolvidas (sem permissão)
         return;
       }
       
@@ -82,9 +86,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.error("⚠️ [AuthContext] Falha ao criar cookie assinado:", cookieErr);
       }
 
-      // IMPORTANTE: Liberamos o render assim que temos o usuário, 
-      // permitindo carregamento progressivo do perfil/permissões em background.
-      setLoading(false); 
+      // IMPORTANTE: Liberamos o render assim que temos o usuário autenticado.
+      // loadingPermissions permanece true até o primeiro snapshot de permissões chegar.
+      setLoading(false);
 
       try {
         const uidMapRef = doc(db, "_AuthMap", currentUser.uid);
@@ -108,7 +112,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                console.error("❌ [AuthContext] Erro no listener de perfil:", err);
             });
 
-            // Listener de Permissões
+            // Listener de Permissões (subcoleção soberana)
+            // loadingPermissions só vira false após o PRIMEIRO snapshot chegar,
+            // evitando race condition com o AdminLayout.
             const permissionsRef = doc(db, "User", mat, "User_Permissions", "access");
             unsubscribePermissions.current = onSnapshot(permissionsRef, (permSnap) => {
               if (permSnap.exists()) {
@@ -118,13 +124,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               } else {
                 setIsAdmin(false);
               }
+              setLoadingPermissions(false); // Permissões resolvidas (seja admin ou não)
             }, (err) => {
                console.error("❌ [AuthContext] Erro no listener de permissões:", err);
+               setLoadingPermissions(false); // Libera mesmo em caso de erro
             });
+          } else {
+            // Usuário autenticado mas sem matrícula no _AuthMap
+            setLoadingPermissions(false);
           }
         }
       } catch (err: unknown) {
         console.error("❌ [AuthContext] Erro ao inicializar estado global:", err);
+        setLoadingPermissions(false); // Libera em caso de erro
       }
     });
 
@@ -145,7 +157,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, isAdmin, matricula, nickname, photoUrl, services, logout }}>
+    <AuthContext.Provider value={{ user, loading, loadingPermissions, isAdmin, matricula, nickname, photoUrl, services, logout }}>
       {children}
     </AuthContext.Provider>
   );
