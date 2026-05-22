@@ -2,6 +2,7 @@
 
 import React from "react";
 import { HubHeader } from "@/components/hub/HubHeader";
+import { FloatingHubActions } from "@/components/hub/FloatingHubActions";
 import { useTheme } from "@/context/ThemeContext";
 import { useAuthContext } from "@/context/AuthContext";
 import { redirect } from "next/navigation";
@@ -9,6 +10,7 @@ import { redirect } from "next/navigation";
 /**
  * HUB SHELL — O Frame Institucional Client-Side 🧬
  * Gerencia o tema e o cabeçalho privado.
+ * Inclui os botões flutuantes de Suporte e WhatsApp.
  */
 export function HubShell({ children }: { children: React.ReactNode }) {
   const { theme } = useTheme();
@@ -26,6 +28,8 @@ export function HubShell({ children }: { children: React.ReactNode }) {
       <main className="flex-1 w-full bg-background transition-colors duration-500 relative pt-20">
         {children}
       </main>
+      <FloatingHubActions />
     </div>
   );
 }
+

@@ -77,6 +77,11 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // 🆘 [Suporte] Tickets de Bug Report / Chamados
+    match /Support_Tickets/{ticketId} {
+      allow read, write: if false; // Escrita exclusiva via Admin SDK (Server Action)
+    }
+
     // ⚙️ [Fallback] Bloqueio preventivo para novas coleções não documentadas
     match /{document=**} {
       allow read, write: if false;
