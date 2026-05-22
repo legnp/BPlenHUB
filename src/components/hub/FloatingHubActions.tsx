@@ -148,7 +148,7 @@ export function FloatingHubActions() {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ delay: 1, duration: 0.5, type: "spring" }}
           onClick={openModal}
-          className="group relative w-12 h-12 rounded-2xl bg-[var(--input-bg)] border border-[var(--border-primary)] backdrop-blur-xl flex items-center justify-center text-[var(--accent-start)] shadow-lg hover:shadow-xl hover:shadow-[var(--accent-start)]/10 hover:border-[var(--accent-start)]/40 hover:scale-110 active:scale-95 transition-all"
+          className="group relative w-12 h-12 rounded-2xl bg-[var(--input-bg)] border border-[var(--border-primary)] backdrop-blur-xl flex items-center justify-center text-[var(--accent-start)] shadow-lg hover:shadow-xl hover:shadow-[var(--accent-start)]/10 hover:border-[var(--accent-start)]/40 hover:scale-105 active:scale-95 transition-all"
           title="Reportar Bug / Suporte"
         >
           <AlertCircle size={20} strokeWidth={2.5} className="group-hover:animate-pulse" />
@@ -168,9 +168,10 @@ export function FloatingHubActions() {
           href={WHATSAPP_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="group relative w-12 h-12 rounded-2xl bg-[#25D366]/15 border border-[#25D366]/30 backdrop-blur-xl flex items-center justify-center shadow-lg hover:shadow-xl hover:shadow-[#25D366]/20 hover:bg-[#25D366]/25 hover:border-[#25D366]/60 hover:scale-110 active:scale-95 transition-all"
+          className="group relative w-12 h-12 rounded-2xl bg-[#25D366]/15 border border-[#25D366]/30 backdrop-blur-xl flex items-center justify-center shadow-lg hover:shadow-xl hover:shadow-[#25D366]/20 hover:bg-[#25D366]/25 hover:border-[#25D366]/60 hover:scale-105 active:scale-95 transition-all"
           title="Falar pelo WhatsApp"
         >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/whatsapp.png" alt="WhatsApp" className="w-5 h-5 object-contain" />
           
           {/* Tooltip */}
@@ -201,7 +202,7 @@ export function FloatingHubActions() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 30 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed z-[301] bottom-8 right-8 w-[90vw] max-w-[420px] bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-3xl shadow-2xl overflow-hidden"
+              className="fixed z-[301] bottom-8 right-8 w-[90vw] max-w-[420px] bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-2xl shadow-[0_4px_16px_0_rgba(31,38,135,0.08)] overflow-hidden"
             >
               {/* Header */}
               <div className="flex items-center justify-between p-5 pb-0">
@@ -282,6 +283,7 @@ export function FloatingHubActions() {
 
                       {imagePreview ? (
                         <div className="relative group rounded-2xl overflow-hidden border border-[var(--border-primary)]">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={imagePreview}
                             alt="Preview"
