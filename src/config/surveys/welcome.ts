@@ -92,6 +92,22 @@ export const welcomeSurveyConfig: SurveyConfig = {
           required: true
         }
       ]
+    },
+    {
+      id: "step_tour",
+      question: "Tudo certo! Queremos te apresentar a plataforma. Deseja fazer um tour guiado rápido ou prefere explorar sozinho?",
+      fields: [
+        {
+          id: "wants_tour",
+          type: "choice",
+          label: "Opção",
+          options: [
+            "Sim, quero o tour guiado! 🚀",
+            "Não, prefiro explorar sozinho."
+          ],
+          required: true
+        }
+      ]
     }
   ],
   analytics: {

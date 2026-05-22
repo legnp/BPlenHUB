@@ -50,7 +50,9 @@ export function MemberJourneyHero({ showAction = false, variant = "default" }: M
   const isMinimal = variant === "minimal";
 
   return (
-    <section className={isMinimal 
+    <section 
+      id="jornada-membro-card"
+      className={isMinimal 
       ? "bg-transparent border-none p-0 relative overflow-visible group" 
       : "bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-[3.5rem] p-10 md:p-14 relative overflow-visible group shadow-sm transition-all duration-500 hover:shadow-lg transform-gpu"
     }>

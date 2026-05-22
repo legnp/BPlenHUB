@@ -29,7 +29,7 @@ export function StepContainer({ children, title, description, badge }: StepConta
 
 
       {/* Main Glass Workspace */}
-      <div className="flex-1 p-8 rounded-[3.5rem] bg-[var(--bg-primary)] border border-[var(--border-primary)] shadow-2xl relative overflow-hidden">
+      <div id="checkpoints-area" className="flex-1 p-8 rounded-[3.5rem] bg-[var(--bg-primary)] border border-[var(--border-primary)] shadow-2xl relative overflow-hidden">
          {/* Subtle Workspace Border Glow */}
          <div className="absolute inset-0 border-[var(--accent-start)]/5 border rounded-[3.5rem] pointer-events-none" />
           

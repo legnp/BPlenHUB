@@ -7,6 +7,8 @@ import { db } from "@/lib/firebase";
 import { SurveyEngine } from "@/components/forms/SurveyEngine";
 import { welcomeSurveyConfig } from "@/config/surveys/welcome";
 import { GoogleLoginButton } from "@/components/auth/google-login-button";
+import { useTourStore } from "@/store/tour-store";
+import { onboardingTourConfig } from "@/config/tours/onboarding-tour";
 import { HubHomeView } from "@/components/hub/HubHomeView";
 
 export default function HubPage() {
@@ -80,7 +82,12 @@ export default function HubPage() {
           <SurveyEngine 
             config={dynamicWelcomeConfig}
             userUid={user.uid}
-            onComplete={() => setHasCompletedSurvey(true)}
+            onComplete={(mat, responses) => {
+              if (responses?.wants_tour?.includes("Sim")) {
+                useTourStore.getState().startTour("onboarding_tour", onboardingTourConfig);
+              }
+              setHasCompletedSurvey(true);
+            }}
           />
         </div>
       </main>

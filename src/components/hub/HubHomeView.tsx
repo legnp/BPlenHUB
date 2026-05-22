@@ -91,7 +91,7 @@ export function HubHomeView() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 !mt-[45px]">
            
            {/* Feed de Conteúdo Dinâmico ✨ */}
-           <section className="space-y-8">
+           <section id="ultimos-conteudos" className="space-y-8">
               <div className="flex items-center justify-between border-b border-[var(--border-primary)] pb-6">
                  <h3 className="text-2xl font-bold text-[var(--text-primary)] flex items-center gap-3">
                     <Briefcase size={22} className="text-[var(--accent-start)]" /> Últimos Conteúdos
@@ -138,7 +138,7 @@ export function HubHomeView() {
            </section>
 
            {/* 🧬 Telemetria Ativa: Primeiros Passos */}
-           <section className="space-y-8">
+           <section id="primeiros-passos-acesso" className="space-y-8">
               <div className="flex items-center justify-between border-b border-[var(--border-primary)] pb-6">
                  <h3 className="text-2xl font-bold text-[var(--text-primary)] flex items-center gap-3">
                     <Target size={22} className="text-[#667eea]" /> Primeiros Passos

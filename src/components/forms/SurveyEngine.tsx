@@ -29,7 +29,7 @@ import { resolveUserIdentity, getUserMetadata } from "@/actions/survey-effects";
 interface SurveyEngineProps {
   config: SurveyConfig;
   userUid: string;
-  onComplete?: (matricula: string) => void;
+  onComplete?: (matricula: string, responses?: Record<string, any>) => void;
 }
 
 /**
@@ -179,7 +179,7 @@ export function SurveyEngine({ config, userUid, onComplete }: SurveyEngineProps)
       if (config.completionMessage) {
         setIsFinished(true);
       } else if (onComplete) {
-        onComplete(res.matricula || "");
+        onComplete(res.matricula || "", responses);
       }
     } catch (err: unknown) {
       console.error("Erro na submissão do SurveyEngine:", err);

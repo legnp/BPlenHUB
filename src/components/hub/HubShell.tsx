@@ -7,6 +7,8 @@ import { useTheme } from "@/context/ThemeContext";
 import { useAuthContext } from "@/context/AuthContext";
 import { redirect } from "next/navigation";
 
+import { GlobalTourOverlay } from "@/components/shared/GlobalTourOverlay";
+
 /**
  * HUB SHELL — O Frame Institucional Client-Side 🧬
  * Gerencia o tema e o cabeçalho privado.
@@ -24,6 +26,7 @@ export function HubShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className={`min-h-screen flex flex-col transition-colors duration-500 ${theme !== 'light' ? `theme-${theme}` : ''}`}>
+      <GlobalTourOverlay />
       <HubHeader />
       <main className="flex-1 w-full bg-background transition-colors duration-500 relative pt-20">
         {children}

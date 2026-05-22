@@ -52,9 +52,32 @@ export function HubHeader() {
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
   const [isSocialMenuOpen, setIsSocialMenuOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [revealedIndex, setRevealedIndex] = useState<number | null>(null);
   const themeMenuRef = useRef<HTMLDivElement>(null);
   const socialMenuRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
+
+  // Escuta de Eventos do Tour
+  useEffect(() => {
+    const handleTourAction = (e: CustomEvent) => {
+      if (e.detail === 'open_social_menu') {
+        setIsSocialMenuOpen(true);
+        setIsThemeMenuOpen(false);
+        setRevealedIndex(-1); // Esconde todos para a revelação futura
+      } else if (e.detail === 'reveal_menu_items') {
+        // Revelação progressiva
+        let current = 0;
+        const totalItems = 5; // 5 links
+        const interval = setInterval(() => {
+          setRevealedIndex(current);
+          current++;
+          if (current >= totalItems) clearInterval(interval);
+        }, 800);
+      }
+    };
+    window.addEventListener('tour-action', handleTourAction as EventListener);
+    return () => window.removeEventListener('tour-action', handleTourAction as EventListener);
+  }, []);
 
   // Fechar menus ao clicar fora
   useEffect(() => {
@@ -105,9 +128,11 @@ export function HubHeader() {
          {/* 📸 Avatar Circular Premium (Aumentado) */}
          <div className="relative" ref={socialMenuRef}>
             <button 
+               id="hub-social-menu-btn"
                onClick={() => {
                   setIsSocialMenuOpen(!isSocialMenuOpen);
                   setIsThemeMenuOpen(false);
+                  setRevealedIndex(null); // Reseta revelação ao clique normal
                }}
                className={cn(
                   "w-22 h-22 rounded-full border-2 transition-all duration-500 overflow-hidden flex items-center justify-center group bg-black/10 backdrop-blur-md shadow-2xl",
@@ -132,6 +157,7 @@ export function HubHeader() {
             <AnimatePresence>
                {isSocialMenuOpen && (
                  <motion.div 
+                   id="hub-social-menu-area"
                    initial={{ opacity: 0, x: -20, scale: 0.95 }}
                    animate={{ opacity: 1, x: -24, scale: 1 }}
                    exit={{ opacity: 0, x: -20, scale: 0.95 }}
@@ -162,21 +188,30 @@ export function HubHeader() {
                             { href: "/hub/membro/contratos", icon: ScrollText, label: "Meus Contratos", active: pathname.startsWith("/hub/membro/contratos") },
                             { href: "/hub/profile_settings", icon: UserCog, label: BPLEN_NOMENCLATURE.navigation.profile, active: pathname.startsWith("/hub/profile_settings") },
                             { href: "/hub/networking", icon: Users, label: BPLEN_NOMENCLATURE.navigation.networking, active: pathname.startsWith("/hub/networking") },
-                          ].map((item) => (
-                             <Link 
+                          ].map((item, index) => (
+                             <motion.div
                                key={item.href}
-                               href={item.href}
-                               onClick={() => setIsSocialMenuOpen(false)}
-                               className={cn(
-                                 "w-full flex items-center gap-3 p-3.5 rounded-2xl transition-all group border",
-                                 item.active 
-                                   ? "bg-[var(--accent-start)]/10 border-[var(--accent-start)]/20 text-[var(--accent-start)]"
-                                   : "border-transparent text-[var(--text-secondary)] hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)]"
-                               )}
+                               initial={revealedIndex !== null ? { opacity: 0, height: 0, overflow: 'hidden' } : { opacity: 1, height: 'auto' }}
+                               animate={{ 
+                                 opacity: revealedIndex === null || index <= revealedIndex ? 1 : 0,
+                                 height: revealedIndex === null || index <= revealedIndex ? 'auto' : 0
+                               }}
+                               transition={{ duration: 0.4 }}
                              >
-                                <item.icon size={18} />
-                                <span className={cn("text-[10px] uppercase tracking-widest", item.active ? "font-black" : "font-bold")}>{item.label}</span>
-                             </Link>
+                               <Link 
+                                  href={item.href}
+                                  onClick={() => setIsSocialMenuOpen(false)}
+                                  className={cn(
+                                    "w-full flex items-center gap-3 p-3.5 rounded-2xl transition-all group border",
+                                    item.active 
+                                      ? "bg-[var(--accent-start)]/10 border-[var(--accent-start)]/20 text-[var(--accent-start)]"
+                                      : "border-transparent text-[var(--text-secondary)] hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)]"
+                                  )}
+                               >
+                                  <item.icon size={18} />
+                                  <span className={cn("text-[10px] uppercase tracking-widest", item.active ? "font-black" : "font-bold")}>{item.label}</span>
+                               </Link>
+                             </motion.div>
                           ))}
 
                           <button 
@@ -234,6 +269,7 @@ export function HubHeader() {
          {/* 🎨 Seletor de Temas (Flutuante) */}
          <div className="relative" ref={themeMenuRef}>
             <button 
+               id="theme-switcher-btn"
                onClick={() => {
                   setIsThemeMenuOpen(!isThemeMenuOpen);
                   setIsSocialMenuOpen(false);

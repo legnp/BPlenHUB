@@ -108,7 +108,7 @@ export function ProfileIdentityTab() {
     <div className="max-w-4xl space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-700">
       
       {/* 📸 Card de Identidade Visual */}
-      <div className="p-10 border border-[var(--border-primary)] rounded-[3.5rem] bg-[var(--input-bg)]/10 glass relative overflow-hidden group">
+      <div id="tour-profile-photo" className="p-10 border border-[var(--border-primary)] rounded-[3.5rem] bg-[var(--input-bg)]/10 glass relative overflow-hidden group">
         <div className="absolute top-0 right-0 p-8 opacity-5">
            <ImageIcon size={120} />
         </div>
