@@ -26,26 +26,26 @@ const clientSchema = z.object({
 function normalizePrivateKey(key: string | undefined): string {
   if (!key) return "";
   
-  // 1. Limpeza Radical: Remove aspas e espaços
+  // Remove aspas no início e no fim, se houver
   let cleaned = key.trim().replace(/^["']|["']$/g, "");
 
-  // 2. Normaliza quebras de linha literais (comuns em Vercel/Dotenv)
+  // Substitui \n literais por quebras de linha reais
   cleaned = cleaned.replace(/\\n/g, "\n");
-  
-  // 3. Remove eventuais aspas residuais no meio da string (erro comum de copia/cola)
+
+  // Remove o carriage return do Windows (\r)
+  cleaned = cleaned.replace(/\r/g, "");
+
+  // Remove qualquer aspa que tenha ficado no meio do arquivo (erro de formatação)
   cleaned = cleaned.replace(/['"]/g, "");
 
-  // 4. Garante que os cabeçalhos PEM estejam presentes
-  if (!cleaned.includes("-----BEGIN PRIVATE KEY-----")) {
-    cleaned = `-----BEGIN PRIVATE KEY-----\n${cleaned}\n-----END PRIVATE KEY-----`;
-  }
+  // Reconstrói o PEM forçadamente
+  const body = cleaned
+    .replace(/-----BEGIN PRIVATE KEY-----/g, "")
+    .replace(/-----END PRIVATE KEY-----/g, "")
+    .replace(/\s+/g, ""); // remove TODOS os espaços e quebras
 
-  // 5. Auditoria de Segurança (Apenas métricas, sem exposição de conteúdo 🛡️)
-  if (process.env.NODE_ENV === "production") {
-    console.log(`[PEM] Key loaded: ${cleaned.length} chars | Headers: ${cleaned.includes("-----BEGIN PRIVATE KEY-----")}`);
-  }
-
-  return cleaned;
+  const chunks = body.match(/.{1,64}/g) || [];
+  return `-----BEGIN PRIVATE KEY-----\n${chunks.join("\n")}\n-----END PRIVATE KEY-----`;
 }
 
 // ──────────────────────────────
