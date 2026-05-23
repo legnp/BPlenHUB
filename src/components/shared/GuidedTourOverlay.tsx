@@ -55,7 +55,7 @@ export function GuidedTourOverlay({
   const [isNarrating, setIsNarrating] = useState(false);
   const [revealedIds, setRevealedIds] = useState<string[]>([]);
   const [tooltipPos, setTooltipPos] = useState<{ top: number; left: number; placement: string } | null>(null);
-  const [spotlightRect, setSpotlightRect] = useState<{ x: number; y: number; width: number; height: number; rx: number } | null>(null);
+  const [holeRect, setHoleRect] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
   
   const tooltipRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -69,12 +69,14 @@ export function GuidedTourOverlay({
   const calculatePosition = useCallback(() => {
     if (!currentStep?.targetId) {
       setTooltipPos(null);
+      setHoleRect(null);
       return;
     }
 
     const el = document.getElementById(currentStep.targetId);
     if (!el) {
       setTooltipPos(null);
+      setHoleRect(null);
       return;
     }
 
@@ -83,6 +85,15 @@ export function GuidedTourOverlay({
     const gap = currentStep.gap || 24;
     const viewportW = window.innerWidth;
     const viewportH = window.innerHeight;
+
+    // Hole Rect with padding
+    const padding = 12;
+    setHoleRect({
+      top: rect.top - padding,
+      left: rect.left - padding,
+      width: rect.width + (padding * 2),
+      height: rect.height + (padding * 2)
+    });
 
     const spaceRight = viewportW - rect.right;
     const spaceLeft = rect.left;
@@ -172,53 +183,8 @@ export function GuidedTourOverlay({
     } else {
       onFocus?.(null);
       setTooltipPos(null);
+      setHoleRect(null);
     }
-
-    // Apply individual styles like the Member Area tour
-    const elementsToBlur = [
-      document.getElementById("hub-global-header"),
-      document.getElementById("hub-social-menu-area"),
-      document.getElementById("hub-journey-top-nav"),
-      document.getElementById("hub-assessments"),
-      document.getElementById("hub-agenda"),
-      document.getElementById("hub-carreira"),
-      document.getElementById("ultimos-conteudos"),
-      document.getElementById("primeiros-passos-acesso"),
-      document.getElementById("jornada-membro-card"),
-      document.getElementById("checkpoints-area"),
-      document.getElementById("hub-support-btn"),
-      document.getElementById("theme-switcher-btn"),
-      document.getElementById("tour-profile-photo")?.parentElement
-    ].filter(Boolean) as HTMLElement[];
-
-    elementsToBlur.forEach(el => {
-      const isTarget = el.id === currentStep?.targetId || el.contains(document.getElementById(currentStep?.targetId || ""));
-      if (isTarget) {
-        el.style.filter = "none";
-        el.style.zIndex = "1002";
-        el.style.position = "relative";
-        el.style.pointerEvents = "auto";
-        el.style.boxShadow = "0 0 80px rgba(255, 0, 128, 0.4)";
-        el.style.transition = "all 0.6s ease-out";
-      } else {
-        el.style.filter = "blur(12px)";
-        el.style.opacity = "0.5";
-        el.style.pointerEvents = "none";
-        el.style.zIndex = "1";
-        el.style.boxShadow = "none";
-        el.style.transition = "all 0.6s ease-out";
-      }
-    });
-
-    return () => {
-      elementsToBlur.forEach(el => {
-        el.style.filter = "";
-        el.style.opacity = "";
-        el.style.pointerEvents = "";
-        el.style.zIndex = "";
-        el.style.boxShadow = "";
-      });
-    };
   }, [currentIndex, isOpen, pathname, calculatePosition, onFocus, onReveal, currentStep, router]);
 
   useEffect(() => {
@@ -226,6 +192,7 @@ export function GuidedTourOverlay({
       setInternalIndex(0);
       setRevealedIds([]);
       setTooltipPos(null);
+      setHoleRect(null);
     }
   }, [isOpen]);
 
@@ -277,8 +244,53 @@ export function GuidedTourOverlay({
 
   return (
     <div className="fixed inset-0 z-[1000] pointer-events-none">
-      {/* Background Overlay */}
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-[4px] pointer-events-none" />
+      {/* Dynamic Hole-Clipping Overlay */}
+      <div 
+        className="absolute inset-0 bg-black/40 backdrop-blur-[12px] pointer-events-none transition-all duration-500"
+        style={{
+          clipPath: holeRect ? `polygon(
+            0% 0%, 
+            0% 100%, 
+            ${holeRect.left}px 100%, 
+            ${holeRect.left}px ${holeRect.top}px, 
+            ${holeRect.left + holeRect.width}px ${holeRect.top}px, 
+            ${holeRect.left + holeRect.width}px ${holeRect.top + holeRect.height}px, 
+            ${holeRect.left}px ${holeRect.top + holeRect.height}px, 
+            ${holeRect.left}px 100%, 
+            100% 100%, 
+            100% 0%
+          )` : 'none',
+          WebkitClipPath: holeRect ? `polygon(
+            0% 0%, 
+            0% 100%, 
+            ${holeRect.left}px 100%, 
+            ${holeRect.left}px ${holeRect.top}px, 
+            ${holeRect.left + holeRect.width}px ${holeRect.top}px, 
+            ${holeRect.left + holeRect.width}px ${holeRect.top + holeRect.height}px, 
+            ${holeRect.left}px ${holeRect.top + holeRect.height}px, 
+            ${holeRect.left}px 100%, 
+            100% 100%, 
+            100% 0%
+          )` : 'none'
+        }}
+      />
+
+      {/* Glow Mask synchronized with the hole */}
+      {holeRect && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="fixed pointer-events-none z-[999] rounded-[2.5rem] blur-2xl"
+          style={{
+            top: holeRect.top,
+            left: holeRect.left,
+            width: holeRect.width,
+            height: holeRect.height,
+            boxShadow: "0 0 100px rgba(255, 0, 128, 0.4)",
+            border: "2px solid rgba(255, 255, 255, 0.1)"
+          }}
+        />
+      )}
 
       <div className={!tooltipPos ? "absolute inset-0 flex items-center justify-center pointer-events-none z-[1001]" : "pointer-events-none z-[1001]"}>
          <AnimatePresence mode="wait">
