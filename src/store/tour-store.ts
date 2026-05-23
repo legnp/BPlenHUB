@@ -9,6 +9,8 @@ export interface TourStepConfig {
   // Ação customizada a ser executada ANTES ou DURANTE o passo.
   // Ex: "open_social_menu", "reveal_item_1", etc.
   customAction?: string; 
+  placement?: 'right' | 'left' | 'top' | 'bottom' | 'center';
+  gap?: number;
 }
 
 interface TourState {

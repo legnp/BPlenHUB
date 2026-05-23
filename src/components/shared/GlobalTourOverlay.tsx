@@ -15,7 +15,7 @@ export function GlobalTourOverlay() {
   const pathname = usePathname();
 
   const [isNarrating, setIsNarrating] = useState(false);
-  const [tooltipPos, setTooltipPos] = useState<{ top: number; left: number; placement: 'right' | 'left' | 'center' } | null>(null);
+  const [tooltipPos, setTooltipPos] = useState<{ top: number; left: number; placement: 'right' | 'left' | 'center' | 'top' | 'bottom' } | null>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   
   const currentStep = steps[currentIndex];
@@ -42,33 +42,49 @@ export function GlobalTourOverlay() {
 
     const rect = el.getBoundingClientRect();
     const tooltipWidth = 440;
-    const gap = 24;
+    const gap = currentStep.gap || 24;
     const viewportW = window.innerWidth;
     const viewportH = window.innerHeight;
 
     const spaceRight = viewportW - rect.right;
     const spaceLeft = rect.left;
+    const spaceBottom = viewportH - rect.bottom;
+    const spaceTop = rect.top;
 
     let left: number;
-    let placement: 'right' | 'left' | 'center';
+    let top: number;
+    let placement: 'right' | 'left' | 'center' | 'top' | 'bottom';
 
-    if (spaceRight >= tooltipWidth + gap) {
+    // 1. Determinar Orientação (Honrar preferência se possível)
+    const preferred = currentStep.placement;
+
+    if (preferred === 'bottom' || (!preferred && spaceBottom > 350 && placement !== 'right' && placement !== 'left')) {
+      left = Math.max(16, rect.left + rect.width / 2 - tooltipWidth / 2);
+      if (left + tooltipWidth > viewportW) left = viewportW - tooltipWidth - 16;
+      top = rect.bottom + gap;
+      placement = 'bottom';
+    } else if (preferred === 'right' || (!preferred && spaceRight >= tooltipWidth + gap)) {
       left = rect.right + gap;
+      top = rect.top + rect.height / 2 - 140;
       placement = 'right';
-    } else if (spaceLeft >= tooltipWidth + gap) {
+    } else if (preferred === 'left' || (!preferred && spaceLeft >= tooltipWidth + gap)) {
       left = rect.left - tooltipWidth - gap;
+      top = rect.top + rect.height / 2 - 140;
       placement = 'left';
+    } else if (preferred === 'top' || (!preferred && spaceTop > 350)) {
+      left = Math.max(16, rect.left + rect.width / 2 - tooltipWidth / 2);
+      if (left + tooltipWidth > viewportW) left = viewportW - tooltipWidth - 16;
+      top = rect.top - 350 - gap; // Assumindo altura média do tooltip
+      placement = 'top';
     } else {
       left = Math.max(16, (viewportW - tooltipWidth) / 2);
+      top = rect.bottom + gap;
       placement = 'center';
     }
 
-    let top = rect.top + rect.height / 2 - 140;
-    if (placement === 'center') {
-      top = rect.bottom + gap;
-    }
+    // Ajustes de Segurança
     top = Math.max(16, Math.min(top, viewportH - 350));
-    left = Math.max(16, left);
+    left = Math.max(16, Math.min(left, viewportW - tooltipWidth - 16));
 
     setTooltipPos({ top, left, placement });
   }, [currentStep, isNavigating]);
@@ -152,13 +168,13 @@ export function GlobalTourOverlay() {
     : {};
 
   return (
-    <div className="fixed inset-0 z-[100] pointer-events-none">
+    <div className="fixed inset-0 z-[500] pointer-events-none">
       <div 
         className="absolute inset-0 bg-black/60 backdrop-blur-sm pointer-events-auto transition-all duration-700"
         onClick={() => {}} 
       />
 
-      <div className={!tooltipPos ? "absolute inset-0 flex items-center justify-center pointer-events-none z-[101]" : "pointer-events-none z-[101]"}>
+      <div className={!tooltipPos ? "absolute inset-0 flex items-center justify-center pointer-events-none z-[501]" : "pointer-events-none z-[501]"}>
          <AnimatePresence mode="wait">
            <motion.div
              ref={tooltipRef}
@@ -167,7 +183,7 @@ export function GlobalTourOverlay() {
              animate={{ opacity: 1, y: 0, scale: 1 }}
              exit={{ opacity: 0, y: -20, scale: 0.95 }}
              transition={{ duration: 0.5, ease: "easeOut" }}
-             className="pointer-events-auto w-full max-w-md p-8 bg-[var(--bg-primary)]/95 backdrop-blur-2xl border border-[var(--border-primary)] rounded-[2.5rem] shadow-[0_32px_64px_rgba(0,0,0,0.5)] flex flex-col gap-6"
+             className="pointer-events-auto w-full max-w-md p-8 bg-[var(--bg-primary)]/95 backdrop-blur-2xl border border-[var(--border-primary)] rounded-[2.5rem] shadow-[0_32px_64px_rgba(0,0,0,0.5)] flex flex-col gap-6 z-[502]"
              style={tooltipStyle}
            >
           <div className="flex items-center justify-between border-b border-[var(--border-primary)] pb-4">

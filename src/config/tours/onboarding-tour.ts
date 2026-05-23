@@ -8,6 +8,8 @@ export const onboardingTourConfig: TourStepConfig[] = [
     content: "{User_Nickname}, aqui você acessa todas as suas configurações, áreas exclusivas e também nossas redes sociais da Conexão Digital. Vamos abrir e dar uma olhada!",
     buttonLabel: "Ver Menu",
     customAction: "open_social_menu", // Instrução para o HubHeader expandir o menu
+    placement: 'left',
+    gap: 300,
   },
   {
     route: "/hub",
