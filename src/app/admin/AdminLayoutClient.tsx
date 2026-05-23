@@ -16,7 +16,8 @@ import {
   Zap,
   Globe,
   Ticket,
-  Handshake
+  Handshake,
+  FlaskConical
 } from "lucide-react";
 import { HubHeader } from "@/components/hub/HubHeader";
 import { BPlenLogo } from "@/components/shared/BPlenLogo";
