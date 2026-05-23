@@ -94,6 +94,9 @@ export const welcomeSurveyConfig: SurveyConfig = {
           options: [
             "Instagram",
             "LinkedIn",
+            "TikTok",
+            "Pesquisa do Google",
+            "Lisandra Lencina",
             "Indicação",
             "Outro"
           ],

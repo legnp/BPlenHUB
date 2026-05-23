@@ -315,16 +315,16 @@ export function SurveyEngine({ config, userUid, onComplete }: SurveyEngineProps)
               })}
             </div>
             
-            {/* Campo Condicional "Outro" 🧬 */}
+            {/* Campo Condicional "Outro" / "Indicação" 🧬 */}
 
-            {(rawValue === "Outro" || rawValue === "Outros") && (
+            {(rawValue === "Outro" || rawValue === "Outros" || rawValue === "Indicação") && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 className="pt-2"
               >
                 <InputGlass
-                  placeholder="Por favor, descreva aqui..."
+                  placeholder={rawValue === "Indicação" ? "Quem te indicou?" : "Por favor, descreva aqui..."}
                   value={String(responses[`${field.id}_other`] || "")}
                   onChange={(e) => updateResponse(`${field.id}_other`, e.target.value)}
                   autoFocus

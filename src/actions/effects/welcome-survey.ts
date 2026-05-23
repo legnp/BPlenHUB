@@ -54,7 +54,7 @@ export async function handleWelcomeSurveyEffect(
       Array.isArray(responses.topics) 
         ? responses.topics.map(t => (t === "Outros" && responses.topics_other) ? `Outros: ${responses.topics_other}` : t).join(", ") 
         : String(responses.topics || ""),
-      String(responses.origin || "N/A")
+      responses.origin_other ? `${responses.origin} (${responses.origin_other})` : String(responses.origin || "N/A")
     ];
 
     await syncSurveyToUserDrive({
@@ -81,7 +81,7 @@ export async function handleWelcomeSurveyEffect(
           status: "completed",
           capturedData: {
             userType,
-            origin: String(responses.origin || "N/A"),
+            origin: responses.origin_other ? `${responses.origin} (${responses.origin_other})` : String(responses.origin || "N/A"),
             reason: String(responses.demand || "N/A"),
             interests: Array.isArray(responses.topics) 
               ? responses.topics.map(t => (t === "Outros" && responses.topics_other) ? `Outros: ${responses.topics_other}` : t) 
