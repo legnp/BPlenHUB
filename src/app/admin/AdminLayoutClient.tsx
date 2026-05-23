@@ -20,7 +20,6 @@ import {
   FlaskConical
 } from "lucide-react";
 import { HubHeader } from "@/components/hub/HubHeader";
-import { BPlenLogo } from "@/components/shared/BPlenLogo";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user, isAdmin, loading, loadingPermissions } = useAuthContext();
@@ -49,7 +48,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Ghost Sidebar Dashboard (Pure Typography) */}
       <aside className="w-68 fixed h-full bg-[var(--input-bg)] backdrop-blur-3xl border-r border-[var(--border-primary)] shadow-2xl p-7 flex flex-col z-20">
             <div className="flex items-center gap-3">
-               <BPlenLogo variant="main" size={54} />
+               {/* Spacer for the HubHeader floating logo */}
+               <div className="w-[54px]" />
                <div className="flex flex-col">
                  <h2 className="text-xl font-bold tracking-tight text-[var(--text-primary)] group uppercase leading-none">
                    Admin
