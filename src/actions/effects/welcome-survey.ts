@@ -51,7 +51,9 @@ export async function handleWelcomeSurveyEffect(
       matricula,
       userUid,
       nickname,
-      Array.isArray(responses.topics) ? responses.topics.join(", ") : String(responses.topics || ""),
+      Array.isArray(responses.topics) 
+        ? responses.topics.map(t => (t === "Outros" && responses.topics_other) ? `Outros: ${responses.topics_other}` : t).join(", ") 
+        : String(responses.topics || ""),
       String(responses.origin || "N/A")
     ];
 
@@ -81,7 +83,9 @@ export async function handleWelcomeSurveyEffect(
             userType,
             origin: String(responses.origin || "N/A"),
             reason: String(responses.demand || "N/A"),
-            interests: Array.isArray(responses.topics) ? responses.topics : [],
+            interests: Array.isArray(responses.topics) 
+              ? responses.topics.map(t => (t === "Outros" && responses.topics_other) ? `Outros: ${responses.topics_other}` : t) 
+              : [],
             nickname,
           },
           completedAt: admin.firestore.FieldValue.serverTimestamp()

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, Rocket, Link2, ExternalLink } from "lucide-react";
 import { SurveyConfig, SurveyFieldConfig, SurveyValue } from "@/types/survey";
@@ -30,6 +30,31 @@ interface SurveyEngineProps {
   config: SurveyConfig;
   userUid: string;
   onComplete?: (matricula: string, responses?: Record<string, any>) => void;
+}
+
+/**
+ * Utility: Fisher-Yates Shuffle
+ * Mantém a opção "Outro" ou "Outros" sempre no final se existir.
+ */
+function shuffleOptions(options: any[]) {
+  const otherIndex = options.findIndex(opt => {
+    const label = (typeof opt === "string" ? opt : opt.label).toLowerCase();
+    return label === "outro" || label === "outros" || label.startsWith("outro ");
+  });
+
+  const toShuffle = [...options];
+  let other: any = null;
+  if (otherIndex > -1) {
+    other = toShuffle.splice(otherIndex, 1)[0];
+  }
+
+  for (let i = toShuffle.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [toShuffle[i], toShuffle[j]] = [toShuffle[j], toShuffle[i]];
+  }
+
+  if (other) toShuffle.push(other);
+  return toShuffle;
 }
 
 /**
@@ -64,6 +89,16 @@ export function SurveyEngine({ config, userUid, onComplete }: SurveyEngineProps)
   }, [userUid, config.id]);
 
   const currentStep = config.steps[currentStepIndex];
+
+  // Preparação de campos (Randomização) 🧬
+  const preparedFields = useMemo(() => {
+    return currentStep.fields.map(field => {
+      if (field.randomize && field.options && Array.isArray(field.options)) {
+        return { ...field, options: shuffleOptions(field.options) };
+      }
+      return field;
+    });
+  }, [currentStepIndex, config.id, currentStep.fields]);
 
   const isLastStep = currentStepIndex === config.steps.length - 1;
 
@@ -225,15 +260,36 @@ export function SurveyEngine({ config, userUid, onComplete }: SurveyEngineProps)
       case "buttons":
       case "choice":
         if (field.isMultiple) {
+          const isOtherSelected = Array.isArray(rawValue) && rawValue.some(v => {
+            const val = String(v).toLowerCase();
+            return val === "outro" || val === "outros";
+          });
+
           return (
-             <MultiSelect
-              options={field.options as string[]}
-              selected={(rawValue as string[]) || []}
-              onChange={(val) => updateResponse(field.id, val)}
-              minSelections={field.validation?.minSelections}
-              maxSelections={field.validation?.maxSelections}
-              cols={field.cols}
-            />
+            <div className="space-y-4">
+              <MultiSelect
+                options={field.options as string[]}
+                selected={(rawValue as string[]) || []}
+                onChange={(val) => updateResponse(field.id, val)}
+                minSelections={field.validation?.minSelections}
+                maxSelections={field.validation?.maxSelections}
+                cols={field.cols}
+              />
+              {isOtherSelected && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  className="pt-2"
+                >
+                  <InputGlass
+                    placeholder="Por favor, detalhe sua necessidade..."
+                    value={String(responses[`${field.id}_other`] || "")}
+                    onChange={(e) => updateResponse(`${field.id}_other`, e.target.value)}
+                    autoFocus
+                  />
+                </motion.div>
+              )}
+            </div>
           );
         }
         return (
@@ -261,7 +317,7 @@ export function SurveyEngine({ config, userUid, onComplete }: SurveyEngineProps)
             
             {/* Campo Condicional "Outro" 🧬 */}
 
-            {rawValue === "Outro" && (
+            {(rawValue === "Outro" || rawValue === "Outros") && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
@@ -280,15 +336,36 @@ export function SurveyEngine({ config, userUid, onComplete }: SurveyEngineProps)
 
 
       case "multi_select":
+        const isMultiOtherSelected = Array.isArray(rawValue) && rawValue.some(v => {
+          const val = String(v).toLowerCase();
+          return val === "outro" || val === "outros";
+        });
+
         return (
-          <MultiSelect
-            options={field.options as string[]}
-            selected={(rawValue as string[]) || []}
-            onChange={(val) => updateResponse(field.id, val)}
-            minSelections={field.validation?.minSelections}
-            maxSelections={field.validation?.maxSelections}
-            cols={field.cols}
-          />
+          <div className="space-y-4">
+            <MultiSelect
+              options={field.options as string[]}
+              selected={(rawValue as string[]) || []}
+              onChange={(val) => updateResponse(field.id, val)}
+              minSelections={field.validation?.minSelections}
+              maxSelections={field.validation?.maxSelections}
+              cols={field.cols}
+            />
+            {isMultiOtherSelected && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                className="pt-2"
+              >
+                <InputGlass
+                  placeholder="Por favor, detalhe sua necessidade..."
+                  value={String(responses[`${field.id}_other`] || "")}
+                  onChange={(e) => updateResponse(`${field.id}_other`, e.target.value)}
+                  autoFocus
+                />
+              </motion.div>
+            )}
+          </div>
         );
 
       case "cascaded":
@@ -608,7 +685,7 @@ export function SurveyEngine({ config, userUid, onComplete }: SurveyEngineProps)
                 transition={{ duration: 0.4 }}
                 className="space-y-6"
               >
-                {currentStep.fields.map(field => (
+                {preparedFields.map(field => (
                   <div key={field.id} className="animate-fade-in">
                     {renderField(field)}
                   </div>

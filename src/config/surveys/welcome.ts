@@ -51,12 +51,20 @@ export const welcomeSurveyConfig: SurveyConfig = {
           cols: 2,
           label: "Temas de Interesse",
           options: [
-            "Melhorar meu currículo",
-            "Transição de carreira",
-            "Liderança e gestão",
-            "Soft Skills",
-            "Desenvolvimento de talentos (DHO)"
+            "Transição de Carreira",
+            "Recolocação Profissional",
+            "Liderança e Gestão",
+            "Gestão de Tempo",
+            "Desenvolvimento Humano Organizacional (DHO)",
+            "Técnicas de Negociação",
+            "Gestão Emocional",
+            "Relacionamento Interpessoal",
+            "Resolução de Conflitos",
+            "Sucessão de Cargo",
+            "Posicionamento Profissional",
+            "Outros"
           ],
+          randomize: true,
           required: true
           // Nota: O SurveyEngine precisará suportar múltipla escolha se quisermos manter paridade total.
         }

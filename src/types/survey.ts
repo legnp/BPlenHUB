@@ -63,6 +63,7 @@ export interface SurveyFieldConfig {
     pattern?: string;
   };
   cols?: 1 | 2 | 3 | 4;
+  randomize?: boolean; // Se as opções devem ser exibidas em ordem aleatória
 }
 
 export interface SurveyStepConfig {
