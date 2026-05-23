@@ -319,7 +319,7 @@ export function GuidedTourOverlay({
         />
       )}
 
-      <div className={!tooltipPos ? "absolute inset-0 flex items-center justify-center pointer-events-none z-[1001]" : "pointer-events-none z-[1001]"}>
+      <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-[1001]">
          <AnimatePresence mode="wait">
             <motion.div
               ref={tooltipRef}
