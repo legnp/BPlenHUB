@@ -62,8 +62,6 @@ export default function MemberDashboardView() {
   const [isTourOpen, setIsTourOpen] = useState(false);
   
   useEffect(() => {
-
-  useEffect(() => {
      // Check if we just bounced back here to start the tour natively
      if (typeof window !== "undefined") {
         const search = window.location.search;
