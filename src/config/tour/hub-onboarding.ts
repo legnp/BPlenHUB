@@ -1,23 +1,23 @@
-import { TourStepConfig } from "@/store/tour-store";
+import { TourStep } from "@/components/shared/GuidedTourOverlay";
 
-export const onboardingTourConfig: TourStepConfig[] = [
+export const hubOnboardingSteps: TourStep[] = [
   {
     route: "/hub",
-    targetId: "hub-social-menu-btn", // ID do botão de chevron no HubHeader
+    targetId: "hub-social-menu-btn",
     title: "Seu Menu Principal",
     content: "{User_Nickname}, aqui você acessa todas as suas configurações, áreas exclusivas e também nossas redes sociais da Conexão Digital. Vamos abrir e dar uma olhada!",
     buttonLabel: "Ver Menu",
-    customAction: "open_social_menu", // Instrução para o HubHeader expandir o menu
+    customAction: "open_social_menu",
     placement: 'left',
     gap: 300,
   },
   {
     route: "/hub",
-    targetId: "hub-social-menu-area", // Área interna do menu sanduíche
+    targetId: "hub-social-menu-area",
     title: "Áreas do Hub",
     content: "Aqui você encontra o Início, a Área de Membro, Seus Contratos, Configurações e o Networking BPlen. (Nós vamos te guiar por algumas dessas funções logo a seguir!).",
     buttonLabel: "Entendi",
-    customAction: "reveal_menu_items", // Animação sequencial (Início, Área Membro...)
+    customAction: "reveal_menu_items",
   },
   {
     route: "/hub/profile_settings",
@@ -70,7 +70,6 @@ export const onboardingTourConfig: TourStepConfig[] = [
   },
   {
     route: "/hub/primeiros_passos",
-    // Sem targetId, fica centralizado
     title: "Tudo Pronto!",
     content: "Seja muito bem-vinda(o) à BPlen HUB, {User_Nickname}! Desejamos uma excelente utilização da plataforma. O espaço é todo seu!",
     buttonLabel: "Explorar a Plataforma",

@@ -6,7 +6,7 @@ import { StackedBarChart } from "@/components/hub/StackedBarChart";
 import { DiscChart } from "@/components/hub/DiscChart";
 import { MemberJourneyHero } from "@/components/hub/MemberJourneyHero";
 import { GuidedTourOverlay } from "@/components/shared/GuidedTourOverlay";
-import { onboardingTourSteps } from "@/config/tour/onboarding-tour";
+import { memberOnboardingSteps } from "@/config/tour/member-onboarding";
 import { 
   getGestaoTempoResult, 
   getAprendizadoResult, 
@@ -39,7 +39,7 @@ import Link from "next/link";
 import AtmosphericLoading from "@/components/shared/AtmosphericLoading";
 
 /**
- * MemberDashboardView — BPlen HUB 🧬
+ * MemberDashboardView — BPlen HUB
  * Componente unificado para a nova Área de Membro Raiz.
  */
 export default function MemberDashboardView() {
@@ -60,24 +60,8 @@ export default function MemberDashboardView() {
 
   // Guided Tour State
   const [isTourOpen, setIsTourOpen] = useState(false);
-  const [revealedSections, setRevealedSections] = useState<string[]>([]);
-  const [currentFocus, setCurrentFocus] = useState<string | null>(null);
   
-  const getSectionStyle = (sectionId: string): React.CSSProperties => {
-    let bRadius = "3.5rem"; // 56px
-    if (sectionId === "hub-agenda") bRadius = "2.5rem"; // 40px
-
-    return {
-      filter: isTourOpen && !revealedSections.includes(sectionId) ? "blur(12px)" : "blur(0px)",
-      transition: "all 0.8s ease-out",
-      pointerEvents: (isTourOpen && !revealedSections.includes(sectionId) ? "none" : "auto") as React.CSSProperties["pointerEvents"],
-      zIndex: isTourOpen && revealedSections.includes(sectionId) ? 50 : 1,
-      borderRadius: bRadius,
-      boxShadow: isTourOpen && currentFocus === sectionId 
-        ? "0 0 80px rgba(255, 0, 128, 0.3)" // Luz difusa suave, sem a borda dura sólida
-        : undefined
-    };
-  };
+  useEffect(() => {
 
   useEffect(() => {
      // Check if we just bounced back here to start the tour natively
@@ -92,22 +76,7 @@ export default function MemberDashboardView() {
      }
   }, []);
 
-  // Orquestrador de Desfoque para elementos fora da hierarquia deste componente (Header global)
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-       const header = document.querySelector("header");
-       if (header) {
-          if (isTourOpen) {
-             header.style.filter = "blur(12px)";
-             header.style.pointerEvents = "none";
-             header.style.transition = "filter 0.8s ease-out";
-          } else {
-             header.style.filter = "blur(0px)";
-             header.style.pointerEvents = "auto";
-          }
-       }
-    }
-  }, [isTourOpen]);
+  // Orquestrador de Desfoque global agora é gerenciado pelo Spotlight do GuidedTourOverlay
 
   const handleEvaluate_Dashboard = async (id: string, r: number, f: string) => {
     if (!matricula || !user) return;
@@ -223,13 +192,13 @@ export default function MemberDashboardView() {
               className="space-y-12"
             >
               {/* Journey Hero (Regra: 1 para Muitos) */}
-              <div id="hub-journey-nav" style={getSectionStyle("hub-journey-nav")}>
+              <div id="hub-journey-nav">
                  <MemberJourneyHero />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-8 items-start">
-                {/* Barra Lateral: Laboratório de Assessments 🧪 */}
-                <aside id="hub-assessments" style={getSectionStyle("hub-assessments")} className="space-y-6">
+                {/* Barra Lateral: Laboratório de Assessments */}
+                <aside id="hub-assessments" className="space-y-6">
                   <div className="p-8 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-[3.5rem] space-y-8 shadow-sm relative overflow-hidden group">
                      {/* Header do Laboratório */}
                      <div className="flex items-center gap-4 mb-2">
@@ -321,7 +290,7 @@ export default function MemberDashboardView() {
                 {/* Coluna Principal: Agenda & Outras Funções */}
                 <div className="space-y-8 flex flex-col">
                    {/* Card de Agenda */}
-                   <div id="hub-agenda" style={getSectionStyle("hub-agenda")} className="p-8 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-[2.5rem] space-y-6 shadow-sm">
+                   <div id="hub-agenda" className="p-8 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-[2.5rem] space-y-6 shadow-sm">
                       <div className="flex items-center gap-4">
                          <div className="p-3 bg-[var(--accent-start)]/10 rounded-2xl border border-[var(--accent-start)]/20 text-[var(--accent-start)]">
                             <CalendarDays size={20} />
@@ -371,7 +340,7 @@ export default function MemberDashboardView() {
                    </div>
 
                    {/* Módulo Gestão de Carreira */}
-                   <div id="hub-carreira" style={getSectionStyle("hub-carreira")} className="p-8 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-[3.5rem] space-y-6 shadow-sm opacity-60">
+                   <div id="hub-carreira" className="p-8 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-[3.5rem] space-y-6 shadow-sm opacity-60">
                       <div className="flex items-center gap-4">
                          <div className="p-3 bg-pink-500/5 rounded-2xl border border-pink-500/20 text-pink-500">
                             <Briefcase size={20} />
@@ -391,7 +360,7 @@ export default function MemberDashboardView() {
               {/* Telemetria de Identidade */}
               <div className="pt-12 border-t border-[var(--border-primary)] border-dashed opacity-20 text-center">
                   <div className="flex flex-col items-center gap-2 text-[8px] font-mono uppercase tracking-[0.2em] text-[var(--text-muted)]">
-                     <p>🧬 Sincronismo de Identidade Ativo</p>
+                     <p>Sincronismo de Identidade Ativo</p>
                      <p>UID: {user?.uid}</p>
                   </div>
               </div>
@@ -418,15 +387,13 @@ export default function MemberDashboardView() {
       )}
 
       <GuidedTourOverlay 
-        steps={onboardingTourSteps.slice(0, 5).map((step, idx) => {
+        steps={memberOnboardingSteps.map((step, idx) => {
            // No último passo da Dashboard (Assessments), redirecionar para a página da jornada
-           if (idx === 4) {
+           if (step.targetId === "hub-assessments") {
               return {
                  ...step,
                  action: () => {
                     setIsTourOpen(false);
-                    setRevealedSections([]);
-                    setCurrentFocus(null);
                     if (typeof window !== 'undefined') {
                        sessionStorage.setItem("bplen_tour_onboarding", "true");
                     }
@@ -437,14 +404,7 @@ export default function MemberDashboardView() {
            return step;
         })}
         isOpen={isTourOpen} 
-        onComplete={() => {
-           setIsTourOpen(false);
-           setRevealedSections([]);
-           setCurrentFocus(null);
-           window.location.href = "/hub/membro/journey/onboarding?action=finishTour";
-        }}
-        onReveal={(ids) => setRevealedSections(ids)}
-        onFocus={(id) => setCurrentFocus(id)}
+        onComplete={() => setIsTourOpen(false)}
         userName={user?.displayName ? user.displayName.split(" ")[0] : "Membro"}
       />
 

@@ -40,7 +40,7 @@ export default function SandboxPage() {
     <div className="space-y-8 animate-fade-in-up">
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold tracking-tight text-[var(--text-primary)] text-left">
-          AMBIENTE <span className="text-[var(--accent-start)] italic">Sandbox</span> 🧬
+          AMBIENTE <span className="text-[var(--accent-start)] italic">Sandbox</span>
         </h1>
         <p className="text-[var(--text-muted)] text-sm font-medium opacity-70 flex items-center gap-2 text-left">
           <FlaskConical size={14} className="text-[var(--accent-start)]" />

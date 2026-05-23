@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useLayoutEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { TypedText } from "@/components/ui/TypedText";
-import { Volume2, ChevronRight, X, Play } from "lucide-react";
+import { Volume2, ChevronRight, Play } from "lucide-react";
+import { useRouter, usePathname } from "next/navigation";
+import { useTourStore } from "@/store/tour-store";
 
 export interface TourStep {
   targetId?: string;
@@ -11,6 +13,10 @@ export interface TourStep {
   content: string;
   buttonLabel?: string;
   action?: () => void;
+  route?: string;
+  customAction?: string;
+  placement?: 'right' | 'left' | 'top' | 'bottom' | 'center';
+  gap?: number;
 }
 
 interface GuidedTourOverlayProps {
@@ -20,122 +26,169 @@ interface GuidedTourOverlayProps {
   onFocus?: (targetId: string | null) => void;
   isOpen: boolean;
   userName?: string;
+  currentStepIndex?: number;
+  onNext?: () => void;
 }
 
 /**
- * BPlen Guided Labs — Tour Engine 🧬✨
- * Posicionamento inteligente ao lado do card alvo.
+ * BPlen Guided Labs — Unified Tour Engine
+ * Spotlight-based navigation with smart positioning and route awareness.
  */
-export function GuidedTourOverlay({ steps, onComplete, onReveal, onFocus, isOpen, userName }: GuidedTourOverlayProps) {
-  const [currentIndex, setCurrentIndex] = useState(0);
+export function GuidedTourOverlay({ 
+  steps: propsSteps, 
+  onComplete: propsOnComplete, 
+  onReveal, 
+  onFocus, 
+  isOpen: propsIsOpen, 
+  userName,
+  currentStepIndex: propsIndex,
+  onNext: propsOnNext
+}: GuidedTourOverlayProps) {
+  const store = useTourStore();
+  
+  // Usar props se fornecidas, caso contrário usar store
+  const steps = propsSteps || store.steps;
+  const isOpen = propsIsOpen !== undefined ? propsIsOpen : store.isActive;
+  const currentIndex = propsIndex !== undefined ? propsIndex : (propsSteps ? internalIndex : store.currentIndex);
+  
+  const [internalIndex, setInternalIndex] = useState(0);
+  
   const [isNarrating, setIsNarrating] = useState(false);
   const [revealedIds, setRevealedIds] = useState<string[]>([]);
-  const [tooltipPos, setTooltipPos] = useState<{ top: number; left: number; placement: 'right' | 'left' | 'center' } | null>(null);
+  const [tooltipPos, setTooltipPos] = useState<{ top: number; left: number; placement: string } | null>(null);
+  const [spotlightRect, setSpotlightRect] = useState<{ x: number; y: number; width: number; height: number; rx: number } | null>(null);
+  
   const tooltipRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const pathname = usePathname();
   const currentStep = steps[currentIndex];
 
-  // Interpolar {User_Nickname} no texto
   const interpolate = (text: string) => {
     return text.replace(/\{User_Nickname\}/g, userName || "Membro BPlen");
   };
 
-  // Calcular posição do tooltip relativa ao card alvo
   const calculatePosition = useCallback(() => {
     if (!currentStep?.targetId) {
-      setTooltipPos(null); // Centralizado (fallback)
+      setTooltipPos(null);
+      setSpotlightRect(null);
       return;
     }
 
     const el = document.getElementById(currentStep.targetId);
     if (!el) {
       setTooltipPos(null);
+      setSpotlightRect(null);
       return;
     }
 
     const rect = el.getBoundingClientRect();
-    const tooltipWidth = 440; // max-w-md ≈ 28rem = 448px
-    const gap = 24; // distância entre card e tooltip
+    const tooltipWidth = 440;
+    const gap = currentStep.gap || 24;
     const viewportW = window.innerWidth;
     const viewportH = window.innerHeight;
 
-    // Decidir se mostra à direita ou à esquerda
+    // Spotlight Rect with padding
+    const padding = 8;
+    setSpotlightRect({
+      x: rect.left - padding,
+      y: rect.top - padding,
+      width: rect.width + (padding * 2),
+      height: rect.height + (padding * 2),
+      rx: 24 // BPlen standard radius
+    });
+
     const spaceRight = viewportW - rect.right;
     const spaceLeft = rect.left;
+    const spaceBottom = viewportH - rect.bottom;
+    const spaceTop = rect.top;
 
     let left: number;
-    let placement: 'right' | 'left' | 'center';
+    let top: number;
+    let placement: string;
 
-    if (spaceRight >= tooltipWidth + gap) {
-      // Posicionar à direita do card
+    const preferred = currentStep.placement;
+
+    if (preferred === 'right' || (!preferred && spaceRight >= tooltipWidth + gap)) {
       left = rect.right + gap;
+      top = rect.top + rect.height / 2 - 140;
       placement = 'right';
-    } else if (spaceLeft >= tooltipWidth + gap) {
-      // Posicionar à esquerda do card
+    } else if (preferred === 'left' || (!preferred && spaceLeft >= tooltipWidth + gap)) {
       left = rect.left - tooltipWidth - gap;
+      top = rect.top + rect.height / 2 - 140;
       placement = 'left';
+    } else if (preferred === 'bottom' || (!preferred && spaceBottom > 350)) {
+      left = rect.left + rect.width / 2 - tooltipWidth / 2;
+      top = rect.bottom + gap;
+      placement = 'bottom';
     } else {
-      // Sem espaço lateral: centralizar abaixo
       left = Math.max(16, (viewportW - tooltipWidth) / 2);
-      placement = 'center';
+      top = rect.top - 350 - gap;
+      placement = 'top';
     }
 
-    // Posição vertical: centralizar com o card, mas clampar na viewport
-    let top = rect.top + rect.height / 2 - 140; // 140 ≈ metade da altura estimada do tooltip
-    if (placement === 'center') {
-      top = rect.bottom + gap;
-    }
-    // Clampar para não sair da tela
+    // Clamping
     top = Math.max(16, Math.min(top, viewportH - 350));
-    left = Math.max(16, left);
+    left = Math.max(16, Math.min(left, viewportW - tooltipWidth - 16));
 
     setTooltipPos({ top, left, placement });
   }, [currentStep]);
 
-  // Ao avançar, acumula os IDs revelados e reposiciona
+  // Observer for dynamic target changes
+  useLayoutEffect(() => {
+    if (!isOpen || !currentStep?.targetId) return;
+    
+    const target = document.getElementById(currentStep.targetId);
+    if (!target) return;
+
+    const observer = new ResizeObserver(() => calculatePosition());
+    observer.observe(target);
+    observer.observe(document.body);
+
+    const interval = setInterval(calculatePosition, 500); // Polling as fallback for some animations
+
+    return () => {
+      observer.disconnect();
+      clearInterval(interval);
+    };
+  }, [isOpen, currentStep?.targetId, calculatePosition]);
+
   useEffect(() => {
     if (!isOpen) return;
+
+    // Handle Route Navigation
+    if (currentStep?.route && pathname !== currentStep.route) {
+      router.push(currentStep.route);
+      return;
+    }
+
     if (currentStep?.targetId) {
-       
       onFocus?.(currentStep.targetId);
-      
       setRevealedIds(prev => {
         const next = prev.includes(currentStep.targetId!) ? prev : [...prev, currentStep.targetId!];
         onReveal?.(next);
         return next;
       });
-      // Scroll suave para o elemento, depois calcular posição
+
       const el = document.getElementById(currentStep.targetId);
       if (el) {
         el.scrollIntoView({ behavior: "smooth", block: "center" });
-        // Aguardar o scroll terminar antes de calcular a posição
-        setTimeout(calculatePosition, 400);
+        setTimeout(calculatePosition, 500);
       } else {
         calculatePosition();
       }
     } else {
       onFocus?.(null);
       setTooltipPos(null);
+      setSpotlightRect(null);
     }
-  }, [currentIndex, isOpen, calculatePosition, onFocus, onReveal]);
+  }, [currentIndex, isOpen, pathname, calculatePosition, onFocus, onReveal, currentStep, router]);
 
-  // Recalcular ao redimensionar
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleResize = () => calculatePosition();
-    window.addEventListener("resize", handleResize);
-    window.addEventListener("scroll", handleResize, true);
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      window.removeEventListener("scroll", handleResize, true);
-    };
-  }, [isOpen, calculatePosition]);
-
-  // Reset ao fechar
   useEffect(() => {
     if (!isOpen) {
-      setCurrentIndex(0);
+      setInternalIndex(0);
       setRevealedIds([]);
       setTooltipPos(null);
+      setSpotlightRect(null);
     }
   }, [isOpen]);
 
@@ -153,93 +206,136 @@ export function GuidedTourOverlay({ steps, onComplete, onReveal, onFocus, isOpen
   };
 
   const handleNext = () => {
+    // Executar ação customizada via evento global
+    if (currentStep.customAction) {
+      window.dispatchEvent(new CustomEvent('tour-action', { detail: currentStep.customAction }));
+    }
+
     if (currentStep.action) currentStep.action();
-    if (currentIndex < steps.length - 1) {
-      setCurrentIndex(prev => prev + 1);
+    
+    if (propsOnNext) {
+      propsOnNext();
+    } else if (propsSteps) {
+      // Controle interno para componente isolado
+      if (internalIndex < steps.length - 1) {
+        setInternalIndex(prev => prev + 1);
+      } else {
+        propsOnComplete?.();
+      }
     } else {
-      // Revelar tudo no final
-      const allIds = steps.map(s => s.targetId).filter(Boolean) as string[];
-      onReveal?.(allIds);
-      onComplete();
+      // Controle via Store para Tour Global
+      store.nextStep();
+    }
+  };
+
+  const handleComplete = () => {
+    if (propsOnComplete) {
+      propsOnComplete();
+    } else {
+      store.endTour();
     }
   };
 
   if (!isOpen) return null;
 
-  // Estilo dinâmico do tooltip
-  const tooltipStyle: React.CSSProperties = tooltipPos
-    ? {
-        position: 'fixed',
-        top: tooltipPos.top,
-        left: tooltipPos.left,
-      }
-    : {}; // Centralização será feita via FlexBox no wrapper para não conflitar com Framer Motion
-
   return (
-    <div className="fixed inset-0 z-[100] pointer-events-none">
-      {/* Semi-transparent overlay (very light) */}
-      <div 
-        className="absolute inset-0 bg-black/10 pointer-events-auto"
-        onClick={() => {}} 
-      />
+    <div className="fixed inset-0 z-[1000] pointer-events-none">
+      {/* Spotlight Overlay with SVG Mask */}
+      <svg className="absolute inset-0 w-full h-full pointer-events-auto">
+        <defs>
+          <mask id="spotlight-mask">
+            <rect x="0" y="0" width="100%" height="100%" fill="white" />
+            {spotlightRect && (
+              <motion.rect
+                initial={false}
+                animate={{
+                  x: spotlightRect.x,
+                  y: spotlightRect.y,
+                  width: spotlightRect.width,
+                  height: spotlightRect.height,
+                  rx: spotlightRect.rx
+                }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                fill="black"
+              />
+            )}
+          </mask>
+        </defs>
+        <rect 
+          x="0" 
+          y="0" 
+          width="100%" 
+          height="100%" 
+          fill="rgba(0, 0, 0, 0.4)" 
+          mask="url(#spotlight-mask)"
+          className="backdrop-blur-[8px]"
+        />
+      </svg>
 
-      {/* Wrapper de posicionamento flex para quando não há targetId */}
-      <div className={!tooltipPos ? "absolute inset-0 flex items-center justify-center pointer-events-none z-[101]" : "pointer-events-none z-[101]"}>
-         {/* Narrative Dialog Box — posicionado ao lado do card */}
+      <div className={!tooltipPos ? "absolute inset-0 flex items-center justify-center pointer-events-none z-[1001]" : "pointer-events-none z-[1001]"}>
          <AnimatePresence mode="wait">
-           <motion.div
-             ref={tooltipRef}
-             key={currentIndex}
-             initial={{ opacity: 0, y: 20, scale: 0.95 }}
-             animate={{ opacity: 1, y: 0, scale: 1 }}
-             exit={{ opacity: 0, y: -20, scale: 0.95 }}
-             transition={{ duration: 0.5, ease: "easeOut" }}
-             className="pointer-events-auto w-full max-w-md p-8 bg-[var(--bg-primary)]/95 backdrop-blur-2xl border border-[var(--border-primary)] rounded-[2.5rem] shadow-[0_32px_64px_rgba(0,0,0,0.3)] flex flex-col gap-6"
-             style={tooltipStyle}
-           >
-          {/* Header / Narrator Controls */}
-          <div className="flex items-center justify-between border-b border-[var(--border-primary)] pb-4">
-             <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-pink-500/20 flex items-center justify-center text-pink-400 cursor-pointer">
-                   {isNarrating ? <Volume2 className="w-4 h-4 animate-pulse" /> : <Play className="w-4 h-4" onClick={narrate} />}
-                </div>
-                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)]">BPlen Narrator</span>
-             </div>
-          </div>
+            <motion.div
+              ref={tooltipRef}
+              key={currentIndex}
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ 
+                opacity: 1, 
+                y: 0, 
+                scale: 1,
+                top: tooltipPos?.top,
+                left: tooltipPos?.left,
+                position: tooltipPos ? 'fixed' : 'relative'
+              }}
+              exit={{ opacity: 0, y: -20, scale: 0.95 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+              className="pointer-events-auto w-full max-w-md p-8 bg-[var(--bg-primary)]/90 backdrop-blur-3xl border border-[var(--border-primary)] rounded-[2.5rem] shadow-[0_32px_64px_rgba(0,0,0,0.4)] flex flex-col gap-6"
+            >
+              <div className="flex items-center justify-between border-b border-[var(--border-primary)] pb-4">
+                 <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-pink-500/20 flex items-center justify-center text-pink-400 cursor-pointer hover:bg-pink-500/30 transition-colors">
+                       {isNarrating ? <Volume2 className="w-4 h-4 animate-pulse" /> : <Play className="w-4 h-4" onClick={narrate} />}
+                    </div>
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)]">BPlen Narrator</span>
+                 </div>
+                 <button 
+                  onClick={handleComplete}
+                  className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)] hover:text-pink-500 transition-colors"
+                 >
+                  Pular Tour
+                 </button>
+              </div>
 
-          {/* Content */}
-          <div className="min-h-[80px]">
-             {currentStep.title && (
-               <h4 className="text-xl font-black text-[var(--text-primary)] mb-2 tracking-tight">{interpolate(currentStep.title)}</h4>
-             )}
-             <div className="text-sm md:text-base text-[var(--text-muted)] leading-relaxed italic">
-                <TypedText 
-                  text={interpolate(currentStep.content)} 
-                  speed={25} 
-                />
-             </div>
-          </div>
+              <div className="min-h-[80px]">
+                 {currentStep.title && (
+                   <h4 className="text-xl font-black text-[var(--text-primary)] mb-2 tracking-tight">{interpolate(currentStep.title)}</h4>
+                 )}
+                 <div className="text-sm md:text-base text-[var(--text-muted)] leading-relaxed italic">
+                    <TypedText 
+                      text={interpolate(currentStep.content)} 
+                      speed={25} 
+                    />
+                 </div>
+              </div>
 
-          {/* Footer / Progression */}
-          <div className="flex items-center justify-between pt-4">
-             <div className="flex gap-1.5">
-                {steps.map((_, i) => (
-                  <div 
-                     key={i} 
-                     className={`h-1.5 rounded-full transition-all duration-500 ${i === currentIndex ? "w-8 bg-pink-500" : i < currentIndex ? "w-3 bg-pink-500/40" : "w-1.5 bg-[var(--text-muted)]/20"}`}
-                  />
-                ))}
-             </div>
-             <button 
-                onClick={handleNext}
-                className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-[var(--text-primary)] text-[var(--bg-primary)] text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl max-w-[280px] text-center leading-tight"
-             >
-                {currentStep.buttonLabel || (currentIndex === steps.length - 1 ? "Começar Jornada" : "Entendi")}
-                <ChevronRight size={14} className="shrink-0" />
-             </button>
-          </div>
-        </motion.div>
-      </AnimatePresence>
+              <div className="flex items-center justify-between pt-4">
+                 <div className="flex gap-1.5">
+                    {steps.map((_, i) => (
+                      <div 
+                         key={i} 
+                         className={`h-1.5 rounded-full transition-all duration-500 ${i === currentIndex ? "w-8 bg-pink-500" : i < currentIndex ? "w-3 bg-pink-500/40" : "w-1.5 bg-[var(--text-muted)]/20"}`}
+                      />
+                    ))}
+                 </div>
+                 <button 
+                    onClick={handleNext}
+                    className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-[var(--text-primary)] text-[var(--bg-primary)] text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl max-w-[280px] text-center leading-tight"
+                 >
+                    {currentStep.buttonLabel || (currentIndex === steps.length - 1 ? "Finalizar" : "Entendi")}
+                    <ChevronRight size={14} className="shrink-0" />
+                 </button>
+              </div>
+            </motion.div>
+         </AnimatePresence>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import { TourStep } from "@/components/shared/GuidedTourOverlay";
 
-export const onboardingTourSteps: TourStep[] = [
+export const memberOnboardingSteps: TourStep[] = [
   {
     title: "Boas-vindas a Área de Membro da BPlen HUB.",
     content: "{User_Nickname}, esse é o novo espaço para você gerenciar o desenvolvimento da sua carreira profissional. Nos próximos segundos, vou te guiar pelos módulos mais importantes para você se ambientar e aproveitar ao máximo cada recurso disponível!",
@@ -30,7 +30,6 @@ export const onboardingTourSteps: TourStep[] = [
     content: "Nesta área, organizaremos os resultados das suas análises comportamentais. Cada assessment (como DISC e Gestão do Tempo) contribuirá para o melhor planejamento e desenvolvimento do seu perfil profissional.",
     buttonLabel: "Espero descobrir meu perfil profissional logo! Me leve para o próximo módulo."
   },
-
   {
     targetId: "hub-etapa-checkin",
     title: "Trilha de Checkpoints",
@@ -46,6 +45,6 @@ export const onboardingTourSteps: TourStep[] = [
   {
     title: "Tour Concluído!",
     content: "{User_Nickname}, parabéns! Você está pronto para dar o seu primeiro passo oficial como Membro BPlen. Basta clicar abaixo para encerrar nosso guia e iniciar a sua jornada.",
-    buttonLabel: "Finalizar Tour Mágico"
+    buttonLabel: "Finalizar Tour"
   }
 ];

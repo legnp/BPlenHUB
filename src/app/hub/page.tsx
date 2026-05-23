@@ -9,7 +9,7 @@ import { SurveyEngine } from "@/components/forms/SurveyEngine";
 import { welcomeSurveyConfig } from "@/config/surveys/welcome";
 import { GoogleLoginButton } from "@/components/auth/google-login-button";
 import { useTourStore } from "@/store/tour-store";
-import { onboardingTourConfig } from "@/config/tours/onboarding-tour";
+import { hubOnboardingSteps } from "@/config/tour/hub-onboarding";
 import { HubHomeView } from "@/components/hub/HubHomeView";
 
 export default function HubPage() {
@@ -62,7 +62,7 @@ export default function HubPage() {
     if (testTour === "onboarding_tour") {
       // Pequeno atraso para garantir que os elementos do HubHomeView estejam montados
       setTimeout(() => {
-        startTour("onboarding_tour", onboardingTourConfig);
+        startTour("onboarding_tour", hubOnboardingSteps);
         // Limpar a URL sem disparar navegação pesada
         window.history.replaceState({}, '', '/hub');
       }, 1000);
@@ -78,7 +78,7 @@ export default function HubPage() {
   }
 
   if (user && hasCompletedSurvey === false) {
-    // Preparar Configuração Dinâmica para a WelcomeSurvey (Institucional 🧬)
+    // Preparar Configuração Dinâmica para a WelcomeSurvey (Institucional)
     const displayName = user.displayName || "Membro";
     const firstName = displayName.split(" ")[0];
     
@@ -101,7 +101,7 @@ export default function HubPage() {
             userUid={user.uid}
             onComplete={(mat, responses) => {
               if (responses?.wants_tour?.includes("Sim")) {
-                useTourStore.getState().startTour("onboarding_tour", onboardingTourConfig);
+                useTourStore.getState().startTour("onboarding_tour", hubOnboardingSteps);
               }
               setHasCompletedSurvey(true);
             }}

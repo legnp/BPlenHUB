@@ -1,27 +1,15 @@
 import { create } from 'zustand';
-
-export interface TourStepConfig {
-  targetId?: string;
-  route: string; // Rota necessária para este passo (ex: "/hub", "/hub/profile_settings")
-  title?: string;
-  content: string;
-  buttonLabel?: string;
-  // Ação customizada a ser executada ANTES ou DURANTE o passo.
-  // Ex: "open_social_menu", "reveal_item_1", etc.
-  customAction?: string; 
-  placement?: 'right' | 'left' | 'top' | 'bottom' | 'center';
-  gap?: number;
-}
+import { TourStep } from '@/components/shared/GuidedTourOverlay';
 
 interface TourState {
   isActive: boolean;
   tourId: string | null;
-  steps: TourStepConfig[];
+  steps: TourStep[];
   currentIndex: number;
   isNavigating: boolean;
   
   // Ações
-  startTour: (tourId: string, steps: TourStepConfig[]) => void;
+  startTour: (tourId: string, steps: TourStep[]) => void;
   endTour: () => void;
   nextStep: () => void;
   setNavigating: (navigating: boolean) => void;
