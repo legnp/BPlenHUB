@@ -69,14 +69,12 @@ export function GuidedTourOverlay({
   const calculatePosition = useCallback(() => {
     if (!currentStep?.targetId) {
       setTooltipPos(null);
-      setSpotlightRect(null);
       return;
     }
 
     const el = document.getElementById(currentStep.targetId);
     if (!el) {
       setTooltipPos(null);
-      setSpotlightRect(null);
       return;
     }
 
@@ -85,16 +83,6 @@ export function GuidedTourOverlay({
     const gap = currentStep.gap || 24;
     const viewportW = window.innerWidth;
     const viewportH = window.innerHeight;
-
-    // Spotlight Rect with padding
-    const padding = 8;
-    setSpotlightRect({
-      x: rect.left - padding,
-      y: rect.top - padding,
-      width: rect.width + (padding * 2),
-      height: rect.height + (padding * 2),
-      rx: 24 // BPlen standard radius
-    });
 
     const spaceRight = viewportW - rect.right;
     const spaceLeft = rect.left;
@@ -143,7 +131,7 @@ export function GuidedTourOverlay({
     observer.observe(target);
     observer.observe(document.body);
 
-    const interval = setInterval(calculatePosition, 500); // Polling as fallback for some animations
+    const interval = setInterval(calculatePosition, 500);
 
     return () => {
       observer.disconnect();
@@ -151,8 +139,14 @@ export function GuidedTourOverlay({
     };
   }, [isOpen, currentStep?.targetId, calculatePosition]);
 
+  // Entrance actions and individual blur handling
   useEffect(() => {
     if (!isOpen) return;
+
+    // Entrance custom action
+    if (currentStep?.customAction) {
+      window.dispatchEvent(new CustomEvent('tour-action', { detail: currentStep.customAction }));
+    }
 
     // Handle Route Navigation
     if (currentStep?.route && pathname !== currentStep.route) {
@@ -178,8 +172,53 @@ export function GuidedTourOverlay({
     } else {
       onFocus?.(null);
       setTooltipPos(null);
-      setSpotlightRect(null);
     }
+
+    // Apply individual styles like the Member Area tour
+    const elementsToBlur = [
+      document.getElementById("hub-global-header"),
+      document.getElementById("hub-social-menu-area"),
+      document.getElementById("hub-journey-top-nav"),
+      document.getElementById("hub-assessments"),
+      document.getElementById("hub-agenda"),
+      document.getElementById("hub-carreira"),
+      document.getElementById("ultimos-conteudos"),
+      document.getElementById("primeiros-passos-acesso"),
+      document.getElementById("jornada-membro-card"),
+      document.getElementById("checkpoints-area"),
+      document.getElementById("hub-support-btn"),
+      document.getElementById("theme-switcher-btn"),
+      document.getElementById("tour-profile-photo")?.parentElement
+    ].filter(Boolean) as HTMLElement[];
+
+    elementsToBlur.forEach(el => {
+      const isTarget = el.id === currentStep?.targetId || el.contains(document.getElementById(currentStep?.targetId || ""));
+      if (isTarget) {
+        el.style.filter = "none";
+        el.style.zIndex = "1002";
+        el.style.position = "relative";
+        el.style.pointerEvents = "auto";
+        el.style.boxShadow = "0 0 80px rgba(255, 0, 128, 0.4)";
+        el.style.transition = "all 0.6s ease-out";
+      } else {
+        el.style.filter = "blur(12px)";
+        el.style.opacity = "0.5";
+        el.style.pointerEvents = "none";
+        el.style.zIndex = "1";
+        el.style.boxShadow = "none";
+        el.style.transition = "all 0.6s ease-out";
+      }
+    });
+
+    return () => {
+      elementsToBlur.forEach(el => {
+        el.style.filter = "";
+        el.style.opacity = "";
+        el.style.pointerEvents = "";
+        el.style.zIndex = "";
+        el.style.boxShadow = "";
+      });
+    };
   }, [currentIndex, isOpen, pathname, calculatePosition, onFocus, onReveal, currentStep, router]);
 
   useEffect(() => {
@@ -187,7 +226,6 @@ export function GuidedTourOverlay({
       setInternalIndex(0);
       setRevealedIds([]);
       setTooltipPos(null);
-      setSpotlightRect(null);
     }
   }, [isOpen]);
 
@@ -239,37 +277,8 @@ export function GuidedTourOverlay({
 
   return (
     <div className="fixed inset-0 z-[1000] pointer-events-none">
-      {/* Spotlight Overlay with SVG Mask */}
-      <svg className="absolute inset-0 w-full h-full pointer-events-auto">
-        <defs>
-          <mask id="spotlight-mask">
-            <rect x="0" y="0" width="100%" height="100%" fill="white" />
-            {spotlightRect && (
-              <motion.rect
-                initial={false}
-                animate={{
-                  x: spotlightRect.x,
-                  y: spotlightRect.y,
-                  width: spotlightRect.width,
-                  height: spotlightRect.height,
-                  rx: spotlightRect.rx
-                }}
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                fill="black"
-              />
-            )}
-          </mask>
-        </defs>
-        <rect 
-          x="0" 
-          y="0" 
-          width="100%" 
-          height="100%" 
-          fill="rgba(0, 0, 0, 0.4)" 
-          mask="url(#spotlight-mask)"
-          className="backdrop-blur-[8px]"
-        />
-      </svg>
+      {/* Background Overlay */}
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-[4px] pointer-events-none" />
 
       <div className={!tooltipPos ? "absolute inset-0 flex items-center justify-center pointer-events-none z-[1001]" : "pointer-events-none z-[1001]"}>
          <AnimatePresence mode="wait">

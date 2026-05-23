@@ -17,7 +17,6 @@ export const hubOnboardingSteps: TourStep[] = [
     title: "Áreas do Hub",
     content: "Aqui você encontra o Início, a Área de Membro, Seus Contratos, Configurações e o Networking BPlen. (Nós vamos te guiar por algumas dessas funções logo a seguir!).",
     buttonLabel: "Entendi",
-    customAction: "reveal_menu_items",
   },
   {
     route: "/hub/profile_settings",

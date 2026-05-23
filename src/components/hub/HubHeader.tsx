@@ -63,16 +63,7 @@ export function HubHeader() {
       if (e.detail === 'open_social_menu') {
         setIsSocialMenuOpen(true);
         setIsThemeMenuOpen(false);
-        setRevealedIndex(-1); // Esconde todos para a revelação futura
-      } else if (e.detail === 'reveal_menu_items') {
-        // Revelação progressiva
-        let current = 0;
-        const totalItems = 5; // 5 links
-        const interval = setInterval(() => {
-          setRevealedIndex(current);
-          current++;
-          if (current >= totalItems) clearInterval(interval);
-        }, 800);
+        setRevealedIndex(null); // null mostra tudo imediatamente
       }
     };
     window.addEventListener('tour-action', handleTourAction as EventListener);
