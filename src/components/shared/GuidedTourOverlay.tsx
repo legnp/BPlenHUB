@@ -135,17 +135,35 @@ export function GuidedTourOverlay({
   useLayoutEffect(() => {
     if (!isOpen || !currentStep?.targetId) return;
     
-    const target = document.getElementById(currentStep.targetId);
-    if (!target) return;
+    // Tentativa repetida de encontrar o elemento (importante para carregamentos lentos ou trocas de página)
+    let retryCount = 0;
+    const maxRetries = 10;
+    
+    const findAndObserve = () => {
+      const target = document.getElementById(currentStep.targetId!);
+      if (!target) {
+        if (retryCount < maxRetries) {
+          retryCount++;
+          setTimeout(findAndObserve, 200);
+        }
+        return;
+      }
 
-    const observer = new ResizeObserver(() => calculatePosition());
-    observer.observe(target);
-    observer.observe(document.body);
+      const observer = new ResizeObserver(() => calculatePosition());
+      observer.observe(target);
+      observer.observe(document.body);
+      
+      // Forçar cálculo inicial
+      calculatePosition();
 
+      return observer;
+    };
+
+    const observer = findAndObserve();
     const interval = setInterval(calculatePosition, 500);
 
     return () => {
-      observer.disconnect();
+      if (observer) observer.disconnect();
       clearInterval(interval);
     };
   }, [isOpen, currentStep?.targetId, calculatePosition]);
@@ -244,48 +262,45 @@ export function GuidedTourOverlay({
 
   return (
     <div className="fixed inset-0 z-[1000] pointer-events-none">
-      {/* Dynamic Hole-Clipping Overlay */}
-      <div 
-        className="absolute inset-0 bg-black/40 backdrop-blur-[12px] pointer-events-none transition-all duration-500"
-        style={{
-          clipPath: holeRect ? `polygon(
-            0% 0%, 
-            0% 100%, 
-            ${holeRect.left}px 100%, 
-            ${holeRect.left}px ${holeRect.top}px, 
-            ${holeRect.left + holeRect.width}px ${holeRect.top}px, 
-            ${holeRect.left + holeRect.width}px ${holeRect.top + holeRect.height}px, 
-            ${holeRect.left}px ${holeRect.top + holeRect.height}px, 
-            ${holeRect.left}px 100%, 
-            100% 100%, 
-            100% 0%
-          )` : 'none',
-          WebkitClipPath: holeRect ? `polygon(
-            0% 0%, 
-            0% 100%, 
-            ${holeRect.left}px 100%, 
-            ${holeRect.left}px ${holeRect.top}px, 
-            ${holeRect.left + holeRect.width}px ${holeRect.top}px, 
-            ${holeRect.left + holeRect.width}px ${holeRect.top + holeRect.height}px, 
-            ${holeRect.left}px ${holeRect.top + holeRect.height}px, 
-            ${holeRect.left}px 100%, 
-            100% 100%, 
-            100% 0%
-          )` : 'none'
-        }}
-      />
-
-      {/* Glow Mask synchronized with the hole */}
+      {/* Dynamic Hole Overlay using Huge Borders (Best for Backdrop-Blur + Rounded Corners) */}
       {holeRect && (
         <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="fixed pointer-events-none z-[999] rounded-[2.5rem] blur-2xl"
-          style={{
+          initial={false}
+          animate={{
             top: holeRect.top,
             left: holeRect.left,
             width: holeRect.width,
             height: holeRect.height,
+            borderTopWidth: Math.max(0, holeRect.top),
+            borderLeftWidth: Math.max(0, holeRect.left),
+            borderRightWidth: Math.max(0, window.innerWidth - (holeRect.left + holeRect.width)),
+            borderBottomWidth: Math.max(0, window.innerHeight - (holeRect.top + holeRect.height)),
+          }}
+          transition={{ duration: 0.5, ease: "easeInOut" }}
+          className="fixed inset-0 pointer-events-none border-[rgba(0,0,0,0.4)] backdrop-blur-[12px] z-[998]"
+          style={{
+            borderStyle: 'solid',
+            boxSizing: 'content-box',
+            marginLeft: -holeRect.left,
+            marginTop: -holeRect.top,
+            borderRadius: '32px', // Arredondamento solicitado
+          }}
+        />
+      )}
+
+      {/* Glow Mask synchronized with the hole */}
+      {holeRect && (
+        <motion.div
+          initial={false}
+          animate={{
+            top: holeRect.top,
+            left: holeRect.left,
+            width: holeRect.width,
+            height: holeRect.height,
+          }}
+          transition={{ duration: 0.5, ease: "easeInOut" }}
+          className="fixed pointer-events-none z-[999] rounded-[2.5rem] blur-2xl"
+          style={{
             boxShadow: "0 0 100px rgba(255, 0, 128, 0.4)",
             border: "2px solid rgba(255, 255, 255, 0.1)"
           }}

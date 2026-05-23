@@ -27,6 +27,13 @@ export const hubOnboardingSteps: TourStep[] = [
   },
   {
     route: "/hub",
+    targetId: "jornada-membro-card",
+    title: "Jornada BPlen",
+    content: "Este espaço é habilitado especialmente para membros BPlen que contratam serviços. Mas a etapa de Primeiros Passos está liberada para que você conheça como funciona a plataforma!",
+    buttonLabel: "Vamos lá",
+  },
+  {
+    route: "/hub",
     targetId: "ultimos-conteudos",
     title: "Novidades Quentinhos",
     content: "Voltando para o Hub... Neste bloco você sempre terá acesso aos conteúdos mais recentes da BPlen, para nunca perder nenhuma atualização importante.",
@@ -40,15 +47,8 @@ export const hubOnboardingSteps: TourStep[] = [
     buttonLabel: "Legal",
   },
   {
-    route: "/hub",
-    targetId: "jornada-membro-card",
-    title: "Jornada BPlen",
-    content: "Este espaço é habilitado especialmente para membros BPlen que contratam serviços. Mas a etapa de Primeiros Passos está liberada para que você conheça como funciona a plataforma!",
-    buttonLabel: "Vamos lá",
-  },
-  {
     route: "/hub/primeiros_passos",
-    targetId: "checkpoints-area",
+    targetId: "hub-primeiros-passos-nav",
     title: "Trilha de Conhecimento",
     content: "Dentro dos Primeiros Passos, o conteúdo é dividido por Checkpoints. É aqui que os materiais, vídeos e desafios são apresentados para você evoluir passo a passo.",
     buttonLabel: "Entendi",
