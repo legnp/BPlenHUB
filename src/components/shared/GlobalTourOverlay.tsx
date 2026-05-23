@@ -53,12 +53,12 @@ export function GlobalTourOverlay() {
 
     let left: number;
     let top: number;
-    let placement: 'right' | 'left' | 'center' | 'top' | 'bottom';
+    let placement: 'right' | 'left' | 'center' | 'top' | 'bottom' = 'center';
 
     // 1. Determinar Orientação (Honrar preferência se possível)
     const preferred = currentStep.placement;
 
-    if (preferred === 'bottom' || (!preferred && spaceBottom > 350 && placement !== 'right' && placement !== 'left')) {
+    if (preferred === 'bottom' || (!preferred && spaceBottom > 350)) {
       left = Math.max(16, rect.left + rect.width / 2 - tooltipWidth / 2);
       if (left + tooltipWidth > viewportW) left = viewportW - tooltipWidth - 16;
       top = rect.bottom + gap;
