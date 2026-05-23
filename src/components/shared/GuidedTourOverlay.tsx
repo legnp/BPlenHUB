@@ -260,33 +260,45 @@ export function GuidedTourOverlay({
 
   if (!isOpen) return null;
 
+  // Memoize the SVG Mask to cut a rounded hole in the backdrop-blur
+  const maskStyle = useMemo(() => {
+    if (!holeRect || typeof window === 'undefined') return {};
+    
+    // We use a high-resolution mask to avoid pixelation
+    const r = 32; // Corner radius
+    const svg = `
+      <svg xmlns='http://www.w3.org/2000/svg' width='${window.innerWidth}' height='${window.innerHeight}'>
+        <defs>
+          <mask id='m'>
+            <rect width='100%' height='100%' fill='white'/>
+            <rect x='${holeRect.left}' y='${holeRect.top}' width='${holeRect.width}' height='${holeRect.height}' rx='${r}' fill='black'/>
+          </mask>
+        </defs>
+        <rect width='100%' height='100%' mask='url(#m)' fill='black'/>
+      </svg>
+    `.replace(/\s+/g, ' ');
+
+    const maskImage = `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+    
+    return {
+      maskImage,
+      WebkitMaskImage: maskImage,
+      maskSize: '100% 100%',
+      WebkitMaskSize: '100% 100%',
+      maskRepeat: 'no-repeat',
+      WebkitMaskRepeat: 'no-repeat'
+    };
+  }, [holeRect]);
+
   return (
     <div className="fixed inset-0 z-[1000] pointer-events-none">
-      {/* Dynamic Hole Overlay using Huge Borders (Best for Backdrop-Blur + Rounded Corners) */}
-      {holeRect && (
-        <motion.div
-          initial={false}
-          animate={{
-            top: holeRect.top,
-            left: holeRect.left,
-            width: holeRect.width,
-            height: holeRect.height,
-            borderTopWidth: Math.max(0, holeRect.top),
-            borderLeftWidth: Math.max(0, holeRect.left),
-            borderRightWidth: Math.max(0, window.innerWidth - (holeRect.left + holeRect.width)),
-            borderBottomWidth: Math.max(0, window.innerHeight - (holeRect.top + holeRect.height)),
-          }}
-          transition={{ duration: 0.5, ease: "easeInOut" }}
-          className="fixed inset-0 pointer-events-none border-[rgba(0,0,0,0.4)] backdrop-blur-[12px] z-[998]"
-          style={{
-            borderStyle: 'solid',
-            boxSizing: 'content-box',
-            marginLeft: -holeRect.left,
-            marginTop: -holeRect.top,
-            borderRadius: '32px', // Arredondamento solicitado
-          }}
-        />
-      )}
+      {/* Dynamic Hole Overlay using Masking for perfect Rounded Corners + Blur */}
+      <motion.div
+        initial={false}
+        animate={{ opacity: holeRect ? 1 : 0 }}
+        className="fixed inset-0 bg-black/40 backdrop-blur-[12px] z-[998] pointer-events-none transition-opacity duration-500"
+        style={maskStyle}
+      />
 
       {/* Glow Mask synchronized with the hole */}
       {holeRect && (
@@ -299,7 +311,7 @@ export function GuidedTourOverlay({
             height: holeRect.height,
           }}
           transition={{ duration: 0.5, ease: "easeInOut" }}
-          className="fixed pointer-events-none z-[999] rounded-[2.5rem] blur-2xl"
+          className="fixed pointer-events-none z-[999] rounded-[2rem] blur-2xl"
           style={{
             boxShadow: "0 0 100px rgba(255, 0, 128, 0.4)",
             border: "2px solid rgba(255, 255, 255, 0.1)"
