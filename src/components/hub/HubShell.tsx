@@ -10,7 +10,7 @@ import { redirect } from "next/navigation";
 import { GuidedTourOverlay } from "@/components/shared/GuidedTourOverlay";
 
 /**
- * HUB SHELL — O Frame Institucional Client-Side 🧬
+ * HUB SHELL — O Frame Institucional Client-Side
  * Gerencia o tema e o cabeçalho privado.
  * Inclui os botões flutuantes de Suporte e WhatsApp.
  */
@@ -27,8 +27,6 @@ export function HubShell({ children }: { children: React.ReactNode }) {
   return (
     <div className={`min-h-screen flex flex-col transition-colors duration-500 ${theme !== 'light' ? `theme-${theme}` : ''}`}>
       <GuidedTourOverlay 
-        steps={[]} // Será preenchido via Store automaticamente
-        onComplete={() => {}} // Store já gerencia
         userName={user?.displayName?.split(" ")[0] || "Membro"}
       />
       <HubHeader />

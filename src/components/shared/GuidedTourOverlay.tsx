@@ -20,18 +20,18 @@ export interface TourStep {
 }
 
 interface GuidedTourOverlayProps {
-  steps: TourStep[];
-  onComplete: () => void;
+  steps?: TourStep[];
+  onComplete?: () => void;
   onReveal?: (revealedIds: string[]) => void;
   onFocus?: (targetId: string | null) => void;
-  isOpen: boolean;
+  isOpen?: boolean;
   userName?: string;
   currentStepIndex?: number;
   onNext?: () => void;
 }
 
 /**
- * BPlen Guided Labs — Unified Tour Engine
+ * BPlen HUB - Step Journey Engine
  * Spotlight-based navigation with smart positioning and route awareness.
  */
 export function GuidedTourOverlay({ 
@@ -49,9 +49,8 @@ export function GuidedTourOverlay({
   // Usar props se fornecidas, caso contrário usar store
   const steps = propsSteps || store.steps;
   const isOpen = propsIsOpen !== undefined ? propsIsOpen : store.isActive;
-  const currentIndex = propsIndex !== undefined ? propsIndex : (propsSteps ? internalIndex : store.currentIndex);
-  
   const [internalIndex, setInternalIndex] = useState(0);
+  const currentIndex = propsIndex !== undefined ? propsIndex : (propsSteps ? internalIndex : store.currentIndex);
   
   const [isNarrating, setIsNarrating] = useState(false);
   const [revealedIds, setRevealedIds] = useState<string[]>([]);
