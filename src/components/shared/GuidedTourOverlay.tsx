@@ -258,11 +258,9 @@ export function GuidedTourOverlay({
     }
   };
 
-  if (!isOpen) return null;
-
   // Memoize the SVG Mask to cut a rounded hole in the backdrop-blur
   const maskStyle = useMemo(() => {
-    if (!holeRect || typeof window === 'undefined') return {};
+    if (!isOpen || !holeRect || typeof window === 'undefined') return {};
     
     // We use a high-resolution mask to avoid pixelation
     const r = 32; // Corner radius
@@ -288,7 +286,9 @@ export function GuidedTourOverlay({
       maskRepeat: 'no-repeat',
       WebkitMaskRepeat: 'no-repeat'
     };
-  }, [holeRect]);
+  }, [isOpen, holeRect]);
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-[1000] pointer-events-none">
