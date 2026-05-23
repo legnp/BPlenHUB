@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuthContext } from "@/context/AuthContext";
+import { useSearchParams, useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { SurveyEngine } from "@/components/forms/SurveyEngine";
@@ -13,6 +14,9 @@ import { HubHomeView } from "@/components/hub/HubHomeView";
 
 export default function HubPage() {
   const { user, loading } = useAuthContext();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const startTour = useTourStore((state) => state.startTour);
   
   // Guard de Proteção Rígida (Soberania de Acesso)
   if (!user && !loading) return null;
@@ -51,6 +55,19 @@ export default function HubPage() {
 
     checkSurvey();
   }, [user]);
+
+  // Efeito Sandbox: Detectar Trigger de Tour via URL
+  useEffect(() => {
+    const testTour = searchParams.get("testTour");
+    if (testTour === "onboarding_tour") {
+      // Pequeno atraso para garantir que os elementos do HubHomeView estejam montados
+      setTimeout(() => {
+        startTour("onboarding_tour", onboardingTourConfig);
+        // Limpar a URL sem disparar navegação pesada
+        window.history.replaceState({}, '', '/hub');
+      }, 1000);
+    }
+  }, [searchParams, startTour]);
 
   if (loading || checkingSurvey) {
     return (

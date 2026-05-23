@@ -73,6 +73,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <NavLink href="/admin/users" icon={<Users size={18} />}>GESTÃO DE USUÁRIOS</NavLink>
           <NavLink href="/admin/forms" icon={<FileText size={18} />}>FORMULÁRIOS</NavLink>
           <NavLink href="/admin/pesquisas" icon={<LayoutDashboard size={18} />}>SURVEYS</NavLink>
+          <NavLink href="/admin/sandbox" icon={<FlaskConical size={18} />}>SANDBOX 🧬</NavLink>
         </nav>
 
         <div className="mt-auto pt-6 border-t border-[var(--border-primary)]/50">
