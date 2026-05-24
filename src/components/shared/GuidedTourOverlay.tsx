@@ -18,6 +18,8 @@ export interface TourStep {
   customAction?: string;
   placement?: 'right' | 'left' | 'top' | 'bottom' | 'center';
   gap?: number;
+  holePadding?: number;
+  holeRadius?: number;
 }
 
 interface GuidedTourOverlayProps {
@@ -90,7 +92,7 @@ export function GuidedTourOverlay({
     const viewportH = window.innerHeight;
 
     // Hole Rect with padding
-    const padding = 12;
+    const padding = currentStep.holePadding !== undefined ? currentStep.holePadding : 12;
     setHoleRect({
       top: rect.top - padding,
       left: rect.left - padding,
@@ -290,12 +292,16 @@ export function GuidedTourOverlay({
 
   // Memoize the SVG Mask to cut a rounded hole in the backdrop-blur
   const maskStyle = useMemo(() => {
-    if (!isOpen || !holeRect || typeof window === 'undefined') return {};
+    if (!holeRect || typeof window === 'undefined') return {};
+    
+    // Use client dimensions to avoid scrollbar shifts
+    const vw = document.documentElement.clientWidth;
+    const vh = document.documentElement.clientHeight;
     
     // We use a high-resolution mask to avoid pixelation
-    const r = 32; // Corner radius
+    const r = currentStep?.holeRadius !== undefined ? currentStep.holeRadius : 32;
     const svg = `
-      <svg xmlns='http://www.w3.org/2000/svg' width='${window.innerWidth}' height='${window.innerHeight}'>
+      <svg xmlns='http://www.w3.org/2000/svg' width='${vw}' height='${vh}' viewBox='0 0 ${vw} ${vh}'>
         <defs>
           <mask id='m'>
             <rect width='100%' height='100%' fill='white'/>
@@ -316,7 +322,7 @@ export function GuidedTourOverlay({
       maskRepeat: 'no-repeat',
       WebkitMaskRepeat: 'no-repeat'
     };
-  }, [isOpen, holeRect]);
+  }, [isOpen, holeRect, currentStep]);
 
   if (!isOpen) return null;
 

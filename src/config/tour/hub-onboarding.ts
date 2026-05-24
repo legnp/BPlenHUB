@@ -10,6 +10,8 @@ export const hubOnboardingSteps: TourStep[] = [
     customAction: "open_social_menu",
     placement: 'left',
     gap: 300,
+    holePadding: 16,
+    holeRadius: 60,
   },
   {
     route: "/hub",
@@ -17,6 +19,8 @@ export const hubOnboardingSteps: TourStep[] = [
     title: "Áreas do Hub",
     content: "Aqui você encontra os atalhos para navegar nas áreas do HUB, como: Início, a Área de Membro, Seus Contratos, Configurações e o Networking BPlen. \n\n(Nós vamos te guiar por algumas dessas funções logo a seguir!).",
     buttonLabel: "Entendi",
+    holePadding: 20,
+    holeRadius: 40,
   },
   {
     route: "/hub/profile_settings",
