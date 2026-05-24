@@ -104,8 +104,8 @@ export async function uploadProductCoverAction(formData: FormData) {
     // 🛡️ 1. Garantir Soberania de Visibilidade Pública
     await makeFilePublic(drive, result.id);
 
-    // 📸 2. Gerar URL de Imagem Direta (Formato Público e sem CORS)
-    const directUrl = `https://drive.google.com/uc?export=view&id=${result.id}`;
+    // 📸 2. Gerar URL de Imagem Direta (Formato Proxy Server-Side)
+    const directUrl = `/api/media/${result.id}`;
 
     // 🧬 3. Atualizar Firestore Imediatamente (Soberania Admin)
     if (productId) {

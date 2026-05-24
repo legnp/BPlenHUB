@@ -43,8 +43,8 @@ export async function updateProfileImageAction(matricula: string, base64Image: s
     // 5. Garantir Soberania de Visibilidade (Público para Leitura) 🔓
     await makeFilePublic(drive, result.id);
 
-    // 6. Gerar URL de Incorporação Direta (Formato Público e sem CORS) 📸
-    const directPhotoUrl = `https://drive.google.com/uc?export=view&id=${result.id}`;
+    // 6. Gerar URL de Incorporação Direta (Formato Proxy Server-Side) 📸
+    const directPhotoUrl = `/api/media/${result.id}`;
 
     // 7. Atualizar o Firestore do Membro via Admin SDK (Soberania de Dados) 🛡️
     const db = getAdminDb();
