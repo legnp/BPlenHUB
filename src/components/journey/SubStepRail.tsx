@@ -1,8 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { SubStepConfig } from "@/types/journey";
 import { cn } from "@/lib/utils";
+import { SequenceLockModal } from "./SequenceLockModal";
 
 interface SubStepRailProps {
   id?: string;
@@ -18,6 +19,22 @@ interface SubStepRailProps {
  * Linear rail for sub-stage progress.
  */
 export function SubStepRail({ id, style, substeps, currentSubStepId, completedSubStepIds, onSelectSubStep }: SubStepRailProps) {
+  const [sequenceLockModalOpen, setSequenceLockModalOpen] = useState(false);
+  const [prevSubStepTitle, setPrevSubStepTitle] = useState("");
+
+  const handleSelectSubStep = (idx: number) => {
+    const ss = substeps[idx];
+    const isLocked = idx > 0 && !completedSubStepIds.includes(substeps[idx - 1].id);
+
+    if (isLocked) {
+      setPrevSubStepTitle(substeps[idx - 1].title);
+      setSequenceLockModalOpen(true);
+      return;
+    }
+
+    onSelectSubStep(ss.id);
+  };
+
   return (
     <div id={id} style={style} className="flex flex-col gap-6 w-1/4 sm:w-[22%] shrink-0 pr-8 border-r border-[var(--border-primary)] border-dashed">
       <div className="flex flex-col gap-2">
@@ -29,11 +46,12 @@ export function SubStepRail({ id, style, substeps, currentSubStepId, completedSu
         {substeps.map((ss, idx) => {
           const isActive = ss.id === currentSubStepId;
           const isCompleted = completedSubStepIds.includes(ss.id);
+          const isLockedBySequence = idx > 0 && !completedSubStepIds.includes(substeps[idx - 1].id);
 
           return (
             <button
               key={ss.id}
-              onClick={() => onSelectSubStep(ss.id)}
+              onClick={() => handleSelectSubStep(idx)}
               className={cn(
                 "group relative flex items-start gap-5 p-4 text-left transition-all duration-500 rounded-3xl border",
                 // PRIORIDADE 1: Concluído e Selecionado (Verde Vibrante) 🟢✨
@@ -45,8 +63,11 @@ export function SubStepRail({ id, style, substeps, currentSubStepId, completedSu
                     // PRIORIDADE 3: Apenas Concluído (Verde Suave) ✅
                     : isCompleted
                       ? "bg-emerald-500/5 border-emerald-500/20 text-emerald-600/80"
-                      // PADRÃO: Pendente/Inativo ⏳
-                      : "bg-[var(--input-bg)]/30 border-transparent hover:border-[var(--border-primary)] opacity-40 hover:opacity-100"
+                      // PRIORIDADE 4: Travado pela Sequência (Farol Laranja Apagado) 🟠😶
+                      : isLockedBySequence
+                        ? "bg-amber-100/5 border-amber-400/20 opacity-60"
+                        // PADRÃO: Pendente/Inativo ⏳
+                        : "bg-[var(--input-bg)]/30 border-transparent hover:border-[var(--border-primary)] opacity-40 hover:opacity-100"
               )}
             >
               {/* Indicador Vertical Progressivo */}
@@ -55,14 +76,17 @@ export function SubStepRail({ id, style, substeps, currentSubStepId, completedSu
                   "w-2.5 h-2.5 rounded-full border-2 transition-all duration-700",
                   // Círculo Verde (Ativo ou Inativo)
                   isCompleted
-                    ? isActive 
-                      ? "bg-emerald-500 border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.5)]" 
-                      : "bg-emerald-500 border-emerald-500/40 shadow-[0_0_12px_rgba(16,185,129,0.2)]"
-                    // Círculo Tema (Ativo)
-                    : isActive
-                      ? "bg-[var(--accent-start)] border-[var(--accent-start)] shadow-[0_0_12px_var(--accent-start)]"
-                      // Círculo Oco (Pendente)
-                      : "bg-transparent border-[var(--text-muted)] opacity-30"
+                      ? isActive 
+                        ? "bg-emerald-500 border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.5)]" 
+                        : "bg-emerald-500 border-emerald-500/40 shadow-[0_0_12px_rgba(16,185,129,0.2)]"
+                      // Círculo Laranja Apagado (Bloqueado)
+                      : isLockedBySequence
+                        ? "bg-amber-400/30 border-amber-400/10"
+                        // Círculo Tema (Ativo)
+                        : isActive
+                          ? "bg-[var(--accent-start)] border-[var(--accent-start)] shadow-[0_0_12px_var(--accent-start)]"
+                          // Círculo Oco (Pendente)
+                          : "bg-transparent border-[var(--text-muted)] opacity-30"
                 )} />
                 {idx < substeps.length - 1 && (
                   <div className={cn(
@@ -102,6 +126,13 @@ export function SubStepRail({ id, style, substeps, currentSubStepId, completedSu
           );
         })}
       </div>
+
+      <SequenceLockModal 
+        isOpen={sequenceLockModalOpen}
+        onClose={() => setSequenceLockModalOpen(false)}
+        prevStageTitle={prevSubStepTitle}
+        type="parada"
+      />
     </div>
   );
 }
