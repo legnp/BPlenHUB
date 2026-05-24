@@ -17,6 +17,8 @@ import { useAuthContext } from "@/context/AuthContext";
 import { updateProfileImageAction, deleteProfileImageAction } from "@/actions/profile";
 import { getCroppedImg, blobToBase64 } from "@/lib/image-utils";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
+import { useTourStore } from "@/store/tour-store";
 
 /**
  * BPlen HUB — ProfileIdentityTab 🧬📸
@@ -33,6 +35,9 @@ export function ProfileIdentityTab() {
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+  
+  const { isActive, steps, currentIndex } = useTourStore();
+  const isTourStepActive = isActive && steps[currentIndex]?.targetId === "tour-profile-photo";
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -163,13 +168,23 @@ export function ProfileIdentityTab() {
             </div>
 
             <div className="flex flex-wrap gap-4 justify-center md:justify-start">
-              <button 
+              <motion.button 
+                animate={isTourStepActive ? { 
+                  scale: [1, 1.05, 1],
+                  backgroundColor: ["#ffffff", "#fbcfe8", "#ffffff"],
+                  boxShadow: ["0 0 0px rgba(236, 72, 153, 0)", "0 0 20px rgba(236, 72, 153, 0.4)", "0 0 0px rgba(236, 72, 153, 0)"]
+                } : {}}
+                transition={isTourStepActive ? { 
+                  repeat: Infinity, 
+                  duration: 2,
+                  ease: "easeInOut"
+                } : {}}
                 onClick={() => fileInputRef.current?.click()}
                 className="px-6 py-2.5 bg-white text-black rounded-xl text-[10px] font-black uppercase tracking-widest hover:opacity-80 transition-all flex items-center gap-2"
               >
                 <Upload size={14} />
                 {photoUrl ? "Alterar Foto" : "Carregar Foto"}
-              </button>
+              </motion.button>
               
               {photoUrl && (
                 <button 

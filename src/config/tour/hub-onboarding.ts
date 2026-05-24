@@ -9,7 +9,7 @@ export const hubOnboardingSteps: TourStep[] = [
     buttonLabel: "Ver Menu",
     customAction: "open_social_menu",
     placement: 'left',
-    gap: 300,
+    gap: 40,
     holePadding: 16,
     holeRadius: 60,
   },
