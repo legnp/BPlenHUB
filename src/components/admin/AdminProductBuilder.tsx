@@ -356,33 +356,17 @@ function SheetForm({ product, setProduct }: any) {
              />
           </div>
           <div className="space-y-2">
-             <label className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)]">Capa do Serviço (Drive)</label>
-             <div className="flex gap-2">
-                <input 
-                  type="text" 
-                  placeholder="Link gerado automaticamente..."
-                  readOnly
-                  className="flex-1 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-2xl p-4 text-[10px] font-mono opacity-80" 
-                  value={product.sheet.coverImage}
-                />
-                <div className="relative">
-                   <button 
-                     type="button"
-                     disabled={isUploading}
-                     className="h-full px-6 bg-[var(--accent-primary)] text-white rounded-2xl text-[9px] font-black uppercase tracking-widest disabled:opacity-50 hover:scale-105 transition-all"
-                   >
-                     {isUploading ? "Enviando..." : uploadStatus || "Upload"}
-                   </button>
-                   <input 
-                     type="file" 
-                     className="absolute inset-0 opacity-0 cursor-pointer" 
-                     accept="image/*"
-                     onChange={handleFileChange}
-                     disabled={isUploading}
-                   />
-                </div>
-             </div>
-             <p className="text-[7px] text-[var(--text-muted)] uppercase tracking-widest italic px-2">A foto será salva na pasta do serviço no Google Drive.</p>
+             <label className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)]">Capa do Serviço (Local public/services-img/)</label>
+             <input 
+               type="text" 
+               placeholder="Ex: /services-img/meu-servico.webp"
+               className="w-full bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-2xl p-4 text-[10px] font-mono outline-none focus:border-[var(--accent-primary)] transition-all" 
+               value={product.sheet.coverImage}
+               onChange={(e) => setProduct({...product, sheet: { ...product.sheet, coverImage: e.target.value }})}
+             />
+             <p className="text-[7px] text-[var(--text-muted)] uppercase tracking-widest italic px-2">
+               O arquivo deve ser salvo manualmente na pasta `public/services-img` do projeto.
+             </p>
           </div>
        </div>
 
