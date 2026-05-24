@@ -67,9 +67,10 @@ export async function syncProductToDriveAction(product: Product) {
       sheetId, 
       sheetUrl 
     };
-  } catch (error: any) {
-    console.error("❌ [Drive Sync] Erro Crítico:", error);
-    return { success: false, error: error.message };
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error("❌ [Drive Sync] Erro Crítico:", errorMessage);
+    return { success: false, error: errorMessage };
   }
 }
 
@@ -100,8 +101,9 @@ export async function uploadProductCoverAction(formData: FormData) {
       url: result.webViewLink,
       fileId: result.id
     };
-  } catch (error: any) {
-    console.error("❌ [Product Cover Upload] Erro:", error);
-    return { success: false, error: error.message };
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error("❌ [Product Cover Upload] Erro:", errorMessage);
+    return { success: false, error: errorMessage };
   }
 }
