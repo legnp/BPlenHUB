@@ -308,6 +308,9 @@ function SheetForm({ product, setProduct }: any) {
         const formData = new FormData();
         formData.append("file", file);
         formData.append("serviceCode", product.serviceCode);
+        if (product.id) {
+          formData.append("productId", product.id);
+        }
         // O folderId pode ser nulo se for a primeira vez, a action lidará com isso ou podemos forçar um save primeiro
         if (product.driveConfig?.folderId) {
           formData.append("folderId", product.driveConfig.folderId);
