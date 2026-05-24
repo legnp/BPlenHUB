@@ -17,13 +17,13 @@ export default function SandboxPage() {
 
   const tools = [
     {
-      title: "Welcome Survey",
-      description: "Teste a narrativa inicial, a nova lista de temas e as ramificações de 'Outro/Indicação'.",
+      title: "Member Tour",
+      description: "Teste o tour guiado da Área de Membro. Isso irá redirecionar você para o Dashboard de Membro e forçar o início do guia.",
       icon: ClipboardCheck,
       color: "text-blue-500",
       bg: "bg-blue-500/10",
-      actionLabel: "Abrir Preview",
-      onClick: () => router.push("/admin/pesquisas/preview/welcome_survey")
+      actionLabel: "Testar Área de Membro",
+      onClick: () => router.push("/hub/membro?startTour=true")
     },
     {
       title: "Onboarding Tour",

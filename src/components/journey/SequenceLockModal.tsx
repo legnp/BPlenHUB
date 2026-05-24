@@ -10,6 +10,7 @@ interface SequenceLockModalProps {
   isOpen: boolean;
   onClose: () => void;
   prevStageTitle: string;
+  type?: "etapa" | "parada";
 }
 
 /**
@@ -17,7 +18,7 @@ interface SequenceLockModalProps {
  * Modal de Soberania Metodológica para bloqueio de sequência linear.
  * Design: Glassmorphism v3.1 / Apple Pro
  */
-export function SequenceLockModal({ isOpen, onClose, prevStageTitle }: SequenceLockModalProps) {
+export function SequenceLockModal({ isOpen, onClose, prevStageTitle, type = "etapa" }: SequenceLockModalProps) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -76,10 +77,10 @@ export function SequenceLockModal({ isOpen, onClose, prevStageTitle }: SequenceL
               {/* Mensagem Polida */}
               <div className="space-y-4">
                 <h3 className="text-2xl font-black text-white tracking-tight leading-tight">
-                  Aguardando Conclusão <br /> da Etapa Anterior
+                  {type === "etapa" ? "Aguardando Conclusão" : "Aguardando Parada"} <br /> {type === "etapa" ? "da Etapa Anterior" : "Anterior"}
                 </h3>
                 <p className="text-[13px] leading-relaxed text-slate-400 font-medium">
-                  Para garantir a eficácia do seu progresso, a etapa <span className="text-amber-400 font-black">{prevStageTitle}</span> precisa ser concluída 100% antes de liberar este novo ciclo.
+                  Para garantir a eficácia do seu progresso, a {type} <span className="text-amber-400 font-black">{prevStageTitle}</span> precisa ser concluída 100% antes de liberar este novo ciclo.
                 </p>
               </div>
 

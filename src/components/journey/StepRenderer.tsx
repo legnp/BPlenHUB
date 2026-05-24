@@ -146,17 +146,11 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
                  </div>
                  
                  <div className="p-16 border border-[var(--border-primary)] rounded-[3.5rem] bg-[var(--input-bg)]/20 flex flex-col items-center justify-center text-center gap-8 shadow-inner">
-                    <div 
-                       className="w-20 h-20 rounded-[2rem] flex items-center justify-center text-white shadow-xl bg-pink-600 cursor-pointer hover:scale-105 active:scale-95 transition-all" 
-                       onClick={() => window.location.href = "/hub/membro?startTour=true"}
-                    >
-                       <PlayCircle size={32} />
-                    </div>
-                    <div className="space-y-2">
-                       <p className="text-[12px] font-black uppercase tracking-widest">{nomen.instructions.tour_play_label}</p>
-                       <p className="text-[10px] font-medium text-[var(--text-muted)] max-w-xs mx-auto">
-                          {nomen.instructions.tour_helper_text}
-                       </p>
+                    <div className="flex items-center gap-3 px-5 py-3 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl">
+                       <CheckCircle2 size={18} className="text-emerald-500" />
+                       <span className="text-[11px] font-black uppercase tracking-widest text-emerald-500">
+                          {nomen.instructions.survey_status_done}
+                       </span>
                     </div>
                  </div>
               </div>
