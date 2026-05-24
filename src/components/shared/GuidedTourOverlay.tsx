@@ -56,8 +56,10 @@ export function GuidedTourOverlay({
   const [revealedIds, setRevealedIds] = useState<string[]>([]);
   const [tooltipPos, setTooltipPos] = useState<{ top: number; left: number; placement: string } | null>(null);
   const [holeRect, setHoleRect] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
+  const [preferredVoice, setPreferredVoice] = useState<SpeechSynthesisVoice | null>(null);
   
   const tooltipRef = useRef<HTMLDivElement>(null);
+  const { theme } = useTheme();
   const router = useRouter();
   const pathname = usePathname();
   const currentStep = steps[currentIndex];
@@ -130,6 +132,28 @@ export function GuidedTourOverlay({
 
     setTooltipPos({ top, left, placement });
   }, [currentStep]);
+
+  // Load and select the best possible voice
+  useEffect(() => {
+    if (typeof window === 'undefined' || !("speechSynthesis" in window)) return;
+
+    const updateVoices = () => {
+      const voices = window.speechSynthesis.getVoices();
+      // Prioritize Google voices (usually more natural), then specific high-quality ones
+      const ptVoices = voices.filter(v => v.lang.startsWith('pt'));
+      
+      const bestVoice = 
+        ptVoices.find(v => v.name.includes('Google') && v.lang === 'pt-BR') ||
+        ptVoices.find(v => v.name.includes('Natural') && v.lang === 'pt-BR') ||
+        ptVoices.find(v => v.lang === 'pt-BR') ||
+        ptVoices[0];
+
+      if (bestVoice) setPreferredVoice(bestVoice);
+    };
+
+    updateVoices();
+    window.speechSynthesis.onvoiceschanged = updateVoices;
+  }, []);
 
   // Observer for dynamic target changes
   useLayoutEffect(() => {
@@ -218,9 +242,14 @@ export function GuidedTourOverlay({
     if ("speechSynthesis" in window) {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(interpolate(currentStep.content));
+      
+      if (preferredVoice) {
+        utterance.voice = preferredVoice;
+      }
+      
       utterance.lang = "pt-BR";
-      utterance.rate = 1.1;
-      utterance.pitch = 1.1;
+      utterance.rate = 1.0; // Slightly slower for better articulation
+      utterance.pitch = 1.0; // Natural pitch
       utterance.onstart = () => setIsNarrating(true);
       utterance.onend = () => setIsNarrating(false);
       window.speechSynthesis.speak(utterance);
