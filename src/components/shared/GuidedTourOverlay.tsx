@@ -6,6 +6,7 @@ import { TypedText } from "@/components/ui/TypedText";
 import { Volume2, ChevronRight, Play } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
 import { useTourStore } from "@/store/tour-store";
+import { useTheme } from "@/context/ThemeContext";
 
 export interface TourStep {
   targetId?: string;
