@@ -116,7 +116,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
                    </div>
 
                    <Link 
-                     href={`/checkout/${product.slug}`}
+                     href={`/hub/membro/checkout/${product.slug}`}
                      className="w-full py-5 rounded-2xl bg-[#ff0080] hover:bg-[#ff00b3] text-white font-black text-xs tracking-widest uppercase hover:scale-[1.02] shadow-[0_20px_40px_rgba(255,0,128,0.3)] transition-all flex items-center justify-center gap-3 group"
                    >
                      Contratar Serviço <ChevronRight size={18} className="group-hover:translate-x-1 duration-300" />
