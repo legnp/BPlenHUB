@@ -112,9 +112,14 @@ export function useJourney(uid: string) {
     // Uma etapa só pode ser ACESSADA se a anterior estiver 'completed'.
     let isSequenceLocked = false;
     if (thisStepIndex > 0) {
-       const prevStageId = stages[thisStepIndex - 1].id;
-       const prevStepProgress = progress?.steps[prevStageId];
-       isSequenceLocked = prevStepProgress?.status !== "completed";
+       // EXCEÇÃO ESTRATÉGICA: Onboarding pode ser acessado mesmo sem concluir Primeiros Passos 🧬
+       const isOnboarding = stepId === 'onboarding' || stepId === 'ONBOARDING';
+       
+       if (!isOnboarding) {
+          const prevStageId = stages[thisStepIndex - 1].id;
+          const prevStepProgress = progress?.steps[prevStageId];
+          isSequenceLocked = prevStepProgress?.status !== "completed";
+       }
     }
 
     return {
