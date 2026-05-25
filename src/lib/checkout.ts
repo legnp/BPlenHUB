@@ -41,7 +41,7 @@ export async function grantServiceEntitlement(params: GrantEntitlementParams) {
   // Caminho Soberano Oficial (Validado)
   const userRef = db.doc(`User/${matricula}/User_Permissions/access`);
 
-  return await db.runTransaction(async (transaction) => {
+  const transactionResult = await db.runTransaction(async (transaction) => {
     const userDoc = await transaction.get(userRef);
     
     const currentServices = userDoc.exists 
@@ -91,4 +91,25 @@ export async function grantServiceEntitlement(params: GrantEntitlementParams) {
 
     return { success: true, matricula, orderId: finalOrderId };
   });
+
+  // 🎁 Distribuição Automática de Cotas do Produto
+  try {
+    const productSnap = await db.collection("products").doc(productId).get();
+    let productData = productSnap.exists ? productSnap.data() : null;
+    
+    if (!productData) {
+      const slugSnap = await db.collection("products").where("slug", "==", productSlug).limit(1).get();
+      if (!slugSnap.empty) productData = slugSnap.docs[0].data();
+    }
+
+    if (productData?.grantedQuotas && Object.keys(productData.grantedQuotas).length > 0) {
+      console.log(`🎁 [Entitlement] Depositando cotas automáticas para UID: ${uid} | Serviço: ${productTitle}`);
+      const { updateMemberQuotasAction } = await import("@/actions/quotas");
+      await updateMemberQuotasAction(uid, productData.grantedQuotas);
+    }
+  } catch (error) {
+    console.error("🚨 [Entitlement] Erro ao depositar cotas:", error);
+  }
+
+  return transactionResult;
 }
