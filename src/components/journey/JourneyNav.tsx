@@ -117,7 +117,7 @@ export function JourneyNav({ stages, currentStepId, stepStatusMap, getStageTelem
       setUpsellModalOpen(true);
       setUpsellLoading(true);
       try {
-        const product = await getProductBySlug(stage.id);
+        const product = await getProductBySlug(stage.id, true);
         setUpsellProduct(product);
       } catch (err) {
         console.error("Erro ao carregar produto de upsell:", err);

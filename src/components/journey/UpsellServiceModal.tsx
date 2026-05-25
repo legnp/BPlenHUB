@@ -39,9 +39,12 @@ export function UpsellServiceModal({ isOpen, onClose, product, loading }: Upsell
 
   const idAudience = product?.targetAudiences?.[0] || 'people';
   const audienceSlug = audienceMap[idAudience] || 'pessoas';
-  const redirectUrl = `/servicos/${audienceSlug}/${product?.slug}`;
-
   const isOnboarding = product?.slug === 'onboarding';
+  
+  // Governança de Link: Onboarding (Privado) redireciona para a vitrine geral 🛍️
+  const redirectUrl = isOnboarding 
+    ? `/servicos/${audienceSlug}`
+    : `/servicos/${audienceSlug}/${product?.slug}`;
 
   return createPortal(
     <AnimatePresence>

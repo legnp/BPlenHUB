@@ -35,8 +35,9 @@ export async function getAdminProducts(idToken?: string): Promise<Product[]> {
 
 /**
  * Busca um produto pelo Slug (para páginas dinâmicas)
+ * Por padrão, ignora produtos marcados como 'internal' para proteção da área pública 🛡️
  */
-export async function getProductBySlug(slug: string): Promise<Product | null> {
+export async function getProductBySlug(slug: string, includeInternal: boolean = false): Promise<Product | null> {
   try {
     const db = getAdminDb();
     const snapshot = await db.collection(PRODUCTS_COLLECTION)
@@ -47,10 +48,17 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
     if (snapshot.empty) return null;
     
     const doc = snapshot.docs[0];
-    return safeSerialize<Product>({
+    const product = safeSerialize<Product>({
       ...doc.data(),
       id: doc.id
     });
+
+    // Governança de Visibilidade: Se for interno e não solicitamos internos, bloqueamos 🔒
+    if (!includeInternal && product.targetAudiences?.includes('internal')) {
+      return null;
+    }
+
+    return product;
   } catch (error) {
     console.error(`Erro ao buscar produto com slug ${slug}:`, error);
     return null;
