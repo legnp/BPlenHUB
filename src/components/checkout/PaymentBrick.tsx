@@ -30,8 +30,9 @@ interface PaymentBrickProps {
 export function PaymentBrick({ preferenceId, orderId, amount, onReady, onError, onSuccess, idToken }: PaymentBrickProps) {
   const { user } = useAuthContext();
 
+  console.log("🔍 [Brick-Init] Pref:", preferenceId, "Amount:", amount);
+
   const initialization = {
-    amount: Number(amount),
     preferenceId: preferenceId,
   };
 
