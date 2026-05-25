@@ -31,6 +31,7 @@ interface SurveyEngineProps {
   config: SurveyConfig;
   userUid: string;
   onComplete?: (matricula: string, responses?: Record<string, any>) => void;
+  onStepChange?: (index: number, isLastStep: boolean) => void;
   returnToCheckoutSlug?: string;
 }
 
@@ -64,9 +65,16 @@ function shuffleOptions(options: any[]) {
  * Focado em UX narrativa, progressão guiada e algoritmos de decisão.
  * Agora suporta NAVEGAÇÃO CONDICIONAL (Grafos).
  */
-export function SurveyEngine({ config, userUid, onComplete, returnToCheckoutSlug }: SurveyEngineProps) {
+export function SurveyEngine({ config, userUid, onComplete, onStepChange, returnToCheckoutSlug }: SurveyEngineProps) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [responses, setResponses] = useState<Record<string, SurveyValue>>({});
+
+  useEffect(() => {
+    if (onStepChange) {
+      onStepChange(currentStepIndex, currentStepIndex === config.steps.length - 1);
+    }
+  }, [currentStepIndex, config.steps.length, onStepChange]);
+
   const [userMetadata, setUserMetadata] = useState<Record<string, any>>({});
   const [questionComplete, setQuestionComplete] = useState(false);
   const [typedComplete, setTypedComplete] = useState(false);
