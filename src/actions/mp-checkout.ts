@@ -206,7 +206,6 @@ export async function processPaymentAction(formData: any, orderId: string, idTok
   try {
     const session = await requireAuth(idToken);
     
-<<<<<<< Updated upstream
     // 💉 Log de Auditoria: Dados que estão indo para o MP
     console.log(`📡 [MP-Checkout] Iniciando processamento para Ordem: ${orderId} | Usuário: ${session.email}`);
 
@@ -215,14 +214,12 @@ export async function processPaymentAction(formData: any, orderId: string, idTok
       formData.payer.identification.number = formData.payer.identification.number.replace(/\D/g, "");
     }
 
-=======
     const db = getAdminDb();
     const orderSnap = await db.collection(USER_ORDERS_COLLECTION).doc(orderId).get();
     const productTitle = orderSnap.exists ? orderSnap.data()?.productTitle : "BPlen HUB";
 
     // Importante: No caso do Preference ID, nós ainda dependemos da cobrança manual
     // Injectamos metadata para rastreabilidade do Webhook
->>>>>>> Stashed changes
     const payload = {
       ...formData,
       description: `Contratação: ${productTitle}`,
