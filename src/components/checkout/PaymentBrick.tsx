@@ -18,6 +18,7 @@ interface PaymentBrickProps {
   onReady?: () => void;
   onError?: (error: any) => void;
   onSuccess?: (paymentId?: string) => void;
+  idToken?: string;
 }
 
 /**
@@ -26,7 +27,7 @@ interface PaymentBrickProps {
  * Gerencia o ciclo de vida do pagamento e callbacks.
  */
 
-export function PaymentBrick({ preferenceId, orderId, amount, onReady, onError, onSuccess }: PaymentBrickProps) {
+export function PaymentBrick({ preferenceId, orderId, amount, onReady, onError, onSuccess, idToken }: PaymentBrickProps) {
   const { user } = useAuthContext();
 
   const initialization = {
@@ -60,8 +61,8 @@ export function PaymentBrick({ preferenceId, orderId, amount, onReady, onError, 
     // 💳 Checkout Transparente: Enviamos o Payload criptografado do cartão para o backend!
     return new Promise<void>(async (resolve, reject) => {
       try {
-        const idToken = user ? await user.getIdToken() : undefined;
-        const res = await processPaymentAction(formData, orderId, idToken);
+        const currentToken = idToken || (user ? await user.getIdToken() : undefined);
+        const res = await processPaymentAction(formData, orderId, currentToken);
 
         if (res.success) {
           console.log("✅ [PaymentBrick] Cobrança processada no Mercado Pago!");

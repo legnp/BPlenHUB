@@ -16,8 +16,17 @@ import { sendPaymentApprovedEmail, sendServiceGrantedEmail } from "@/lib/checkou
 export async function POST(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const type = searchParams.get("type") || (await req.json()).type;
-    const dataId = searchParams.get("data.id") || (await req.json()).data?.id;
+    
+    // Ler o body de forma segura (uma única vez)
+    let bodyData: any = {};
+    try {
+      bodyData = await req.json();
+    } catch (e) {
+      // Body vazio ou não-JSON
+    }
+
+    const type = searchParams.get("type") || bodyData.type;
+    const dataId = searchParams.get("data.id") || bodyData.data?.id;
 
     console.log(`📡 [Webhook:MP] Recebido: ${type} | ID: ${dataId}`);
 
