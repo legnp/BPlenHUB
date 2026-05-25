@@ -37,6 +37,9 @@ export function PaymentBrick({ preferenceId, orderId, amount, onReady, onError, 
     preferenceId: preferenceId,
   };
 
+  // 🚀 Algumas versões do SDK exigem a instância direta para evitar o erro "mercadoPago must be provided together"
+  const mpInstance = (window as any).mercadopago;
+
   const customization = {
     paymentMethods: {
       ticket: "all" as const,
@@ -84,12 +87,13 @@ export function PaymentBrick({ preferenceId, orderId, amount, onReady, onError, 
   return (
     <div className="w-full min-h-[400px] animate-in fade-in duration-700">
       <Payment
-        key={preferenceId} // 🚀 Força re-render se a preferência mudar
+        key={preferenceId}
         initialization={initialization}
         customization={customization}
         onSubmit={onSubmit}
         onReady={onReady}
         onError={onError}
+        mercadoPago={mpInstance} // 🛡️ O elo perdido! Passa a instância global direto para o Brick
       />
     </div>
   );
