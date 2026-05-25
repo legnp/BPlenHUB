@@ -23,6 +23,7 @@ interface FormsEngineProps {
   onComplete?: (matricula: string) => void;
   customSubmit?: (responses: FormResponse) => Promise<void>;
   isPreview?: boolean;
+  initialResponses?: FormResponse;
 }
 
 /**
@@ -30,10 +31,10 @@ interface FormsEngineProps {
  * Evoluído para suportar Seções Operacionais (Forms_Global).
  * Mantém retrocompatibilidade automática com o modelo de 'steps'.
  */
-export function FormsEngine({ config, userUid, onComplete, customSubmit, isPreview }: FormsEngineProps) {
+export function FormsEngine({ config, userUid, onComplete, customSubmit, isPreview, initialResponses }: FormsEngineProps) {
   const { user, nickname } = useAuthContext();
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
-  const [responses, setResponses] = useState<FormResponse>({});
+  const [responses, setResponses] = useState<FormResponse>(initialResponses || {});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [matricula, setMatricula] = useState<string>("");

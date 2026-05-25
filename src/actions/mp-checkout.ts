@@ -1,7 +1,7 @@
 "use server";
 
 import admin, { getAdminDb } from "@/lib/firebase-admin";
-import { requireAuth } from "@/lib/auth-guards";
+import { requireAuth, requireMatricula } from "@/lib/auth-guards";
 import { Product } from "@/types/products";
 import { PRODUCTS_COLLECTION, USER_ORDERS_COLLECTION } from "@/config/collections";
 import { mpClient } from "@/lib/mercadopago";
@@ -166,7 +166,9 @@ export async function createPreferenceAction(
  */
 export async function getCheckoutProductAction(slug: string, idToken?: string) {
   try {
-    await requireAuth(idToken);
+    // 🛡️ Exige matrícula. Se falhar, o erro "MATRICULA_REQUIRED" será capturado pela UI
+    await requireMatricula(idToken);
+    
     const db = getAdminDb();
     
     const snap = await db.collection(PRODUCTS_COLLECTION)

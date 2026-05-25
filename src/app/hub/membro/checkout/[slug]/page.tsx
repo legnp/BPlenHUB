@@ -15,6 +15,12 @@ export default async function CheckoutPage({ params }: { params: Promise<{ slug:
   // Recupera dados do serviço de forma segura no servidor
   // O session resolver automático da BPlen já cuida da autenticação via cookies de sessão 🛡️
   const result = await getCheckoutProductAction(slug);
+  
+  // 🛡️ Prevenção de Gap (Bypass F5): Se não tem matrícula, volta para o Welcome Flow
+  if (!result.success && result.error === "MATRICULA_REQUIRED") {
+    const { redirect } = await import("next/navigation");
+    redirect(`/hub?checkout=${slug}`);
+  }
 
   if (!result.success || !result.data) {
     return (

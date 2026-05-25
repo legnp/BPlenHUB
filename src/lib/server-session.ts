@@ -9,6 +9,7 @@ export interface Session {
   isAdmin: boolean;
   role?: UserRole;
   services?: UserServices;
+  matricula: string | null;
 }
 
 /**
@@ -40,15 +41,16 @@ export async function getServerSession(idToken?: string): Promise<Session | null
 
     if (!uid) return null;
 
-    // 3. Resolver o Papel (Role) e Serviços do Usuário via Admin SDK/Firestore
-    const { isAdmin, role, services } = await fetchUserPermissionsStatus(uid);
+    // 3. Resolver o Papel (Role), Serviços e Matrícula do Usuário via Admin SDK/Firestore
+    const { isAdmin, role, services, matricula } = await fetchUserPermissionsStatus(uid);
 
     return {
       uid,
       email,
       isAdmin,
       role,
-      services
+      services,
+      matricula
     };
   } catch (error) {
     console.error("❌ [Server Session] Falha ao resolver identidade:", error);

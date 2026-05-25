@@ -156,17 +156,17 @@ export async function syncUserPermissionsOnLogin(uid: string, email: string | nu
 /**
  * Busca o Status de Permissão (Server Authority 🛡️)
  */
-export async function fetchUserPermissionsStatus(uid: string): Promise<{ isAdmin: boolean; role: UserRole; services: UserServices }> {
+export async function fetchUserPermissionsStatus(uid: string): Promise<{ isAdmin: boolean; role: UserRole; services: UserServices; matricula: string | null }> {
     try {
       const uidMapRef = getAdminDb().collection("_AuthMap").doc(uid);
       const uidMapSnap = await uidMapRef.get();
 
       if (!uidMapSnap.exists) {
         console.warn(`⚠️ [Auth Status] UID ${uid} não encontrado no _AuthMap.`);
-        return { isAdmin: false, role: "visitor", services: {} };
+        return { isAdmin: false, role: "visitor", services: {}, matricula: null };
       }
 
-      const matricula = uidMapSnap.data()?.matricula;
+      const matricula = uidMapSnap.data()?.matricula || null;
       const permissionsPath = `User/${matricula}/User_Permissions/access`;
       const permissionsRef = getAdminDb().doc(permissionsPath);
       const permSnap = await permissionsRef.get();
@@ -174,7 +174,7 @@ export async function fetchUserPermissionsStatus(uid: string): Promise<{ isAdmin
       console.log(`🔍 [Auth Trace] UID: ${uid} | Matrícula Resolvida: ${matricula} | Path: ${permissionsPath}`);
 
       if (!permSnap.exists) {
-        return { isAdmin: false, role: "member", services: {} };
+        return { isAdmin: false, role: "member", services: {}, matricula };
       }
 
       const data = permSnap.data();
@@ -182,11 +182,12 @@ export async function fetchUserPermissionsStatus(uid: string): Promise<{ isAdmin
       return {
         isAdmin: data?.admin === true,
         role: (data?.role || (data?.admin ? "admin" : "member")) as UserRole,
-        services: (data?.services || {}) as UserServices
+        services: (data?.services || {}) as UserServices,
+        matricula
       };
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       console.error("❌ [Auth Status] Falha ao buscar permissões do servidor:", errorMessage);
-      return { isAdmin: false, role: "visitor", services: {} };
+      return { isAdmin: false, role: "visitor", services: {}, matricula: null };
     }
 }

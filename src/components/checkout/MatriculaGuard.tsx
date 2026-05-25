@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useAuthContext } from "@/context/AuthContext";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { WelcomeRedirectModal } from "./WelcomeRedirectModal";
 import { ChevronRight, Loader2 } from "lucide-react";
 import { doc, getDoc } from "firebase/firestore";
@@ -21,17 +21,18 @@ interface MatriculaGuardProps {
 export function MatriculaGuard({ productSlug, className, children }: MatriculaGuardProps) {
   const { user, loading } = useAuthContext();
   const router = useRouter();
+  const pathname = usePathname();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
+  const [modalMode, setModalMode] = useState<"login" | "welcome">("welcome");
 
   async function handleAction() {
     if (loading || isChecking) return;
 
     // 1. Verificar Autenticação Base
     if (!user) {
-      // Se não está logado, manda para o login com o retorno para o Hub (que disparará o Welcome)
-      const returnUrl = `/hub?checkout=${productSlug}`;
-      router.push(`/?auth=required&returnTo=${encodeURIComponent(returnUrl)}`);
+      setModalMode("login");
+      setIsModalOpen(true);
       return;
     }
 
@@ -50,6 +51,7 @@ export function MatriculaGuard({ productSlug, className, children }: MatriculaGu
       }
 
       // 3. Se não tem matrícula, abre o Modal de Transição
+      setModalMode("welcome");
       setIsModalOpen(true);
     } catch (err) {
       console.error("Erro ao validar matrícula no Guard:", err);
@@ -60,9 +62,15 @@ export function MatriculaGuard({ productSlug, className, children }: MatriculaGu
     }
   }
 
-  function handleGoToWelcome() {
+  function handleModalConfirm() {
     setIsModalOpen(false);
-    router.push(`/hub?checkout=${productSlug}`);
+    if (modalMode === "login") {
+       // Se é login, redireciona para a home com returnTo para esta mesma página
+       router.push(`/?auth=required&returnTo=${encodeURIComponent(pathname)}`);
+    } else {
+       // Se é welcome, redireciona para o Hub
+       router.push(`/hub?checkout=${productSlug}`);
+    }
   }
 
   return (
@@ -88,7 +96,13 @@ export function MatriculaGuard({ productSlug, className, children }: MatriculaGu
       <WelcomeRedirectModal 
         isOpen={isModalOpen}
         userName={user?.displayName?.split(" ")[0] || "Membro"}
-        onConfirm={handleGoToWelcome}
+        title={modalMode === "login" ? "Conecte-se à BPlen" : undefined}
+        description={modalMode === "login" 
+          ? "Para contratar este serviço, precisamos te identificar e garantir sua matrícula BPlen. Vamos te guiar para o login agora."
+          : undefined
+        }
+        buttonText={modalMode === "login" ? "FAZER LOGIN / REGISTRAR" : "IR PARA RECEPÇÃO"}
+        onConfirm={handleModalConfirm}
       />
     </>
   );

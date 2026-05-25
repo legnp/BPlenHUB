@@ -7,6 +7,9 @@ import { Rocket, ArrowRight, Loader2 } from "lucide-react";
 interface WelcomeRedirectModalProps {
   isOpen: boolean;
   userName: string;
+  title?: string;
+  description?: string;
+  buttonText?: string;
   onConfirm: () => void;
 }
 
@@ -14,7 +17,14 @@ interface WelcomeRedirectModalProps {
  * BPlen HUB — Welcome Redirect Modal (🚀 Soberana UI)
  * Informa ao usuário que ele precisa passar pela recepção para garantir a melhor experiência.
  */
-export function WelcomeRedirectModal({ isOpen, userName, onConfirm }: WelcomeRedirectModalProps) {
+export function WelcomeRedirectModal({ 
+  isOpen, 
+  userName, 
+  onConfirm,
+  title,
+  description,
+  buttonText = "IR PARA RECEPÇÃO"
+}: WelcomeRedirectModalProps) {
   return (
     <AnimatePresence>
       {isOpen && (
@@ -44,11 +54,15 @@ export function WelcomeRedirectModal({ isOpen, userName, onConfirm }: WelcomeRed
 
               <div className="space-y-4">
                 <h2 className="text-3xl font-black tracking-tighter leading-tight uppercase italic">
-                  Olá, <span className="text-[#ff0080]">{userName}</span>
+                  {title || <>Olá, <span className="text-[#ff0080]">{userName}</span></>}
                 </h2>
                 <p className="text-sm font-medium text-gray-400 leading-relaxed max-w-[320px] mx-auto">
-                  Percebemos que você ainda não passou pela nossa <span className="text-white font-bold tracking-tight">recepção oficial</span>. 
-                  Para garantir a sua correta jornada estratégica, vamos te guiar agora.
+                  {description || (
+                    <>
+                      Percebemos que você ainda não passou pela nossa <span className="text-white font-bold tracking-tight">recepção oficial</span>. 
+                      Para garantir a sua correta jornada estratégica, vamos te guiar agora.
+                    </>
+                  )}
                 </p>
               </div>
 
@@ -65,7 +79,7 @@ export function WelcomeRedirectModal({ isOpen, userName, onConfirm }: WelcomeRed
                 onClick={onConfirm}
                 className="w-full py-5 bg-white text-black rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_20px_40px_rgba(255,255,255,0.1)] flex items-center justify-center gap-3 group"
               >
-                IR PARA RECEPÇÃO
+                {buttonText}
                 <ArrowRight size={18} className="group-hover:translate-x-1 duration-300" />
               </button>
 

@@ -28,11 +28,13 @@ export function useAuth() {
    * Login com Google
    * Utiliza Popup para autenticação federada.
    */
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = async (forceSelect = false) => {
     const provider = new GoogleAuthProvider();
     
-    // Força a exibição do seletor de contas (Permite escolher outra conta ou inserir nova) 🛡️
-    provider.setCustomParameters({ prompt: "select_account" });
+    // Força a exibição do seletor de contas apenas se solicitado explicitamente (evita loops) 🛡️
+    if (forceSelect) {
+      provider.setCustomParameters({ prompt: "select_account" });
+    }
 
     setIsLoggingIn(true);
     setError(null);

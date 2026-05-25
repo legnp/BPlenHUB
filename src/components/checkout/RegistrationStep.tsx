@@ -76,8 +76,8 @@ export function RegistrationStep({ onComplete }: RegistrationStepProps) {
         <FormsEngine 
           config={dadosCadastraisForm}
           userUid={user?.uid || ""}
+          initialResponses={initialData || undefined}
           onComplete={onComplete}
-          // Nota: O FormsEngine já injeta alguns dados básicos se encontrar no auth
         />
       </div>
 

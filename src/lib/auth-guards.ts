@@ -98,3 +98,21 @@ export async function requireAuth(idToken?: string): Promise<Session> {
 
   return session;
 }
+
+/**
+ * Exige matrícula ativa para prosseguir (ex: Etapa final de Checkout).
+ * 
+ * @param idToken Token de Identidade opcional.
+ * @returns Objeto Session se autenticado e com matrícula.
+ * @throws {AuthorizationError} Se não possuir matrícula.
+ */
+export async function requireMatricula(idToken?: string): Promise<Session> {
+  const session = await requireAuth(idToken);
+
+  if (!session.matricula) {
+    console.error(`❌ [Authorization] Matrícula ausente para o UID: ${session.uid}`);
+    throw new AuthorizationError("MATRICULA_REQUIRED");
+  }
+
+  return session;
+}

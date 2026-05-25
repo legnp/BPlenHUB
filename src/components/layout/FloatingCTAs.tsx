@@ -198,7 +198,7 @@ export function FloatingCTAs() {
                    <button
                       onClick={async () => {
                           try {
-                            const loggedUser = await signInWithGoogle();
+                            const loggedUser = await signInWithGoogle(true);
                             if (loggedUser) {
                               toggleMenu();
                               setTimeout(() => {
@@ -300,7 +300,7 @@ export function FloatingCTAs() {
            <button 
              onClick={async () => {
                  try {
-                   const loggedUser = await signInWithGoogle();
+                   const loggedUser = await signInWithGoogle(true);
                    if (loggedUser) {
                     setTimeout(() => {
                       router.push("/hub");
