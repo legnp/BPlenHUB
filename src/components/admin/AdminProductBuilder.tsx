@@ -362,7 +362,12 @@ function SheetForm({ product, setProduct }: any) {
                placeholder="Ex: /services-img/meu-servico.webp"
                className="w-full bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-2xl p-4 text-[10px] font-mono outline-none focus:border-[var(--accent-primary)] transition-all" 
                value={product.sheet?.coverImage || ""}
-               onChange={(e) => setProduct({...product, sheet: { ...product.sheet, coverImage: e.target.value } as ProductSheet})}
+               onChange={(e) => {
+                 let val = e.target.value;
+                 if (val.startsWith("public/")) val = val.replace("public/", "/");
+                 else if (val.startsWith("/public/")) val = val.replace("/public/", "/");
+                 setProduct({...product, sheet: { ...product.sheet, coverImage: val } as ProductSheet});
+               }}
              />
              <p className="text-[7px] text-[var(--text-muted)] uppercase tracking-widest italic px-2">
                O arquivo deve ser salvo manualmente na pasta `public/services-img` do projeto.
