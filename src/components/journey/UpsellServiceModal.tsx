@@ -41,6 +41,8 @@ export function UpsellServiceModal({ isOpen, onClose, product, loading }: Upsell
   const audienceSlug = audienceMap[idAudience] || 'pessoas';
   const redirectUrl = `/servicos/${audienceSlug}/${product?.slug}`;
 
+  const isOnboarding = product?.slug === 'onboarding';
+
   return createPortal(
     <AnimatePresence>
       {isOpen && (
@@ -110,13 +112,15 @@ export function UpsellServiceModal({ isOpen, onClose, product, loading }: Upsell
                 <div className="p-10 pt-4 space-y-8">
                   <div className="space-y-3">
                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-pink-500/80">
-                      Você ainda não contratou esse serviço
+                      {isOnboarding ? "Conteúdo Exclusivo para Membros BPlen" : "Você ainda não contratou esse serviço"}
                     </p>
                     <h3 className="text-2xl font-black text-[var(--text-primary)] tracking-tight italic">
                       {product.title}
                     </h3>
-                    <p className="text-sm leading-relaxed text-[var(--text-secondary)] font-medium line-clamp-3">
-                      {product.sheet.description}
+                    <p className="text-sm leading-relaxed text-[var(--text-secondary)] font-medium line-clamp-4">
+                      {isOnboarding 
+                        ? "É aqui é onde a sua carreira profissional ganha potência! Para acessar e liberar todo o ecossistema HUB, torne-se um Membro BPlen."
+                        : product.sheet.description}
                     </p>
                   </div>
 
@@ -144,7 +148,7 @@ export function UpsellServiceModal({ isOpen, onClose, product, loading }: Upsell
                       "hover:scale-[1.02] active:scale-[0.98] transition-all duration-500"
                     )}
                   >
-                    Ver mais detalhes
+                    {isOnboarding ? "Ver serviços BPlen" : "Ver mais detalhes"}
                     <ChevronRight size={16} className="group-hover/btn:translate-x-1.5 transition-transform duration-500" />
                   </Link>
 
