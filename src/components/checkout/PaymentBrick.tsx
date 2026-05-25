@@ -24,96 +24,111 @@ interface PaymentBrickProps {
  */
 export function PaymentBrick({ preferenceId, orderId, amount, onReady, onError, onSuccess, idToken }: PaymentBrickProps) {
   const { user } = useAuthContext();
-  const [mpInstance, setMpInstance] = useState<any>(null);
+  const brickController = React.useRef<any>(null);
 
   useEffect(() => {
-    const initSDK = async () => {
+    let isMounted = true;
+
+    const renderBrick = async () => {
       try {
-        // 🚀 Carregamento Robusto: Garante que a instância esteja pronta
         await loadMercadoPago();
-        initMercadoPago(clientEnv.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY, {
+        
+        // 🛡️ Inicialização Soberana (Puro JS)
+        if (!(window as any).MercadoPago) return;
+
+        const mp = new (window as any).MercadoPago(clientEnv.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY, {
           locale: "pt-BR",
         });
-        
-        // Captura a instância global para injetar no Brick
-        if ((window as any).MercadoPago) {
-          const mp = new (window as any).MercadoPago(clientEnv.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY, {
-            locale: "pt-BR",
-          });
-          setMpInstance(mp);
+
+        const bricksBuilder = mp.bricks();
+
+        const settings = {
+          initialization: {
+            amount: Number(amount),
+            preferenceId: preferenceId,
+          },
+          customization: {
+            paymentMethods: {
+              ticket: "all",
+              bankTransfer: "all",
+              creditCard: "all",
+              maxInstallments: 12,
+            },
+            visual: {
+              style: {
+                theme: "flat",
+                customVariables: {
+                  baseColor: "#667eea",
+                }
+              }
+            }
+          },
+          callbacks: {
+            onReady: () => {
+              if (onReady) onReady();
+            },
+            onSubmit: ({ selectedPaymentMethod, formData }: any) => {
+              return new Promise<void>(async (resolve, reject) => {
+                try {
+                  const currentToken = idToken || (user ? await user.getIdToken() : undefined);
+                  const res = await processPaymentAction(formData, orderId, currentToken);
+
+                  if (res.success) {
+                    resolve();
+                    if (onSuccess) {
+                      setTimeout(() => onSuccess(res.paymentId?.toString()), 1500);
+                    }
+                  } else {
+                    reject(new Error(res.error));
+                  }
+                } catch (err: any) {
+                  reject(err);
+                }
+              });
+            },
+            onError: (error: any) => {
+              console.error("🚨 [Brick-Error]:", error);
+              if (onError) onError(error);
+            },
+          },
+        };
+
+        if (isMounted) {
+          // Limpa qualquer instância anterior para evitar duplicidade
+          const container = document.getElementById("paymentCardBrick_container");
+          if (container) container.innerHTML = "";
+
+          brickController.current = await bricksBuilder.create(
+            "payment",
+            "paymentCardBrick_container",
+            settings
+          );
         }
       } catch (err) {
-        console.error("🚨 [PaymentBrick] Erro ao carger SDK:", err);
+        console.error("❌ [PaymentBrick] Falha Crítica:", err);
       }
     };
-    initSDK();
-  }, []);
 
-  const initialization = {
-    amount: Number(amount),
-    preferenceId: preferenceId,
-  };
+    renderBrick();
 
-  const customization = {
-    paymentMethods: {
-      ticket: "all" as const,
-      bankTransfer: "all" as const,
-      creditCard: "all" as const,
-      maxInstallments: 12,
-    },
-    visual: {
-      style: {
-        theme: "flat" as const,
-        customVariables: {
-          baseColor: "#667eea",
-          formBackgroundColor: "transparent",
-          buttonTextColor: "#ffffff",
-        }
+    return () => {
+      isMounted = false;
+      if (brickController.current) {
+        // brickController.current.unmount(); // Alguns SDKs do MP não expõem unmount direto aqui
       }
-    }
-  };
-
-  const onSubmit = async ({ selectedPaymentMethod, formData }: any) => {
-    // 💳 Checkout Transparente
-    return new Promise<void>(async (resolve, reject) => {
-      try {
-        const currentToken = idToken || (user ? await user.getIdToken() : undefined);
-        const res = await processPaymentAction(formData, orderId, currentToken);
-
-        if (res.success) {
-          console.log("✅ [PaymentBrick] Cobrança processada!");
-          resolve();
-          if (onSuccess) {
-            setTimeout(() => onSuccess(res.paymentId?.toString()), 1500);
-          }
-        } else {
-          reject(new Error(res.error));
-        }
-      } catch (err: any) {
-        reject(err);
-      }
-    });
-  };
+    };
+  }, [preferenceId, orderId, amount]); // Re-renderiza se a preferência mudar
 
   return (
     <div className="w-full min-h-[400px] animate-in fade-in duration-700">
-      {mpInstance ? (
-        <Payment
-          {...({
-            key: preferenceId,
-            initialization,
-            customization,
-            onSubmit,
-            onReady,
-            onError,
-            mercadoPago: mpInstance, // 🛡️ Injeção de instância estável
-          } as any)}
-        />
-      ) : (
-        <div className="flex items-center justify-center p-8 text-slate-400">
-          <div className="animate-pulse">Seguindo para o ambiente seguro...</div>
+      <div id="paymentCardBrick_container">
+        <div className="flex items-center justify-center p-12 text-slate-400">
+          <div className="animate-pulse flex flex-col items-center gap-3">
+            <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+            <span>Conectando ao ambiente seguro...</span>
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
