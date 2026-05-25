@@ -6,6 +6,7 @@ Este manual define como o BPlen HUB é desenvolvido, mantido e versionado. As re
 1. **Autorização Expressa**: É terminantemente PROIBIDO realizar `git push` para o GitHub sem a autorização individual e expressa do usuário em cada etapa concluída.
 2. **Push por Comando**: O push só deve ser executado após o usuário dar o comando ou aprovar a ação em uma conversa.
 3. **Build Check**: Antes de solicitar o push, certifique-se de que o projeto está "buildando" sem erros no ambiente local (`npm run build`).
+4. **Deploy Version**: SEMPRE que você executar um `git push`, é OBRIGATÓRIO informar ao usuário no chat qual foi o código/hash da versão enviada (ex: retornando a saída de `git log -1 --oneline` ou o hash gerado no commit).
 
 ## Gestão de Documentos (Living Documents)
 As diretrizes abaixo aplicam-se ao **Backlog List** e ao **Relatório de Projeto**:
