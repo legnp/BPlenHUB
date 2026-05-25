@@ -78,6 +78,7 @@ export async function createPreferenceAction(
       productId,
       productSlug,
       productTitle: product.title,
+      productKicker: product.kicker || "",
       basePrice: product.price,
       appliedDiscount,
       finalPrice,

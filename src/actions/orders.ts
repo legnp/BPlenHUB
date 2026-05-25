@@ -13,6 +13,7 @@ export interface Order {
   productId: string;
   productSlug: string;
   productTitle: string;
+  productKicker?: string;
   basePrice: number;
   appliedDiscount: number;
   finalPrice: number;
@@ -74,6 +75,7 @@ export async function getUserOrdersAction(idToken?: string): Promise<{ success: 
           productId: data.productId || "",
           productSlug: data.productSlug || "",
           productTitle: data.productTitle || "",
+          productKicker: data.productKicker || "",
           basePrice: data.basePrice || 0,
           appliedDiscount: data.appliedDiscount || 0,
           finalPrice: data.finalPrice || 0,

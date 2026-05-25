@@ -146,7 +146,7 @@ export default async function ContratosPage() {
 
                   <div>
                      <h3 className="text-lg font-black text-[var(--text-primary)] leading-tight">{order.productTitle}</h3>
-                     <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider mt-1">Plano Permanente</p>
+                     <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider mt-1">{order.productKicker || "Plano Permanente"}</p>
                   </div>
                 </div>
 

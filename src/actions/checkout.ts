@@ -78,6 +78,7 @@ export async function processServicePurchaseAction(
         productId: productId,
         productSlug: product.slug,
         productTitle: product.title,
+        productKicker: product.kicker || "",
         basePrice: product.price || 0,
         appliedDiscount: product.price || 0,
         finalPrice: 0,
