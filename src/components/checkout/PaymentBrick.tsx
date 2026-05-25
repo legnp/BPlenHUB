@@ -30,7 +30,8 @@ interface PaymentBrickProps {
 export function PaymentBrick({ preferenceId, orderId, amount, onReady, onError, onSuccess, idToken }: PaymentBrickProps) {
   const { user } = useAuthContext();
 
-  const initialization: any = {
+  const initialization = {
+    amount: amount,
     preferenceId: preferenceId,
   };
 
@@ -81,6 +82,7 @@ export function PaymentBrick({ preferenceId, orderId, amount, onReady, onError, 
   return (
     <div className="w-full min-h-[400px] animate-in fade-in duration-700">
       <Payment
+        key={preferenceId} // 🚀 Força re-render se a preferência mudar
         initialization={initialization}
         customization={customization}
         onSubmit={onSubmit}
