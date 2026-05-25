@@ -82,8 +82,7 @@ export default function MemberDashboardView() {
     try {
        await submitEvaluationAction(matricula, id, r, f, user.uid);
        const bookings = await getUserBookingsAction(matricula);
-       const completed = bookings.filter(b => b.eventLifecycleStatus === 'completed' || isBefore(parseISO(b.eventDetail?.start || ""), new Date()));
-       setHistoryBookings(completed);
+       setHistoryBookings(bookings);
     } catch (error) {
        console.error("Erro ao avaliar no dashboard:", error);
     } finally {
@@ -124,8 +123,7 @@ export default function MemberDashboardView() {
       try {
         if (matricula) {
            const bookings = await getUserBookingsAction(matricula);
-           const completed = bookings.filter(b => b.eventLifecycleStatus === 'completed' || isBefore(parseISO(b.eventDetail?.start || ""), new Date()));
-           setHistoryBookings(completed);
+           setHistoryBookings(bookings);
         }
       } catch (error) {
         console.error("Erro ao carregar histórico:", error);
@@ -377,8 +375,7 @@ export default function MemberDashboardView() {
           onRefresh={async () => {
              if (matricula) {
                 const bookings = await getUserBookingsAction(matricula);
-                const completed = bookings.filter(b => b.eventLifecycleStatus === 'completed' || isBefore(parseISO(b.eventDetail?.start || ""), new Date()));
-                setHistoryBookings(completed);
+                setHistoryBookings(bookings);
              }
           }}
         />
