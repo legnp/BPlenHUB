@@ -21,7 +21,7 @@ import { format, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
 import Calendar from "@/components/ui/Calendar";
 import UserBookings from "@/components/ui/UserBookings";
-import { fetchCalendarEvents, getUserBookingsAction, submitEvaluationAction } from "@/actions/calendar";
+import { getSyncedEvents, getUserBookingsAction, submitEvaluationAction } from "@/actions/calendar";
 import { UserBooking } from "@/types/calendar";
 import { SurveyEngine } from "@/components/forms/SurveyEngine";
 import { getSurveyConfig } from "@/config/surveys";
@@ -71,8 +71,7 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
   const loadData = React.useCallback(async () => {
     setLoadingEvents(true);
     try {
-      const allEvents = await fetchCalendarEvents(new Date());
-      
+      const allEvents = await getSyncedEvents();
       if (substep.referenceId === "onboarding") {
         setEvents(allEvents.filter(ev => ev.summary.toLowerCase().includes("onboarding")));
       } else {
