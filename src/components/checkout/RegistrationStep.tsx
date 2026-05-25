@@ -30,10 +30,19 @@ export function RegistrationStep({ onComplete }: RegistrationStepProps) {
         const mapSnap = await getDoc(doc(db, "_AuthMap", user.uid));
         if (mapSnap.exists()) {
           const { matricula } = mapSnap.data();
-          // 2. Buscar dados cadastrais existentes
-          const dataSnap = await getDoc(doc(db, "User", matricula, "User_Data", "dados_cadastrais"));
-          if (dataSnap.exists()) {
-            setInitialData(dataSnap.data());
+          
+          // 2. Tentar buscar da coleção Forms (Submissão oficial do FormsEngine)
+          const formsSnap = await getDoc(doc(db, "User", matricula, "Forms", "dados_cadastrais"));
+          
+          if (formsSnap.exists()) {
+            const formData = formsSnap.data();
+            setInitialData(formData.data || formData);
+          } else {
+            // 3. Fallback: Buscar da subcoleção User_Data (legado ou preenchimento parcial)
+            const dataSnap = await getDoc(doc(db, "User", matricula, "User_Data", "dados_cadastrais"));
+            if (dataSnap.exists()) {
+              setInitialData(dataSnap.data());
+            }
           }
         }
       } catch (err) {
