@@ -48,7 +48,8 @@ function AuthRequiredHandler() {
         const triggerAutoLogin = async () => {
           try {
             await signInWithGoogle();
-            router.push("/hub");
+            const returnTo = searchParams.get("returnTo") || "/hub";
+            router.push(returnTo);
           } catch (err) {
             console.error("Falha no login automático via query param:", err);
           }

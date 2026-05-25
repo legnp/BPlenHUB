@@ -26,6 +26,7 @@ export function middleware(request: NextRequest) {
     // Adicionamos um query param para que a interface possa saber que o acesso foi negado
     const url = new URL('/', request.url);
     url.searchParams.set('auth', 'required');
+    url.searchParams.set('returnTo', pathname);
     return NextResponse.redirect(url);
   }
 
