@@ -29,49 +29,23 @@ export function MatriculaGuard({ productSlug, className, children }: MatriculaGu
   async function handleAction() {
     if (loading || isChecking) return;
 
-    // 1. Verificar Autenticação Base
+    // 🛡️ SOBERANIA DE CONVERSÃO: Se não está logado, exige login.
+    // Se está logado, segue para o checkout independente de ter matrícula (ela será gerada lá).
     if (!user) {
       setModalMode("login");
       setIsModalOpen(true);
       return;
     }
 
-    setIsChecking(true);
-    try {
-      // 2. Verificar Matrícula via _AuthMap
-      const mapSnap = await getDoc(doc(db, "_AuthMap", user.uid));
-      
-      if (mapSnap.exists()) {
-        const { matricula } = mapSnap.data();
-        if (matricula) {
-          // Se tem matrícula, segue direto para o checkout real
-          router.push(`/hub/membro/checkout/${productSlug}`);
-          return;
-        }
-      }
-
-      // 3. Se não tem matrícula, abre o Modal de Transição
-      setModalMode("welcome");
-      setIsModalOpen(true);
-    } catch (err) {
-      console.error("Erro ao validar matrícula no Guard:", err);
-      // Fallback: em caso de erro, tenta o fluxo seguro (Welcome)
-      router.push(`/hub?checkout=${productSlug}`);
-    } finally {
-      setIsChecking(false);
-    }
+    router.push(`/hub/membro/checkout/${productSlug}`);
   }
 
   function handleModalConfirm() {
     setIsModalOpen(false);
     if (modalMode === "login") {
-       // 🚀 SOBERANIA DE FLUXO: Após login, envia direto para o Hub com a intenção de checkout.
-       // O Hub se encarregará de mostrar o modal de boas-vindas com o nome do usuário.
-       const targetPath = `/hub?checkout=${productSlug}`;
+       // Redireciona para login e volta para o checkout do produto
+       const targetPath = `/hub/membro/checkout/${productSlug}`;
        router.push(`/?auth=required&returnTo=${encodeURIComponent(targetPath)}`);
-    } else {
-       // Se já está logado mas caiu aqui por algum motivo, vai para o Hub
-       router.push(`/hub?checkout=${productSlug}`);
     }
   }
 

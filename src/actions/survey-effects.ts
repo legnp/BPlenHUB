@@ -55,7 +55,7 @@ export async function resolveUserIdentity(surveyId: string, responses: Record<st
     }
   }
 
-  if (surveyId === "welcome_survey") {
+  if (surveyId === "welcome_survey" || surveyId === "dados_cadastrais") {
     return await db.runTransaction(async (transaction) => {
       const counterRef = db.doc("_internal/counters/user/global");
       const counterSnap = await transaction.get(counterRef);

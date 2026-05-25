@@ -12,7 +12,6 @@ import { useTourStore } from "@/store/tour-store";
 import { hubOnboardingSteps } from "@/config/tour/hub-onboarding";
 import { HubHomeView } from "@/components/hub/HubHomeView";
 import { WelcomeRedirectModal } from "@/components/checkout/WelcomeRedirectModal";
-import { CheckoutResumeFloatingButton } from "@/components/checkout/CheckoutResumeFloatingButton";
 
 export default function HubPage() {
   const { user, loading } = useAuthContext();
@@ -24,15 +23,9 @@ export default function HubPage() {
   if (!user && !loading) return null;
   const [hasCompletedSurvey, setHasCompletedSurvey] = useState<boolean | null>(null);
   const [checkingSurvey, setCheckingSurvey] = useState(false);
-  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
-  const [isLastSurveyStep, setIsLastSurveyStep] = useState(false);
 
-  // Efeito Soberano: Detectar se o usuário veio de um checkout e precisa de boas-vindas
-  useEffect(() => {
-    if (user && hasCompletedSurvey === false && searchParams.get("checkout")) {
-       setShowWelcomeModal(true);
-    }
-  }, [user, hasCompletedSurvey, searchParams]);
+  // O Hub foca apenas na WelcomeSurvey se o usuário não a concluiu.
+  // A matrícula já deve existir (vinda do Checkout ou de acessos anteriores).
 
   useEffect(() => {
     async function checkSurvey() {
@@ -110,8 +103,6 @@ export default function HubPage() {
           <SurveyEngine 
             config={dynamicWelcomeConfig}
             userUid={user.uid}
-            returnToCheckoutSlug={searchParams.get("checkout") || undefined}
-            onStepChange={(idx, isLast) => setIsLastSurveyStep(isLast)}
             onComplete={(mat, responses) => {
               if (responses?.wants_tour?.includes("Sim")) {
                 useTourStore.getState().startTour("onboarding_tour", hubOnboardingSteps);
@@ -119,38 +110,11 @@ export default function HubPage() {
               setHasCompletedSurvey(true);
             }}
           />
-
-          <WelcomeRedirectModal 
-            isOpen={showWelcomeModal}
-            userName={user.displayName?.split(" ")[0] || "Membro"}
-            onConfirm={() => setShowWelcomeModal(false)}
-          />
         </div>
-
-        {/* 🚀 BOTÃO DE RETORNO: Aparece na última etapa da pesquisa */}
-        {searchParams.get("checkout") && isLastSurveyStep && (
-          <CheckoutResumeFloatingButton 
-            slug={searchParams.get("checkout") || ""} 
-            userName={user.displayName?.split(" ")[0]}
-          />
-        )}
       </main>
     );
   }
 
   // HUB HOME — Experiência Pós-Survey
-  const checkoutSlug = searchParams.get("checkout");
-
-  return (
-    <>
-      <HubHomeView />
-      {/* Botão persistente para quem veio de checkout */}
-      {checkoutSlug && (isLastSurveyStep || hasCompletedSurvey) && (
-        <CheckoutResumeFloatingButton 
-          slug={checkoutSlug} 
-          userName={user.displayName?.split(" ")[0]}
-        />
-      )}
-    </>
-  );
+  return <HubHomeView />;
 }

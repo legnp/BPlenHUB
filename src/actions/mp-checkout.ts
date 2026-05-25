@@ -166,8 +166,8 @@ export async function createPreferenceAction(
  */
 export async function getCheckoutProductAction(slug: string, idToken?: string) {
   try {
-    // 🛡️ Exige matrícula. Se falhar, o erro "MATRICULA_REQUIRED" será capturado pela UI
-    await requireMatricula(idToken);
+    // 🛡️ Exige apenas autenticação. A matrícula será resolvida/gerada no RegistrationStep.
+    await requireAuth(idToken);
     
     const db = getAdminDb();
     
