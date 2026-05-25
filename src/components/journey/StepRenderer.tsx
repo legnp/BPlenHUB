@@ -338,7 +338,7 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
                       <div className="p-4 sm:p-8 h-full">
                          <Calendar 
                             events={events} 
-                            onBookingSuccess={() => { loadData(); onComplete(); }}
+                            onBookingSuccess={() => { loadData(); }}
                          />
                       </div>
                    )}
@@ -451,6 +451,18 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
                                Sua avaliação foi registrada. Obrigado!
                             </p>
                          )}
+                      </div>
+                   )}
+
+                   {/* BOTÃO PARA AVANÇAR */}
+                   {isCompleted && status !== "completed" && (
+                      <div className="mt-8 flex justify-center animate-in fade-in slide-in-from-bottom-4 delay-300">
+                         <button 
+                            onClick={onComplete}
+                            className="px-12 py-5 bg-[var(--accent-start)] text-white rounded-full text-[12px] font-black uppercase tracking-[0.2em] hover:scale-105 active:scale-95 transition-all shadow-xl shadow-[var(--accent-start)]/20"
+                         >
+                            {nomen.actions.mark_as_done}
+                         </button>
                       </div>
                    )}
                 </div>
