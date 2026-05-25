@@ -31,8 +31,7 @@ export function PaymentBrick({ preferenceId, orderId, amount, onReady, onError, 
   const { user } = useAuthContext();
 
   const initialization = {
-    // 🛡️ Soberania de Preço: Se temos preferenceId, o Mercado Pago ignora o amount.
-    // Removendo para evitar o aviso "[BRICKS] preferenceId and payment_js must be provided together"
+    amount: amount, // Obrigatório por contrato de tipo do SDK
     preferenceId: preferenceId,
   };
 
