@@ -103,6 +103,9 @@ export function useJourney(uid: string) {
     // Checagem de Acesso Granular
     const hasQuota = quotas?.quotas[stepId] ? (quotas.quotas[stepId].total > 0) : false;
     
+    // Checagem Global: O usuário adquiriu QUALQUER serviço? 💳
+    const hasAnyQuota = quotas ? Object.values(quotas.quotas).some(q => q.total > 0) : false;
+
     // Identificar se é o "Próximo Passo" lógico (Baseado em ID sequencial ou LastActive)
     const currentStepIndex = stages.findIndex(s => s.id === progress?.lastActiveStepId);
     const thisStepIndex = stages.findIndex(s => s.id === stepId);
@@ -125,7 +128,7 @@ export function useJourney(uid: string) {
     return {
       status: stepProgress?.status || "locked",
       percentage,
-      hasAccess: hasQuota || stage?.order === 0 || stepId === 'onboarding', // Step 0 e Onboarding sempre liberados
+      hasAccess: hasQuota || stage?.order === 0 || (stepId === 'onboarding' && hasAnyQuota), // Step 0 sempre livre, Onboarding livre se tiver algum serviço
       isNext,
       isSequenceLocked, // 🧬 Nova flag de governança metodológica
       substepsLabel: `${completedCount}/${totalSubsteps}`
