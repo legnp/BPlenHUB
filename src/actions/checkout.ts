@@ -17,7 +17,8 @@ import { validateCouponAction } from "./coupons";
 export async function processServicePurchaseAction(
   productSlug: string, 
   idToken: string,
-  couponCode?: string
+  couponCode?: string,
+  legalConsent?: boolean
 ) {
   try {
     // 🛡️ 1. Validar Autenticação
@@ -57,11 +58,12 @@ export async function processServicePurchaseAction(
     }
 
     // 🏛️ 3. Ativação Soberana (via Matrícula 🛡️)
-    await grantServiceEntitlement({
+    const grantResult = await grantServiceEntitlement({
       uid: session.uid,
       productId: product.id || productSnap.docs[0].id,
       productSlug: product.slug,
-      productTitle: product.title
+      productTitle: product.title,
+      legalConsent
     });
 
     console.log(`✅ [Checkout] Serviço ${product.title} ativado para ${session.email}`);
@@ -69,7 +71,7 @@ export async function processServicePurchaseAction(
     revalidatePath("/hub");
     revalidatePath("/admin/users");
     
-    return { success: true, productTitle: product.title };
+    return { success: true, productTitle: product.title, orderId: grantResult.orderId };
 
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : "Erro interno ao processar contratação.";

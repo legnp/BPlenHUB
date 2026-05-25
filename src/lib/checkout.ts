@@ -15,10 +15,11 @@ interface GrantEntitlementParams {
   productSlug: string;
   productTitle: string;
   orderId?: string;
+  legalConsent?: boolean;
 }
 
 export async function grantServiceEntitlement(params: GrantEntitlementParams) {
-  const { uid, productId, productSlug, productTitle, orderId } = params;
+  const { uid, productId, productSlug, productTitle, orderId, legalConsent } = params;
   const db = getAdminDb();
   
   console.log(`🧬 [Entitlement] Iniciando ativação: ${productTitle} para UID: ${uid}`);
@@ -31,6 +32,11 @@ export async function grantServiceEntitlement(params: GrantEntitlementParams) {
     console.error(`🚨 [Entitlement Critical Error] UID ${uid} não possui matrícula mapeada no _AuthMap!`);
     throw new Error("Usuário não possui uma Matrícula Válida. Impossível liberar serviço.");
   }
+
+  // Generate a trackable FREE order ID if none was provided
+  const finalOrderId = orderId && orderId !== "legacy" 
+    ? orderId 
+    : `BPLEN-FREE-${matricula}-${productSlug.toUpperCase().substring(0, 10)}-${Date.now()}`;
 
   // Caminho Soberano Oficial (Validado)
   const userRef = db.doc(`User/${matricula}/User_Permissions/access`);
@@ -56,10 +62,16 @@ export async function grantServiceEntitlement(params: GrantEntitlementParams) {
       lastPurchase: {
         productTitle,
         productSlug,
-        orderId: orderId || "legacy",
-        purchasedAt: admin.firestore.FieldValue.serverTimestamp()
+        orderId: finalOrderId,
+        purchasedAt: admin.firestore.FieldValue.serverTimestamp(),
+        ...(legalConsent ? { legalConsent: true, consentTimestamp: admin.firestore.FieldValue.serverTimestamp() } : {})
       }
     };
+
+    if (legalConsent) {
+      updateData.legalConsentGiven = true;
+      updateData.legalConsentTimestamp = admin.firestore.FieldValue.serverTimestamp();
+    }
 
     // Promoção automática para Membro
     if (!userDoc.exists || userDoc.data()?.role === "visitor") {
@@ -77,6 +89,6 @@ export async function grantServiceEntitlement(params: GrantEntitlementParams) {
       });
     }
 
-    return { success: true, matricula };
+    return { success: true, matricula, orderId: finalOrderId };
   });
 }

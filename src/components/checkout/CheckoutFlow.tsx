@@ -20,7 +20,7 @@ interface CheckoutFlowProps {
 
 export function CheckoutFlow({ product }: CheckoutFlowProps) {
   const { user } = useAuthContext();
-  const [step, setStep] = useState<"registration" | "payment">("registration");
+  const [step, setStep] = useState<"registration" | "payment" | "free_activation">("registration");
   const [preferenceId, setPreferenceId] = useState<string | null>(null);
   const [orderId, setOrderId] = useState<string | null>(null);
   const [idToken, setIdToken] = useState<string | null>(null);
@@ -28,6 +28,11 @@ export function CheckoutFlow({ product }: CheckoutFlowProps) {
   const [error, setError] = useState<string | null>(null);
 
   async function handleInitCheckout() {
+    if (product.price === 0) {
+      setStep("free_activation");
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
@@ -43,6 +48,29 @@ export function CheckoutFlow({ product }: CheckoutFlowProps) {
         setStep("payment");
       } else {
         setError(result.error || "Falha ao iniciar checkout.");
+      }
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleFreeActivation() {
+    setLoading(true);
+    setError(null);
+    try {
+      if (!user) throw new Error("Usuário não autenticado.");
+      const token = await user.getIdToken();
+      const { processServicePurchaseAction } = await import("@/actions/checkout");
+      
+      // Call backend with legalConsent = true
+      const result = await processServicePurchaseAction(product.slug, token, undefined, true);
+      
+      if (result.success && result.orderId) {
+         window.location.href = `/hub/membro/checkout/success?orderId=${result.orderId}`;
+      } else {
+         setError(result.error || "Falha ao ativar serviço.");
       }
     } catch (err: any) {
       setError(err.message);
@@ -142,7 +170,55 @@ export function CheckoutFlow({ product }: CheckoutFlowProps) {
                           <h4 className="text-sm font-bold text-[var(--text-primary)] uppercase tracking-widest">Iniciando Checkout Seguro</h4>
                           <p className="text-[10px] text-[var(--text-muted)] font-medium">Conectando com Mercado Pago...</p>
                        </div>
-                    </motion.div>
+                     </motion.div>
+                  ) : step === "free_activation" ? (
+                     <motion.div 
+                       key="free_activation"
+                       initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+                       className="w-full space-y-8 my-auto"
+                     >
+                        <div className="text-center space-y-3">
+                           <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 mx-auto mb-6">
+                              <Zap size={32} />
+                           </div>
+                           <h3 className="text-2xl font-black tracking-tight text-[var(--text-primary)] uppercase italic">
+                              Ativação Gratuita
+                           </h3>
+                           <p className="text-xs text-[var(--text-muted)] font-medium leading-relaxed max-w-sm mx-auto">
+                              Este serviço possui valor promocional de R$ 0,00. Confirme seu aceite para liberarmos o acesso imediatamente.
+                           </p>
+                        </div>
+                        
+                        <div className="p-6 rounded-2xl bg-[var(--input-bg)] border border-[var(--border-primary)] space-y-4 shadow-sm">
+                           <label className="flex items-start gap-4 cursor-pointer group">
+                              <input type="checkbox" required id="legalConsent" className="mt-1 w-5 h-5 rounded border border-[var(--border-primary)] text-emerald-500 focus:ring-emerald-500" />
+                              <span className="text-xs text-[var(--text-secondary)] leading-relaxed group-hover:text-white transition-colors">
+                                 Declaro que li e concordo com os <a href="/termos" target="_blank" className="text-emerald-500 hover:underline">Termos de Uso</a> e a <a href="/privacidade" target="_blank" className="text-emerald-500 hover:underline">Política de Privacidade</a> da BPlen.
+                              </span>
+                           </label>
+                        </div>
+                        
+                        <button 
+                           onClick={() => {
+                              const checkbox = document.getElementById("legalConsent") as HTMLInputElement;
+                              if (!checkbox || !checkbox.checked) {
+                                 setError("Você precisa aceitar os Termos de Uso para prosseguir.");
+                                 return;
+                              }
+                              handleFreeActivation();
+                           }}
+                           className="w-full px-8 py-4 bg-emerald-500 text-black rounded-full text-[12px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-emerald-500/20"
+                        >
+                            Concluir Ativação Gratuita
+                        </button>
+                        
+                        <button 
+                           onClick={() => setStep("registration")}
+                           className="mt-8 text-[9px] font-black uppercase tracking-widest text-gray-500 hover:text-white block mx-auto"
+                         >
+                             ← Voltar para Revisão de Dados
+                         </button>
+                     </motion.div>
                  ) : error ? (
                     <motion.div 
                       key="error"
