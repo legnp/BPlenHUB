@@ -65,10 +65,12 @@ export function MatriculaGuard({ productSlug, className, children }: MatriculaGu
   function handleModalConfirm() {
     setIsModalOpen(false);
     if (modalMode === "login") {
-       // Se é login, redireciona para a home com returnTo para esta mesma página
-       router.push(`/?auth=required&returnTo=${encodeURIComponent(pathname)}`);
+       // 🚀 SOBERANIA DE FLUXO: Após login, envia direto para o Hub com a intenção de checkout.
+       // O Hub se encarregará de mostrar o modal de boas-vindas com o nome do usuário.
+       const targetPath = `/hub?checkout=${productSlug}`;
+       router.push(`/?auth=required&returnTo=${encodeURIComponent(targetPath)}`);
     } else {
-       // Se é welcome, redireciona para o Hub
+       // Se já está logado mas caiu aqui por algum motivo, vai para o Hub
        router.push(`/hub?checkout=${productSlug}`);
     }
   }

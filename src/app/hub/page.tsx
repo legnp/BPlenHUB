@@ -11,6 +11,7 @@ import { GoogleLoginButton } from "@/components/auth/google-login-button";
 import { useTourStore } from "@/store/tour-store";
 import { hubOnboardingSteps } from "@/config/tour/hub-onboarding";
 import { HubHomeView } from "@/components/hub/HubHomeView";
+import { WelcomeRedirectModal } from "@/components/checkout/WelcomeRedirectModal";
 
 export default function HubPage() {
   const { user, loading } = useAuthContext();
@@ -22,6 +23,14 @@ export default function HubPage() {
   if (!user && !loading) return null;
   const [hasCompletedSurvey, setHasCompletedSurvey] = useState<boolean | null>(null);
   const [checkingSurvey, setCheckingSurvey] = useState(false);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+
+  // Efeito Soberano: Detectar se o usuário veio de um checkout e precisa de boas-vindas
+  useEffect(() => {
+    if (user && hasCompletedSurvey === false && searchParams.get("checkout")) {
+       setShowWelcomeModal(true);
+    }
+  }, [user, hasCompletedSurvey, searchParams]);
 
   useEffect(() => {
     async function checkSurvey() {
@@ -106,6 +115,12 @@ export default function HubPage() {
               }
               setHasCompletedSurvey(true);
             }}
+          />
+
+          <WelcomeRedirectModal 
+            isOpen={showWelcomeModal}
+            userName={user.displayName?.split(" ")[0] || "Membro"}
+            onConfirm={() => setShowWelcomeModal(false)}
           />
         </div>
       </main>
