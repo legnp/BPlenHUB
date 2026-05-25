@@ -1,15 +1,11 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { initMercadoPago, Payment } from "@mercadopago/sdk-react";
+import { loadMercadoPago } from "@mercadopago/sdk-js";
 import { clientEnv } from "@/env";
 import { useAuthContext } from "@/context/AuthContext";
 import { processPaymentAction } from "@/actions/mp-checkout";
-
-// Inicialização Global Única (Soberania de SDK 🛡️)
-initMercadoPago(clientEnv.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY, {
-  locale: "pt-BR",
-});
 
 interface PaymentBrickProps {
   preferenceId: string;
@@ -26,19 +22,37 @@ interface PaymentBrickProps {
  * Integra o Checkout Bricks do Mercado Pago com o design system do HUB.
  * Gerencia o ciclo de vida do pagamento e callbacks.
  */
-
 export function PaymentBrick({ preferenceId, orderId, amount, onReady, onError, onSuccess, idToken }: PaymentBrickProps) {
   const { user } = useAuthContext();
+  const [mpInstance, setMpInstance] = useState<any>(null);
 
-  console.log("🔍 [Brick-Init] Pref:", preferenceId, "Amount:", amount);
+  useEffect(() => {
+    const initSDK = async () => {
+      try {
+        // 🚀 Carregamento Robusto: Garante que a instância esteja pronta
+        await loadMercadoPago();
+        initMercadoPago(clientEnv.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY, {
+          locale: "pt-BR",
+        });
+        
+        // Captura a instância global para injetar no Brick
+        if ((window as any).MercadoPago) {
+          const mp = new (window as any).MercadoPago(clientEnv.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY, {
+            locale: "pt-BR",
+          });
+          setMpInstance(mp);
+        }
+      } catch (err) {
+        console.error("🚨 [PaymentBrick] Erro ao carger SDK:", err);
+      }
+    };
+    initSDK();
+  }, []);
 
   const initialization = {
     amount: Number(amount),
     preferenceId: preferenceId,
   };
-
-  // 🚀 Algumas versões do SDK exigem a instância direta para evitar o erro "mercadoPago must be provided together"
-  const mpInstance = (window as any).mercadopago;
 
   const customization = {
     paymentMethods: {
@@ -59,33 +73,23 @@ export function PaymentBrick({ preferenceId, orderId, amount, onReady, onError, 
     }
   };
 
-  useEffect(() => {
-    // 🛡️ Garante que o SDK esteja pronto antes da renderização
-    initMercadoPago(clientEnv.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY, {
-      locale: "pt-BR",
-    });
-  }, []);
-
   const onSubmit = async ({ selectedPaymentMethod, formData }: any) => {
-    // 💳 Checkout Transparente: Enviamos o Payload criptografado do cartão para o backend!
+    // 💳 Checkout Transparente
     return new Promise<void>(async (resolve, reject) => {
       try {
         const currentToken = idToken || (user ? await user.getIdToken() : undefined);
         const res = await processPaymentAction(formData, orderId, currentToken);
 
         if (res.success) {
-          console.log("✅ [PaymentBrick] Cobrança processada no Mercado Pago!");
+          console.log("✅ [PaymentBrick] Cobrança processada!");
           resolve();
-          // Dá um tempo de 1.5 segundo para a animação verde do Brick rodar antes do redirect
           if (onSuccess) {
             setTimeout(() => onSuccess(res.paymentId?.toString()), 1500);
           }
         } else {
-          console.error("❌ [PaymentBrick] Falha no backend:", res.error);
           reject(new Error(res.error));
         }
       } catch (err: any) {
-        console.error("🚨 [PaymentBrick] Exceção estrutural:", err);
         reject(err);
       }
     });
@@ -93,17 +97,23 @@ export function PaymentBrick({ preferenceId, orderId, amount, onReady, onError, 
 
   return (
     <div className="w-full min-h-[400px] animate-in fade-in duration-700">
-      <Payment
-        {...({
-          key: preferenceId,
-          initialization,
-          customization,
-          onSubmit,
-          onReady,
-          onError,
-          mercadoPago: mpInstance, // 🛡️ A peça que faltava, injetada via bypass de tipo
-        } as any)}
-      />
+      {mpInstance ? (
+        <Payment
+          {...({
+            key: preferenceId,
+            initialization,
+            customization,
+            onSubmit,
+            onReady,
+            onError,
+            mercadoPago: mpInstance, // 🛡️ Injeção de instância estável
+          } as any)}
+        />
+      ) : (
+        <div className="flex items-center justify-center p-8 text-slate-400">
+          <div className="animate-pulse">Seguindo para o ambiente seguro...</div>
+        </div>
+      )}
     </div>
   );
 }
