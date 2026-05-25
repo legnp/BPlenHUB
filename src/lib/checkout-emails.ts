@@ -90,7 +90,7 @@ const LOGO_HTML = `
  */
 export async function sendOrderRequestedEmail(user: UserDetails, order: OrderDetails) {
   try {
-    const baseUrl = clientEnv.NEXT_PUBLIC_APP_URL || "https://bplenhub.com";
+    const baseUrl = clientEnv.NEXT_PUBLIC_APP_URL || "https://bplen.com";
     
     await resend.emails.send({
       from: "BPlen Financeiro <financeiro@bplen.com>",
@@ -186,7 +186,7 @@ export async function sendPaymentApprovedEmail(user: UserDetails, order: OrderDe
  */
 export async function sendServiceGrantedEmail(user: UserDetails, productTitle: string) {
   try {
-    const baseUrl = clientEnv.NEXT_PUBLIC_APP_URL || "https://bplenhub.com";
+    const baseUrl = clientEnv.NEXT_PUBLIC_APP_URL || "https://bplen.com";
     
     await resend.emails.send({
       from: "BPlen HUB <hub@bplen.com>",
