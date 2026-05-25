@@ -100,10 +100,37 @@ export function useJourney(uid: string) {
     const completedCount = stepProgress?.completedSubSteps.length || 0;
     const percentage = totalSubsteps > 0 ? Math.round((completedCount / totalSubsteps) * 100) : 0;
 
-    // Checagem de Acesso Granular (Case Insensitive / Fallback Uppercase)
-    const quotaLower = quotas?.quotas[stepId.toLowerCase()];
-    const quotaUpper = quotas?.quotas[stepId.toUpperCase()];
-    const hasQuota = (quotaLower && quotaLower.total > 0) || (quotaUpper && quotaUpper.total > 0) || false;
+    // Checagem de Acesso Granular Inteligente (Suporte a Pacotes de Eventos)
+    const stepIdUpper = stepId.toUpperCase();
+    const stepIdLower = stepId.toLowerCase();
+    let hasQuota = false;
+
+    if (quotas && quotas.quotas) {
+       for (const [quotaKey, quotaData] of Object.entries(quotas.quotas)) {
+          if (quotaData.total <= 0) continue;
+          
+          const keyUpper = quotaKey.toUpperCase();
+          
+          // Match direto ou se o EventType (ex: DEVOLUTIVA-ANALISE-COMPORTAMENTAL) contém a fase (ANALISE-COMPORTAMENTAL)
+          if (keyUpper === stepIdUpper || keyUpper.includes(stepIdUpper) || stepIdUpper.includes(keyUpper)) {
+             hasQuota = true;
+             break;
+          }
+          
+          // Fallbacks metodológicos (ex: Coaching-e-mentoria desbloqueado por sessão de coaching)
+          if (stepIdUpper === 'COACHING-E-MENTORIA' && (keyUpper.includes('COACHING') || keyUpper.includes('MENTORIA'))) {
+             hasQuota = true;
+             break;
+          }
+       }
+    }
+
+    if (!hasQuota) {
+       // Fallback original de segurança
+       const quotaLower = quotas?.quotas[stepIdLower];
+       const quotaUpper = quotas?.quotas[stepIdUpper];
+       hasQuota = (quotaLower && quotaLower.total > 0) || (quotaUpper && quotaUpper.total > 0) || false;
+    }
     
     // Checagem Global: O usuário adquiriu QUALQUER serviço? 💳
     const hasAnyQuota = quotas ? Object.values(quotas.quotas).some(q => q.total > 0) : false;

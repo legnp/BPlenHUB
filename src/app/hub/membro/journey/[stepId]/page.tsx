@@ -166,7 +166,20 @@ export default function StepJourneyPage() {
       <GuidedTourOverlay
         steps={memberOnboardingSteps.slice(5)}
         isOpen={isTourOpen}
-        onComplete={() => setIsTourOpen(false)}
+        onComplete={async () => {
+          setIsTourOpen(false);
+          // Marca o "Tour Guiado" como concluído magicamente se for a primeira vez
+          if (stepId === "onboarding" && currentSubStepId === "introducao") {
+             await updateSubStep(stepId, currentSubStepId, true);
+             router.refresh();
+             
+             // Avança para a parada 2 (Check-in) automaticamente
+             const currentIndex = stepConfig.substeps.findIndex(ss => ss.id === currentSubStepId);
+             if (currentIndex !== -1 && currentIndex < stepConfig.substeps.length - 1) {
+                setCurrentSubStepId(stepConfig.substeps[currentIndex + 1].id);
+             }
+          }
+        }}
         userName={user?.displayName ? user.displayName.split(" ")[0] : "Membro"}
       />
     </div>
