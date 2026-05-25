@@ -30,8 +30,7 @@ interface PaymentBrickProps {
 export function PaymentBrick({ preferenceId, orderId, amount, onReady, onError, onSuccess, idToken }: PaymentBrickProps) {
   const { user } = useAuthContext();
 
-  const initialization = {
-    amount: amount, // Obrigatório por contrato de tipo do SDK
+  const initialization: any = {
     preferenceId: preferenceId,
   };
 
@@ -44,14 +43,11 @@ export function PaymentBrick({ preferenceId, orderId, amount, onReady, onError, 
     },
     visual: {
       style: {
-        theme: "flat" as const, // Mais limpo para combinar com Glassmorphism
+        theme: "flat" as const,
         customVariables: {
+          baseColor: "#667eea",
           formBackgroundColor: "transparent",
-          baseColor: "#667eea", // BPlen Accent
-          buttonBackgroundColor: "#1D1D1F",
           buttonTextColor: "#ffffff",
-          inputBackgroundColor: "rgba(0, 0, 0, 0.03)",
-          inputBorderColor: "rgba(0, 0, 0, 0.1)",
         }
       }
     }
