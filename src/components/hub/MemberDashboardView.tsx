@@ -95,7 +95,7 @@ export default function MemberDashboardView() {
   useEffect(() => {
     if (!user) return;
     
-    async function load() {
+    async function loadResults() {
       try {
         const results = await Promise.allSettled([
           getGestaoTempoResult(user!.uid, user!.email || ''),
@@ -118,21 +118,26 @@ export default function MemberDashboardView() {
       } finally {
         setLoading(false);
       }
+    }
+    loadResults();
+  }, [user]);
 
+  useEffect(() => {
+    if (!matricula) return;
+
+    async function loadBookings() {
       setLoadingBookings(true);
       try {
-        if (matricula) {
-           const bookings = await getUserBookingsAction(matricula);
-           setHistoryBookings(bookings);
-        }
+        const bookings = await getUserBookingsAction(matricula);
+        setHistoryBookings(bookings);
       } catch (error) {
         console.error("Erro ao carregar histórico:", error);
       } finally {
         setLoadingBookings(false);
       }
     }
-    load();
-  }, [user]);
+    loadBookings();
+  }, [matricula]);
 
   // Mapeamentos de dados
   const triadData = gestaoResult?.scores ? [
