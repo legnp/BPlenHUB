@@ -94,12 +94,15 @@ export function PaymentBrick({ preferenceId, orderId, amount, onReady, onError, 
   return (
     <div className="w-full min-h-[400px] animate-in fade-in duration-700">
       <Payment
-        key={preferenceId}
-        initialization={initialization}
-        customization={customization}
-        onSubmit={onSubmit}
-        onReady={onReady}
-        onError={onError}
+        {...({
+          key: preferenceId,
+          initialization,
+          customization,
+          onSubmit,
+          onReady,
+          onError,
+          mercadoPago: mpInstance, // 🛡️ A peça que faltava, injetada via bypass de tipo
+        } as any)}
       />
     </div>
   );
