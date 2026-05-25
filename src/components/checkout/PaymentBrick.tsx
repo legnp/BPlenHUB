@@ -91,6 +91,7 @@ export function PaymentBrick({ preferenceId, orderId, amount, onReady, onError, 
               if (onError) onError(error);
             },
           },
+          mercadoPago: mp, // 🛡️ O elo final para matar o erro 'Together'
         };
 
         if (isMounted) {
