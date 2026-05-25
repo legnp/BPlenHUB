@@ -18,7 +18,8 @@ import {
   FileText,
   Users,
   Handshake,
-  ShieldCheck
+  ShieldCheck,
+  Package
 } from "lucide-react";
 import { SURVEY_REGISTRY } from "@/config/surveys";
 import { saveProductAction } from "@/actions/products";
