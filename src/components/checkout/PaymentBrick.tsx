@@ -3,6 +3,8 @@
 import React, { useEffect } from "react";
 import { initMercadoPago, Payment } from "@mercadopago/sdk-react";
 import { clientEnv } from "@/env";
+import { useAuthContext } from "@/context/AuthContext";
+import { processPaymentAction } from "@/actions/mp-checkout";
 
 // Inicialização Global Única (Soberania de SDK 🛡️)
 initMercadoPago(clientEnv.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY, {
@@ -18,8 +20,6 @@ interface PaymentBrickProps {
   onSuccess?: (paymentId?: string) => void;
 }
 
-import { processPaymentAction } from "@/actions/mp-checkout";
-
 /**
  * BPlen HUB — Payment Brick Wrapper (💳)
  * Integra o Checkout Bricks do Mercado Pago com o design system do HUB.
@@ -27,7 +27,8 @@ import { processPaymentAction } from "@/actions/mp-checkout";
  */
 
 export function PaymentBrick({ preferenceId, orderId, amount, onReady, onError, onSuccess }: PaymentBrickProps) {
-  
+  const { user } = useAuthContext();
+
   const initialization = {
     amount: amount,
     preferenceId: preferenceId,
@@ -38,7 +39,7 @@ export function PaymentBrick({ preferenceId, orderId, amount, onReady, onError, 
       ticket: "all" as const,
       bankTransfer: "all" as const,
       creditCard: "all" as const,
-      maxInstallments: 12, // TODO: Tornar dinâmico via prop se necessário
+      maxInstallments: 12,
     },
     visual: {
       style: {
@@ -57,25 +58,26 @@ export function PaymentBrick({ preferenceId, orderId, amount, onReady, onError, 
 
   const onSubmit = async ({ selectedPaymentMethod, formData }: any) => {
     // 💳 Checkout Transparente: Enviamos o Payload criptografado do cartão para o backend!
-    return new Promise<void>((resolve, reject) => {
-      processPaymentAction(formData, orderId)
-        .then((res) => {
-          if (res.success) {
-            console.log("✅ [PaymentBrick] Cobrança processada no Mercado Pago!");
-            resolve();
-            // Dá um tempo de 1.5 segundo para a animação verde do Brick rodar antes do redirect
-            if (onSuccess) {
-              setTimeout(() => onSuccess(res.paymentId?.toString()), 1500);
-            }
-          } else {
-            console.error("❌ [PaymentBrick] Falha no backend:", res.error);
-            reject(new Error(res.error));
+    return new Promise<void>(async (resolve, reject) => {
+      try {
+        const idToken = user ? await user.getIdToken() : undefined;
+        const res = await processPaymentAction(formData, orderId, idToken);
+
+        if (res.success) {
+          console.log("✅ [PaymentBrick] Cobrança processada no Mercado Pago!");
+          resolve();
+          // Dá um tempo de 1.5 segundo para a animação verde do Brick rodar antes do redirect
+          if (onSuccess) {
+            setTimeout(() => onSuccess(res.paymentId?.toString()), 1500);
           }
-        })
-        .catch((err) => {
-          console.error("🚨 [PaymentBrick] Exceção estrutural:", err);
-          reject(err);
-        });
+        } else {
+          console.error("❌ [PaymentBrick] Falha no backend:", res.error);
+          reject(new Error(res.error));
+        }
+      } catch (err: any) {
+        console.error("🚨 [PaymentBrick] Exceção estrutural:", err);
+        reject(err);
+      }
     });
   };
 

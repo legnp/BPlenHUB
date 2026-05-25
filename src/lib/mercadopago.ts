@@ -14,7 +14,7 @@ if (!serverEnv.MERCADOPAGO_ACCESS_TOKEN) {
 export const mpClient = new MercadoPagoConfig({ 
   accessToken: serverEnv.MERCADOPAGO_ACCESS_TOKEN,
   options: {
-    timeout: 5000, // 5 segundos de timeout para evitar travamentos
+    timeout: 30000, // 30 segundos (Soberania de Resiliência: Sandbox MP costuma ser lento)
   }
 });
 

@@ -206,8 +206,14 @@ export async function processPaymentAction(formData: any, orderId: string, idTok
   try {
     const session = await requireAuth(idToken);
     
-    // Importante: No caso do Preference ID, nós ainda dependemos da cobrança manual
-    // Injectamos metadata para rastreabilidade do Webhook
+    // 💉 Log de Auditoria: Dados que estão indo para o MP
+    console.log(`📡 [MP-Checkout] Iniciando processamento para Ordem: ${orderId} | Usuário: ${session.email}`);
+
+    // 🧼 Sanitização de Documentos (Soberania de Dados: MP exige apenas números)
+    if (formData?.payer?.identification?.number) {
+      formData.payer.identification.number = formData.payer.identification.number.replace(/\D/g, "");
+    }
+
     const payload = {
       ...formData,
       external_reference: orderId, // CRITICAL: Para o Webhook saber qual é o pedido
@@ -221,7 +227,6 @@ export async function processPaymentAction(formData: any, orderId: string, idTok
     const payment = await paymentClient.create({ body: payload });
 
     // 📧 Disparo do E-mail 1: "Compra Solicitada" (Personalizado & Inteligente 🧠🧬)
-    // Só enviamos se o status NÃO for final (aprovação/recusa imediata)
     const pendingStatuses = ["pending", "in_process", "in_mediation", "authorized"];
     
     if (pendingStatuses.includes(payment.status || "")) {
@@ -231,19 +236,13 @@ export async function processPaymentAction(formData: any, orderId: string, idTok
       const productTitle = payload.description || "Serviços BPlen HUB";
       const finalPrice = payload.transaction_amount || 0;
 
-      // Disparo Fire-and-Forget
       sendOrderRequestedEmail(
         { email: session.email || "", name: nickname },
         { orderId, productTitle, finalPrice }
       );
-      console.log(`📡 [MP-Checkout] E-mail de Solicitação enviado para ${session.email} (Status: ${payment.status})`);
-    } else {
-      console.log(`📡 [MP-Checkout] E-mail de Solicitação suprimido para ${session.email} (Status final: ${payment.status})`);
     }
 
-    // O status real de liberação de serviço NÃO DEVE ser amarrado a este retorno síncrono
-    // A soberania do serviço dita que a liberação ocorre via Webhook Assíncrono (route.ts).
-    // Aqui retornamos apenas o OK visual para o Frontend desenhar o escudo verde.
+    console.log(`✅ [MP-Checkout] Pagamento criado com sucesso: ${payment.id} (Status: ${payment.status})`);
 
     return { 
       success: true, 
@@ -251,9 +250,18 @@ export async function processPaymentAction(formData: any, orderId: string, idTok
       paymentId: payment.id 
     };
 
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Erro desconhecido de processamento";
-    console.error("❌ [MP Process Payment Error]:", error);
+  } catch (error: any) {
+    // 🕵️ Captura Profunda de Erros do Mercado Pago
+    const mpError = error.response || error;
+    console.error("❌ [MP Process Payment Error]:", JSON.stringify(mpError, null, 2));
+
+    // Extrair mensagem legível se disponível
+    let message = "Erro desconhecido no processamento. Tente outro cartão.";
+    if (error.message) message = error.message;
+    if (error.cause && Array.isArray(error.cause) && error.cause[0]?.description) {
+      message = error.cause[0].description;
+    }
+
     return { success: false, error: message };
   }
 }
