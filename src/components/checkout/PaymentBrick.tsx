@@ -31,7 +31,7 @@ export function PaymentBrick({ preferenceId, orderId, amount, onReady, onError, 
   const { user } = useAuthContext();
 
   const initialization = {
-    amount: amount,
+    amount: Number(amount),
     preferenceId: preferenceId,
   };
 
