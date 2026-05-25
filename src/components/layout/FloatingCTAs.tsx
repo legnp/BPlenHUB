@@ -47,9 +47,15 @@ function AuthRequiredHandler() {
         // Cenário: Não há usuário. Abrimos o popup de login.
         const triggerAutoLogin = async () => {
           try {
-            await signInWithGoogle();
-            const returnTo = searchParams.get("returnTo") || "/hub";
-            router.push(returnTo);
+            const loggedUser = await signInWithGoogle();
+            if (loggedUser) {
+              const returnTo = searchParams.get("returnTo") || "/hub";
+              // Aguarda um frame para garantir que os cookies foram escritos pelo navegador
+              setTimeout(() => {
+                router.push(returnTo);
+                router.refresh(); // Força o Next.js a revalidar o middleware
+              }, 100);
+            }
           } catch (err) {
             console.error("Falha no login automático via query param:", err);
           }
@@ -191,11 +197,16 @@ export function FloatingCTAs() {
                 ) : (
                    <button
                       onClick={async () => {
-                         try {
-                           await signInWithGoogle();
-                           toggleMenu();
-                           router.push("/hub");
-                         } catch (err) {
+                          try {
+                            const loggedUser = await signInWithGoogle();
+                            if (loggedUser) {
+                              toggleMenu();
+                              setTimeout(() => {
+                                router.push("/hub");
+                                router.refresh();
+                              }, 100);
+                            }
+                          } catch (err) {
                            console.error("Erro ao autenticar via CTA:", err);
                          }
                       }}
@@ -288,10 +299,15 @@ export function FloatingCTAs() {
         ) : (
            <button 
              onClick={async () => {
-                try {
-                  await signInWithGoogle();
-                  router.push("/hub");
-                } catch (err) {
+                 try {
+                   const loggedUser = await signInWithGoogle();
+                   if (loggedUser) {
+                    setTimeout(() => {
+                      router.push("/hub");
+                      router.refresh();
+                    }, 100);
+                   }
+                 } catch (err) {
                   console.error("Erro ao autenticar via CTA Desktop:", err);
                 }
              }}

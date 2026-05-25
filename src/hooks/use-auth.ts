@@ -12,6 +12,7 @@ import { useAuthContext } from "@/context/AuthContext";
 // Porém, como não temos a importação correta da Action porque não foi feita como export function de action,
 // Vamos deixar o lado do Context cuidar das permissões, mas aqui também chamaremos a action
 import { syncUserPermissionsOnLogin } from "@/actions/auth-permissions";
+import { createSignedSessionCookie } from "@/actions/auth-session";
 
 /**
  * BPlen HUB — useAuth (Central de Comandos de Autenticação)
@@ -37,15 +38,24 @@ export function useAuth() {
     setError(null);
 
     try {
+      // 1. Login no Firebase Client 🔐
       const result = await signInWithPopup(auth, provider);
       
-      // Validação Silenciosa de Permissão de Servidor
+      // 2. Criar Cookie de Sessão Assinado no Servidor (Aguardar confirmação) 🛡️
+      const idToken = await result.user.getIdToken();
+      const sessionResult = await createSignedSessionCookie(idToken);
+
+      if (!sessionResult.success) {
+        throw new Error(sessionResult.error || "Falha ao sincronizar sessão segura.");
+      }
+      
+      // 3. Validação Silenciosa de Permissões de Negócio
       await syncUserPermissionsOnLogin(result.user.uid, result.user.email);
       
       return result.user;
     } catch (err: unknown) {
       const error = err as Error;
-      console.error("Erro no Login Google:", error);
+      console.error("Erro no Login Google (Sincronizado):", error);
       setError(error.message || "Erro inesperado no login.");
       throw error;
     } finally {
