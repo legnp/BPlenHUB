@@ -64,8 +64,8 @@ export async function updateMemberQuotasAction(uid: string, newQuotas: Record<st
 
       // Merge de Cotas
       for (const [type, amount] of Object.entries(newQuotas)) {
-        // Normalização de chave 1-to-1
-        const normalizedType = type === "mentoria_1to1" ? "1-to-1" : type;
+        // Normalização de chave 1-to-1 e uppercase para consistência
+        const normalizedType = type === "mentoria_1to1" ? "1-TO-1" : type.toUpperCase();
         
         const current = currentQuotas[normalizedType] || { total: 0, used: 0, lastUpdated: now };
         currentQuotas[normalizedType] = {

@@ -100,8 +100,10 @@ export function useJourney(uid: string) {
     const completedCount = stepProgress?.completedSubSteps.length || 0;
     const percentage = totalSubsteps > 0 ? Math.round((completedCount / totalSubsteps) * 100) : 0;
 
-    // Checagem de Acesso Granular
-    const hasQuota = quotas?.quotas[stepId] ? (quotas.quotas[stepId].total > 0) : false;
+    // Checagem de Acesso Granular (Case Insensitive / Fallback Uppercase)
+    const quotaLower = quotas?.quotas[stepId.toLowerCase()];
+    const quotaUpper = quotas?.quotas[stepId.toUpperCase()];
+    const hasQuota = (quotaLower && quotaLower.total > 0) || (quotaUpper && quotaUpper.total > 0) || false;
     
     // Checagem Global: O usuário adquiriu QUALQUER serviço? 💳
     const hasAnyQuota = quotas ? Object.values(quotas.quotas).some(q => q.total > 0) : false;
@@ -136,7 +138,17 @@ export function useJourney(uid: string) {
   };
 
   const getStepStatus = (stepId: string): StepStatus => {
-    return progress?.steps[stepId]?.status || "locked";
+    const dbStatus = progress?.steps[stepId]?.status || "locked";
+    
+    // 🚀 Governança Dinâmica: Se o DB diz "locked" mas a telemetria libera (ex: Onboarding com pacote), destravamos visualmente
+    if (dbStatus === "locked") {
+       const telemetry = getStageTelemetry(stepId);
+       if (telemetry.hasAccess && !telemetry.isSequenceLocked) {
+          return "current"; // Permite acesso e renderiza o StepRenderer
+       }
+    }
+
+    return dbStatus;
   };
 
   return {
