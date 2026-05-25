@@ -345,114 +345,13 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
                 </div>
              ) : (
                 <div className="space-y-6">
-                   {/* CARD DE VIGÍLIA / SUCESSO */}
-                   <div className="p-10 border border-[var(--border-primary)] rounded-[3.5rem] bg-[var(--input-bg)]/20 glass flex flex-col md:flex-row gap-10 items-center">
-                      <div className="shrink-0 w-32 h-32 rounded-[2.5rem] bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center text-amber-500 border border-amber-500/10 shadow-inner">
-                         {isCompleted ? <CheckCircle2 size={48} className="text-emerald-500" /> : <Clock size={48} className="animate-pulse" />}
-                      </div>
-
-                      <div className="flex-1 text-center md:text-left space-y-4">
-                         <div className="space-y-1">
-                            <span className={cn(
-                               "text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full",
-                               isCompleted ? "bg-emerald-500/10 text-emerald-500" : "bg-amber-500/10 text-amber-500"
-                            )}>
-                               {isCompleted ? "Módulo Finalizado" : "Sessão Confirmada"}
-                            </span>
-                            <h3 className="text-2xl font-black text-[var(--text-primary)]">
-                               {activeBooking.eventDetail?.summary || substep.title}
-                            </h3>
-                            <p className="text-[11px] font-bold text-[var(--text-muted)] opacity-60">
-                               Orientador: <span className="text-[var(--text-primary)]">{activeBooking.eventDetail?.mentor || "BPlen Consultoria"}</span>
-                            </p>
-                         </div>
-
-                         <div className="flex flex-wrap gap-4 justify-center md:justify-start">
-                            <div className="px-4 py-2 bg-white/5 rounded-2xl border border-white/10 flex items-center gap-2">
-                               <CalendarIcon size={14} className="text-[var(--text-muted)]" />
-                               <span className="text-[11px] font-bold text-[var(--text-primary)]">
-                                  {format(parseISO(activeBooking.eventDetail?.start!), "dd 'de' MMMM", { locale: ptBR })}
-                               </span>
-                            </div>
-                            <div className="px-4 py-2 bg-white/5 rounded-2xl border border-white/10 flex items-center gap-2">
-                               <Clock size={14} className="text-[var(--text-muted)]" />
-                               <span className="text-[11px] font-bold text-[var(--text-primary)]">
-                                  {format(parseISO(activeBooking.eventDetail?.start!), "HH:mm")}
-                               </span>
-                            </div>
-                         </div>
-
-                         {activeBooking.meetingMinutesFile && (
-                            <a 
-                               href={activeBooking.meetingMinutesFile.url} 
-                               target="_blank" 
-                               rel="noopener noreferrer"
-                               className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-700 transition-colors shadow-lg"
-                            >
-                               <Download size={16} />
-                               Baixar Ata da Sessão
-                            </a>
-                         )}
-                      </div>
+                   <div className="mt-4">
+                      <UserBookings 
+                         compact={true} 
+                         filterSummary={substep.referenceId === "onboarding" ? "onboarding" : undefined} 
+                         onRefresh={() => loadData()}
+                      />
                    </div>
-
-                   {/* NPS & AVALIAÇÃO (Apenas no Cofre / Completed) */}
-                   {isCompleted && (
-                      <div className="p-8 border border-[var(--border-primary)] rounded-[3rem] bg-[var(--input-bg)]/20 animate-in slide-in-from-bottom-4 delay-200">
-                         <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-                            <div className="space-y-1 text-center md:text-left">
-                               <h4 className="font-black text-[var(--text-primary)]">Avalie sua Experiência</h4>
-                               <p className="text-[10px] font-medium text-[var(--text-muted)]">Como você avalia a condução deste encontro?</p>
-                            </div>
-
-                            <div className="flex gap-2">
-                               {[1, 2, 3, 4, 5].map((num) => (
-                                  <button
-                                     key={num}
-                                     disabled={!!activeBooking.evaluatedAt || isEvaluating}
-                                     onClick={() => setRating(num)}
-                                     className={cn(
-                                        "w-12 h-12 rounded-2xl flex items-center justify-center transition-all",
-                                        (rating >= num || activeBooking.rating >= num)
-                                          ? "bg-amber-500 text-white shadow-lg shadow-amber-500/20"
-                                          : "bg-white/5 text-[var(--text-muted)] hover:bg-white/10"
-                                     )}
-                                  >
-                                     <Star size={20} fill={(rating >= num || activeBooking.rating >= num) ? "currentColor" : "none"} />
-                                  </button>
-                               ))}
-                            </div>
-                         </div>
-
-                         {(rating > 0 && !activeBooking.evaluatedAt) && (
-                            <div className="mt-8 space-y-4 animate-in fade-in zoom-in">
-                               <textarea 
-                                  value={feedback}
-                                  onChange={(e) => setFeedback(e.target.value)}
-                                  placeholder="Conte um pouco mais sobre o que achou da sessão (opcional)..."
-                                  className="w-full p-5 bg-white/5 border border-white/10 rounded-3xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500/20 min-h-[100px] resize-none"
-                               />
-                               <div className="flex justify-end">
-                                  <button 
-                                     onClick={() => handleNPS(activeBooking.id)}
-                                     disabled={isEvaluating}
-                                     className="px-8 py-3 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:opacity-90 disabled:opacity-50"
-                                  >
-                                     {isEvaluating ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
-                                     Enviar Avaliação
-                                  </button>
-                               </div>
-                            </div>
-                         )}
-
-                         {activeBooking.evaluatedAt && (
-                            <p className="mt-6 text-[10px] font-black uppercase tracking-widest text-emerald-500 text-center flex items-center justify-center gap-2">
-                               <CheckCircle2 size={14} />
-                               Sua avaliação foi registrada. Obrigado!
-                            </p>
-                         )}
-                      </div>
-                   )}
 
                    {/* BOTÃO PARA AVANÇAR */}
                    {isCompleted && status !== "completed" && (
