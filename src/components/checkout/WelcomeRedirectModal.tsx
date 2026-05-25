@@ -25,66 +25,80 @@ export function WelcomeRedirectModal({
   description,
   buttonText = "IR PARA RECEPÇÃO"
 }: WelcomeRedirectModalProps) {
+  // Efeito Apple: Desfocar todo o fundo quando o modal abre 🛡️
+  React.useEffect(() => {
+    if (isOpen) {
+      document.body.classList.add("glass-modal-open");
+    } else {
+      document.body.classList.remove("glass-modal-open");
+    }
+    return () => document.body.classList.remove("glass-modal-open");
+  }, [isOpen]);
+
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
-          {/* Backdrop */}
+        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 sm:p-6 overflow-hidden">
+          {/* Backdrop (Camada de Profundidade Soberana 🌑) */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-black/80 backdrop-blur-md"
+            className="fixed inset-0 bg-black/40 backdrop-blur-2xl transition-all duration-700 ease-in-out"
           />
 
-          {/* Modal Content */}
+          {/* Modal Content (Card Glassmorphism v3.1) */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            initial={{ opacity: 0, scale: 0.95, y: 30 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="relative w-full max-w-lg bg-gradient-to-b from-white/10 to-white/5 border border-white/10 p-10 rounded-[3rem] shadow-2xl overflow-hidden"
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="relative w-full max-w-lg bg-gradient-to-br from-white/15 to-white/5 border border-white/20 p-8 sm:p-12 rounded-[3.5rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] overflow-hidden"
           >
-            {/* Decorative Glow */}
-            <div className="absolute -top-20 -right-20 w-40 h-40 bg-[#ff0080] blur-[100px] opacity-20" />
+            {/* Decorative Glows (Soberania de Cores) */}
+            <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#ff0080] blur-[120px] opacity-30 animate-pulse" />
+            <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-[#7928ca] blur-[120px] opacity-20" />
             
-            <div className="relative z-10 flex flex-col items-center text-center space-y-8">
-              <div className="w-20 h-20 rounded-[2.5rem] bg-[#ff0080]/10 flex items-center justify-center text-[#ff0080] shadow-xl">
-                <Rocket size={40} className="animate-pulse" />
+            <div className="relative z-10 flex flex-col items-center text-center space-y-10">
+              <div className="w-24 h-24 rounded-[3rem] bg-gradient-to-br from-[#ff0080]/20 to-[#7928ca]/10 flex items-center justify-center text-[#ff0080] shadow-[0_20px_40px_rgba(255,0,128,0.2)] border border-white/10">
+                <Rocket size={48} className="animate-pulse" />
               </div>
 
-              <div className="space-y-4">
-                <h2 className="text-3xl font-black tracking-tighter leading-tight uppercase italic">
+              <div className="space-y-5">
+                <h2 className="text-3xl sm:text-4xl font-black tracking-tight leading-none uppercase italic text-white">
                   {title || <>Olá, <span className="text-[#ff0080]">{userName}</span></>}
                 </h2>
-                <p className="text-sm font-medium text-gray-400 leading-relaxed max-w-[320px] mx-auto">
+                <p className="text-sm sm:text-base font-medium text-gray-400 leading-relaxed max-w-[350px] mx-auto">
                   {description || (
                     <>
-                      Percebemos que você ainda não passou pela nossa <span className="text-white font-bold tracking-tight">recepção oficial</span>. 
-                      Para garantir a sua correta jornada estratégica, vamos te guiar agora.
+                      Percebemos que você ainda não passou pela nossa <span className="text-white font-bold tracking-tight underline decoration-[#ff0080]/30">recepção oficial</span>. 
+                      Vamos te guiar agora para garantir sua melhor experiência.
                     </>
                   )}
                 </p>
               </div>
 
-              <div className="p-5 rounded-2xl bg-white/5 border border-white/5 w-full flex items-center gap-4 text-left">
-                <div className="p-3 bg-white/5 rounded-xl">
-                   <ArrowRight size={16} className="text-gray-500" />
+              <div className="p-6 rounded-3xl bg-white/5 border border-white/10 w-full flex items-center gap-5 text-left group">
+                <div className="p-4 bg-white/5 rounded-2xl group-hover:scale-110 transition-transform duration-500">
+                   <ArrowRight size={18} className="text-[#ff0080]" />
                 </div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500 leading-snug">
-                   Sua intenção de contratação já está salva e você retornará para cá em breve.
+                <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-gray-400 leading-snug">
+                   Sua intenção de contratação está segura e você retornará automaticamente para este serviço.
                 </p>
               </div>
 
-              <button
-                onClick={onConfirm}
-                className="w-full py-5 bg-white text-black rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_20px_40px_rgba(255,255,255,0.1)] flex items-center justify-center gap-3 group"
-              >
-                {buttonText}
-                <ArrowRight size={18} className="group-hover:translate-x-1 duration-300" />
-              </button>
+              <div className="w-full space-y-4">
+                <button
+                  onClick={onConfirm}
+                  className="w-full py-6 bg-white text-black rounded-3xl font-black text-xs uppercase tracking-[0.25em] hover:scale-[1.03] active:scale-[0.97] transition-all shadow-[0_25px_50px_-12px_rgba(255,255,255,0.2)] flex items-center justify-center gap-4 group"
+                >
+                  {buttonText}
+                  <ArrowRight size={20} className="group-hover:translate-x-2 transition-transform duration-500" />
+                </button>
+              </div>
 
-              <div className="flex items-center gap-2 text-[8px] font-black uppercase tracking-[0.3em] text-gray-600">
-                 <Loader2 size={10} className="animate-spin" />
+              <div className="flex items-center gap-3 text-[9px] font-black uppercase tracking-[0.4em] text-gray-600 pt-2">
+                 <Loader2 size={12} className="animate-spin text-[#ff0080]/40" />
                  Ambiente Seguro BPlen
               </div>
             </div>
