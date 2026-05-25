@@ -1,8 +1,8 @@
-# BPlen HUB: Segurança e Integridade de Dados 🛡️
+# BPlen HUB: Segurança e Integridade de Dados
 
 Este manual estabelece as leis de proteção contra falhas e vazamentos de dados, focando na blindagem do ambiente e na sincronia de registros.
 
-## ⚖️ Blindagem de Ambiente (Sensor Zod)
+## Blindagem de Ambiente (Sensor Zod)
 - **Validação de Variáveis**: Toda variável em `.env` deve ser validada por um schema `Zod` em `src/env.ts`.
 - **Interrupção de Falhas**: Se uma chave for nula ou mal formatada, o sistema deve interromper a execução e reportar de forma clara.
 

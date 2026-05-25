@@ -1,4 +1,4 @@
-# BPlen HUB: Arquitetura Anti-Spaghetti 🏗️
+# BPlen HUB: Arquitetura Anti-Spaghetti
 
 Este manual define as regras de ouro para manter a escalabilidade e organização do código. É terminantemente proibido violar estas diretrizes sem uma revisão formal de governança.
 

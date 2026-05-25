@@ -1,4 +1,4 @@
-# BPlen HUB — Diretrizes de Governança e Robustez 🛡️
+# BPlen HUB — Diretrizes de Governança e Robustez
 
 Este documento formaliza os critérios de qualidade e a rotina de entrega segura do ecossistema BPlen HUB.
 
@@ -14,7 +14,7 @@ Uma tarefa ou funcionalidade é considerada **CONCLUÍDA** apenas quando:
 
 ## ⚙️ Rotina de Validação e Governança
  
-### 1. Comando de Auditoria (Antigravity 🤖)
+### 1. Comando de Auditoria (Antigravity)
 Sempre que desejar validar a integridade completa antes de um deploy, utilize o comando-chave para a IA:
 > **"Antigravity, execute o Gate de Soberania 3.1."**
 
@@ -40,12 +40,11 @@ O pipeline unifica:
 - **Identificação**: Utilize o `AuthContext` para obter `matricula` e `nickname`. Evite consultas repetitivas ao Firestore.
 - **Transactions**: Operações que envolvem contadores (vagas, sequências) devem usar `runTransaction`.
 
-## 🚀 O que bloqueia a entrega?
-
-- ❌ Erros de build ou `type-check`.
-- ❌ Uso de `any` sem justificativa técnica extrema.
-- ❌ Vazamento de chaves de API (protegido pelo sensor Zod).
-- ❌ Chamadas de banco de dados sem validação de permissão.
+- Bloqueio de build ou type-check.
+- Uso de any sem justificativa técnica extrema.
+- Vazamento de chaves de API (protegido pelo sensor Zod).
+- Chamadas de banco de dados sem validação de permissão.
+- Uso de emojis em interfaces ou comunicações oficiais.
 
 ---
 **BPlen HUB** — *Excelência em Desenvolvimento Humano.*

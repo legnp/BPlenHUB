@@ -1,4 +1,4 @@
-# BPlen HUB: Design System "Glassmorphism v3.1" (Apple IOS Pro) 💎
+# BPlen HUB: Design System "Glassmorphism v3.1" (Apple IOS Pro)
 
 Este manual define a identidade visual Premium do BPlen HUB, focando em minimalismo extremo, transparências suaves e experiência Apple.
 
