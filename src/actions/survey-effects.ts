@@ -83,8 +83,20 @@ export async function getUserMetadata(userUid: string) {
     const authMapSnap = await db.doc(`_AuthMap/${userUid}`).get();
     const matricula = authMapSnap.data()?.matricula;
     if (!matricula) return {};
+    
+    // Fetch User Nickname (Soberania de Dados v2.0)
+    const userSnap = await db.doc(`User/${matricula}`).get();
+    const userData = userSnap.data() || {};
+    const nickname = userData.User_Nickname || userData.User_Welcome?.User_Nickname || userData.Authentication_Name || userData.User_Name || "Membro";
+
     const accessSnap = await db.doc(`User/${matricula}/User_Permissions/access`).get();
-    return accessSnap.data()?.metadata || {};
+    const metadata = accessSnap.data()?.metadata || {};
+
+    return { 
+      ...metadata, 
+      User_Nickname: nickname,
+      name: nickname 
+    };
   } catch (err) {
     return {};
   }
