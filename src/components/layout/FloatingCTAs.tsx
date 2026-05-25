@@ -26,18 +26,23 @@ function AuthRequiredHandler() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { user, loading, isLoggingIn, signInWithGoogle, signOut } = useAuth();
+  const hasTriggered = React.useRef(false);
 
   React.useEffect(() => {
     const authStatus = searchParams.get("auth");
     
-    if (authStatus === "required" && !loading && !isLoggingIn) {
+    if (authStatus === "required" && !loading && !isLoggingIn && !hasTriggered.current) {
       if (user) {
         // Cenário: Usuário existe no client mas foi barrado pelo server (sessão stale).
         // Forçamos o logout para limpar o estado e permitir o login fresco no próximo ciclo.
         const resetSession = async () => {
+          hasTriggered.current = true;
           console.warn("🛡️ [Soberania] Sessão stale detectada. Forçando reset...");
           try {
             await signOut();
+            // Limpa a URL para evitar re-disparo após o reload automático do Firebase
+            const newUrl = window.location.pathname;
+            window.history.replaceState({}, '', newUrl);
           } catch (err) {
             console.error("Erro ao resetar sessão stale:", err);
           }
@@ -46,7 +51,16 @@ function AuthRequiredHandler() {
       } else {
         // Cenário: Não há usuário. Abrimos o popup de login.
         const triggerAutoLogin = async () => {
+          hasTriggered.current = true;
+          console.log("🛡️ [Soberania] Gatilho de Autenticação Automático Ativado.");
+          
           try {
+            // Limpa a URL IMEDIATAMENTE para desativar o gatilho em re-renders
+            const currentParams = new URLSearchParams(window.location.search);
+            currentParams.delete("auth");
+            const newUrl = window.location.pathname + (currentParams.toString() ? `?${currentParams.toString()}` : '');
+            window.history.replaceState({}, '', newUrl);
+
             const loggedUser = await signInWithGoogle();
             if (loggedUser) {
               const returnTo = searchParams.get("returnTo") || "/hub";
@@ -58,6 +72,7 @@ function AuthRequiredHandler() {
             }
           } catch (err) {
             console.error("Falha no login automático via query param:", err);
+            hasTriggered.current = false; // Permite tentar novamente se falhar
           }
         };
         triggerAutoLogin();
