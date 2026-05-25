@@ -1,6 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Rocket, ArrowRight, Loader2 } from "lucide-react";
 
@@ -14,8 +15,8 @@ interface WelcomeRedirectModalProps {
 }
 
 /**
- * BPlen HUB — Welcome Redirect Modal (🚀 Soberana UI)
- * Informa ao usuário que ele precisa passar pela recepção para garantir a melhor experiência.
+ * BPlen HUB — Welcome Redirect Modal (🚀 Soberania UI)
+ * Utiliza Portals para garantir que o modal sempre apareça no topo da hierarquia visual.
  */
 export function WelcomeRedirectModal({ 
   isOpen, 
@@ -25,8 +26,10 @@ export function WelcomeRedirectModal({
   description,
   buttonText = "IR PARA RECEPÇÃO"
 }: WelcomeRedirectModalProps) {
-  // Efeito Apple: Desfocar todo o fundo quando o modal abre 🛡️
-  React.useEffect(() => {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
     if (isOpen) {
       document.body.classList.add("glass-modal-open");
     } else {
@@ -35,29 +38,31 @@ export function WelcomeRedirectModal({
     return () => document.body.classList.remove("glass-modal-open");
   }, [isOpen]);
 
-  return (
+  if (!mounted) return null;
+
+  const modalContent = (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 sm:p-6 overflow-hidden">
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6 overflow-hidden isolate">
           {/* Backdrop (Camada de Profundidade Soberana 🌑) */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/40 backdrop-blur-2xl transition-all duration-700 ease-in-out"
+            className="fixed inset-0 bg-black/85 backdrop-blur-xl transition-all duration-500 ease-in-out"
           />
 
-          {/* Modal Content (Card Glassmorphism v3.1) */}
+          {/* Modal Content (Card Glassmorphism v3.2 - Alta Legibilidade) */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 30 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="relative w-full max-w-lg bg-gradient-to-br from-white/15 to-white/5 border border-white/20 p-8 sm:p-12 rounded-[3.5rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] overflow-hidden"
+            className="relative w-full max-w-lg bg-[#0a0a0a] border border-white/10 p-8 sm:p-12 rounded-[3.5rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,1)] overflow-hidden"
           >
             {/* Decorative Glows (Soberania de Cores) */}
-            <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#ff0080] blur-[120px] opacity-30 animate-pulse" />
-            <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-[#7928ca] blur-[120px] opacity-20" />
+            <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#ff0080] blur-[120px] opacity-20 animate-pulse" />
+            <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-[#7928ca] blur-[120px] opacity-15" />
             
             <div className="relative z-10 flex flex-col items-center text-center space-y-10">
               <div className="w-24 h-24 rounded-[3rem] bg-gradient-to-br from-[#ff0080]/20 to-[#7928ca]/10 flex items-center justify-center text-[#ff0080] shadow-[0_20px_40px_rgba(255,0,128,0.2)] border border-white/10">
@@ -107,4 +112,6 @@ export function WelcomeRedirectModal({
       )}
     </AnimatePresence>
   );
+
+  return createPortal(modalContent, document.body);
 }
