@@ -59,6 +59,13 @@ export function PaymentBrick({ preferenceId, orderId, amount, onReady, onError, 
     }
   };
 
+  useEffect(() => {
+    // 🛡️ Garante que o SDK esteja pronto antes da renderização
+    initMercadoPago(clientEnv.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY, {
+      locale: "pt-BR",
+    });
+  }, []);
+
   const onSubmit = async ({ selectedPaymentMethod, formData }: any) => {
     // 💳 Checkout Transparente: Enviamos o Payload criptografado do cartão para o backend!
     return new Promise<void>(async (resolve, reject) => {
@@ -93,7 +100,6 @@ export function PaymentBrick({ preferenceId, orderId, amount, onReady, onError, 
         onSubmit={onSubmit}
         onReady={onReady}
         onError={onError}
-        mercadoPago={mpInstance} // 🛡️ O elo perdido! Passa a instância global direto para o Brick
       />
     </div>
   );
