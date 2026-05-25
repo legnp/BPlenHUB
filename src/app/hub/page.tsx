@@ -99,6 +99,7 @@ export default function HubPage() {
           <SurveyEngine 
             config={dynamicWelcomeConfig}
             userUid={user.uid}
+            returnToCheckoutSlug={searchParams.get("checkout") || undefined}
             onComplete={(mat, responses) => {
               if (responses?.wants_tour?.includes("Sim")) {
                 useTourStore.getState().startTour("onboarding_tour", hubOnboardingSteps);

@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { PaymentBrick } from "./PaymentBrick";
 import { createPreferenceAction } from "@/actions/mp-checkout";
 import { useAuthContext } from "@/context/AuthContext";
 import { ShoppingBag, ShieldCheck, Zap, Info, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { RegistrationStep } from "./RegistrationStep";
 
 interface CheckoutFlowProps {
   product: {
@@ -19,6 +20,7 @@ interface CheckoutFlowProps {
 
 export function CheckoutFlow({ product }: CheckoutFlowProps) {
   const { user } = useAuthContext();
+  const [step, setStep] = useState<"registration" | "payment">("registration");
   const [preferenceId, setPreferenceId] = useState<string | null>(null);
   const [orderId, setOrderId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -36,6 +38,7 @@ export function CheckoutFlow({ product }: CheckoutFlowProps) {
       if (result.success && result.preferenceId && result.orderId) {
         setPreferenceId(result.preferenceId);
         setOrderId(result.orderId);
+        setStep("payment");
       } else {
         setError(result.error || "Falha ao iniciar checkout.");
       }
@@ -45,11 +48,6 @@ export function CheckoutFlow({ product }: CheckoutFlowProps) {
       setLoading(false);
     }
   }
-
-  // Iniciamos a preferência automaticamente ao carregar a página
-  useEffect(() => {
-    handleInitCheckout();
-  }, [product.slug]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
@@ -117,17 +115,25 @@ export function CheckoutFlow({ product }: CheckoutFlowProps) {
         </div>
       </div>
 
-      {/* 💳 LADO DIREITO: INTERFACE DE PAGAMENTO */}
+      {/* 💳 LADO DIREITO: INTERFACE DINÂMICA (DADOS OU PAGAMENTO) */}
       <div className="lg:col-span-7">
-        <div className="p-1 rounded-[3rem] bg-gradient-to-b from-[var(--glass-border)] to-transparent">
-           <div className="glass !bg-[var(--bg-primary)] sm:!p-10 !p-6 min-h-[500px] flex flex-col items-center justify-center relative overflow-hidden">
+        <div className="p-1 rounded-[3rem] bg-gradient-to-b from-[var(--glass-border)] to-transparent h-full">
+           <div className="glass !bg-[var(--bg-primary)] sm:!p-10 !p-6 min-h-[500px] flex flex-col items-center justify-start relative overflow-hidden h-full">
               
               <AnimatePresence mode="wait">
-                 {loading ? (
+                 {step === "registration" ? (
+                    <motion.div 
+                      key="registration"
+                      initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+                      className="w-full"
+                    >
+                       <RegistrationStep onComplete={handleInitCheckout} />
+                    </motion.div>
+                 ) : loading ? (
                     <motion.div 
                       key="loading"
                       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                      className="flex flex-col items-center gap-6 text-center"
+                      className="flex flex-col items-center gap-6 text-center my-auto"
                     >
                        <Loader2 size={40} className="text-[var(--accent-start)] animate-spin" />
                        <div className="space-y-2">
@@ -139,7 +145,7 @@ export function CheckoutFlow({ product }: CheckoutFlowProps) {
                     <motion.div 
                       key="error"
                       initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-                      className="text-center space-y-6"
+                      className="text-center space-y-6 my-auto"
                     >
                        <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center text-red-500 mx-auto">
                           <ShieldCheck size={32} />
@@ -148,12 +154,20 @@ export function CheckoutFlow({ product }: CheckoutFlowProps) {
                           <h4 className="text-lg font-bold text-[var(--text-primary)]">Ops! Algo deu errado</h4>
                           <p className="text-xs text-[var(--text-muted)]">{error}</p>
                        </div>
-                       <button 
-                         onClick={handleInitCheckout}
-                         className="px-8 py-3 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-full text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-lg"
-                       >
-                          Tentar Novamente
-                       </button>
+                       <div className="flex flex-col gap-3">
+                        <button 
+                          onClick={handleInitCheckout}
+                          className="px-8 py-3 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-full text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-lg"
+                        >
+                            Tentar Novamente
+                        </button>
+                        <button 
+                          onClick={() => setStep("registration")}
+                          className="text-[9px] font-black uppercase tracking-widest text-gray-500 hover:text-white"
+                        >
+                            Voltar para Revisão de Dados
+                        </button>
+                       </div>
                     </motion.div>
                  ) : preferenceId && orderId ? (
                     <motion.div 
@@ -173,6 +187,12 @@ export function CheckoutFlow({ product }: CheckoutFlowProps) {
                            }
                          }}
                        />
+                       <button 
+                          onClick={() => setStep("registration")}
+                          className="mt-8 text-[9px] font-black uppercase tracking-widest text-gray-500 hover:text-white block mx-auto"
+                        >
+                            ← Editar Dados de Faturamento
+                        </button>
                     </motion.div>
                  ) : null}
               </AnimatePresence>
@@ -186,3 +206,4 @@ export function CheckoutFlow({ product }: CheckoutFlowProps) {
     </div>
   );
 }
+

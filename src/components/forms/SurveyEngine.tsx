@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, Rocket, Link2, ExternalLink } from "lucide-react";
+import Link from "next/link";
 import { SurveyConfig, SurveyFieldConfig, SurveyValue } from "@/types/survey";
 import { NarrativeReveal } from "@/components/ui/NarrativeReveal";
 import { NavButton } from "@/components/ui/NavButton";
@@ -30,6 +31,7 @@ interface SurveyEngineProps {
   config: SurveyConfig;
   userUid: string;
   onComplete?: (matricula: string, responses?: Record<string, any>) => void;
+  returnToCheckoutSlug?: string;
 }
 
 /**
@@ -62,7 +64,7 @@ function shuffleOptions(options: any[]) {
  * Focado em UX narrativa, progressão guiada e algoritmos de decisão.
  * Agora suporta NAVEGAÇÃO CONDICIONAL (Grafos).
  */
-export function SurveyEngine({ config, userUid, onComplete }: SurveyEngineProps) {
+export function SurveyEngine({ config, userUid, onComplete, returnToCheckoutSlug }: SurveyEngineProps) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [responses, setResponses] = useState<Record<string, SurveyValue>>({});
   const [userMetadata, setUserMetadata] = useState<Record<string, any>>({});
@@ -635,12 +637,23 @@ export function SurveyEngine({ config, userUid, onComplete }: SurveyEngineProps)
         <p className="text-[var(--text-muted)] leading-relaxed max-w-md mx-auto whitespace-pre-line">
           {config.completionMessage}
         </p>
-        <button
-          onClick={() => onComplete?.("")}
-          className="px-10 py-4 bg-[var(--accent-soft)] hover:bg-[var(--accent-start)] hover:text-white text-[var(--accent-start)] rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all"
-        >
-           Voltar ao Início
-        </button>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <button
+            onClick={() => onComplete?.("")}
+            className="px-10 py-4 bg-white/5 hover:bg-white/10 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all"
+          >
+             Explorar Plataforma
+          </button>
+          
+          {returnToCheckoutSlug && (
+             <Link
+               href={`/hub/membro/checkout/${returnToCheckoutSlug}`}
+               className="px-10 py-4 bg-[#ff0080] hover:bg-[#ff00b3] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-[0_10px_20px_rgba(255,0,128,0.2)] flex items-center gap-2"
+             >
+                <Rocket size={14} /> Retornar à Contratação
+             </Link>
+          )}
+        </div>
       </motion.div>
     );
   }
