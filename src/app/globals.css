@@ -198,11 +198,9 @@ body {
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
 }
 
-/* Abordagem Apple: Desfocar a página inteira ao invés do modal */
-body.glass-modal-open #main-content {
-  filter: blur(16px) brightness(0.9);
-  transform: scale(0.98);
-  pointer-events: none;
+/* Abordagem Apple: Garantir que o scroll trave quando o modal abre */
+body.glass-modal-open {
+  overflow: hidden;
 }
 
 /* Gradient Accent */
