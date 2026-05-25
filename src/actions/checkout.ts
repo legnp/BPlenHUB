@@ -3,7 +3,7 @@
 import { getAdminDb } from "@/lib/firebase-admin";
 import { requireAuth } from "@/lib/auth-guards";
 import { Product } from "@/types/products";
-import { PRODUCTS_COLLECTION } from "@/config/collections";
+import { PRODUCTS_COLLECTION, USER_ORDERS_COLLECTION } from "@/config/collections";
 import { revalidatePath } from "next/cache";
 import { grantServiceEntitlement } from "@/lib/checkout";
 
@@ -65,6 +65,30 @@ export async function processServicePurchaseAction(
       productTitle: product.title,
       legalConsent
     });
+
+    // 🧾 4. Registrar a transação no Histórico Financeiro (User_Orders) para aparecer em "Meus Contratos"
+    if (grantResult.orderId?.startsWith("BPLEN-FREE-")) {
+      const orderRef = db.collection(USER_ORDERS_COLLECTION).doc(grantResult.orderId);
+      const { FieldValue } = await import("firebase-admin/firestore");
+      await orderRef.set({
+        orderId: grantResult.orderId,
+        userId: session.uid,
+        matricula: grantResult.matricula,
+        userEmail: session.email || "",
+        productId: productId,
+        productSlug: product.slug,
+        productTitle: product.title,
+        basePrice: product.price || 0,
+        appliedDiscount: product.price || 0,
+        finalPrice: 0,
+        currency: "BRL",
+        status: "approved",
+        statusDetail: "accredited",
+        gateway: "bplen_free_bypass",
+        createdAt: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+    }
 
     console.log(`✅ [Checkout] Serviço ${product.title} ativado para ${session.email}`);
 

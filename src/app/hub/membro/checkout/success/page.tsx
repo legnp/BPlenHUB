@@ -42,7 +42,7 @@ export default async function CheckoutSuccessPage({
               Acesso Liberado Imediatamente
            </p>
            <a 
-             href="/hub/membro"
+             href="/hub/membro?startTour=true"
              className="text-[10px] font-black uppercase tracking-widest text-emerald-400 hover:underline block"
            >
              Ir para o Dashboard
@@ -56,7 +56,7 @@ export default async function CheckoutSuccessPage({
               Aguardando confirmação do gateway...
            </p>
            <a 
-             href="/hub/membro"
+             href="/hub/membro?startTour=true"
              className="text-[10px] font-black uppercase tracking-widest text-accent-start hover:underline block"
            >
              Ir para o Dashboard

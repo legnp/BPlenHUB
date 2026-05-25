@@ -31,7 +31,7 @@ export function PaymentStatus({ paymentId }: PaymentStatusProps) {
       hideTransactionId: false,
     },
     backUrls: {
-      return: `${window.location.origin}/hub/membro`,
+      return: `${window.location.origin}/hub/membro?startTour=true`,
     }
   };
 
@@ -47,13 +47,13 @@ export function PaymentStatus({ paymentId }: PaymentStatusProps) {
 
       <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
          <Link 
-           href="/hub/membro" 
+           href="/hub/membro?startTour=true" 
            className="w-full sm:w-auto px-8 py-4 bg-white text-black rounded-full text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all flex items-center justify-center gap-3"
          >
             <Home size={16} /> Ir para o Dashboard
          </Link>
          <Link 
-           href="/hub/membro/journey" 
+           href="/hub/membro/journey?startTour=part2" 
            className="w-full sm:w-auto px-8 py-4 bg-white/5 border border-white/10 text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all flex items-center justify-center gap-3"
          >
             Ver Minha Jornada <ArrowRight size={16} />
