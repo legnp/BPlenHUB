@@ -146,12 +146,21 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
                  </div>
                  
                  <div className="p-16 border border-[var(--border-primary)] rounded-[3.5rem] bg-[var(--input-bg)]/20 flex flex-col items-center justify-center text-center gap-8 shadow-inner">
-                    <div className="flex items-center gap-3 px-5 py-3 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl">
-                       <CheckCircle2 size={18} className="text-emerald-500" />
-                       <span className="text-[11px] font-black uppercase tracking-widest text-emerald-500">
-                          {nomen.instructions.survey_status_done}
-                       </span>
-                    </div>
+                    {status === "completed" ? (
+                       <div className="flex items-center gap-3 px-5 py-3 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl">
+                          <CheckCircle2 size={18} className="text-emerald-500" />
+                          <span className="text-[11px] font-black uppercase tracking-widest text-emerald-500">
+                             {nomen.instructions.survey_status_done}
+                          </span>
+                       </div>
+                    ) : (
+                       <button 
+                          onClick={onComplete}
+                          className="px-10 py-4 bg-[var(--accent-start)] text-white rounded-full text-[10px] font-black uppercase tracking-[0.2em] hover:scale-105 active:scale-95 transition-all shadow-xl shadow-[var(--accent-start)]/20"
+                       >
+                          {nomen.actions.mark_as_done}
+                       </button>
+                    )}
                  </div>
               </div>
            );
