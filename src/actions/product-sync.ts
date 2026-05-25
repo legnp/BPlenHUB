@@ -1,10 +1,13 @@
 "use server";
 
+import { getAdminDb } from "@/lib/firebase-admin";
 import { getDriveClient, getSheetsClient } from "@/lib/google-auth";
-import { ensureFolder, createSpreadsheet, syncDataToSheet, uploadFileToDrive } from "@/lib/drive-utils";
+import { ensureFolder, createSpreadsheet, syncDataToSheet, uploadFileToDrive, makeFilePublic } from "@/lib/drive-utils";
 import { serverEnv, clientEnv } from "@/env";
 import { Product } from "@/types/products";
 import { Readable } from "stream";
+import { revalidatePath } from "next/cache";
+import { PRODUCTS_COLLECTION } from "@/config/collections";
 
 /**
  * BPlen HUB — Product Synchronizer (Drive & Sheets) 🛰️
@@ -67,11 +70,13 @@ export async function syncProductToDriveAction(product: Product) {
       sheetId, 
       sheetUrl 
     };
-  } catch (error: any) {
-    console.error("❌ [Drive Sync] Erro Crítico:", error);
-    return { success: false, error: error.message };
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error("❌ [Drive Sync] Erro Crítico:", errorMessage);
+    return { success: false, error: errorMessage };
   }
 }
+
 
 /**
  * Upload de Capa diretamente para o Drive do Serviço
@@ -81,6 +86,7 @@ export async function uploadProductCoverAction(formData: FormData) {
     const file = formData.get("file") as File;
     const folderId = formData.get("folderId") as string;
     const serviceCode = formData.get("serviceCode") as string;
+    const productId = formData.get("productId") as string; // Adicionado para soberania Firestore
 
     if (!file || !folderId) throw new Error("Arquivo ou Pasta de destino ausentes.");
 
@@ -95,13 +101,36 @@ export async function uploadProductCoverAction(formData: FormData) {
     const fileName = `CAPA_${serviceCode}_${file.name}`;
     const result = await uploadFileToDrive(drive, folderId, fileName, file.type, stream);
 
+    // 🛡️ 1. Garantir Soberania de Visibilidade Pública
+    await makeFilePublic(drive, result.id);
+
+    // 📸 2. Gerar URL de Imagem Direta (Formato Proxy Server-Side)
+    const directUrl = `/api/media/${result.id}`;
+
+    // 🧬 3. Atualizar Firestore Imediatamente (Soberania Admin)
+    if (productId) {
+      const db = getAdminDb();
+      await db.collection(PRODUCTS_COLLECTION).doc(productId).set({
+        sheet: {
+          coverImage: directUrl
+        },
+        updatedAt: new Date().toISOString()
+      }, { merge: true });
+      console.log(`✅ [Product Cover] Firestore atualizado para o produto: ${productId}`);
+      
+      // ⚡ Revalidação de Cache para reflexão imediata
+      revalidatePath("/admin/products");
+      revalidatePath("/servicos");
+    }
+
     return { 
       success: true, 
-      url: result.webViewLink,
+      url: directUrl,
       fileId: result.id
     };
-  } catch (error: any) {
-    console.error("❌ [Product Cover Upload] Erro:", error);
-    return { success: false, error: error.message };
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error("❌ [Product Cover Upload] Erro:", errorMessage);
+    return { success: false, error: errorMessage };
   }
 }

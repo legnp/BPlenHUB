@@ -1,7 +1,6 @@
 "use server";
 
-import { db } from "@/lib/firebase";
-import { doc, updateDoc, getDoc } from "firebase/firestore";
+import { getAdminDb } from "@/lib/firebase-admin";
 import { getDriveClient } from "@/lib/google-auth";
 import { ensureFolder, uploadFileToDrive, makeFilePublic } from "@/lib/drive-utils";
 import { serverEnv } from "@/env";
@@ -13,6 +12,7 @@ import { Readable } from "stream";
  */
 
 export async function updateProfileImageAction(matricula: string, base64Image: string) {
+  console.log(`🛡️ [ProfileAction:Soberano] Iniciando atualização para matrícula: ${matricula}`);
   try {
     const drive = await getDriveClient();
     
@@ -43,25 +43,27 @@ export async function updateProfileImageAction(matricula: string, base64Image: s
     // 5. Garantir Soberania de Visibilidade (Público para Leitura) 🔓
     await makeFilePublic(drive, result.id);
 
-    // 6. Gerar URL de Incorporação Direta (Formato Thumbnail de Alta Resolução) 📸
-    // O formato 'thumbnail?id=...&sz=s1000' é o mais resiliente para incorporação externa
-    const directPhotoUrl = `https://drive.google.com/thumbnail?id=${result.id}&sz=s1000`;
+    // 6. Gerar URL de Incorporação Direta (Formato Proxy Server-Side) 📸
+    const directPhotoUrl = `/api/media/${result.id}`;
 
-    // 7. Atualizar o Firestore do Membro
-    const userRef = doc(db, "User", matricula);
-    await updateDoc(userRef, {
+    // 7. Atualizar o Firestore do Membro via Admin SDK (Soberania de Dados) 🛡️
+    const db = getAdminDb();
+    await db.collection("User").doc(matricula).set({
       photoUrl: directPhotoUrl,
       photoDriveId: result.id,
       lastPhotoUpdate: new Date().toISOString()
-    });
+    }, { merge: true });
+
+    console.log(`✅ [ProfileAction:Soberano] Foto atualizada no Firestore para ${matricula}`);
 
     return { 
       success: true, 
       photoUrl: directPhotoUrl 
     };
-  } catch (error: any) {
-    console.error("❌ [ProfileAction] Erro ao atualizar foto:", error);
-    return { success: false, error: error.message };
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error("❌ [ProfileAction] Erro ao atualizar foto:", errorMessage);
+    return { success: false, error: errorMessage };
   }
 }
 
@@ -70,16 +72,17 @@ export async function updateProfileImageAction(matricula: string, base64Image: s
  */
 export async function deleteProfileImageAction(matricula: string) {
   try {
-    const userRef = doc(db, "User", matricula);
-    await updateDoc(userRef, {
+    const db = getAdminDb();
+    await db.collection("User").doc(matricula).set({
       photoUrl: null,
       photoDriveId: null,
       lastPhotoUpdate: new Date().toISOString()
-    });
+    }, { merge: true });
     
     return { success: true };
-  } catch (error: any) {
-    console.error("❌ [ProfileAction] Erro ao remover foto:", error);
-    return { success: false };
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error("❌ [ProfileAction] Erro ao remover foto:", errorMessage);
+    return { success: false, error: errorMessage };
   }
 }
