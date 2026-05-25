@@ -23,6 +23,7 @@ export function CheckoutFlow({ product }: CheckoutFlowProps) {
   const [step, setStep] = useState<"registration" | "payment">("registration");
   const [preferenceId, setPreferenceId] = useState<string | null>(null);
   const [orderId, setOrderId] = useState<string | null>(null);
+  const [idToken, setIdToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,8 +33,9 @@ export function CheckoutFlow({ product }: CheckoutFlowProps) {
     try {
       if (!user) throw new Error("Usuário não autenticado.");
       
-      const idToken = await user.getIdToken();
-      const result = await createPreferenceAction(product.slug, idToken);
+      const token = await user.getIdToken();
+      setIdToken(token);
+      const result = await createPreferenceAction(product.slug, token);
 
       if (result.success && result.preferenceId && result.orderId) {
         setPreferenceId(result.preferenceId);
@@ -179,6 +181,7 @@ export function CheckoutFlow({ product }: CheckoutFlowProps) {
                          preferenceId={preferenceId} 
                          orderId={orderId}
                          amount={product.price} 
+                         idToken={idToken || undefined}
                          onSuccess={(paymentId) => {
                            if (orderId) {
                              window.location.href = `/hub/membro/checkout/success?orderId=${orderId}&payment_id=${paymentId || ''}`;

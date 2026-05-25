@@ -18,6 +18,7 @@ interface PaymentBrickProps {
   onReady?: () => void;
   onError?: (error: any) => void;
   onSuccess?: (paymentId?: string) => void;
+  idToken?: string;
 }
 
 /**
@@ -26,9 +27,14 @@ interface PaymentBrickProps {
  * Gerencia o ciclo de vida do pagamento e callbacks.
  */
 
+<<<<<<< Updated upstream
 export function PaymentBrick({ preferenceId, orderId, amount, onReady, onError, onSuccess }: PaymentBrickProps) {
   const { user } = useAuthContext();
 
+=======
+export function PaymentBrick({ preferenceId, orderId, amount, onReady, onError, onSuccess, idToken }: PaymentBrickProps) {
+  
+>>>>>>> Stashed changes
   const initialization = {
     amount: amount,
     preferenceId: preferenceId,
@@ -58,6 +64,7 @@ export function PaymentBrick({ preferenceId, orderId, amount, onReady, onError, 
 
   const onSubmit = async ({ selectedPaymentMethod, formData }: any) => {
     // 💳 Checkout Transparente: Enviamos o Payload criptografado do cartão para o backend!
+<<<<<<< Updated upstream
     return new Promise<void>(async (resolve, reject) => {
       try {
         const idToken = user ? await user.getIdToken() : undefined;
@@ -69,6 +76,21 @@ export function PaymentBrick({ preferenceId, orderId, amount, onReady, onError, 
           // Dá um tempo de 1.5 segundo para a animação verde do Brick rodar antes do redirect
           if (onSuccess) {
             setTimeout(() => onSuccess(res.paymentId?.toString()), 1500);
+=======
+    return new Promise<void>((resolve, reject) => {
+      processPaymentAction(formData, orderId, idToken)
+        .then((res) => {
+          if (res.success) {
+            console.log("✅ [PaymentBrick] Cobrança processada no Mercado Pago!");
+            resolve();
+            // Dá um tempo de 1.5 segundo para a animação verde do Brick rodar antes do redirect
+            if (onSuccess) {
+              setTimeout(() => onSuccess(res.paymentId?.toString()), 1500);
+            }
+          } else {
+            console.error("❌ [PaymentBrick] Falha no backend:", res.error);
+            reject(new Error(res.error));
+>>>>>>> Stashed changes
           }
         } else {
           console.error("❌ [PaymentBrick] Falha no backend:", res.error);
