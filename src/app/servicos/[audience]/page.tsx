@@ -107,9 +107,9 @@ export default async function SegmentedServicesPage({ params }: PageProps) {
               {products.map((product) => (
                 <div 
                   key={product.id} 
-                  className={`${LANDING_TOKENS.card.container} group flex flex-col h-full bg-gradient-to-b from-white/5 to-transparent hover:border-[var(--accent-primary)]/30 transition-all`}
+                  className={`${LANDING_TOKENS.card.container} !p-6 md:!p-8 group flex flex-col h-full bg-gradient-to-b from-white/5 to-transparent hover:border-[var(--accent-primary)]/30 transition-all`}
                 >
-                  <div className="relative aspect-video rounded-2xl overflow-hidden mb-8 border border-white/5 group-hover:border-white/10">
+                  <div className="relative aspect-video rounded-2xl overflow-hidden mb-5 border border-white/5 group-hover:border-white/10 shrink-0">
                      {product.sheet.coverImage ? (
                         <img 
                           src={product.sheet.coverImage} 
@@ -124,27 +124,38 @@ export default async function SegmentedServicesPage({ params }: PageProps) {
                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-60" />
                   </div>
                   
-                  <span className={LANDING_TOKENS.card.kicker}>PRONTO PARA VOCÊ</span>
-                  <h3 className={LANDING_TOKENS.card.title}>
+                  <span className={LANDING_TOKENS.card.kicker}>{product.kicker || "PRONTO PARA VOCÊ"}</span>
+                  <h3 className={`${LANDING_TOKENS.card.title} !mb-2`}>
                     {product.title}
                   </h3>
-                  <p className={`${LANDING_TOKENS.card.description} mb-12 flex-grow line-clamp-3`}>
+                  <p className={`${LANDING_TOKENS.card.description} mb-4 flex-grow line-clamp-2 text-xs`}>
                     {product.sheet.description}
                   </p>
 
-                  <ul className="space-y-4 mb-12">
-                    {/* Placeholder for features if not defined in product type yet */}
-                    {product.capabilities.surveys.slice(0, 3).map((sId, idx) => (
-                      <li key={idx} className="flex items-center gap-3 text-[10px] uppercase font-bold tracking-tight text-gray-400">
-                        <CheckCircle2 size={14} className="text-[#ff0080]/60 shrink-0" />
-                        {sId.replace('_', ' ')}
+                  <ul className="space-y-2 mb-6 border-t border-white/5 pt-4">
+                    {(product.sheet.deliverables || []).slice(0, 3).map((item, idx) => (
+                      <li key={idx} className="flex items-center gap-3 text-[9px] uppercase font-bold tracking-tight text-gray-400">
+                        <CheckCircle2 size={12} className="text-[#ff0080]/60 shrink-0" />
+                        <span className="line-clamp-1">{item}</span>
                       </li>
                     ))}
+                    {(!product.sheet.deliverables || product.sheet.deliverables.length === 0) && (
+                      <li className="flex items-center gap-3 text-[9px] uppercase font-bold tracking-tight text-gray-500 italic opacity-50">
+                        Consulte os detalhes deste serviço
+                      </li>
+                    )}
                   </ul>
+
+                  <div className="mb-4">
+                    <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Investimento</span>
+                    <span className="text-xl font-black text-white">
+                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.price)}
+                    </span>
+                  </div>
 
                   <Link 
                     href={`/servicos/${audience}/${product.slug}`}
-                    className="w-full py-4 rounded-xl bg-[var(--accent-primary)] text-white font-black text-[10px] uppercase tracking-widest hover:scale-[1.02] shadow-xl group/btn transition-all flex items-center justify-center gap-2"
+                    className="w-full py-3 rounded-xl bg-[var(--accent-primary)] text-white font-black text-[10px] uppercase tracking-widest hover:scale-[1.02] shadow-xl group/btn transition-all flex items-center justify-center gap-2"
                   >
                     CONTRATAR AGORA
                     <ChevronRight size={14} className="group-hover/btn:translate-x-1 duration-300" />

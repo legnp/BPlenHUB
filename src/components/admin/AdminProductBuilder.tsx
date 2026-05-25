@@ -53,7 +53,8 @@ export function AdminProductBuilder({ initialProduct }: AdminProductBuilderProps
       paymentConditions: "",
       faq: [],
       termsAndConditions: "",
-      seo: { title: "", description: "", keywords: [] }
+      seo: { title: "", description: "", keywords: [] },
+      deliverables: []
     },
     capabilities: { surveys: [], forms: [], allowedEventTypes: [] },
     workflow: [],
@@ -196,6 +197,16 @@ function IdentityForm({ product, setProduct }: any) {
                 className="w-full bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-2xl p-4 text-xs outline-none focus:border-[var(--accent-primary)] transition-all font-bold" 
                 value={product.title}
                 onChange={(e) => setProduct({...product, title: e.target.value})}
+              />
+           </div>
+           <div className="space-y-2">
+              <label className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)]">Kicker (Destaque do Card)</label>
+              <input 
+                type="text" 
+                placeholder="Ex: PRONTO PARA VOCÊ"
+                className="w-full bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-2xl p-4 text-xs outline-none focus:border-[var(--accent-primary)] transition-all font-bold" 
+                value={product.kicker || ""}
+                onChange={(e) => setProduct({...product, kicker: e.target.value})}
               />
            </div>
            <div className="space-y-2">
@@ -481,6 +492,72 @@ function SheetForm({ product, setProduct }: any) {
             onChange={(e) => setProduct({...product, sheet: { ...product.sheet, termsAndConditions: e.target.value }})}
           />
           <p className="text-[7px] text-[var(--text-muted)] uppercase tracking-widest px-2">* Estes termos serão apresentados ao cliente antes da finalização da contratação.</p>
+       </div>
+
+       {/* Editor de Entregáveis (Deliverables) 📦 */}
+       <div className="pt-8 border-t border-[var(--border-primary)] space-y-6">
+          <div className="flex items-center justify-between">
+             <div className="flex items-center gap-3">
+                <div className="p-2 bg-[var(--accent-primary)]/10 rounded-xl text-[var(--accent-primary)]">
+                   <Package size={16} />
+                </div>
+                <h4 className="text-[10px] font-black uppercase tracking-widest">Entregáveis do Serviço</h4>
+             </div>
+             <button 
+               type="button"
+               onClick={() => {
+                  const current = product.sheet.deliverables || [];
+                  setProduct({ 
+                     ...product, 
+                     sheet: { 
+                        ...product.sheet, 
+                        deliverables: [...current, ""] 
+                     } 
+                  });
+               }}
+               className="px-4 py-2 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-xl text-[8px] font-black uppercase tracking-widest hover:border-[var(--accent-primary)] transition-all flex items-center gap-2"
+             >
+                <Plus size={12} />
+                Adicionar Item
+             </button>
+          </div>
+
+          <div className="space-y-3">
+             {product.sheet.deliverables?.map((item: string, idx: number) => (
+                <div key={idx} className="flex items-center gap-4 group">
+                   <div className="w-6 h-6 rounded-full bg-[var(--accent-primary)]/10 flex items-center justify-center text-[8px] font-black text-[var(--accent-primary)]">
+                      {idx + 1}
+                   </div>
+                   <input 
+                      type="text"
+                      placeholder="Ex: 1 Sessão Individual de 60min"
+                      className="flex-1 bg-transparent border-b border-white/5 py-2 text-[11px] outline-none focus:border-[var(--accent-primary)] transition-all"
+                      value={item}
+                      onChange={(e) => {
+                         const next = [...(product.sheet.deliverables || [])];
+                         next[idx] = e.target.value;
+                         setProduct({ ...product, sheet: { ...product.sheet, deliverables: next } });
+                      }}
+                   />
+                   <button 
+                      type="button"
+                      onClick={() => {
+                         const next = product.sheet.deliverables?.filter((_: any, i: number) => i !== idx);
+                         setProduct({ ...product, sheet: { ...product.sheet, deliverables: next } });
+                      }}
+                      className="p-2 text-red-500/50 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100"
+                   >
+                      <Trash2 size={14} />
+                   </button>
+                </div>
+             ))}
+
+             {(!product.sheet.deliverables || product.sheet.deliverables.length === 0) && (
+                <div className="p-10 border border-dashed border-[var(--border-primary)] rounded-3xl text-center opacity-30">
+                   <p className="text-[9px] font-black uppercase tracking-widest">Nenhum entregável cadastrado.</p>
+                </div>
+             )}
+          </div>
        </div>
      </div>
    );

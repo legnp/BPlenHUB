@@ -14,6 +14,7 @@ export interface ProductSheet {
     description: string;
     keywords: string[];
   };
+  deliverables?: string[]; // Lista de entregáveis do serviço
 }
 
 export interface CapabilityConfig {
@@ -35,6 +36,7 @@ export interface Product {
   slug: string; // URL amigável
   serviceCode: string; // Ex: BPL-001 imutável
   title: string;
+  kicker?: string; // Frase de destaque opcional
   targetAudiences: ('people' | 'companies' | 'partners' | 'internal')[];
   price: number;
   
