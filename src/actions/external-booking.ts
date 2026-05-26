@@ -14,6 +14,7 @@ import {
 import { CALENDAR_CONFIG } from "@/config/calendarConfig";
 import { bookEventAction } from "./calendar";
 import { Resend } from "resend";
+import { buildSoberanaEmail, EMAIL_STYLES } from "@/lib/emails/soberana-layout";
 
 const resend = new Resend(serverEnv.RESEND_API_KEY);
 
@@ -283,36 +284,31 @@ export async function submitBookingProposalAction(formData: {
       await resend.emails.send({
         from: `BPlen HUB <hub@bplen.com>`,
         to: formData.email,
-        subject: `Recebemos sua proposta de agenda na BPlen HUB!`,
-        html: `
-          <div style="font-family: sans-serif; color: #1d1d1f; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 20px;">
-            <h2 style="color: #ff2c8d; margin-bottom: 5px;">🧬 Proposta Recebida!</h2>
-            <p style="font-size: 16px; margin-top: 0;">Olá, <b>${formData.name}</b>!</p>
-            
-            <p style="font-size: 14px; color: #666; line-height: 1.6;">
-              Não encontramos um horário livre que se encaixasse perfeitamente no momento, mas já recebemos suas sugestões. 
-              Nossa equipe analisará a disponibilidade e entrará em contato em breve para confirmar uma das opções abaixo:
-            </p>
+        subject: `[BPlen HUB] Recebemos sua proposta de agenda`,
+        html: buildSoberanaEmail(`
+          <h2 style="\${EMAIL_STYLES.h2}">Proposta recebida.</h2>
+          <p style="\${EMAIL_STYLES.p}">Olá, <b>\${formData.name}</b>.</p>
+          
+          <p style="\${EMAIL_STYLES.p}">
+            Não encontramos um horário livre que se encaixasse perfeitamente no momento, mas já recebemos suas sugestões. 
+            Nossa equipe analisará a disponibilidade e entrará em contato em breve para confirmar uma das opções abaixo:
+          </p>
 
-            <div style="background: #fdfdfd; padding: 20px; border-radius: 16px; border: 1px solid #f0f0f0; margin: 20px 0;">
-              <p style="margin: 0 0 15px 0; font-size: 12px; color: #999; text-transform: uppercase; letter-spacing: 1px;"><b>SUAS OPÇÕES SUGERIDAS</b></p>
-              <ul style="padding: 0; list-style: none; margin: 0; font-size: 14px; color: #1d1d1f;">
-                ${optionsHtml}
-              </ul>
-            </div>
-
-            <div style="background: #fff5f9; padding: 15px; border-radius: 12px; border-left: 4px solid #ff2c8d; margin: 20px 0;">
-              <p style="margin: 0; font-size: 13px; color: #ff2c8d;"><b>PRÓXIMO PASSO:</b> Fique de olho no seu WhatsApp e e-mail. Vamos te dar um retorno oficial nas próximas horas comerciais.</p>
-            </div>
-
-            <p style="font-size: 12px; color: #666; text-align: center; margin-top: 30px;">
-              Obrigado por querer descomplicar o desenvolvimento humano conosco!
-            </p>
-            
-            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
-            <p style="font-size: 10px; color: #9ca3af; text-align: center;">BPlen HUB — Inteligência em Gestão e Desenvolvimento</p>
+          <div style="background: #F8FAFC; padding: 20px; border-radius: 12px; margin: 24px 0;">
+            <p style="margin: 0 0 15px 0; font-size: 11px; color: #94A3B8; font-weight: bold; text-transform: uppercase;">Suas opções sugeridas</p>
+            <ul style="padding: 0; list-style: none; margin: 0; font-size: 14px; color: #1D1D1F;">
+              \${optionsHtml}
+            </ul>
           </div>
-        `
+
+          <div style="background: #FFF0F6; padding: 15px; border-radius: 12px; border-left: 4px solid #ff2c8d; margin: 20px 0;">
+            <p style="margin: 0; font-size: 13px; color: #ff2c8d;"><b>PRÓXIMO PASSO:</b> Fique de olho no seu WhatsApp e e-mail. Vamos te dar um retorno oficial nas próximas horas comerciais.</p>
+          </div>
+
+          <p style="font-size: 12px; color: #94A3B8; text-align: left; margin-top: 30px;">
+            Obrigado por querer descomplicar o desenvolvimento humano conosco.
+          </p>
+        `, "BPlen HUB - Inteligência em Gestão e Desenvolvimento")
       });
     } catch (emailErr) {
       console.error("Erro ao enviar e-mail de proposta (ignorado):", emailErr);
