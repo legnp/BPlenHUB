@@ -137,3 +137,43 @@ export async function sendServiceGrantedEmail(user: UserDetails, productTitle: s
     console.error("❌ ERRO ao enviar e-mail de liberação:", error);
   }
 }
+
+/**
+ * 📧 E-mail 4: Compra Gratuita Aprovada (Recibo R$ 0,00)
+ * Remetente: financeiro@bplen.com
+ */
+export async function sendFreeOrderApprovedEmail(user: UserDetails, order: OrderDetails) {
+  try {
+    const date = format(new Date(), "dd/MM/yyyy", { locale: ptBR });
+    const baseUrl = clientEnv.NEXT_PUBLIC_APP_URL || "https://bplen.com";
+    
+    await resend.emails.send({
+      from: "BPlen Financeiro <financeiro@bplen.com>",
+      to: user.email,
+      subject: `${user.name || "Membro"}, sua contratação foi confirmada.`,
+      html: buildSoberanaEmail(`
+        <h2 style="${EMAIL_STYLES.h2}">Acesso Liberado!</h2>
+        <p style="${EMAIL_STYLES.p}">
+          Confirmamos a contratação gratuita para a <strong>${order.productTitle}</strong>. 
+          Abaixo você encontra o resumo da sua solicitação.
+        </p>
+        <div style="background: #F8FAFC; padding: 20px; border-radius: 12px; margin: 24px 0;">
+          <p style="margin: 0 0 8px 0; font-size: 11px; color: #94A3B8; font-weight: bold; text-transform: uppercase;">Resumo da Contratação</p>
+          <p style="margin: 4px 0; font-size: 14px;">Serviço: <strong>${order.productTitle}</strong></p>
+          <p style="margin: 4px 0; font-size: 14px;">Data: <strong>${date}</strong></p>
+          <p style="margin: 4px 0; font-size: 14px;">Transação: <strong>#${order.orderId}</strong></p>
+          <p style="margin: 4px 0; font-size: 14px;">Total: <strong>R$ 0,00</strong></p>
+        </div>
+        <a href="${baseUrl}/hub/membro" style="${EMAIL_STYLES.button}">
+          Acessar minha conta
+        </a>
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #F0F0F0; font-size: 12px; color: #94A3B8;">
+          Ao realizar esta contratação, você concordou com os nossos <a href="https://bplen.com/termos-e-condicoes" style="color: #1D1D1F; text-decoration: underline;">Termos e Condições</a> e com a nossa <a href="https://bplen.com/politica-de-privacidade" style="color: #1D1D1F; text-decoration: underline;">Política de Privacidade</a>.
+        </div>
+      `, "BPlen HUB - Departamento Financeiro")
+    });
+    console.log(`✉️ [E-mail] "Compra Gratuita Aprovada" enviado para ${user.email}`);
+  } catch (error) {
+    console.error("❌ ERRO ao enviar e-mail de compra gratuita:", error);
+  }
+}

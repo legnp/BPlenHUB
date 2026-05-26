@@ -89,6 +89,16 @@ export async function processServicePurchaseAction(
         createdAt: FieldValue.serverTimestamp(),
         updatedAt: FieldValue.serverTimestamp(),
       });
+
+      // 📧 5. Disparar E-mail de Confirmação para Serviços Gratuitos
+      const { resolveUserNickname } = await import("@/lib/user-identity");
+      const nickname = await resolveUserNickname(session.uid);
+      const { sendFreeOrderApprovedEmail } = await import("@/lib/checkout-emails");
+      
+      sendFreeOrderApprovedEmail(
+        { name: nickname, email: session.email || "" },
+        { orderId: grantResult.orderId, productTitle: product.title, finalPrice: 0 }
+      );
     }
 
     console.log(`✅ [Checkout] Serviço ${product.title} ativado para ${session.email}`);
