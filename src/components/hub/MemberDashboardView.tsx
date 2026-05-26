@@ -124,11 +124,12 @@ export default function MemberDashboardView() {
 
   useEffect(() => {
     if (!matricula) return;
+    const currentMatricula = matricula;
 
     async function loadBookings() {
       setLoadingBookings(true);
       try {
-        const bookings = await getUserBookingsAction(matricula);
+        const bookings = await getUserBookingsAction(currentMatricula);
         setHistoryBookings(bookings);
       } catch (error) {
         console.error("Erro ao carregar histórico:", error);
