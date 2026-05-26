@@ -83,15 +83,15 @@ export const LOGO_HTML = `
  * Monta o layout centralizado do Soberana v3.1 para e-mails.
  */
 export function buildSoberanaEmail(contentHtml: string, footerText: string = "BPlen - Inteligência e Estratégia") {
-  return \`
-    <div style="\${EMAIL_STYLES.container}">
-      \${LOGO_HTML}
-      <div style="\${EMAIL_STYLES.card}">
-        \${contentHtml}
+  return `
+    <div style="${EMAIL_STYLES.container}">
+      ${LOGO_HTML}
+      <div style="${EMAIL_STYLES.card}">
+        ${contentHtml}
       </div>
-      <div style="\${EMAIL_STYLES.footer}">
-        \${footerText}
+      <div style="${EMAIL_STYLES.footer}">
+        ${footerText}
       </div>
     </div>
-  \`;
+  `;
 }
