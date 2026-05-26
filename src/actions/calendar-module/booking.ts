@@ -117,7 +117,7 @@ export async function bookEventAction(
       await resend.emails.send({
         from: OFFICIAL_SENDER,
         to: userEmail,
-        subject: `[BPlen HUB] Confirmado: ${result.eventData.summary}`,
+        subject: `${displayName}, seu evento ${result.eventData.summary} foi agendado.`,
         html: emailHtml
       });
     } catch (e) {}
@@ -175,7 +175,7 @@ export async function cancelBookingAction(
         await resend.emails.send({
           from: OFFICIAL_SENDER,
           to: result.email,
-          subject: `[BPlen HUB] Cancelamento: ${result.eventData.summary}`,
+          subject: `${result.nickname}, seu evento ${result.eventData.summary} foi cancelado.`,
           html: emailHtml
         });
       }
@@ -262,7 +262,7 @@ export async function adminAddAttendeeAction(
         await resend.emails.send({
           from: OFFICIAL_SENDER,
           to: userEmail,
-          subject: `[BPlen HUB] Inclusão em Sessão: ${eventId}`,
+          subject: `${displayName}, você foi incluído no evento.`,
           html: emailHtml
         });
       }

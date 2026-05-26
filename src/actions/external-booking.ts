@@ -284,12 +284,12 @@ export async function submitBookingProposalAction(formData: {
       await resend.emails.send({
         from: `BPlen HUB <hub@bplen.com>`,
         to: formData.email,
-        subject: `[BPlen HUB] Recebemos sua proposta de agenda`,
+        subject: `${formData.name}, recebemos sua proposta de agenda.`,
         html: buildSoberanaEmail(`
-          <h2 style="\${EMAIL_STYLES.h2}">Proposta recebida.</h2>
-          <p style="\${EMAIL_STYLES.p}">Olá, <b>\${formData.name}</b>.</p>
+          <h2 style="${EMAIL_STYLES.h2}">Proposta recebida.</h2>
+          <p style="${EMAIL_STYLES.p}">Olá, <b>${formData.name}</b>.</p>
           
-          <p style="\${EMAIL_STYLES.p}">
+          <p style="${EMAIL_STYLES.p}">
             Não encontramos um horário livre que se encaixasse perfeitamente no momento, mas já recebemos suas sugestões. 
             Nossa equipe analisará a disponibilidade e entrará em contato em breve para confirmar uma das opções abaixo:
           </p>
@@ -297,7 +297,7 @@ export async function submitBookingProposalAction(formData: {
           <div style="background: #F8FAFC; padding: 20px; border-radius: 12px; margin: 24px 0;">
             <p style="margin: 0 0 15px 0; font-size: 11px; color: #94A3B8; font-weight: bold; text-transform: uppercase;">Suas opções sugeridas</p>
             <ul style="padding: 0; list-style: none; margin: 0; font-size: 14px; color: #1D1D1F;">
-              \${optionsHtml}
+              ${optionsHtml}
             </ul>
           </div>
 
