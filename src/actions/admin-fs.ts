@@ -55,12 +55,15 @@ export async function getAdminFSAnalytics(): Promise<{
     const db = getAdminDb();
 
     // 1. Buscar todas as respostas de Pesquisas via Collection Group
-    const surveysSnapshot = await db.collectionGroup("Surveys").get();
+    const surveysSnapshot = await db.collectionGroup("Surveys").where("status", "==", "completed").get();
     const surveyResponses = surveysSnapshot.docs.map(doc => doc.data() as SurveyResponse);
 
     // 2. Buscar todas as respostas de Formulários via Collection Group
+    // Filtramos por 'submitted' ou 'updated' para garantir que apenas dados finais apareçam
     const formsSnapshot = await db.collectionGroup("Forms").get();
-    let formResponses = formsSnapshot.docs.map(doc => doc.data() as FormRecord);
+    let formResponses = formsSnapshot.docs
+      .map(doc => doc.data() as FormRecord)
+      .filter(f => f.status === "submitted" || f.status === "updated");
 
     // 2.5. Especial: Dados Cadastrais (Soberania de Dados)
     // Buscamos usuários que tenham a data de atualização do perfil preenchida
@@ -191,7 +194,10 @@ export async function getFSItemDetails(
       const config = SURVEY_REGISTRY.find(s => s.id === id);
       title = config?.title || "Pesquisa";
 
-      const snapshot = await db.collectionGroup("Surveys").where("surveyId", "==", id).get();
+      const snapshot = await db.collectionGroup("Surveys")
+        .where("surveyId", "==", id)
+        .where("status", "==", "completed")
+        .get();
       const responses = snapshot.docs.map(doc => doc.data() as SurveyResponse);
 
       totalRespondents = responses.length;
@@ -246,7 +252,9 @@ export async function getFSItemDetails(
         });
       } else {
         const snapshot = await db.collectionGroup("Forms").where("formId", "==", id).get();
-        formRecords = snapshot.docs.map(doc => doc.data());
+        formRecords = snapshot.docs
+          .map(doc => doc.data() as FormRecord)
+          .filter(f => f.status === "submitted" || f.status === "updated");
       }
 
       totalRespondents = formRecords.length;

@@ -17,7 +17,8 @@ import {
   Globe,
   Ticket,
   Handshake,
-  FlaskConical
+  FlaskConical,
+  Activity
 } from "lucide-react";
 import { HubHeader } from "@/components/hub/HubHeader";
 
@@ -50,7 +51,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <div className="flex items-center gap-3">
                {/* Spacer for the HubHeader floating logo */}
                <div className="w-[54px]" />
-               <div className="flex flex-col">
+               <div className="flex flex-col mt-6">
                  <h2 className="text-xl font-bold tracking-tight text-[var(--text-primary)] group uppercase leading-none">
                    Admin
                  </h2>
@@ -72,8 +73,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           
           <div className="pt-4 pb-2 px-4 text-[8px] font-bold uppercase tracking-[0.3em] text-[var(--text-muted)] opacity-40">Dados & Usuários</div>
           <NavLink href="/admin/users" icon={<Users size={18} />}>GESTÃO DE USUÁRIOS</NavLink>
-          <NavLink href="/admin/forms" icon={<FileText size={18} />}>FORMULÁRIOS</NavLink>
-          <NavLink href="/admin/pesquisas" icon={<LayoutDashboard size={18} />}>SURVEYS</NavLink>
+          <NavLink href="/admin/fs" icon={<Activity size={18} />}>F&S</NavLink>
           <NavLink href="/admin/sandbox" icon={<FlaskConical size={18} />}>SANDBOX</NavLink>
         </nav>
 

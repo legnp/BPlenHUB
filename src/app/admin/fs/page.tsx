@@ -23,10 +23,12 @@ import {
   FSRegistrySummary, 
   FSGlobalStats, 
   FSItemDetails, 
-  FSRespondent 
+  FSRespondent,
+  FSRegistryItem 
 } from "@/actions/admin-fs";
+import { FSTabs } from "@/components/admin/FSTabs";
 
-export default function FSAnalyticsPage() {
+export default function AdminFSAnalyticsPage() {
   // Estados Globais de Carregamento e Dados
   const [loading, setLoading] = useState(true);
   const [detailsLoading, setDetailsLoading] = useState(false);
@@ -136,7 +138,8 @@ export default function FSAnalyticsPage() {
   }
 
   return (
-    <div className="space-y-10 animate-fade-in text-left">
+    <div className="space-y-10 animate-fade-in-up text-left">
+      <FSTabs />
       
       {/* 1. CABEÇALHO DA PÁGINA (Apple Pro Layout) */}
       <motion.div 
