@@ -181,13 +181,13 @@ export default function FSAnalyticsPage() {
           >
             <div className="flex items-center justify-between text-[var(--text-muted)]">
               <Users size={18} className="text-indigo-500" />
-              <span className="text-[9px] font-bold uppercase tracking-widest opacity-60">RESPOSTAS GERAIS</span>
+              <span className="text-[9px] font-bold uppercase tracking-widest opacity-60">RESPOSTAS TOTAIS</span>
             </div>
             <div className="text-3xl font-bold text-[var(--text-primary)] tracking-tighter">
               {stats.totalGlobalResponses.toLocaleString()}
             </div>
             <p className="text-[11px] font-medium text-[var(--text-muted)]">
-              usuários responderam e enviaram dados
+              respostas totais enviadas
             </p>
           </motion.div>
 
@@ -212,7 +212,7 @@ export default function FSAnalyticsPage() {
       )}
 
       {/* 3. SELEÇÃO DA ESTRUTURA (Filtro Personalizado) */}
-      <div className="p-6 rounded-[24px] bg-[var(--input-bg)] border border-[var(--border-primary)] backdrop-blur-xl shadow-sm space-y-6">
+      <div className="p-6 rounded-[24px] bg-[var(--input-bg)] border border-[var(--border-primary)] backdrop-blur-xl shadow-sm space-y-6 relative z-20">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1 relative">
             <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-60">
@@ -242,7 +242,7 @@ export default function FSAnalyticsPage() {
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 8 }}
-                    className="absolute left-0 mt-2 w-full max-h-60 overflow-y-auto bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-xl shadow-2xl z-30 custom-scrollbar backdrop-blur-xl"
+                    className="absolute left-0 mt-2 w-full max-h-60 overflow-y-auto bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-xl shadow-2xl z-50 custom-scrollbar backdrop-blur-xl"
                   >
                     <div className="p-1">
                       {items.map(item => (

@@ -60,7 +60,30 @@ export async function getAdminFSAnalytics(): Promise<{
 
     // 2. Buscar todas as respostas de Formulários via Collection Group
     const formsSnapshot = await db.collectionGroup("Forms").get();
-    const formResponses = formsSnapshot.docs.map(doc => doc.data() as FormRecord);
+    let formResponses = formsSnapshot.docs.map(doc => doc.data() as FormRecord);
+
+    // 2.5. Especial: Dados Cadastrais (Soberania de Dados)
+    // Buscamos usuários que tenham a data de atualização do perfil preenchida
+    const usersSnap = await db.collection("User").get();
+    const registrationResponses: FormRecord[] = [];
+    
+    usersSnap.forEach(doc => {
+      const data = doc.data();
+      if (data.profile?.lastRegistrationUpdate) {
+        registrationResponses.push({
+          formId: "dados_cadastrais",
+          matricula: doc.id,
+          userUid: data.uid || "",
+          mode: "submitted",
+          status: "submitted",
+          data: {}, // Metadados apenas para contagem
+          submittedAt: toSafeDate(data.profile.lastRegistrationUpdate) || new Date(),
+        });
+      }
+    });
+
+    // Unificar respostas de formulários (Collection Group + Perfil)
+    formResponses = [...formResponses, ...registrationResponses];
 
     // 3. Contabilizar respostas por ID
     const surveyCounts: Record<string, number> = {};
@@ -205,12 +228,30 @@ export async function getFSItemDetails(
       const config = FORMS_REGISTRY.find(f => f.id === id);
       title = config?.title || "Formulário";
 
-      const snapshot = await db.collectionGroup("Forms").where("formId", "==", id).get();
-      const responses = snapshot.docs.map(doc => doc.data() as FormRecord);
+      let formRecords: Partial<FormRecord>[] = [];
 
-      totalRespondents = responses.length;
+      if (id === "dados_cadastrais") {
+        // Lógica especial: buscar do perfil soberano
+        usersSnap.forEach(doc => {
+          const data = doc.data();
+          if (data.profile?.lastRegistrationUpdate) {
+            formRecords.push({
+              formId: "dados_cadastrais",
+              matricula: doc.id,
+              userUid: data.uid || "",
+              submittedAt: data.profile.lastRegistrationUpdate,
+              data: {}
+            });
+          }
+        });
+      } else {
+        const snapshot = await db.collectionGroup("Forms").where("formId", "==", id).get();
+        formRecords = snapshot.docs.map(doc => doc.data());
+      }
 
-      responses.forEach(res => {
+      totalRespondents = formRecords.length;
+
+      formRecords.forEach(res => {
         const subAt = toSafeDate(res.submittedAt);
         const iso = subAt ? subAt.toISOString() : new Date().toISOString();
         const matricula = res.matricula || "";
@@ -221,7 +262,7 @@ export async function getFSItemDetails(
           name: uInfo.name,
           nickname: uInfo.nickname,
           submittedAt: iso,
-          userUid: uInfo.uid,
+          userUid: res.userUid || uInfo.uid, // Manter fallback caso falte na resposta
         });
       });
     }
