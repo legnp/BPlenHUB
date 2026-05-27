@@ -25,6 +25,35 @@ export const checkInSurvey: SurveyConfig = {
   },
   steps: [
     {
+      id: "q0_aviso",
+      question: "Antes de começarmos...",
+      description: "Para fazer o check-in, reserve um espaço reservado e sem distrações por cerca de 20 minutos. A progressão não fica salva, então a única maneira de salvar é concluindo-o integralmente.\n\nPor favor, tenha em mãos o seu Currículo, Portfólio, links de redes sociais profissionais e todo material profissional.",
+      fields: [
+        {
+          id: "aviso_choice",
+          type: "buttons",
+          required: true,
+          options: ["Fazer checkin mais tarde", "Ciente, fazer checkin agora"],
+          logic: {
+            "Fazer checkin mais tarde": "q_mais_tarde",
+            "Ciente, fazer checkin agora": "q1_intro"
+          }
+        }
+      ]
+    },
+    {
+      id: "q_mais_tarde",
+      question: "Tudo bem, faça no seu tempo!",
+      description: "Aguardaremos você estar em um ambiente tranquilo com pelo menos 20 minutos disponíveis para iniciarmos.\n\nComo não é possível salvar o progresso, você pode simplesmente navegar para outra aba no menu lateral para sair do check-in por agora.",
+      fields: [
+        {
+          id: "info_voltar",
+          type: "info",
+          label: "Você pode usar o menu lateral esquerdo para navegar para outras páginas da plataforma."
+        }
+      ]
+    },
+    {
       id: "q1_intro",
       question: "Olá {User_Nickname}! Agora que já se familiarizou com a plataforma, você nos permite conhecer um pouco mais sobre você?",
       fields: [
