@@ -11,7 +11,8 @@ import {
   ChevronRight,
   Clock,
   Loader2,
-  Globe
+  Globe,
+  BarChart3
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { getSyncedEvents } from "@/actions/calendar";
@@ -140,6 +141,7 @@ export default function AdminDashboardPage() {
             { label: "Gestão Social", icon: Globe, href: "/admin/social" },
             { label: "Gestão de Parceiros", icon: Handshake, href: "/admin/partners" },
             { label: "Novo Portfólio", icon: Briefcase, href: "/admin/portfolio" },
+            { label: "Análise F&S", icon: BarChart3, href: "/admin/fs" },
             { label: "Ver Formulários", icon: FileText, href: "/admin/forms" },
             { label: "Ajustar Agenda", icon: Calendar, href: "/admin/agenda" },
           ].map((item) => (

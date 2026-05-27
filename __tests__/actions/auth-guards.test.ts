@@ -10,7 +10,7 @@ vi.mock('@/lib/server-session', () => ({
 describe('Auth Guards 🛡️', () => {
   describe('requireAuth', () => {
     it('should return session if authenticated', async () => {
-      const mockSession = { uid: '123', email: 'test@bplen.com', isAdmin: false };
+      const mockSession = { uid: '123', email: 'test@bplen.com', isAdmin: false, matricula: null };
       vi.mocked(getServerSession).mockResolvedValue(mockSession);
 
       const result = await requireAuth('valid-token');
@@ -26,7 +26,7 @@ describe('Auth Guards 🛡️', () => {
 
   describe('requireAdmin', () => {
     it('should return session if user is admin', async () => {
-      const mockSession = { uid: '123', email: 'admin@bplen.com', isAdmin: true };
+      const mockSession = { uid: '123', email: 'admin@bplen.com', isAdmin: true, matricula: null };
       vi.mocked(getServerSession).mockResolvedValue(mockSession);
 
       const result = await requireAdmin('admin-token');
@@ -34,7 +34,7 @@ describe('Auth Guards 🛡️', () => {
     });
 
     it('should throw error if user is NOT admin', async () => {
-      const mockSession = { uid: '123', email: 'user@bplen.com', isAdmin: false };
+      const mockSession = { uid: '123', email: 'user@bplen.com', isAdmin: false, matricula: null };
       vi.mocked(getServerSession).mockResolvedValue(mockSession);
 
       await expect(requireAdmin('user-token')).rejects.toThrow('Você não tem permissão para realizar esta operação.');

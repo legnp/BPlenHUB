@@ -15,6 +15,7 @@ export interface SurveyAnalyticsMeta {
   context?: string;
   tags?: string[];
   domain?: string; // e.g. CONTEUDO, PRODUTO
+  durationSeconds?: number;
 }
 
 export interface SurveyEditPolicy {
