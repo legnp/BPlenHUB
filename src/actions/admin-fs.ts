@@ -198,15 +198,15 @@ export async function getFSItemDetails(
         .where("surveyId", "==", id)
         .where("status", "==", "completed")
         .get();
-      const responses = snapshot.docs.map(doc => doc.data() as SurveyResponse);
 
-      totalRespondents = responses.length;
+      totalRespondents = snapshot.docs.length;
 
       // Calcular tempo médio de conclusão das pesquisas (durationSeconds)
       let totalDuration = 0;
       let countWithDuration = 0;
 
-      responses.forEach(res => {
+      snapshot.docs.forEach(doc => {
+        const res = doc.data() as SurveyResponse;
         const subAt = toSafeDate(res.submittedAt);
         const iso = subAt ? subAt.toISOString() : new Date().toISOString();
         const matricula = res.matricula || "";
