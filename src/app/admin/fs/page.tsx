@@ -222,7 +222,7 @@ export default function AdminFSAnalyticsPage() {
             </span>
             
             {/* Custom Dropdown Trigger */}
-            <div className="relative mt-1">
+            <div className="relative mt-1 z-[100]">
               <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
                 className="flex items-center justify-between gap-6 px-5 py-3.5 bg-[var(--bg-primary)]/40 hover:bg-[var(--bg-primary)] border border-[var(--border-primary)] hover:border-[var(--accent-start)]/40 rounded-xl font-bold text-xs text-[var(--text-primary)] tracking-wide transition-all min-w-[280px]"
