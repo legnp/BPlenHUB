@@ -119,13 +119,13 @@ export async function getAdminFSAnalytics(): Promise<{
     // 5. Mapear itens disponíveis usando os registros estáticos (Registry)
     const items: FSRegistrySummary[] = [
       ...SURVEY_REGISTRY.map(s => ({
-        id: configId(s.id),
+        id: s.id,
         title: s.title,
         type: "survey" as const,
         totalResponses: surveyCounts[s.id] || 0,
       })),
       ...FORMS_REGISTRY.map(f => ({
-        id: configId(f.id),
+        id: f.id,
         title: f.title,
         type: "form" as const,
         totalResponses: formCounts[f.id] || 0,
