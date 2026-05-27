@@ -23,8 +23,7 @@ import {
   FSRegistrySummary, 
   FSGlobalStats, 
   FSItemDetails, 
-  FSRespondent,
-  FSRegistryItem 
+  FSRespondent
 } from "@/actions/admin-fs";
 import { FSTabs } from "@/components/admin/FSTabs";
 
