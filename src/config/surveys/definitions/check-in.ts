@@ -45,6 +45,7 @@ export const checkInSurvey: SurveyConfig = {
       id: "q_mais_tarde",
       question: "Tudo bem, faça no seu tempo!",
       description: "Aguardaremos você estar em um ambiente tranquilo com pelo menos 20 minutos disponíveis para iniciarmos.\n\nComo não é possível salvar o progresso, no seu retorno basta clicar em \"Ciente, fazer checkin agora\" para prosseguir.",
+      nextLabel: "Fazer Check-in",
       fields: [
         {
           id: "info_voltar",
