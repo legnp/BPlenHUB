@@ -138,6 +138,11 @@ export default function AdminFSAnalyticsPage() {
 
   return (
     <div className="space-y-10 animate-fade-in-up text-left">
+      {error && (
+        <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-sm font-bold animate-pulse">
+          ⚠️ Ocorreu um erro no servidor: {error}
+        </div>
+      )}
       <FSTabs />
       
       {/* 1. CABEÇALHO DA PÁGINA (Apple Pro Layout) */}
