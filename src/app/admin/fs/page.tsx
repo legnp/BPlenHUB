@@ -214,7 +214,7 @@ export default function AdminFSAnalyticsPage() {
       )}
 
       {/* 3. SELEÇÃO DA ESTRUTURA (Filtro Personalizado) */}
-      <div className="p-6 rounded-[24px] bg-[var(--input-bg)] border border-[var(--border-primary)] backdrop-blur-xl shadow-sm space-y-6 relative z-20">
+      <div className="p-6 rounded-[24px] bg-[var(--input-bg)] border border-[var(--border-primary)] backdrop-blur-xl shadow-sm space-y-6 relative z-50">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1 relative">
             <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-60">

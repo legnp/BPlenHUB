@@ -51,7 +51,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <div className="flex items-center gap-3">
                {/* Spacer for the HubHeader floating logo */}
                <div className="w-[54px]" />
-               <div className="flex flex-col mt-6">
+               <div className="flex flex-col mt-12">
                  <h2 className="text-xl font-bold tracking-tight text-[var(--text-primary)] group uppercase leading-none">
                    Admin
                  </h2>
