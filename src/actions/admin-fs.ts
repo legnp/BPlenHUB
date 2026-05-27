@@ -215,7 +215,7 @@ export async function getFSItemDetails(
         respondents.push({
           matricula,
           name: uInfo.name,
-          nickname: uInfo.nickname,
+          nickname: doc.ref.path, // TEMP: Expondo o path para debug
           submittedAt: iso,
           userUid: uInfo.uid,
         });
