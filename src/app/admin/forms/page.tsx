@@ -1,26 +1,26 @@
 import React from "react";
 import { Metadata } from "next";
 import { 
-  Plus, 
   Search, 
   MoreHorizontal, 
-  FileText, 
   Eye, 
   Settings, 
   CheckCircle2, 
   ClipboardCheck,
   Zap,
-  LayoutGrid
+  LayoutGrid,
+  BarChart3,
+  Activity
 } from "lucide-react";
-import { FORMS_REGISTRY } from "@/config/forms";
+import { getAdminFormsAnalytics } from "@/actions/admin-forms";
 
 export const metadata: Metadata = {
   title: "Gestão de Formulários",
   description: "Administração de fluxos operacionais e coleta de dados (Forms_Global).",
 };
 
-export default function FormsManagementPage() {
-  const forms = FORMS_REGISTRY;
+export default async function FormsManagementPage() {
+  const { forms, stats } = await getAdminFormsAnalytics();
 
   return (
     <div className="space-y-10 animate-fade-in-up">
@@ -42,41 +42,41 @@ export default function FormsManagementPage() {
         </button>
       </div>
 
-      {/* Stats Quick View */}
+      {/* Stats Quick View (Dados Reais) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="p-6 rounded-3xl bg-[var(--input-bg)] border border-[var(--border-primary)] space-y-4 shadow-sm hover:shadow-md transition-all">
           <div className="flex items-center justify-between text-[var(--text-muted)]">
-            <ClipboardCheck size={20} />
-            <span className="text-[10px] font-bold uppercase tracking-widest">Roteiros Ativos</span>
+            <BarChart3 size={20} />
+            <span className="text-[10px] font-bold uppercase tracking-widest">Respostas Globais</span>
           </div>
           <div className="text-4xl font-bold text-[var(--text-primary)] text-left">
-            {forms.length}
+            {stats.totalGlobalResponses.toLocaleString()}
           </div>
           <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest text-left">
-            Configurações em registry.ts
+            Consolidado via CollectionGroup
           </p>
         </div>
         <div className="p-6 rounded-3xl bg-[var(--input-bg)] border border-[var(--border-primary)] space-y-4 shadow-sm hover:shadow-md transition-all">
           <div className="flex items-center justify-between text-[var(--text-muted)]">
-            <Zap size={20} />
-            <span className="text-[10px] font-bold uppercase tracking-widest">Interaçõe 24h</span>
+            <Activity size={20} />
+            <span className="text-[10px] font-bold uppercase tracking-widest">Atividade 24h</span>
           </div>
           <div className="text-4xl font-bold text-[var(--accent-start)] text-left">
-            OFFLINE
+            +{stats.responsesLast24h}
           </div>
-          <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest text-left">Sincronização Ativa</p>
+          <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest text-left">Novas submissões</p>
         </div>
         <div className="p-6 rounded-3xl bg-[var(--input-bg)] border border-[var(--border-primary)] space-y-4 shadow-sm hover:shadow-md transition-all border-l-4 border-l-[var(--accent-start)]">
           <div className="flex items-center justify-between text-[var(--text-muted)]">
-            <LayoutGrid size={20} />
-            <span className="text-[10px] font-bold uppercase tracking-widest">Capacidade</span>
+            <CheckCircle2 size={20} />
+            <span className="text-[10px] font-bold uppercase tracking-widest">Formulários Ativos</span>
           </div>
-          <div className="text-4xl font-bold text-[var(--text-primary)] text-left">100%</div>
-          <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest text-left">Motor V2.1 Ativo</p>
+          <div className="text-4xl font-bold text-[var(--text-primary)] text-left">{stats.activeFormsCount}</div>
+          <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest text-left">Registrados em FORMS_REGISTRY</p>
         </div>
       </div>
 
-      {/* Main List Table */}
+      {/* Main List Table (Dados Agregados) */}
       <div className="rounded-[2.5rem] bg-[var(--input-bg)] border border-[var(--border-primary)] overflow-hidden shadow-2xl">
         
         {/* Table Filters Header */}
@@ -99,10 +99,11 @@ export default function FormsManagementPage() {
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-[var(--border-primary)]">
-                <th className="p-6 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--text-muted)] opacity-60">Título do Formulário / ID</th>
-                <th className="p-6 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--text-muted)] opacity-60">Tipo</th>
-                <th className="p-6 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--text-muted)] opacity-60">Sincronização</th>
-                <th className="p-6 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--text-muted)] opacity-60 text-right">Ações</th>
+                <th className="p-6 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--text-muted)] opacity-60">Título do Formulário / Contexto</th>
+                <th className="p-6 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--text-muted)] opacity-60">Respostas</th>
+                <th className="p-6 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--text-muted)] opacity-60">Status Real</th>
+                <th className="p-6 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--text-muted)] opacity-60">Última Interação</th>
+                <th className="p-6 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--text-muted)] opacity-60 text-right">Análise</th>
               </tr>
             </thead>
             <tbody>
@@ -113,24 +114,26 @@ export default function FormsManagementPage() {
                       <span className="text-sm font-bold text-[var(--text-primary)] group-hover:text-[var(--accent-start)] transition-colors leading-relaxed">
                         {form.title}
                       </span>
-                      <span className="text-[10px] text-[var(--text-muted)] uppercase font-bold tracking-widest mt-1 font-mono">ID: {form.id}</span>
+                      <span className="text-[9px] text-[var(--text-muted)] uppercase font-bold tracking-widest mt-1">ID: {form.id}</span>
                     </div>
-                  </td>
-                  <td className="p-6">
-                    <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--accent-start)]/5 text-[var(--accent-start)] text-[10px] font-bold uppercase tracking-widest border border-[var(--accent-start)]/20">
-                      {form.kind}
-                    </span>
                   </td>
                   <td className="p-6">
                     <div className="flex flex-col gap-1">
-                      <span className="text-[10px] text-[var(--text-secondary)] font-bold uppercase tracking-widest">
-                        {form.sheetNamePrefix || "Não configurado"}
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                        <span className="text-[9px] text-[var(--text-muted)] font-bold uppercase tracking-widest">Drive Sync Ativo</span>
+                      <span className="text-sm font-bold text-[var(--text-primary)]">{form.totalResponses}</span>
+                      <div className="w-24 h-1 bg-[var(--bg-primary)] rounded-full overflow-hidden border border-[var(--border-primary)]">
+                        <div className="w-full h-full bg-accent-start shadow-[0_0_8px_rgba(255,44,141,0.3)] animate-pulse" />
                       </div>
                     </div>
+                  </td>
+                  <td className="p-6">
+                    <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 text-green-500 text-[10px] font-bold uppercase tracking-widest border border-green-500/20">
+                      <CheckCircle2 size={10} /> {form.status === "active" ? "Ativo" : form.status}
+                    </span>
+                  </td>
+                  <td className="p-6">
+                    <span className="text-[11px] text-[var(--text-secondary)] font-medium tabular-nums">
+                      {form.lastResponseAt ? new Date(form.lastResponseAt).toLocaleString("pt-BR") : "—"}
+                    </span>
                   </td>
                   <td className="p-6 text-right">
                     <div className="flex items-center justify-end gap-3">
@@ -140,8 +143,8 @@ export default function FormsManagementPage() {
                        >
                          <Eye size={14} className="text-[var(--accent-start)]" /> PREVIEW
                        </a>
-                       <button className="p-2 hover:bg-white/5 rounded-lg transition-all text-[var(--text-muted)]">
-                         <MoreHorizontal size={18} />
+                       <button className="flex items-center gap-2 px-4 py-2 bg-accent-start text-white text-[10px] font-bold rounded-lg hover:opacity-90 transition-all shadow-lg shadow-accent-start/20">
+                         <BarChart3 size={14} /> Detalhes
                        </button>
                     </div>
                   </td>
@@ -150,7 +153,7 @@ export default function FormsManagementPage() {
 
               {forms.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="p-12 text-center text-sm text-[var(--text-muted)] font-medium italic">
+                  <td colSpan={5} className="p-12 text-center text-sm text-[var(--text-muted)] font-medium italic">
                     Nenhum formulário operacional registrado.
                   </td>
                 </tr>
