@@ -5,11 +5,11 @@ import { devolutivaDiscFormConfig } from "./devolutiva-disc";
 import { dadosCadastraisForm } from "./definitions/dados-cadastrais";
 
 /**
- * BPlen HUB — Forms Registry (🗂️)
- * Centraliza todas as definições de formulários operacionais do projeto.
+ * BPlen HUB — Forms Registry
+ * Centraliza todas as definicoes de formularios operacionais do projeto.
  */
 export const forms = {
-  showroom: showroomFormConfig,
+  showroom_interest: showroomFormConfig,
   theme_suggestion: themeSuggestionFormConfig,
   booking_screening: bookingScreeningFormConfig,
   devolutiva_disc: devolutivaDiscFormConfig,
@@ -22,5 +22,5 @@ export type FormsRegistry = typeof forms;
 export type FormId = keyof FormsRegistry;
 
 export function getFormConfig(id: string) {
-  return forms[id as FormId];
+  return FORMS_REGISTRY.find(f => f.id === id);
 }

@@ -30,7 +30,7 @@ export default function FormPreviewPage() {
           O ID <span className="font-mono text-[var(--accent-start)]">{formId}</span> não existe no FORMS_REGISTRY.
         </p>
         <button 
-          onClick={() => router.push("/admin/forms")}
+          onClick={() => router.push("/admin/fs/forms")}
           className="px-6 py-2 bg-[var(--input-bg)] rounded-xl text-xs font-bold uppercase tracking-widest border border-[var(--border-primary)]"
         >
           Voltar para Gestão
@@ -52,7 +52,7 @@ export default function FormPreviewPage() {
       {/* Barra de Ferramentas Preview */}
       <div className="max-w-[800px] mx-auto flex items-center justify-between pb-6 border-b border-[var(--border-primary)]/50">
         <button 
-          onClick={() => router.push("/admin/forms")}
+          onClick={() => router.push("/admin/fs/forms")}
           className="flex items-center gap-2 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors text-xs font-bold uppercase tracking-widest"
         >
           <ChevronLeft size={16} />
