@@ -31,7 +31,11 @@ export async function syncCalendarToFirestore(idToken?: string) {
       orderBy: "startTime",
     });
 
-    const googleItems = response.data.items || [];
+    const rawGoogleItems = response.data.items || [];
+    const googleItems = rawGoogleItems.filter(item => {
+      const summary = item.summary || "";
+      return !summary.toLowerCase().includes("bloqueado");
+    });
     const googleIds = new Set(googleItems.map(item => item.id).filter(Boolean));
 
     // Cleanup: Buscar eventos no Firestore nesse período

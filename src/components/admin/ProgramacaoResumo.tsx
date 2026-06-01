@@ -3,7 +3,8 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { 
   getProgramacaoSummaryAction, 
-  getEventNpsDetailsAction
+  getEventNpsDetailsAction,
+  getEventAttendees
 } from "@/actions/calendar";
 import { 
   GoogleCalendarEvent,
@@ -29,7 +30,9 @@ import {
   Filter,
   Star,
   Eye,
-  MessageCircle
+  MessageCircle,
+  Phone,
+  Mail
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -66,6 +69,15 @@ type SortField = "date" | "name" | "nps" | "presence" | "capacity";
 type SortDirection = "asc" | "desc";
 type StatusFilter = "todos" | "futuro" | "pendente" | "concluido";
 
+const getInitials = (name: string) => {
+  if (!name) return "?";
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) {
+    return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+  }
+  return parts[0][0].toUpperCase();
+};
+
 export default function ProgramacaoResumo() {
   const { user } = useAuthContext();
   const [events, setEvents] = useState<EventSummary[]>([]);
@@ -98,6 +110,25 @@ export default function ProgramacaoResumo() {
       console.error("Erro ao carregar NPS:", err);
     } finally {
       setIsLoadingNps(false);
+    }
+  };
+
+  // Attendees Modal State
+  const [attendeesModalEvent, setAttendeesModalEvent] = useState<EventSummary | null>(null);
+  const [attendeesData, setAttendeesData] = useState<any[]>([]);
+  const [isLoadingAttendees, setIsLoadingAttendees] = useState(false);
+
+  const handleOpenAttendeesModal = async (ev: EventSummary) => {
+    setAttendeesModalEvent(ev);
+    setIsLoadingAttendees(true);
+    setAttendeesData([]);
+    try {
+      const res = await getEventAttendees(ev.id);
+      setAttendeesData(res || []);
+    } catch (err) {
+      console.error("Erro ao carregar inscritos:", err);
+    } finally {
+      setIsLoadingAttendees(false);
     }
   };
 
@@ -440,10 +471,14 @@ export default function ProgramacaoResumo() {
                         style={{ width: `${Math.min(100, ((ev.registeredCount || 0) / (ev.totalCapacity || 1)) * 100)}%` }} 
                       />
                    </div>
-                   <div className="flex items-center gap-2 text-[9px] font-bold text-[var(--text-muted)] opacity-60">
+                   <button 
+                     onClick={(e) => { e.stopPropagation(); handleOpenAttendeesModal(ev); }}
+                     className="flex items-center gap-2 text-[9px] font-bold text-[var(--text-muted)] opacity-60 hover:opacity-100 hover:text-[var(--accent-start)] hover:underline transition-all cursor-pointer"
+                     title="Visualizar inscritos"
+                   >
                       <Users className="w-2.5 h-2.5" />
                       {ev.registeredCount || 0} / {ev.totalCapacity || 0} vagas
-                   </div>
+                   </button>
                 </div>
               </div>
 
@@ -465,6 +500,20 @@ export default function ProgramacaoResumo() {
                     onClick={(e) => e.stopPropagation()}
                   >
                     <div className="flex flex-col gap-1">
+                      {/* Visualizar Inscritos Action */}
+                      <button 
+                        onClick={() => {
+                          setActiveMenuId(null);
+                          handleOpenAttendeesModal(ev);
+                        }}
+                        className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[var(--accent-start)] hover:text-white transition-all text-left text-[11px] font-bold group/item"
+                      >
+                        <Users className="w-4 h-4 opacity-50 group-hover/item:opacity-100" />
+                        <span>Visualizar Inscritos ({ev.registeredCount || 0})</span>
+                      </button>
+
+                      <hr className="my-1 border-[var(--border-primary)] opacity-30 mx-2" />
+
                       {/* Close Event Action */}
                       <button 
                         onClick={() => handleOpenWizard(ev)}
@@ -528,6 +577,152 @@ export default function ProgramacaoResumo() {
           onSuccess={() => setRefreshCounter(p => p + 1)}
         />
       )}
+
+      {/* Attendees Detail Modal */}
+      <GlassModal
+        isOpen={!!attendeesModalEvent}
+        onClose={() => { setAttendeesModalEvent(null); setAttendeesData([]); }}
+        title="Lista de Inscritos"
+        subtitle={attendeesModalEvent?.summary}
+        maxWidth="max-w-2xl"
+      >
+        <div className="space-y-6 max-h-[65vh] overflow-y-auto custom-scrollbar pr-1">
+          {isLoadingAttendees ? (
+            <div className="py-16 flex flex-col items-center justify-center gap-3 opacity-40">
+              <Loader2 className="w-6 h-6 animate-spin text-[var(--accent-start)]" />
+              <span className="text-[9px] font-black uppercase tracking-widest">Carregando inscritos...</span>
+            </div>
+          ) : attendeesData.length > 0 ? (
+            <div className="space-y-3">
+              {attendeesData.map((attendee, idx) => {
+                const initials = getInitials(attendee.nickname);
+                
+                // Determine attendance badge status
+                let attendanceBadge = null;
+                if (attendee.attendanceStatus === "present") {
+                  attendanceBadge = (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[8px] font-black uppercase tracking-widest bg-green-500/10 text-green-500 border border-green-500/20">
+                      <CheckCircle2 className="w-2.5 h-2.5" />
+                      Presença
+                    </span>
+                  );
+                } else if (attendee.attendanceStatus === "absent") {
+                  attendanceBadge = (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[8px] font-black uppercase tracking-widest bg-red-500/10 text-red-500 border border-red-500/20">
+                      <X className="w-2.5 h-2.5" />
+                      Falta
+                    </span>
+                  );
+                } else {
+                  attendanceBadge = (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[8px] font-black uppercase tracking-widest bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                      <Clock className="w-2.5 h-2.5" />
+                      Pendente
+                    </span>
+                  );
+                }
+
+                return (
+                  <div 
+                    key={attendee.userId || idx} 
+                    className="p-5 bg-[var(--bg-primary)]/50 rounded-3xl border border-[var(--border-primary)] flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-[var(--accent-start)]/30 transition-all duration-300"
+                  >
+                    {/* User Info Block */}
+                    <div className="flex items-center gap-4">
+                      {/* Avatar */}
+                      <div className="relative shrink-0">
+                        <div className="w-12 h-12 rounded-full border border-[var(--border-primary)]/40 overflow-hidden flex items-center justify-center bg-gradient-to-br from-[var(--accent-start)] to-[var(--accent-end)] shadow-md">
+                          {attendee.photoUrl ? (
+                            <img 
+                              src={attendee.photoUrl} 
+                              alt={attendee.nickname} 
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <span className="text-sm font-black text-white">
+                              {initials}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Name / Matricula */}
+                      <div className="space-y-0.5">
+                        <h4 className="text-xs font-black text-[var(--text-primary)] leading-tight">{attendee.nickname}</h4>
+                        <p className="text-[9px] font-bold text-[var(--text-muted)] opacity-50 uppercase tracking-widest">Matrícula: {attendee.matricula || "Lead / Sem Matrícula"}</p>
+                        
+                        {/* Timestamps */}
+                        {attendee.timestamp && (
+                          <p className="text-[8px] font-medium text-[var(--text-muted)] opacity-40">
+                            Agendado em: {format(parseISO(attendee.timestamp), "dd/MM/yy - HH:mm", { locale: ptBR })}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Action buttons and Badges Block */}
+                    <div className="flex flex-wrap items-center sm:justify-end gap-3 shrink-0">
+                      {/* Badge Area */}
+                      <div className="flex flex-wrap gap-1.5">
+                        {/* Lead badge */}
+                        {attendee.isLead && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded bg-amber-500/10 text-amber-500 border border-amber-500/20 text-[8px] font-black uppercase tracking-widest">
+                            Lead
+                          </span>
+                        )}
+
+                        {/* 1 to 1 Badge */}
+                        {attendee.type && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded bg-[var(--accent-start)]/10 text-[var(--accent-start)] border border-[var(--accent-start)]/20 text-[8px] font-black uppercase tracking-widest" title={attendee.expectations}>
+                            {attendee.type}
+                          </span>
+                        )}
+
+                        {/* Attendance Badge */}
+                        {attendanceBadge}
+                      </div>
+
+                      {/* Interactive Buttons */}
+                      <div className="flex items-center gap-1.5 border-l border-[var(--border-primary)] pl-3 ml-1">
+                        {/* Email Link */}
+                        <a
+                          href={`mailto:${attendee.email}`}
+                          className="p-2 rounded-xl bg-[var(--input-bg)] hover:bg-[var(--accent-start)]/10 hover:text-[var(--accent-start)] text-[var(--text-muted)] border border-[var(--border-primary)] transition-all"
+                          title={`Enviar e-mail para ${attendee.email}`}
+                        >
+                          <Mail className="w-3.5 h-3.5" />
+                        </a>
+
+                        {/* Phone Link (if available) */}
+                        {attendee.phone ? (
+                          <a
+                            href={`tel:${attendee.phone}`}
+                            className="p-2 rounded-xl bg-[var(--input-bg)] hover:bg-[var(--accent-start)]/10 hover:text-[var(--accent-start)] text-[var(--text-muted)] border border-[var(--border-primary)] transition-all"
+                            title={`Ligar para ${attendee.phone}`}
+                          >
+                            <Phone className="w-3.5 h-3.5" />
+                          </a>
+                        ) : (
+                          <div
+                            className="p-2 rounded-xl bg-[var(--input-bg)]/40 text-[var(--text-muted)]/30 border border-[var(--border-primary)]/40 cursor-not-allowed"
+                            title="Telefone não disponível"
+                          >
+                            <Phone className="w-3.5 h-3.5" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="py-16 text-center border border-dashed border-[var(--border-primary)] rounded-3xl opacity-30">
+              <p className="text-[10px] font-black uppercase tracking-widest">Nenhum participante inscrito neste evento</p>
+            </div>
+          )}
+        </div>
+      </GlassModal>
 
       {/* NPS Detail Modal */}
       <GlassModal

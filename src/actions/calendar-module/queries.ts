@@ -26,7 +26,12 @@ export async function fetchCalendarEvents(dateReference: Date): Promise<GoogleCa
     });
 
     const items = response.data.items || [];
-    return items.map((item: calendar_v3.Schema$Event) => {
+    const filteredItems = items.filter(item => {
+      const summary = item.summary || "";
+      return !summary.toLowerCase().includes("bloqueado");
+    });
+
+    return filteredItems.map((item: calendar_v3.Schema$Event) => {
       const rawDescription = item.description || "";
       const plainDescription = rawDescription.replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, "\n");
       
@@ -137,15 +142,31 @@ export async function getEventAttendees(eventId: string): Promise<AttendeeData[]
     const db = getAdminDb();
     const attendeesSnap = await db.collection("Calendar_Events").doc(eventId).collection("attendees").get();
     
-    return attendeesSnap.docs.map(doc => {
+    const attendees = await Promise.all(attendeesSnap.docs.map(async (doc) => {
       const data = doc.data();
+      let realProfilePhoto = null;
+      let realPhone = data.phone || null;
+      
+      if (data.matricula) {
+        const userDoc = await db.collection("User").doc(data.matricula).get();
+        if (userDoc.exists) {
+          const uData = userDoc.data();
+          realProfilePhoto = uData?.photoUrl || null;
+          if (uData?.Authentication_Phone) {
+            realPhone = uData.Authentication_Phone;
+          }
+        }
+      }
       return {
         ...data,
+        photoUrl: realProfilePhoto,
+        phone: realPhone,
         userId: doc.id,
         timestamp: data.timestamp?.toDate?.()?.toISOString() || null,
         attendanceCheckedAt: data.attendanceCheckedAt?.toDate?.()?.toISOString() || null,
-      } as AttendeeData;
-    });
+      } as unknown as AttendeeData;
+    }));
+    return attendees;
   } catch (error) {
     console.error("Erro ao buscar inscritos do evento:", error);
     return [];
