@@ -6,6 +6,7 @@ import { formatISO, parseISO, isBefore } from "date-fns";
 import { calendar_v3 } from "googleapis";
 import { safeSerialize } from "@/lib/utils/firestore";
 import { GoogleCalendarEvent, AttendeeData, UserBooking } from "@/types/calendar";
+import { toISOSafe } from "@/lib/date-utils";
 
 /**
  * Busca eventos do Google Calendar para visualização rápida no Front.
@@ -142,30 +143,42 @@ export async function getEventAttendees(eventId: string): Promise<AttendeeData[]
     const db = getAdminDb();
     const attendeesSnap = await db.collection("Calendar_Events").doc(eventId).collection("attendees").get();
     
-    const attendees = await Promise.all(attendeesSnap.docs.map(async (doc) => {
-      const data = doc.data();
-      let realProfilePhoto = null;
-      let realPhone = data.phone || null;
-      
-      if (data.matricula) {
-        const userDoc = await db.collection("User").doc(data.matricula).get();
-        if (userDoc.exists) {
-          const uData = userDoc.data();
-          realProfilePhoto = uData?.photoUrl || null;
-          if (uData?.Authentication_Phone) {
-            realPhone = uData.Authentication_Phone;
+    const attendees = (await Promise.all(attendeesSnap.docs.map(async (doc) => {
+      try {
+        const data = doc.data();
+        let realProfilePhoto = null;
+        let realPhone = data.phone || null;
+        
+        if (data.matricula && typeof data.matricula === "string" && data.matricula.trim() !== "") {
+          const userDoc = await db.collection("User").doc(data.matricula).get();
+          if (userDoc.exists) {
+            const uData = userDoc.data();
+            realProfilePhoto = uData?.photoUrl || null;
+            if (uData?.Authentication_Phone) {
+              realPhone = uData.Authentication_Phone;
+            }
           }
         }
+        
+        // Conversão robusta de datas
+        const timestamp = toISOSafe(data.bookedAt || data.timestamp);
+        const attendanceCheckedAt = toISOSafe(data.attendanceCheckedAt);
+
+        return safeSerialize<AttendeeData>({
+          ...data,
+          nickname: data.nickname || data.displayName || "Participante",
+          photoUrl: realProfilePhoto,
+          phone: realPhone,
+          userId: doc.id,
+          timestamp,
+          attendanceCheckedAt,
+        });
+      } catch (innerError) {
+        console.error(`Erro ao processar inscrito ${doc.id}:`, innerError);
+        return null;
       }
-      return {
-        ...data,
-        photoUrl: realProfilePhoto,
-        phone: realPhone,
-        userId: doc.id,
-        timestamp: data.timestamp?.toDate?.()?.toISOString() || null,
-        attendanceCheckedAt: data.attendanceCheckedAt?.toDate?.()?.toISOString() || null,
-      } as unknown as AttendeeData;
-    }));
+    }))).filter(Boolean) as AttendeeData[];
+    
     return attendees;
   } catch (error) {
     console.error("Erro ao buscar inscritos do evento:", error);
