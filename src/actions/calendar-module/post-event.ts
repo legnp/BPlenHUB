@@ -122,6 +122,10 @@ export async function updateGlobalProgramacaoRegistryAction() {
       
     const eventsRegistry = eventsSnap.docs.map(doc => {
       const data = doc.data() as GoogleCalendarEvent;
+      const summary = data.summary || "";
+      if (summary.toLowerCase().includes("bloqueado")) {
+        return null;
+      }
       const evDate = parseISO(data.start);
       const isPast = isBefore(evDate, new Date());
       let status: "futuro" | "pendente" | "concluido" = "futuro";
@@ -147,7 +151,7 @@ export async function updateGlobalProgramacaoRegistryAction() {
         publicGeneralComment: data.publicGeneralComment || "",
         meetingMinutesFile: data.meetingMinutesFile || null
       };
-    });
+    }).filter(Boolean) as any[];
 
     await db.collection("Datas_Center").doc("Programacao_Registry").set({
       lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
