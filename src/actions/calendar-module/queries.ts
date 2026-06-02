@@ -76,11 +76,16 @@ export async function getSyncedEvents(idToken?: string): Promise<GoogleCalendarE
       const snap = await db.collection("Calendar_Events").get();
       
       return snap.docs.map(doc => {
+        const data = doc.data();
+        const summary = data.summary || "";
+        if (summary.toLowerCase().includes("bloqueado")) {
+          return null;
+        }
         return safeSerialize<GoogleCalendarEvent>({
           id: doc.id,
-          ...doc.data()
+          ...data
         });
-      });
+      }).filter(Boolean) as GoogleCalendarEvent[];
     } catch (error) {
       console.error("Erro ao buscar eventos do Firestore:", error);
       return [];
