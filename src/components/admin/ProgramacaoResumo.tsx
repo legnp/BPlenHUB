@@ -457,7 +457,7 @@ export default function ProgramacaoResumo() {
           return (
             <div 
               key={ev.id} 
-              className="group grid grid-cols-1 md:grid-cols-[2fr_1.2fr_1fr_1fr_0.8fr_1.5fr_1fr] gap-4 items-center px-8 py-5 bg-[var(--bg-primary)]/40 border border-[var(--border-primary)] rounded-[2rem] hover:border-[var(--accent-start)]/30 transition-all hover:translate-x-1"
+              className={`group grid grid-cols-1 md:grid-cols-[2fr_1.2fr_1fr_1fr_0.8fr_1.5fr_1fr] gap-4 items-center px-8 py-5 bg-[var(--bg-primary)]/40 border border-[var(--border-primary)] rounded-[2rem] hover:border-[var(--accent-start)]/30 transition-all hover:translate-x-1 relative ${isMenuOpen ? "z-20" : "z-10"}`}
             >
               {/* Event Name & Theme */}
               <div className="flex flex-col gap-1 min-w-0">
