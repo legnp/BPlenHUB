@@ -497,7 +497,7 @@ function OutcomeCard({
        <div className="flex items-center gap-4 shrink-0">
           <span className={`px-2.5 py-1 rounded-full text-[7px] font-black uppercase tracking-widest ${statusColor}`}>{statusLabel}</span>
           
-          {meetingLink && !isPast && statusLabel !== "Cancelada" && statusLabel !== "Adiada" && (
+          {meetingLink && statusLabel !== "Concluída" && statusLabel !== "Cancelada" && statusLabel !== "Adiada" && (
              <a 
                 href={meetingLink} 
                 target="_blank" 

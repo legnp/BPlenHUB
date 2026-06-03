@@ -587,7 +587,7 @@ function BookingRow({
 
       {/* Detail Button */}
       <div className="flex justify-end items-center gap-2">
-        {meetingLink && !isPast && statusLabel !== "Cancelada" && statusLabel !== "Adiada" && (
+        {meetingLink && statusLabel !== "Concluída" && statusLabel !== "Cancelada" && statusLabel !== "Adiada" && (
           <a 
             href={meetingLink}
             target="_blank"
@@ -706,7 +706,7 @@ export function BookingDetailModal({
         </div>
 
         {/* ─── Meeting Call to Action Banner ─── */}
-        {meetingLink && !isPast && statusLabel !== "Cancelada" && statusLabel !== "Adiada" && (
+        {meetingLink && statusLabel !== "Concluída" && statusLabel !== "Cancelada" && statusLabel !== "Adiada" && (
           <div className="p-5 bg-gradient-to-r from-[var(--accent-start)]/10 to-[var(--accent-end)]/10 rounded-2xl border border-[var(--accent-start)]/30 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3.5 text-left w-full sm:w-auto">
               <div className="p-3 bg-[var(--accent-start)]/10 rounded-xl text-[var(--accent-start)] shrink-0">
