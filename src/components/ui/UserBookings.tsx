@@ -22,6 +22,7 @@ import {
   ExternalLink,
   XCircle,
   Eye,
+  Video,
   Search,
   X,
   Filter,
@@ -378,7 +379,7 @@ export default function UserBookings({
       </div>
 
       {/* ─── Table Header (Sortable) ─── */}
-      <div className="hidden md:grid grid-cols-[0.8fr_2fr_1fr_0.8fr_0.8fr_0.8fr_1.2fr_0.5fr] gap-3 px-6 py-3 bg-[var(--input-bg)]/30 rounded-2xl border border-[var(--border-primary)] text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)]">
+      <div className="hidden md:grid grid-cols-[0.8fr_2fr_1fr_0.8fr_0.8fr_0.8fr_1.2fr_0.8fr] gap-3 px-6 py-3 bg-[var(--input-bg)]/30 rounded-2xl border border-[var(--border-primary)] text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)]">
         <button onClick={() => handleSortToggle("date")} className="flex items-center gap-1.5 hover:text-[var(--accent-start)] transition-colors text-left">
           <span>Data / Hora</span>
           <SortIcon field="date" />
@@ -468,6 +469,8 @@ function BookingRow({
   const event = booking.eventDetail;
   if (!event) return null;
 
+  const meetingLink = event.meetingLink || (event.location?.startsWith("http") ? event.location : "");
+
   const eventDate = parseISO(event.start);
   const isPast = isBefore(eventDate, new Date());
   
@@ -498,7 +501,7 @@ function BookingRow({
   };
 
   return (
-    <div className="group grid grid-cols-1 md:grid-cols-[0.8fr_2fr_1fr_0.8fr_0.8fr_0.8fr_1.2fr_0.5fr] gap-3 items-center px-6 py-4 bg-[var(--bg-primary)]/40 border border-[var(--border-primary)] rounded-2xl hover:border-[var(--accent-start)]/30 transition-all hover:translate-x-0.5">
+    <div className="group grid grid-cols-1 md:grid-cols-[0.8fr_2fr_1fr_0.8fr_0.8fr_0.8fr_1.2fr_0.8fr] gap-3 items-center px-6 py-4 bg-[var(--bg-primary)]/40 border border-[var(--border-primary)] rounded-2xl hover:border-[var(--accent-start)]/30 transition-all hover:translate-x-0.5">
       
       {/* Date / Time */}
       <div className="flex items-center gap-2.5">
@@ -583,10 +586,22 @@ function BookingRow({
       </div>
 
       {/* Detail Button */}
-      <div className="flex justify-end">
+      <div className="flex justify-end items-center gap-2">
+        {meetingLink && !isPast && statusLabel !== "Cancelada" && statusLabel !== "Adiada" && (
+          <a 
+            href={meetingLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="p-2 rounded-xl bg-[var(--accent-start)]/10 hover:bg-[var(--accent-start)] text-[var(--accent-start)] hover:text-white border border-[var(--accent-start)]/20 hover:border-[var(--accent-start)] transition-all flex items-center justify-center shrink-0"
+            title="Ir à reunião"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Video className="w-3.5 h-3.5" />
+          </a>
+        )}
         <button 
           onClick={onOpenDetail}
-          className="p-2 rounded-xl bg-[var(--input-bg)] hover:bg-[var(--accent-start)] hover:text-white text-[var(--text-muted)] border border-[var(--border-primary)] hover:border-[var(--accent-start)] transition-all group/btn"
+          className="p-2 rounded-xl bg-[var(--input-bg)] hover:bg-[var(--accent-start)] hover:text-white text-[var(--text-muted)] border border-[var(--border-primary)] hover:border-[var(--accent-start)] transition-all group/btn shrink-0"
         >
           <Eye className="w-3.5 h-3.5 opacity-50 group-hover/btn:opacity-100" />
         </button>
@@ -628,6 +643,8 @@ export function BookingDetailModal({
 
   const event = booking.eventDetail;
   if (!event) return null;
+
+  const meetingLink = event.meetingLink || (event.location?.startsWith("http") ? event.location : "");
 
   const eventDate = parseISO(event.start);
   const isPast = isBefore(eventDate, new Date());
@@ -687,6 +704,30 @@ export function BookingDetailModal({
             {isPresente ? "Presença Confirmada" : isAusente ? "Ausência Registrada" : isPast ? "Presença Pendente de Confirmação" : "Evento Futuro — Aguardando Realização"}
           </span>
         </div>
+
+        {/* ─── Meeting Call to Action Banner ─── */}
+        {meetingLink && !isPast && statusLabel !== "Cancelada" && statusLabel !== "Adiada" && (
+          <div className="p-5 bg-gradient-to-r from-[var(--accent-start)]/10 to-[var(--accent-end)]/10 rounded-2xl border border-[var(--accent-start)]/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5 text-left w-full sm:w-auto">
+              <div className="p-3 bg-[var(--accent-start)]/10 rounded-xl text-[var(--accent-start)] shrink-0">
+                <Video size={20} />
+              </div>
+              <div>
+                <h5 className="text-[11px] font-black uppercase tracking-widest text-[var(--text-primary)]">Clique aqui para acessar a reunião</h5>
+                <p className="text-[9px] font-bold text-[var(--text-muted)] opacity-60 uppercase tracking-tight mt-0.5">Acesse o encontro online via Google Meet</p>
+              </div>
+            </div>
+            <a 
+              href={meetingLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] hover:scale-[1.02] text-white rounded-xl text-[9px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-2 transition-all shadow-lg shadow-[var(--accent-start)]/25 shrink-0"
+            >
+              Ir para a Reunião
+              <ExternalLink size={12} />
+            </a>
+          </div>
+        )}
 
         {/* ─── Demanda 1-to-1 ─── */}
         {booking.oneToOneData && (

@@ -27,6 +27,7 @@ import {
   ExternalLink,
   CalendarDays,
   Eye,
+  Video,
   Briefcase
 } from "lucide-react";
 import { HomeFooter } from "@/components/home/HomeFooter";
@@ -465,6 +466,8 @@ function OutcomeCard({
   const event = booking.eventDetail;
   if (!event) return null;
 
+  const meetingLink = event.meetingLink || (event.location?.startsWith("http") ? event.location : "");
+
   const eventDate = parseISO(event.start);
   const isPast = isBefore(eventDate, new Date());
 
@@ -493,6 +496,19 @@ function OutcomeCard({
        </div>
        <div className="flex items-center gap-4 shrink-0">
           <span className={`px-2.5 py-1 rounded-full text-[7px] font-black uppercase tracking-widest ${statusColor}`}>{statusLabel}</span>
+          
+          {meetingLink && !isPast && statusLabel !== "Cancelada" && statusLabel !== "Adiada" && (
+             <a 
+                href={meetingLink} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="p-2.5 bg-[var(--accent-start)]/10 hover:bg-[var(--accent-start)]/20 text-[var(--accent-start)] rounded-xl border border-[var(--accent-start)]/20 hover:border-[var(--accent-start)]/40 transition-all flex items-center justify-center"
+                title="Ir à reunião"
+             >
+                <Video size={16} />
+             </a>
+          )}
+          
           <button onClick={() => onViewDetails(booking)} className="p-2.5 bg-[var(--input-bg)] rounded-xl border border-[var(--border-primary)] text-[var(--text-muted)] hover:text-[var(--accent-start)] transition-all">
              <Eye size={16} />
           </button>

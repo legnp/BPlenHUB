@@ -13,6 +13,7 @@ export interface GoogleCalendarEvent {
   end: string;
   location?: string;
   htmlLink: string;
+  meetingLink?: string;
   totalCapacity?: number;
   registeredCount?: number;
   mentor?: string;

@@ -73,6 +73,7 @@ export async function syncCalendarToFirestore(idToken?: string) {
         end: item.end?.dateTime || item.end?.date,
         location: item.location || "",
         htmlLink: item.htmlLink,
+        meetingLink: item.hangoutLink || "",
         totalCapacity: capacityMatch ? parseInt(capacityMatch[1]) : 0,
         mentor: mentorMatch ? mentorMatch[1].trim() : "",
         theme: themeMatch ? themeMatch[1].trim() : undefined,
