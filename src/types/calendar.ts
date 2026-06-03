@@ -2,7 +2,7 @@
  * BPlen HUB — Calendar Types 📅
  */
 
-export type EventLifecycleStatus = "scheduled" | "completed" | "cancelled" | "postponed";
+export type EventLifecycleStatus = "scheduled" | "completed" | "cancelled" | "postponed" | "baixado";
 export type AttendanceStatus = "pending" | "present" | "absent";
 
 export interface GoogleCalendarEvent {

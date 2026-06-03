@@ -110,6 +110,37 @@ export async function closeAttendeeAction(
 }
 
 /**
+ * Ação para baixar um evento que não possui participantes inscritos 🏁
+ */
+export async function baixarEventoAction(eventId: string, idToken: string) {
+  try {
+    await requireAdmin(idToken);
+    const db = getAdminDb();
+    const eventRef = db.collection("Calendar_Events").doc(eventId);
+
+    const eventSnap = await eventRef.get();
+    if (!eventSnap.exists) throw new Error("Evento não encontrado.");
+    const eventData = eventSnap.data();
+
+    if ((eventData?.registeredCount || 0) > 0) {
+      throw new Error("Não é possível baixar um evento que possui participantes inscritos.");
+    }
+
+    await eventRef.set({
+      lifecycleStatus: "baixado",
+      postEventCompleted: true,
+      baixadoAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+
+    await updateGlobalProgramacaoRegistryAction();
+    return { success: true };
+  } catch (error) {
+    console.error("Erro ao baixar evento:", error);
+    return { success: false, message: (error as Error).message };
+  }
+}
+
+/**
  * Snapshot de Alta Performance: Datas_Center 🛰️
  */
 export async function updateGlobalProgramacaoRegistryAction() {
@@ -128,8 +159,9 @@ export async function updateGlobalProgramacaoRegistryAction() {
       }
       const evDate = parseISO(data.start);
       const isPast = isBefore(evDate, new Date());
-      let status: "futuro" | "pendente" | "concluido" = "futuro";
-      if (data.postEventCompleted) status = "concluido";
+      let status: "futuro" | "pendente" | "concluido" | "baixado" = "futuro";
+      if (data.lifecycleStatus === "baixado") status = "baixado";
+      else if (data.postEventCompleted) status = "concluido";
       else if (isPast) status = "pendente";
 
       return {

@@ -50,7 +50,7 @@ interface EventSummary {
   end: string;
   mentor: string;
   theme?: string;
-  statusLabel: "futuro" | "pendente" | "concluido";
+  statusLabel: "futuro" | "pendente" | "concluido" | "baixado";
   folderUrl: string | null;
   htmlLink: string;
   registeredCount: number;
@@ -72,7 +72,7 @@ interface EventSummary {
 
 type SortField = "date" | "name" | "nps" | "presence" | "capacity";
 type SortDirection = "asc" | "desc";
-type StatusFilter = "todos" | "futuro" | "pendente" | "concluido";
+type StatusFilter = "todos" | "futuro" | "pendente" | "concluido" | "baixado";
 
 const getInitials = (name: string) => {
   if (!name) return "?";
@@ -275,6 +275,7 @@ export default function ProgramacaoResumo() {
     futuro: { label: "Futuro", color: "bg-blue-500/10 text-blue-400", icon: Clock },
     pendente: { label: "Pendente Fechamento", color: "bg-amber-500/10 text-amber-500 animate-pulse", icon: AlertCircle },
     concluido: { label: "Concluído", color: "bg-green-500/10 text-green-500", icon: CheckCircle2 },
+    baixado: { label: "Baixado", color: "bg-red-500/10 text-red-400", icon: X },
   };
 
   const statusFilterOptions: { key: StatusFilter; label: string; color: string }[] = [
@@ -282,11 +283,12 @@ export default function ProgramacaoResumo() {
     { key: "futuro", label: "Futuro", color: "bg-blue-500/10 text-blue-400" },
     { key: "pendente", label: "Pendente", color: "bg-amber-500/10 text-amber-500" },
     { key: "concluido", label: "Concluído", color: "bg-green-500/10 text-green-500" },
+    { key: "baixado", label: "Baixado", color: "bg-red-500/10 text-red-400" },
   ];
 
   // Count per status for badges
   const statusCounts = useMemo(() => {
-    const counts = { todos: events.length, futuro: 0, pendente: 0, concluido: 0 };
+    const counts = { todos: events.length, futuro: 0, pendente: 0, concluido: 0, baixado: 0 };
     events.forEach(ev => { counts[ev.statusLabel]++; });
     return counts;
   }, [events]);
@@ -572,6 +574,39 @@ export default function ProgramacaoResumo() {
                       </button>
 
                       <hr className="my-1 border-[var(--border-primary)] opacity-30 mx-2" />
+
+                      {/* Baixar Evento Action */}
+                      {ev.statusLabel !== "baixado" && (ev.registeredCount || 0) === 0 && (
+                        <>
+                          <button 
+                            onClick={async () => {
+                              if (confirm(`Deseja realmente baixar o evento "${ev.summary}"? O status será alterado permanentemente para Baixado.`)) {
+                                try {
+                                  const idToken = await user?.getIdToken();
+                                  if (idToken) {
+                                    const { baixarEventoAction } = await import("@/actions/calendar");
+                                    const res = await baixarEventoAction(ev.id, idToken);
+                                    if (res.success) {
+                                      alert("Evento baixado com sucesso!");
+                                      setRefreshCounter(p => p + 1);
+                                      setActiveMenuId(null);
+                                    } else {
+                                      alert("Erro ao baixar evento: " + res.message);
+                                    }
+                                  }
+                                } catch (err: any) {
+                                  alert("Erro inesperado: " + err.message);
+                                }
+                              }
+                            }}
+                            className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-500 hover:text-white transition-all text-left text-[11px] font-bold group/item text-red-400"
+                          >
+                            <X className="w-4 h-4 opacity-50 group-hover/item:opacity-100 text-red-400 group-hover/item:text-white" />
+                            <span>Baixar Evento</span>
+                          </button>
+                          <hr className="my-1 border-[var(--border-primary)] opacity-30 mx-2" />
+                        </>
+                      )}
 
                       {/* External Links */}
                       <a 
