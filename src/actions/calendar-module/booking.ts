@@ -8,7 +8,7 @@ import { CALENDAR_CONFIG } from "@/config/calendarConfig";
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 import { GoogleCalendarEvent } from "@/types/calendar";
 import { updateGlobalProgramacaoRegistryAction } from "./post-event";
-import { getBookingConfirmationEmail, getAdminInclusionEmail, getCancellationEmail } from "@/lib/email-templates";
+import { getBookingConfirmationEmail, getAdminInclusionEmail, getCancellationEmail, getRescheduleEmail } from "@/lib/email-templates";
 import { submitSurvey } from "../submit-survey";
 import { bookingEvaluationSurveyConfig } from "@/config/surveys/booking-evaluation";
 
@@ -330,6 +330,141 @@ export async function submitEvaluationAction(
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : "Erro desconhecido ao enviar avaliação.";
     console.error("❌ Erro ao enviar avaliação:", error);
+    return { success: false, message: errorMessage };
+  }
+}
+
+/**
+ * Reagendamento de Inscrito (Admin 🛡️)
+ */
+export async function rescheduleAttendeeAction(
+  oldEventId: string,
+  newEventId: string,
+  userUid: string,
+  idToken?: string
+) {
+  try {
+    await requireAdmin(idToken);
+    const db = getAdminDb();
+
+    const oldEventRef = db.collection("Calendar_Events").doc(oldEventId);
+    const newEventRef = db.collection("Calendar_Events").doc(newEventId);
+
+    const oldAttendeeRef = oldEventRef.collection("attendees").doc(userUid);
+    const newAttendeeRef = newEventRef.collection("attendees").doc(userUid);
+
+    const result = await db.runTransaction(async (transaction) => {
+      const oldEventDoc = await transaction.get(oldEventRef);
+      const newEventDoc = await transaction.get(newEventRef);
+      const attendeeDoc = await transaction.get(oldAttendeeRef);
+
+      if (!oldEventDoc.exists) throw new Error("Evento original não encontrado.");
+      if (!newEventDoc.exists) throw new Error("Novo evento não encontrado.");
+      if (!attendeeDoc.exists) throw new Error("Participante não encontrado no evento original.");
+
+      const oldEventData = oldEventDoc.data() as GoogleCalendarEvent;
+      const newEventData = newEventDoc.data() as GoogleCalendarEvent;
+      const attendeeData = attendeeDoc.data() as any;
+
+      // Validação de vagas no novo evento
+      const newAttendeesCol = newEventRef.collection("attendees");
+      const newAttendeesSnap = await transaction.get(newAttendeesCol);
+      const newRegisteredCount = newAttendeesSnap.size;
+      const capacity = newEventData.totalCapacity || 0;
+
+      if (capacity > 0 && newRegisteredCount >= capacity) {
+        throw new Error("Não há vagas disponíveis para o novo evento.");
+      }
+
+      const newEvDate = parseISO(newEventData.start);
+      const week = getISOWeek(newEvDate);
+      const year = getYear(newEvDate);
+
+      // Desinscreve do evento antigo
+      transaction.delete(oldAttendeeRef);
+      transaction.update(oldEventRef, {
+        registeredCount: admin.firestore.FieldValue.increment(-1),
+        lastUpdated: admin.firestore.FieldValue.serverTimestamp()
+      });
+
+      // Inscreve no novo evento
+      const newAttendeePayload = {
+        ...attendeeData,
+        week,
+        year,
+        bookedAt: admin.firestore.FieldValue.serverTimestamp(),
+        attendanceStatus: "pending",
+        attendanceCheckedAt: admin.firestore.FieldValue.delete(),
+        attendanceCheckedBy: admin.firestore.FieldValue.delete(),
+      };
+      
+      transaction.set(newAttendeeRef, newAttendeePayload);
+      transaction.update(newEventRef, {
+        registeredCount: admin.firestore.FieldValue.increment(1),
+        lastUpdated: admin.firestore.FieldValue.serverTimestamp()
+      });
+
+      // Atualiza coleção privada do usuário (se possuir matrícula)
+      if (attendeeData.matricula) {
+        const userBookingsCol = db.collection("User").doc(attendeeData.matricula).collection("User_Bookings");
+        const oldUserBookingRef = userBookingsCol.doc(oldEventId);
+        const newUserBookingRef = userBookingsCol.doc(newEventId);
+
+        transaction.delete(oldUserBookingRef);
+        
+        transaction.set(newUserBookingRef, {
+          eventId: newEventId,
+          bookedAt: admin.firestore.FieldValue.serverTimestamp(),
+          week,
+          year,
+          category: (newEventData.summary || "").toLowerCase().includes("1 to 1") ? "1to1" : "geral",
+          oneToOneData: attendeeData.oneToOneData || null,
+          attendanceStatus: "pending"
+        }, { merge: true });
+      }
+
+      return {
+        success: true,
+        oldEventData,
+        newEventData,
+        attendeeData
+      };
+    });
+
+    // Envio de E-mail
+    try {
+      if (result.attendeeData.email) {
+        const participantName = result.attendeeData.nickname || result.attendeeData.displayName || "Participante";
+        const emailHtml = getRescheduleEmail({
+          participantName,
+          eventName: result.newEventData.summary,
+          oldDateStr: format(parseISO(result.oldEventData.start), "dd/MM/yyyy", { locale: ptBR }),
+          oldTimeStr: format(parseISO(result.oldEventData.start), "HH:mm"),
+          oldMentor: result.oldEventData.mentor || "BPlen",
+          newDateStr: format(parseISO(result.newEventData.start), "dd/MM/yyyy", { locale: ptBR }),
+          newTimeStr: format(parseISO(result.newEventData.start), "HH:mm"),
+          newMentor: result.newEventData.mentor || "BPlen",
+          platformLink: "https://hub.bplen.com/hub/membro/dashboard"
+        });
+
+        // Subject based on the new email
+        const subject = `seu evento ${result.oldEventData.summary} foi alterado para...`;
+
+        await resend.emails.send({
+          from: OFFICIAL_SENDER,
+          to: result.attendeeData.email,
+          subject: subject,
+          html: emailHtml
+        });
+      }
+    } catch (e) {
+      console.error("Erro ao enviar e-mail de reagendamento:", e);
+    }
+
+    return { success: true };
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : "Erro desconhecido no reagendamento.";
+    console.error("Erro no reagendamento:", error);
     return { success: false, message: errorMessage };
   }
 }

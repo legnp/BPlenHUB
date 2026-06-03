@@ -94,3 +94,7 @@ export async function updateGlobalProgramacaoRegistryAction() {
 export async function healProgramacaoMasterAction(idToken: string) {
   return PostEvent.healProgramacaoMasterAction(idToken);
 }
+
+export async function rescheduleAttendeeAction(oldEventId: string, newEventId: string, userUid: string, idToken?: string) {
+  return Booking.rescheduleAttendeeAction(oldEventId, newEventId, userUid, idToken);
+}

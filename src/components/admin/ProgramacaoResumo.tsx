@@ -4,7 +4,8 @@ import React, { useState, useEffect, useMemo } from "react";
 import { 
   getProgramacaoSummaryAction, 
   getEventNpsDetailsAction,
-  getEventAttendees
+  getEventAttendees,
+  rescheduleAttendeeAction
 } from "@/actions/calendar";
 import { 
   GoogleCalendarEvent,
@@ -32,7 +33,8 @@ import {
   Eye,
   MessageCircle,
   Phone,
-  Mail
+  Mail,
+  RefreshCw
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -129,6 +131,49 @@ export default function ProgramacaoResumo() {
       console.error("Erro ao carregar inscritos:", err);
     } finally {
       setIsLoadingAttendees(false);
+    }
+  };
+
+  // Reschedule State
+  const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
+  const [reschedulingAttendee, setReschedulingAttendee] = useState<any | null>(null);
+  const [isRescheduling, setIsRescheduling] = useState(false);
+
+  const openRescheduleModal = (attendee: any) => {
+    setReschedulingAttendee(attendee);
+    setIsRescheduleModalOpen(true);
+  };
+
+  const closeRescheduleModal = () => {
+    setIsRescheduleModalOpen(false);
+    setReschedulingAttendee(null);
+  };
+
+  const handleReschedule = async (newEventId: string) => {
+    if (!attendeesModalEvent || !reschedulingAttendee) return;
+    setIsRescheduling(true);
+    try {
+      const idToken = await user?.getIdToken();
+      const res = await rescheduleAttendeeAction(
+        attendeesModalEvent.id,
+        newEventId,
+        reschedulingAttendee.userId,
+        idToken
+      );
+
+      if (res.success) {
+        // Refresh everything
+        setRefreshCounter(p => p + 1);
+        closeRescheduleModal();
+        // Close attendees modal too since it's outdated now
+        setAttendeesModalEvent(null);
+      } else {
+        alert("Erro ao reagendar: " + res.message);
+      }
+    } catch (err: any) {
+      alert("Erro inesperado: " + err.message);
+    } finally {
+      setIsRescheduling(false);
     }
   };
 
@@ -710,6 +755,15 @@ export default function ProgramacaoResumo() {
                             <Phone className="w-3.5 h-3.5" />
                           </div>
                         )}
+
+                        {/* Reschedule Button */}
+                        <button
+                          onClick={() => openRescheduleModal(attendee)}
+                          className="p-2 rounded-xl bg-[var(--input-bg)] hover:bg-amber-500/10 hover:text-amber-500 hover:border-amber-500/30 text-[var(--text-muted)] border border-[var(--border-primary)] transition-all ml-2"
+                          title="Reagendar participante"
+                        >
+                          <RefreshCw className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -822,6 +876,97 @@ export default function ProgramacaoResumo() {
           ) : (
             <p className="text-center text-[9px] font-bold text-[var(--text-muted)] opacity-30 py-8">Erro ao carregar dados</p>
           )}
+        </div>
+      </GlassModal>
+
+      {/* Reschedule Modal */}
+      <GlassModal
+        isOpen={isRescheduleModalOpen}
+        onClose={closeRescheduleModal}
+        title="Reagendar Participante"
+        subtitle="Selecione um novo horário da mesma categoria para transferir o participante."
+        maxWidth="max-w-xl"
+      >
+        <div className="space-y-4 max-h-[60vh] overflow-y-auto custom-scrollbar pr-1">
+          {(() => {
+            if (!attendeesModalEvent || !reschedulingAttendee) return null;
+
+            const getCategoryString = (summary: string) => {
+              if (!summary) return "";
+              if (summary.toLowerCase().includes("1 to 1")) return "1 to 1";
+              return summary.split(/[-:]/)[0].trim().toLowerCase();
+            };
+
+            const currentCategory = getCategoryString(attendeesModalEvent.summary);
+
+            const availableEvents = events.filter(ev => {
+              if (ev.statusLabel !== "futuro") return false;
+              if (ev.id === attendeesModalEvent.id) return false;
+              return getCategoryString(ev.summary) === currentCategory;
+            });
+
+            return (
+              <div className="space-y-4">
+                <p className="text-[10px] font-bold text-[var(--text-muted)] opacity-60 uppercase tracking-widest border-b border-[var(--border-primary)] pb-2">
+                  Filtrando por eventos do tipo: <span className="text-[var(--text-primary)] opacity-100">{currentCategory}</span>
+                </p>
+
+                {availableEvents.length > 0 ? (
+                  <div className="space-y-3">
+                    {availableEvents.map(ev => {
+                      const isFull = ev.totalCapacity > 0 && ev.registeredCount >= ev.totalCapacity;
+                      const vagasRestantes = ev.totalCapacity > 0 ? ev.totalCapacity - ev.registeredCount : 0;
+                      const dateStr = format(parseISO(ev.start), "dd/MM/yyyy", { locale: ptBR });
+                      const timeStr = format(parseISO(ev.start), "HH:mm");
+
+                      return (
+                        <div 
+                          key={ev.id}
+                          className={`p-4 rounded-2xl border transition-all flex items-center justify-between gap-4 ${isFull ? "bg-[var(--input-bg)]/40 border-[var(--border-primary)]/40 opacity-50" : "bg-[var(--bg-primary)]/50 border-[var(--border-primary)] hover:border-[var(--accent-start)]/30"}`}
+                        >
+                          <div>
+                            <p className="text-xs font-black text-[var(--text-primary)]">{ev.summary}</p>
+                            <p className="text-[10px] font-bold text-[var(--text-muted)] opacity-70">
+                              {dateStr} às {timeStr}h • {ev.mentor}
+                            </p>
+                            {ev.totalCapacity > 0 && (
+                              <p className={`text-[9px] font-black uppercase tracking-widest mt-1 ${isFull ? 'text-red-500' : 'text-green-500'}`}>
+                                {isFull ? "Esgotado" : `${vagasRestantes} vagas restantes`}
+                              </p>
+                            )}
+                          </div>
+                          
+                          <button
+                            onClick={() => {
+                              if (isFull || isRescheduling) return;
+                              if (confirm(`Deseja realmente transferir ${reschedulingAttendee.nickname} para o evento "${ev.summary}" em ${dateStr} às ${timeStr}h?`)) {
+                                handleReschedule(ev.id);
+                              }
+                            }}
+                            disabled={isFull || isRescheduling}
+                            className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isFull ? "bg-[var(--input-bg)] text-[var(--text-muted)] cursor-not-allowed" : "bg-[var(--accent-start)] text-white hover:opacity-90 shadow-md shadow-[var(--accent-start)]/20"}`}
+                          >
+                            {isFull ? "Sem Vagas" : "Transferir"}
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="py-12 text-center border border-dashed border-[var(--border-primary)] rounded-2xl opacity-40">
+                    <p className="text-[10px] font-black uppercase tracking-widest">Nenhum outro evento deste tipo agendado para o futuro.</p>
+                  </div>
+                )}
+
+                {isRescheduling && (
+                  <div className="flex items-center justify-center gap-2 py-4 text-amber-500">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span className="text-[9px] font-black uppercase tracking-widest">Processando reagendamento e enviando e-mail de notificação...</span>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
         </div>
       </GlassModal>
     </div>

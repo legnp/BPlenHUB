@@ -112,3 +112,53 @@ export function getCancellationEmail(data: { nickname: string; eventSummary: str
     </p>
   `, "BPlen HUB - Suporte de Agenda");
 }
+
+/**
+ * Template de Reagendamento de Evento
+ */
+export function getRescheduleEmail(data: {
+  participantName: string;
+  eventName: string;
+  oldDateStr: string;
+  oldTimeStr: string;
+  oldMentor: string;
+  newDateStr: string;
+  newTimeStr: string;
+  newMentor: string;
+  platformLink: string;
+}) {
+  const { participantName, eventName, oldDateStr, oldTimeStr, oldMentor, newDateStr, newTimeStr, newMentor, platformLink } = data;
+
+  return buildSoberanaEmail(`
+    <h2 style="${EMAIL_STYLES.h2}">Alteração de agendamento confirmada.</h2>
+    <p style="${EMAIL_STYLES.p}">Olá, <b>${participantName}</b>.</p>
+    
+    <p style="${EMAIL_STYLES.p}">
+      Informamos que o seu agendamento para o evento <strong>${eventName}</strong> foi alterado. Confira abaixo os detalhes do agendamento anterior e da sua nova sessão.
+    </p>
+
+    <!-- Box Antigo (Cinza) -->
+    <div style="background: #F8FAFC; padding: 20px; border-radius: 12px; margin: 24px 0;">
+      <p style="margin: 0 0 8px 0; font-size: 11px; color: #94A3B8; font-weight: bold; text-transform: uppercase;">Agendamento Anterior</p>
+      <p style="margin: 4px 0; font-size: 14px; color: #64748B;">Data e Hora: <strong>${oldDateStr} às ${oldTimeStr}h</strong></p>
+      <p style="margin: 4px 0; font-size: 14px; color: #64748B;">Orientador: <strong>${oldMentor}</strong></p>
+    </div>
+
+    <!-- Box Novo (Verde suave) -->
+    <div style="background: #F0FDF4; padding: 20px; border-radius: 12px; margin: 24px 0; border: 1px solid #BBF7D0;">
+      <p style="margin: 0 0 8px 0; font-size: 11px; color: #16A34A; font-weight: bold; text-transform: uppercase;">Novo Agendamento</p>
+      <p style="margin: 4px 0; font-size: 14px; color: #15803D;">Data e Hora: <strong>${newDateStr} às ${newTimeStr}h</strong></p>
+      <p style="margin: 4px 0; font-size: 14px; color: #15803D;">Orientador: <strong>${newMentor}</strong></p>
+    </div>
+
+    <a href="${platformLink}" style="${EMAIL_STYLES.button}">
+      Acessar Nova Reunião
+    </a>
+
+    <hr style="border: 0; border-top: 1px solid #E2E8F0; margin: 30px 0;" />
+    
+    <p style="font-size: 12px; color: #94A3B8; text-align: left; line-height: 1.5;">
+      Recomendamos atualizar este compromisso na sua agenda pessoal. Caso tenha dúvidas ou precise gerenciar seus horários, acesse o painel do HUB.
+    </p>
+  `, "BPlen HUB - Suporte de Agenda");
+}
