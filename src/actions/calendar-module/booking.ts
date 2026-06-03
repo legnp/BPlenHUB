@@ -388,14 +388,14 @@ export async function rescheduleAttendeeAction(
       });
 
       // Inscreve no novo evento
+      const { attendanceCheckedAt, attendanceCheckedBy, ...restAttendeeData } = attendeeData;
+
       const newAttendeePayload = {
-        ...attendeeData,
+        ...restAttendeeData,
         week,
         year,
         bookedAt: admin.firestore.FieldValue.serverTimestamp(),
         attendanceStatus: "pending",
-        attendanceCheckedAt: admin.firestore.FieldValue.delete(),
-        attendanceCheckedBy: admin.firestore.FieldValue.delete(),
       };
       
       transaction.set(newAttendeeRef, newAttendeePayload);
