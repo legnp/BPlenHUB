@@ -142,6 +142,8 @@ export async function updateGlobalProgramacaoRegistryAction() {
         statusLabel: status,
         folderUrl: data.eventFolderUrl || null,
         htmlLink: data.htmlLink || "",
+        meetingLink: data.meetingLink || "",
+        location: data.location || "",
         registeredCount: data.registeredCount || 0,
         totalCapacity: data.totalCapacity || 0,
         metrics: data.metrics || { presenceCount: 0, npsAvg: 0, reviewsCount: 0 },

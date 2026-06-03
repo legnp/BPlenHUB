@@ -34,7 +34,8 @@ import {
   MessageCircle,
   Phone,
   Mail,
-  RefreshCw
+  RefreshCw,
+  Video
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -59,6 +60,8 @@ interface EventSummary {
     npsAvg: number;
     reviewsCount: number;
   };
+  meetingLink?: string;
+  location?: string;
   // Post-event fields (kept for PostEventWizard pre-population)
   postEventCompleted?: boolean;
   lifecycleStatus?: EventLifecycleStatus;
@@ -580,6 +583,18 @@ export default function ProgramacaoResumo() {
                          <CalendarIcon className="w-4 h-4 opacity-50 text-blue-400" />
                          <span>Google Calendar</span>
                       </a>
+
+                      {(ev.meetingLink || (ev.location?.startsWith("http") ? ev.location : "")) && (
+                        <a 
+                          href={ev.meetingLink || ev.location} 
+                          target="_blank" 
+                          rel="noreferrer"
+                          className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[var(--input-bg-hover)] transition-all text-left text-[11px] font-bold group/item"
+                        >
+                           <Video className="w-4 h-4 opacity-50 text-purple-400" />
+                           <span>Acessar Reunião</span>
+                        </a>
+                      )}
 
                       {ev.folderUrl && (
                         <a 
