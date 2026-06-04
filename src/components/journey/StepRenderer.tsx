@@ -16,7 +16,8 @@ import {
   Star,
   Download,
   Send,
-  Clock 
+  Clock,
+  Brain
 } from "lucide-react";
 import { ptBR } from "date-fns/locale";
 import { format, parseISO } from "date-fns";
@@ -35,13 +36,14 @@ interface StepRendererProps {
   status: "locked" | "available" | "current" | "completed";
   onComplete: () => void;
   context?: "primeiros_passos" | "member_journey";
+  stageId?: string;
 }
 
 /**
  * BPlen HUB — StepRenderer 🧬🛡️
  * Orchestrator that renders the appropriate content type for a journey substep.
  */
-export function StepRenderer({ substep, status, onComplete, context = "member_journey" }: StepRendererProps) {
+export function StepRenderer({ substep, status, onComplete, context = "member_journey", stageId }: StepRendererProps) {
   const { user, matricula } = useAuthContext();
 
   // Selecionar o dicionário de textos baseado no contexto da página 🍱
@@ -249,19 +251,23 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
                 <div className="flex items-center gap-3">
                    <div className={cn(
                       "w-8 h-8 rounded-xl flex items-center justify-center",
+                      stageId === "analise-comportamental" ? "bg-amber-500/10 text-amber-500" :
                       isSurvey ? "bg-purple-500/10 text-purple-500" : "bg-emerald-500/10 text-emerald-500"
                    )}>
-                      {isSurvey ? <ClipboardCheck size={18} /> : <FileText size={18} />}
+                      {stageId === "analise-comportamental" ? <Brain size={18} /> : isSurvey ? <ClipboardCheck size={18} /> : <FileText size={18} />}
                    </div>
                    <span className={cn(
                       "text-[10px] font-black uppercase tracking-[0.3em]",
+                      stageId === "analise-comportamental" ? "text-amber-500" :
                       isSurvey ? "text-purple-500" : "text-emerald-500"
                    )}>
-                      {isSurvey ? nomen.badge_survey : nomen.badge_form}
+                      {stageId === "analise-comportamental" ? "Análise Comportamental" : isSurvey ? nomen.badge_survey : nomen.badge_form}
                    </span>
                 </div>
                 <h2 className="text-3xl font-black tracking-tight">{substep.title}</h2>
-                <p className="text-[12px] font-medium text-[var(--text-muted)] max-w-xl leading-relaxed">{substep.description}</p>
+                <p className="text-[12px] font-medium text-[var(--text-muted)] max-w-xl leading-relaxed">
+                  {stageId === "analise-comportamental" && substep.description === "Atividade de desenvolvimento" ? "Análise Comportamental" : substep.description}
+                </p>
              </div>
              
              <div className="flex flex-col items-center justify-center pt-10 animate-in fade-in zoom-in duration-700 delay-300">

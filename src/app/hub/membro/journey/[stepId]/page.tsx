@@ -150,6 +150,7 @@ export default function StepJourneyPage() {
         <div id="hub-conteudo" className="flex-1 flex flex-col pt-[5px] pb-4 px-4 sm:pb-8 sm:px-8">
           <StepRenderer
             context="member_journey"
+            stageId={stepId}
             substep={currentSubStep}
             status={stepStatus}
             onComplete={async () => {

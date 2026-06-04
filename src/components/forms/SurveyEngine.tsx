@@ -21,6 +21,7 @@ import { LikertScale } from "./SurveyFields/LikertScale";
 import { RankingField } from "./SurveyFields/RankingField";
 import { LikertGroup } from "./SurveyFields/LikertGroup";
 import { FileField } from "./SurveyFields/FileField";
+import { EvidenceField } from "./SurveyFields/EvidenceField";
 import { NarrativeContent } from "./NarrativeContent";
 import { resolveUserIdentity, getUserMetadata } from "@/actions/survey-effects";
 
@@ -540,6 +541,20 @@ export function SurveyEngine({ config, userUid, onComplete, onStepChange, return
             }}
           />
 
+        );
+
+      case "evidence_upload":
+        return (
+          <EvidenceField
+            id={field.id}
+            label={field.label}
+            matricula={matricula}
+            value={(rawValue as any) || null}
+            maxSizeMB={5}
+            onChange={(val: { url: string; fileName: string } | null) => {
+              updateResponse(field.id, val);
+            }}
+          />
         );
 
       case "info":
