@@ -65,7 +65,7 @@ export async function seedInitialProductsAction() {
         coverImage: "/images/products/disc-cover.jpg",
         paymentConditions: "Cartão de Crédito ou PIX.",
         faq: [
-          { question: "É preciso ser especialista?", answer: "Não, o diagnóstico é intuitivo e guiado." }
+          { question: "É preciso ser especialista?", answer: "Não, a análise é intuitiva e guiada." }
         ],
         termsAndConditions: "Uso confidencial dos dados.",
         seo: {
@@ -83,8 +83,8 @@ export async function seedInitialProductsAction() {
         "devolutiva-analise-comportamental": 1
       },
       workflow: [
-        { id: "wf-d1", title: "Pré-diagnóstico", type: "milestone", description: "Alinhamento de expectativas" },
-        { id: "wf-d2", title: "Assessment DISC", type: "task", description: "Execução do teste" },
+        { id: "wf-d1", title: "Pré-análise", type: "milestone", description: "Alinhamento de expectativas" },
+        { id: "wf-d2", title: "Assessment DISC", type: "task", description: "Execução da avaliação" },
         { id: "wf-d3", title: "Reunião de Devolutiva", type: "milestone", description: "Com mentor especialista" }
       ]
     }

@@ -18,7 +18,7 @@ export const gestaoTempoSurvey: SurveyConfig = {
     editable: false,
     allowReset: false
   },
-  submitLabel: "Finalizar Teste",
+  submitLabel: "Finalizar Avaliação",
   completionMessage: "Agradecemos sua participação! Seus resultados serão analisados por nossa equipe e apresentados a você na reunião de devolutiva da análise comportamental.",
   steps: [
     {

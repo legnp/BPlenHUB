@@ -574,7 +574,7 @@ export function SurveyEngine({ config, userUid, onComplete, onStepChange, return
                 <Rocket size={32} className="animate-pulse" />
              </div>
              <div className="text-center space-y-2">
-                <h4 className="text-sm font-black uppercase tracking-widest text-[var(--text-primary)]">Plataforma de Diagnóstico Ativada</h4>
+                <h4 className="text-sm font-black uppercase tracking-widest text-[var(--text-primary)]">Plataforma de Análise Ativada</h4>
                 <p className="text-[10px] font-medium text-[var(--text-muted)] max-w-[280px] leading-relaxed">
                    Você será redirecionado para o portal oficial do DISC. Após concluir, retorne aqui para finalizar.
                 </p>
@@ -591,7 +591,7 @@ export function SurveyEngine({ config, userUid, onComplete, onStepChange, return
                }`}
              >
                 <Rocket size={16} />
-                Iniciar Diagnóstico Agora
+                Iniciar Análise Agora
              </a>
              {!userMetadata.disc_link && (
                <p className="text-[10px] font-black text-red-500 uppercase tracking-widest animate-bounce">

@@ -88,7 +88,7 @@ export async function getJourneyStagesAction(): Promise<JourneyStep[]> {
                   title: srv?.title || `Pesquisa: ${srvId}`,
                   type: "survey",
                   referenceId: srvId,
-                  description: srv?.description || "Análise e diagnóstico"
+                  description: srv?.description || "Análise e avaliação"
                 });
               });
             }
@@ -255,7 +255,7 @@ export async function getStandaloneStageAction(slug: string): Promise<JourneySte
             title: srv?.title || `Pesquisa: ${srvId}`,
             type: "survey",
             referenceId: srvId,
-            description: srv?.description || "Análise e diagnóstico"
+            description: srv?.description || "Análise e avaliação"
           });
         });
       }
