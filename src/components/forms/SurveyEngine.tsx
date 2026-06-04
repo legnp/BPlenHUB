@@ -35,6 +35,8 @@ interface SurveyEngineProps {
   onSubmitSuccess?: () => void;
   onStepChange?: (index: number, isLastStep: boolean) => void;
   returnToCheckoutSlug?: string;
+  userNickname?: string | null;
+  initialUserMetadata?: Record<string, any>;
 }
 
 /**
@@ -67,7 +69,7 @@ function shuffleOptions(options: any[]) {
  * Focado em UX narrativa, progressão guiada e algoritmos de decisão.
  * Agora suporta NAVEGAÇÃO CONDICIONAL (Grafos).
  */
-export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onStepChange, returnToCheckoutSlug }: SurveyEngineProps) {
+export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onStepChange, returnToCheckoutSlug, userNickname, initialUserMetadata }: SurveyEngineProps) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [responses, setResponses] = useState<Record<string, SurveyValue>>({});
 
@@ -77,7 +79,13 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
     }
   }, [currentStepIndex, config.steps.length, onStepChange]);
 
-  const [userMetadata, setUserMetadata] = useState<Record<string, any>>({});
+  const [userMetadata, setUserMetadata] = useState<Record<string, any>>(() => {
+    const initial: Record<string, any> = initialUserMetadata ? { ...initialUserMetadata } : {};
+    if (userNickname) {
+      initial.User_Nickname = userNickname;
+    }
+    return initial;
+  });
   const [questionComplete, setQuestionComplete] = useState(false);
   const [typedComplete, setTypedComplete] = useState(false);
   const [showNextButton, setShowNextButton] = useState(false);
@@ -94,7 +102,7 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
         const mat = await resolveUserIdentity(config.id, {}, userUid);
         setMatricula(mat);
         const meta = await getUserMetadata(userUid);
-        setUserMetadata(meta);
+        setUserMetadata(prev => ({ ...prev, ...meta }));
       }
     }
     loadMatricula();

@@ -45,7 +45,7 @@ interface StepRendererProps {
  * Orchestrator that renders the appropriate content type for a journey substep.
  */
 export function StepRenderer({ substep, status, onComplete, context = "member_journey", stageId }: StepRendererProps) {
-  const { user, matricula } = useAuthContext();
+  const { user, matricula, nickname } = useAuthContext();
 
   // Selecionar o dicionário de textos baseado no contexto da página 🍱
   const nomen = context === "primeiros_passos" 
@@ -269,6 +269,7 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
                  <SurveyEngine 
                     config={surveyConfig}
                     userUid={user?.uid || "guest"}
+                    userNickname={nickname}
                     onSubmitSuccess={() => {
                        // Sinaliza que as respostas foram gravadas e fecha o motor visualmente
                        setIsSurveySubmittedLocal(true);
