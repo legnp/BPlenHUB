@@ -5,6 +5,8 @@ import { getSheetsClient, getDriveClient } from "@/lib/google-auth";
 import { ensureFolder, createSpreadsheet, renameFile, getEventDriveFolder, syncDataToSheet } from "@/lib/drive-utils";
 import { GoogleCalendarEvent, EventLifecycleStatus, AttendanceStatus } from "@/types/calendar";
 import { getEventAttendees } from "./queries";
+import { sendAttendanceRegisteredEmail, sendAbsenceRegisteredEmail } from "@/lib/attendance-emails";
+
 
 /**
  * Parte 1: Fechamento Geral do Evento 🏁
@@ -67,10 +69,19 @@ export async function closeAttendeeAction(
     if (!eventSnap.exists) throw new Error("Evento não encontrado.");
     const eventData = eventSnap.data() as GoogleCalendarEvent;
 
+    let userEmail = "";
+    let userName = "";
+
     await db.runTransaction(async (transaction) => {
       const attendeeRef = eventRef.collection("attendees").doc(userId);
       const attendeeSnap = await transaction.get(attendeeRef);
       const prevStatus = attendeeSnap.exists ? attendeeSnap.data()?.attendanceStatus : null;
+
+      if (attendeeSnap.exists) {
+        const attData = attendeeSnap.data();
+        userEmail = attData?.email || "";
+        userName = attData?.nickname || "";
+      }
 
       transaction.set(attendeeRef, {
         attendanceStatus: data.attendanceStatus,
@@ -100,6 +111,29 @@ export async function closeAttendeeAction(
         }, { merge: true });
       }
     });
+
+    if (!userEmail && matricula) {
+      const userSnap = await db.collection("User").doc(matricula).get();
+      if (userSnap.exists) {
+        const uData = userSnap.data();
+        userEmail = uData?.email || "";
+        userName = userName || uData?.nickname || uData?.name || "Membro";
+      }
+    }
+
+    if (userEmail) {
+      const eventTitle = eventData.summary || "Evento";
+      const userDetail = { name: userName || "Membro", email: userEmail };
+      if (data.attendanceStatus === "present") {
+        sendAttendanceRegisteredEmail(userDetail, eventTitle).catch((err) => {
+          console.error("Erro ao enviar e-mail de presença:", err);
+        });
+      } else if (data.attendanceStatus === "absent") {
+        sendAbsenceRegisteredEmail(userDetail, eventTitle).catch((err) => {
+          console.error("Erro ao enviar e-mail de falta:", err);
+        });
+      }
+    }
 
     await updateGlobalProgramacaoRegistryAction();
     return { success: true };
