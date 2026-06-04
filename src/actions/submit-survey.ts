@@ -48,3 +48,19 @@ export async function submitSurvey(config: SurveyConfig, responses: Record<strin
     throw new Error(error.message || "Falha ao processar pesquisa.");
   }
 }
+
+/**
+ * BPlen HUB — checkSurveyCompletedAction (📡)
+ * Verifica de forma resiliente no servidor se uma pesquisa já foi concluída no Firestore.
+ */
+export async function checkSurveyCompletedAction(matricula: string, surveyId: string): Promise<boolean> {
+  try {
+    const db: admin.firestore.Firestore = getAdminDb();
+    const doc = await db.doc(`User/${matricula}/Surveys/${surveyId}`).get();
+    return doc.exists && doc.data()?.status === "completed";
+  } catch (error) {
+    console.error(`❌ Erro [checkSurveyCompletedAction] para ${surveyId}:`, error);
+    return false;
+  }
+}
+
