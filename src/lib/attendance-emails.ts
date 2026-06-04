@@ -25,7 +25,7 @@ export async function sendAttendanceRegisteredEmail(user: AttendeeEmailDetails, 
     await resend.emails.send({
       from: "BPlen HUB <hub@bplen.com>",
       to: user.email,
-      subject: `[BPlen HUB] Presença confirmada: ${eventTitle}`,
+      subject: `Presença confirmada: ${eventTitle}`,
       html: buildSoberanaEmail(`
         <h2 style="${EMAIL_STYLES.h2}">Sua presença foi registrada.</h2>
         <p style="${EMAIL_STYLES.p}">
@@ -67,7 +67,7 @@ export async function sendAbsenceRegisteredEmail(user: AttendeeEmailDetails, eve
     await resend.emails.send({
       from: "BPlen HUB <hub@bplen.com>",
       to: user.email,
-      subject: `[BPlen HUB] Registro de ausência: ${eventTitle}`,
+      subject: `Registro de ausência: ${eventTitle}`,
       html: buildSoberanaEmail(`
         <h2 style="${EMAIL_STYLES.h2}">Sua ausência foi registrada.</h2>
         <p style="${EMAIL_STYLES.p}">

@@ -112,13 +112,19 @@ export async function closeAttendeeAction(
       }
     });
 
-    if (!userEmail && matricula) {
+    if (matricula) {
       const userSnap = await db.collection("User").doc(matricula).get();
       if (userSnap.exists) {
         const uData = userSnap.data();
-        userEmail = uData?.email || "";
-        userName = userName || uData?.nickname || uData?.name || "Membro";
+        if (uData) {
+          userEmail = uData.email || uData.Authentication_Email || userEmail;
+          userName = uData.User_Nickname || uData.User_Welcome?.User_Nickname || uData.Authentication_Name || uData.User_Name || userName;
+        }
       }
+    }
+
+    if (!userName) {
+      userName = "Membro BPlen";
     }
 
     if (userEmail) {
