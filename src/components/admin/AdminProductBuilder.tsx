@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Product, ProductSheet, CapabilityConfig, WorkflowStep } from "@/types/products";
+import { Product, ProductSheet, CapabilityConfig, WorkflowStep, DeliveryStep } from "@/types/products";
 import { 
   Save, 
   X, 
@@ -36,7 +36,7 @@ interface AdminProductBuilderProps {
  */
 export function AdminProductBuilder({ initialProduct }: AdminProductBuilderProps) {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'identity' | 'sheet' | 'capabilities' | 'workflow'>('identity');
+  const [activeTab, setActiveTab] = useState<'identity' | 'sheet' | 'capabilities' | 'workflow' | 'delivery'>('identity');
   const [isSaving, setIsSaving] = useState(false);
 
   // State unificado do Produto
@@ -59,6 +59,7 @@ export function AdminProductBuilder({ initialProduct }: AdminProductBuilderProps
     },
     capabilities: { surveys: [], forms: [], allowedEventTypes: [] },
     workflow: [],
+    deliverySteps: [],
     grantedQuotas: {}
   });
 
@@ -127,6 +128,7 @@ export function AdminProductBuilder({ initialProduct }: AdminProductBuilderProps
         <TabButton active={activeTab === 'sheet'} onClick={() => setActiveTab('sheet')} label="Ficha Técnica" icon={<FileText size={14} />} />
         <TabButton active={activeTab === 'capabilities'} onClick={() => setActiveTab('capabilities')} label="Funcionalidades" icon={<Zap size={14} />} />
         <TabButton active={activeTab === 'workflow'} onClick={() => setActiveTab('workflow')} label="Jornada/Workflow" icon={<Compass size={14} />} />
+        <TabButton active={activeTab === 'delivery'} onClick={() => setActiveTab('delivery')} label="Entrega (Hub)" icon={<Package size={14} />} />
       </div>
 
       {/* Form Area */}
@@ -150,6 +152,11 @@ export function AdminProductBuilder({ initialProduct }: AdminProductBuilderProps
            {activeTab === 'workflow' && (
               <motion.div key="workflow" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}>
                  <WorkflowForm product={product} setProduct={setProduct} />
+              </motion.div>
+           )}
+           {activeTab === 'delivery' && (
+              <motion.div key="delivery" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}>
+                 <DeliveryStepsForm product={product} setProduct={setProduct} />
               </motion.div>
            )}
         </AnimatePresence>
@@ -713,10 +720,138 @@ function WorkflowForm({ product, setProduct }: any) {
              </div>
           ))}
 
-          {product.workflow.length === 0 && (
+           {product.workflow.length === 0 && (
              <div className="p-12 border-2 border-dashed border-[var(--border-primary)] rounded-[2rem] flex flex-col items-center justify-center opacity-30 text-center">
                 <Compass size={32} className="mb-4" />
                 <p className="text-[10px] font-black uppercase tracking-widest">Sem etapas definidas</p>
+             </div>
+          )}
+       </div>
+    </div>
+  )
+}
+
+function DeliveryStepsForm({ product, setProduct }: any) {
+  // Coletar opções disponíveis
+  const availableOptions: { type: 'survey' | 'form' | 'meeting', id: string, title: string }[] = [];
+  
+  product.capabilities.surveys.forEach((id: string) => {
+    const srv = SURVEY_REGISTRY.find(s => s.id === id);
+    availableOptions.push({ type: 'survey', id, title: srv?.title || id });
+  });
+  product.capabilities.forms.forEach((id: string) => availableOptions.push({ type: 'form', id, title: `Formulário: ${id}` }));
+  product.capabilities.allowedEventTypes.forEach((id: string) => availableOptions.push({ type: 'meeting', id, title: `Reunião: ${id}` }));
+
+  return (
+    <div className="space-y-6">
+       <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-1">
+             <div className="flex items-center gap-2 text-[var(--accent-primary)]">
+                <Package size={14} />
+                <h3 className="text-[10px] font-black uppercase tracking-widest">Entrega (Hub)</h3>
+             </div>
+             <p className="text-[9px] text-[var(--text-muted)] uppercase tracking-widest">Configure a esteira de entrega de atividades para o membro logado no Hub. Desacoplado do fluxo comercial de vendas.</p>
+          </div>
+          <button 
+            type="button"
+            onClick={() => {
+               const newStep: DeliveryStep = { 
+                 id: `ds-${Date.now()}`, 
+                 type: availableOptions[0]?.type || 'survey', 
+                 referenceId: availableOptions[0]?.id || '', 
+                 title: "Nova Atividade" 
+               };
+               setProduct({ ...product, deliverySteps: [...(product.deliverySteps || []), newStep] });
+            }}
+            disabled={availableOptions.length === 0}
+            className="px-4 py-2 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-xl text-[9px] font-black uppercase tracking-widest hover:border-[var(--accent-primary)] transition-all flex items-center gap-2 disabled:opacity-50"
+          >
+             <Plus size={12} />
+             Nova Atividade
+          </button>
+       </div>
+
+       {availableOptions.length === 0 && (
+         <div className="p-4 bg-yellow-500/10 text-yellow-500 rounded-xl text-[10px] font-bold">
+           Nenhuma funcionalidade ativada. Ative Pesquisas, Formulários ou Agendamentos na aba "Funcionalidades" primeiro.
+         </div>
+       )}
+
+       <div className="space-y-4">
+          {(product.deliverySteps || []).map((step: DeliveryStep, idx: number) => (
+             <div key={step.id} className="p-6 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-2xl flex flex-col gap-4 group hover:border-[var(--accent-primary)]/50 transition-all relative">
+                <div className="flex items-center gap-4">
+                  <div className="w-8 h-8 rounded-full bg-[var(--bg-primary)] border border-[var(--border-primary)] flex items-center justify-center text-[9px] font-black shrink-0">{idx + 1}</div>
+                  
+                  <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[7px] font-black uppercase tracking-widest text-[var(--text-muted)]">Título (Visto pelo Membro)</label>
+                      <input 
+                        type="text" 
+                        value={step.title}
+                        placeholder="Ex: Mapeamento Comportamental DISC"
+                        onChange={(e) => {
+                            const newSteps = [...product.deliverySteps];
+                            newSteps[idx].title = e.target.value;
+                            setProduct({ ...product, deliverySteps: newSteps });
+                        }}
+                        className="bg-transparent border-b border-[var(--border-primary)] text-xs font-bold focus:border-[var(--accent-primary)] outline-none w-full pb-1"
+                      />
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <label className="text-[7px] font-black uppercase tracking-widest text-[var(--text-muted)]">Referência (Ativo)</label>
+                      <select
+                        value={`${step.type}:${step.referenceId}`}
+                        onChange={(e) => {
+                          const [type, refId] = e.target.value.split(':');
+                          const newSteps = [...product.deliverySteps];
+                          newSteps[idx].type = type as any;
+                          newSteps[idx].referenceId = refId;
+                          setProduct({ ...product, deliverySteps: newSteps });
+                        }}
+                        className="w-full bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg p-2 text-[10px] font-black outline-none"
+                      >
+                        {availableOptions.map(opt => (
+                          <option key={`${opt.type}:${opt.id}`} value={`${opt.type}:${opt.id}`}>
+                            [{opt.type.toUpperCase()}] {opt.title}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <button 
+                    type="button"
+                    onClick={() => {
+                        setProduct({ ...product, deliverySteps: product.deliverySteps.filter((sRef: DeliveryStep) => sRef.id !== step.id) });
+                    }}
+                    className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-all opacity-0 group-hover:opacity-100 self-start mt-2"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+                
+                <div className="pl-12">
+                  <input 
+                    type="text" 
+                    value={step.description || ""}
+                    placeholder="Ex: Responda ao questionário para gerar seu relatório..."
+                    onChange={(e) => {
+                        const newSteps = [...product.deliverySteps];
+                        newSteps[idx].description = e.target.value;
+                        setProduct({ ...product, deliverySteps: newSteps });
+                    }}
+                    className="bg-transparent text-[10px] text-[var(--text-muted)] focus:text-[var(--text-primary)] outline-none w-full italic"
+                  />
+                </div>
+             </div>
+          ))}
+
+          {(!product.deliverySteps || product.deliverySteps.length === 0) && (
+             <div className="p-12 border-2 border-dashed border-[var(--border-primary)] rounded-[2rem] flex flex-col items-center justify-center opacity-30 text-center">
+                <Package size={32} className="mb-4" />
+                <p className="text-[10px] font-black uppercase tracking-widest">Sem atividades de entrega definidas</p>
              </div>
           )}
        </div>

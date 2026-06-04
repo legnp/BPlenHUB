@@ -65,62 +65,76 @@ export async function getJourneyStagesAction(): Promise<JourneyStep[]> {
         products.forEach(product => {
           const productSubsteps: SubStepConfig[] = [];
 
-          // 1. Gather all potential functional substeps
-          // Surveys
-          if (product.capabilities?.surveys) {
-            product.capabilities.surveys.forEach(srvId => {
-              const srv = (surveys as any)[srvId];
+          if (product.deliverySteps && product.deliverySteps.length > 0) {
+            // 🚀 Modo Dinâmico Premium: Respeita rigorosamente a ordem e títulos da Esteira de Entrega
+            product.deliverySteps.forEach(step => {
               productSubsteps.push({
-                id: `ss-srv-${srvId}`,
-                title: srv?.title || `Pesquisa: ${srvId}`,
-                type: "survey",
-                referenceId: srvId,
-                description: srv?.description || "Análise e diagnóstico"
+                id: `ss-${step.type}-${step.referenceId}`,
+                title: step.title,
+                type: step.type,
+                referenceId: step.referenceId,
+                description: step.description || "Atividade de desenvolvimento"
               });
             });
-          }
-          // Forms
-          if (product.capabilities?.forms) {
-            product.capabilities.forms.forEach(frmId => {
-              productSubsteps.push({
-                id: `ss-frm-${frmId}`,
-                title: `Formulário: ${frmId}`,
-                type: "form",
-                referenceId: frmId
+          } else {
+            // 🛡️ Fallback de Retrocompatibilidade (Comportamento legatário agrupado)
+            // 1. Gather all potential functional substeps
+            // Surveys
+            if (product.capabilities?.surveys) {
+              product.capabilities.surveys.forEach(srvId => {
+                const srv = (surveys as any)[srvId];
+                productSubsteps.push({
+                  id: `ss-srv-${srvId}`,
+                  title: srv?.title || `Pesquisa: ${srvId}`,
+                  type: "survey",
+                  referenceId: srvId,
+                  description: srv?.description || "Análise e diagnóstico"
+                });
               });
-            });
-          }
-          // Meetings
-          if (product.capabilities?.allowedEventTypes) {
-            product.capabilities.allowedEventTypes.forEach(evtId => {
-              productSubsteps.push({
-                id: `ss-mtg-${evtId}`,
-                title: products.length > 1 ? `Agendar: ${product.title}` : `Agendar Sessão`,
-                type: "meeting",
-                referenceId: evtId,
-                description: product.sheet?.description || "Sessão individual"
+            }
+            // Forms
+            if (product.capabilities?.forms) {
+              product.capabilities.forms.forEach(frmId => {
+                productSubsteps.push({
+                  id: `ss-frm-${frmId}`,
+                  title: `Formulário: ${frmId}`,
+                  type: "form",
+                  referenceId: frmId
+                });
               });
-            });
-          }
+            }
+            // Meetings
+            if (product.capabilities?.allowedEventTypes) {
+              product.capabilities.allowedEventTypes.forEach(evtId => {
+                productSubsteps.push({
+                  id: `ss-mtg-${evtId}`,
+                  title: products.length > 1 ? `Agendar: ${product.title}` : `Agendar Sessão`,
+                  type: "meeting",
+                  referenceId: evtId,
+                  description: product.sheet?.description || "Sessão individual"
+                });
+              });
+            }
 
-          // 2. 🧠 Sincronizar nomes com o Workflow de Entrega (Definido no Admin)
-          // Se houver um workflow definido, usamos os títulos por índice.
-          if (product.workflow && product.workflow.length > 0) {
-            productSubsteps.forEach((ss, idx) => {
-              const workflowStep = product.workflow[idx];
-              if (workflowStep) {
-                // Sobrescrevemos o título técnico pelo título definido na jornada estratégica
-                ss.title = workflowStep.title;
-                // Se o workflow tiver descrição, também atualizamos para ser mais humano
-                if (workflowStep.description) {
-                  ss.description = workflowStep.description;
+            // 2. 🧠 Sincronizar nomes com o Workflow de Entrega (Definido no Admin)
+            // Se houver um workflow definido, usamos os títulos por índice.
+            if (product.workflow && product.workflow.length > 0) {
+              productSubsteps.forEach((ss, idx) => {
+                const workflowStep = product.workflow[idx];
+                if (workflowStep) {
+                  // Sobrescrevemos o título técnico pelo título definido na jornada estratégica
+                  ss.title = workflowStep.title;
+                  // Se o workflow tiver descrição, também atualizamos para ser mais humano
+                  if (workflowStep.description) {
+                    ss.description = workflowStep.description;
+                  }
                 }
-              }
-            });
+              });
 
-            // Garante que a jornada respeite o tamanho do workflow configurado (Soberania do Admin) 🛡️
-            while (productSubsteps.length > product.workflow.length) {
-              productSubsteps.pop();
+              // Garante que a jornada respeite o tamanho do workflow configurado (Soberania do Admin) 🛡️
+              while (productSubsteps.length > product.workflow.length) {
+                productSubsteps.pop();
+              }
             }
           }
 
@@ -221,30 +235,42 @@ export async function getStandaloneStageAction(slug: string): Promise<JourneySte
 
     const substeps: SubStepConfig[] = [];
     
-    // Buscar substeps funcionais (Surveys, Forms, Meetings)
-    if (product.capabilities?.surveys) {
-      product.capabilities.surveys.forEach(srvId => {
-        const srv = (surveys as any)[srvId];
+    if (product.deliverySteps && product.deliverySteps.length > 0) {
+      product.deliverySteps.forEach(step => {
         substeps.push({
-          id: `ss-srv-${srvId}`,
-          title: srv?.title || `Pesquisa: ${srvId}`,
-          type: "survey",
-          referenceId: srvId,
-          description: srv?.description || "Análise e diagnóstico"
+          id: `ss-${step.type}-${step.referenceId}`,
+          title: step.title,
+          type: step.type,
+          referenceId: step.referenceId,
+          description: step.description || "Atividade de desenvolvimento"
         });
       });
-    }
+    } else {
+      // Buscar substeps funcionais (Surveys, Forms, Meetings)
+      if (product.capabilities?.surveys) {
+        product.capabilities.surveys.forEach(srvId => {
+          const srv = (surveys as any)[srvId];
+          substeps.push({
+            id: `ss-srv-${srvId}`,
+            title: srv?.title || `Pesquisa: ${srvId}`,
+            type: "survey",
+            referenceId: srvId,
+            description: srv?.description || "Análise e diagnóstico"
+          });
+        });
+      }
 
-    // Mesclar com workflow do Admin se disponível (Soberania do Workflow)
-    if (product.workflow && product.workflow.length > 0) {
-      substeps.forEach((ss, idx) => {
-        const workflowStep = product.workflow[idx];
-        if (workflowStep) {
-          ss.title = workflowStep.title;
-          if (workflowStep.description) ss.description = workflowStep.description;
-        }
-      });
-      while (substeps.length > product.workflow.length) substeps.pop();
+      // Mesclar com workflow do Admin se disponível (Soberania do Workflow)
+      if (product.workflow && product.workflow.length > 0) {
+        substeps.forEach((ss, idx) => {
+          const workflowStep = product.workflow[idx];
+          if (workflowStep) {
+            ss.title = workflowStep.title;
+            if (workflowStep.description) ss.description = workflowStep.description;
+          }
+        });
+        while (substeps.length > product.workflow.length) substeps.pop();
+      }
     }
 
     return {

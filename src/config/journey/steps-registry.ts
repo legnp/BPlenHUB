@@ -51,15 +51,7 @@ export const JOURNEY_STAGES: JourneyStep[] = [
     title: "Análise Comportamental",
     description: "Desenvolva autoconhecimento profundo através do DISC.",
     icon: "UserCheck",
-    substeps: [
-      { 
-        id: "disc_survey", 
-        title: "DISC", 
-        type: "survey", 
-        referenceId: "disc_assessment_v1",
-        description: "Mapeamento comportamental" 
-      }
-    ],
+    substeps: [],
   },
   {
     id: "plano-de-carreira",

@@ -49,3 +49,25 @@ Instruções do Projeto/
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# BPlen HUB - Temporary & Scratch
+/scratch
+/debug-*
+/find-*
+/query-*
+/scratch-test.js
+/__tests__/actions/query-test.test.ts
+/debug-key-norm.js
+/debug-key.js
+/debug-parser.js
+/find-ghosts.js
+/find-ghosts.ts
+/find-ghosts2.js
+/find-ghosts3.js
+/find-liandra.ts
+/query-raw.js
+/query-raw.ts
+/query-test-fixed.js
+/query-test.js
+/query-test.ts
+/scratch-test.js

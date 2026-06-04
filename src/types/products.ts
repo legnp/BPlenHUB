@@ -31,6 +31,14 @@ export interface WorkflowStep {
   requiredSubStepId?: string; // Dependência
 }
 
+export interface DeliveryStep {
+  id: string;
+  type: 'survey' | 'form' | 'meeting';
+  referenceId: string;
+  title: string;
+  description?: string;
+}
+
 export interface Product {
   id: string;
   slug: string; // URL amigável
@@ -47,6 +55,7 @@ export interface Product {
   sheet: ProductSheet;
   capabilities: CapabilityConfig;
   workflow: WorkflowStep[];
+  deliverySteps?: DeliveryStep[]; // Fluxo operacional de entrega no Hub
 
   // Configurações de Governança no Drive 📂
   driveConfig?: {
