@@ -294,7 +294,7 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
                           <CheckCircle2 size={18} />
                        </div>
                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-500">
-                          Respostas Salvas no Banco!
+                          Respostas Salvas!
                        </span>
                     </div>
                     <h2 className="text-3xl font-black tracking-tight">{substep.title}</h2>
