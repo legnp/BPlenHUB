@@ -28,22 +28,35 @@ export default function StepJourneyPage() {
 
   // Local state for current substep view
   const [currentSubStepId, setCurrentSubStepId] = useState<string>("");
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const stepConfig = stages.find(s => s.id === stepId);
 
+  // Reset initialization state when stepId changes
   useEffect(() => {
-    if (stepConfig && !currentSubStepId) {
-      // Logic from user feedback: linear, but flexible.
-      // Default to first incomplete substep or simply the first one if everything completed.
-      const firstIncomplete = stepConfig.substeps?.find(ss => !progress?.steps[stepId]?.completedSubSteps.includes(ss.id));
-      const firstId = firstIncomplete?.id || stepConfig.substeps?.[0]?.id;
+    setIsInitialized(false);
+    setCurrentSubStepId("");
+  }, [stepId]);
+
+  useEffect(() => {
+    if (!loading && stepConfig && !isInitialized) {
+      const completedSubStepIds = progress?.steps[stepId]?.completedSubSteps || [];
+      const firstIncomplete = stepConfig.substeps?.find(ss => !completedSubStepIds.includes(ss.id));
       
-      if (firstId) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setCurrentSubStepId(firstId);
+      let initialId = "";
+      if (firstIncomplete) {
+        initialId = firstIncomplete.id;
+      } else if (stepConfig.substeps && stepConfig.substeps.length > 0) {
+        // Fallback to last completed substep if everything is done
+        initialId = stepConfig.substeps[stepConfig.substeps.length - 1].id;
+      }
+
+      if (initialId) {
+        setCurrentSubStepId(initialId);
+        setIsInitialized(true);
       }
     }
-  }, [stepConfig, currentSubStepId, progress, stepId]);
+  }, [loading, stepConfig, isInitialized, progress, stepId]);
 
   // Guided Tour State (Parte 2 do Flow de Onboarding)
   const [isTourOpen, setIsTourOpen] = useState(false);
