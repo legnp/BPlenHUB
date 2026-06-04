@@ -146,9 +146,13 @@ export default function UserBookings({
       });
     }
 
-    // Summary filter (Prop-based)
+    // Summary filter (Prop-based com normalização de acentos)
     if (filterSummary) {
-      result = result.filter(b => b.eventDetail?.summary.toLowerCase().includes(filterSummary.toLowerCase()));
+      const normFilter = filterSummary.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+      result = result.filter(b => {
+        const summaryNorm = (b.eventDetail?.summary || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+        return summaryNorm.includes(normFilter);
+      });
     }
 
     // Status filter

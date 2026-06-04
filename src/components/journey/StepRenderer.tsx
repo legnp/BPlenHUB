@@ -32,6 +32,42 @@ import { useAuthContext } from "@/context/AuthContext";
 import { BPLEN_NOMENCLATURE } from "@/config/nomenclature";
 import { checkSurveyCompletedAction } from "@/actions/submit-survey";
 
+/**
+ * Helper para remover acentuação e diacríticos de strings para comparação resiliente 🧬
+ */
+const normalizeStr = (str: string) => 
+  str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+/**
+ * Helper para obter dinamicamente a palavra-chave de busca de eventos para cada etapa 🧬📅
+ */
+function getMeetingFilterKeyword(substep: SubStepConfig): string {
+  const refId = (substep.referenceId || "").toLowerCase();
+  const title = (substep.title || "").toLowerCase();
+
+  if (refId.includes("onboarding") || title.includes("onboarding")) return "onboarding";
+  
+  if (refId.includes("analise") || refId.includes("comportamental") || 
+      title.includes("analise") || title.includes("comportamental")) {
+    return "analise comportamental";
+  }
+  
+  if (refId.includes("carreira") || refId.includes("plano") || 
+      title.includes("carreira") || title.includes("plano")) {
+    return "plano de carreira";
+  }
+  
+  if (refId.includes("grupo") || title.includes("grupo")) return "orientacao em grupo";
+  if (refId.includes("individual") || title.includes("individual")) return "orientacao individual";
+  if (refId.includes("coaching") || title.includes("coaching")) return "coaching";
+  if (refId.includes("mentoria") || title.includes("mentoria")) return "mentoria";
+  if (refId.includes("offboarding") || title.includes("offboarding")) return "offboarding";
+
+  return substep.referenceId 
+    ? substep.referenceId.replace(/_/g, " ").replace(/-/g, " ").toLowerCase() 
+    : title;
+}
+
 interface StepRendererProps {
   substep: SubStepConfig;
   status: "locked" | "available" | "current" | "completed";
@@ -77,11 +113,13 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
     setLoadingEvents(true);
     try {
       const allEvents = await getSyncedEvents();
-      if (substep.referenceId === "onboarding") {
-        setEvents(allEvents.filter(ev => ev.summary.toLowerCase().includes("onboarding")));
-      } else {
-        setEvents(allEvents);
-      }
+      
+      const keyword = normalizeStr(getMeetingFilterKeyword(substep));
+      const filteredEvents = allEvents.filter(ev => {
+        const summaryNorm = normalizeStr(ev.summary || "");
+        return summaryNorm.includes(keyword);
+      });
+      setEvents(filteredEvents);
 
       if (matricula) {
         const bookings = await getUserBookingsAction(matricula);
@@ -92,7 +130,7 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
     } finally {
       setLoadingEvents(false);
     }
-  }, [substep.type, substep.referenceId, matricula]);
+  }, [substep.type, substep.referenceId, substep.title, matricula]);
 
   React.useEffect(() => {
     if (substep.type === "meeting") {
@@ -391,10 +429,11 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
 
       case "meeting":
         // Identificar se há um agendamento existente para este contexto
-        const activeBooking = userBookings.find(b => 
-           b.eventDetail?.summary.toLowerCase().includes(substep.referenceId === "onboarding" ? "onboarding" : substep.title.toLowerCase()) &&
-           b.eventLifecycleStatus !== "cancelled"
-        );
+        const keyword = normalizeStr(getMeetingFilterKeyword(substep));
+        const activeBooking = userBookings.find(b => {
+           const summaryNorm = normalizeStr(b.eventDetail?.summary || "");
+           return summaryNorm.includes(keyword) && b.eventLifecycleStatus !== "cancelled";
+        });
 
         const isCompleted = activeBooking?.eventLifecycleStatus === "completed" || activeBooking?.attendanceStatus === "present";
 
@@ -444,7 +483,7 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
                    <div className="mt-4">
                       <UserBookings 
                          compact={true} 
-                         filterSummary={substep.referenceId === "onboarding" ? "onboarding" : undefined} 
+                         filterSummary={getMeetingFilterKeyword(substep)} 
                          onRefresh={() => loadData()}
                       />
                    </div>
@@ -466,7 +505,7 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
                 <div className="mt-4">
                    <UserBookings 
                       compact={true} 
-                      filterSummary={substep.referenceId === "onboarding" ? "onboarding" : undefined} 
+                      filterSummary={getMeetingFilterKeyword(substep)} 
                    />
                 </div>
              )}
