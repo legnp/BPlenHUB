@@ -2,6 +2,8 @@
 
 import React from "react";
 import { SubStepConfig } from "@/types/journey";
+import { ConfettiCheckbox } from "./ConfettiCheckbox";
+
 import { 
   Loader2, 
   FileText, 
@@ -153,12 +155,10 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
                           </span>
                        </div>
                     ) : (
-                       <button 
-                          onClick={onComplete}
-                          className="px-10 py-4 bg-[var(--accent-start)] text-white rounded-full text-[10px] font-black uppercase tracking-[0.2em] hover:scale-105 active:scale-95 transition-all shadow-xl shadow-[var(--accent-start)]/20"
-                       >
-                          {nomen.actions.mark_as_done}
-                       </button>
+                       <ConfettiCheckbox 
+                          label={nomen.actions.mark_as_done} 
+                          onComplete={onComplete} 
+                       />
                     )}
                  </div>
               </div>
@@ -205,12 +205,19 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
                          {nomen.actions.review}
                       </button>
                    )}
-                   <button 
-                      onClick={onComplete}
-                      className="px-10 py-4 bg-[var(--accent-start)] text-white rounded-full text-[10px] font-black uppercase tracking-[0.2em] hover:scale-105 active:scale-95 transition-all shadow-xl shadow-[var(--accent-start)]/20"
-                   >
-                      {status === "completed" ? nomen.actions.review : nomen.actions.mark_as_done}
-                   </button>
+                   {status !== "completed" ? (
+                      <ConfettiCheckbox 
+                         label={nomen.actions.mark_as_done} 
+                         onComplete={onComplete} 
+                      />
+                   ) : (
+                      <button 
+                         onClick={onComplete}
+                         className="px-10 py-4 bg-[var(--accent-start)] text-white rounded-full text-[10px] font-black uppercase tracking-[0.2em] hover:scale-105 active:scale-95 transition-all shadow-xl shadow-[var(--accent-start)]/20"
+                      >
+                         {nomen.actions.review}
+                      </button>
+                   )}
                 </div>
              </div>
           </div>
@@ -355,13 +362,11 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
 
                    {/* BOTÃO PARA AVANÇAR */}
                    {isCompleted && status !== "completed" && (
-                      <div className="mt-8 flex justify-center animate-in fade-in slide-in-from-bottom-4 delay-300">
-                         <button 
-                            onClick={onComplete}
-                            className="px-12 py-5 bg-[var(--accent-start)] text-white rounded-full text-[12px] font-black uppercase tracking-[0.2em] hover:scale-105 active:scale-95 transition-all shadow-xl shadow-[var(--accent-start)]/20"
-                         >
-                            {nomen.actions.mark_as_done}
-                         </button>
+                      <div className="mt-6 flex justify-center animate-in fade-in slide-in-from-bottom-4 delay-300">
+                         <ConfettiCheckbox 
+                            label={nomen.actions.mark_as_done} 
+                            onComplete={onComplete} 
+                         />
                       </div>
                    )}
                 </div>
