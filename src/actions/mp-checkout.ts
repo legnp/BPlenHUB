@@ -1,14 +1,79 @@
 "use server";
 
 import admin, { getAdminDb } from "@/lib/firebase-admin";
-import { requireAuth, requireMatricula } from "@/lib/auth-guards";
+import { requireAuth } from "@/lib/auth-guards";
 import { Product } from "@/types/products";
 import { PRODUCTS_COLLECTION, USER_ORDERS_COLLECTION } from "@/config/collections";
 import { mpClient } from "@/lib/mercadopago";
 import { Preference, Payment as MPPayment } from "mercadopago";
 import { validateCouponAction } from "./coupons";
 import { clientEnv } from "@/env";
-import { sendOrderRequestedEmail } from "@/lib/checkout-emails";
+
+type MercadoPagoFormData = {
+  amount?: number | string;
+  transaction_amount?: number | string;
+  installments?: number | string;
+  issuer_id?: number | string;
+  token?: string;
+  payment_method_id?: string;
+  payment_type_id?: string;
+  payer?: {
+    email?: string;
+    identification?: {
+      type?: string;
+      number?: string;
+    };
+  };
+  [key: string]: unknown;
+};
+
+function asFiniteNumber(value: unknown) {
+  const numberValue = typeof value === "string" ? Number(value) : value;
+  return typeof numberValue === "number" && Number.isFinite(numberValue) ? numberValue : undefined;
+}
+
+function extractMpErrorMessage(error: unknown) {
+  if (error instanceof Error && error.message) return error.message;
+
+  if (typeof error === "object" && error !== null) {
+    const maybeError = error as {
+      message?: unknown;
+      cause?: Array<{ description?: unknown; code?: unknown }>;
+      response?: { message?: unknown; cause?: Array<{ description?: unknown; code?: unknown }> };
+    };
+
+    const directCause = maybeError.cause?.[0]?.description;
+    if (typeof directCause === "string") return directCause;
+
+    const responseCause = maybeError.response?.cause?.[0]?.description;
+    if (typeof responseCause === "string") return responseCause;
+
+    if (typeof maybeError.response?.message === "string") return maybeError.response.message;
+    if (typeof maybeError.message === "string") return maybeError.message;
+  }
+
+  return "Erro desconhecido no processamento. Tente outro cartão.";
+}
+
+function summarizeMpError(error: unknown) {
+  if (typeof error !== "object" || error === null) {
+    return { message: String(error) };
+  }
+
+  const maybeError = error as {
+    message?: unknown;
+    status?: unknown;
+    cause?: unknown;
+    response?: unknown;
+  };
+
+  return {
+    message: extractMpErrorMessage(error),
+    status: maybeError.status,
+    cause: maybeError.cause,
+    response: maybeError.response,
+  };
+}
 
 /**
  * BPlen HUB — Mercado Pago Checkout Engine (🧠💳)
@@ -203,28 +268,54 @@ export async function getCheckoutProductAction(slug: string, idToken?: string) {
  * Processamento Efetivo do Pagamento Checkout Transparente
  * Recebe o token do frontend Brick e realiza a cobrança
  */
-export async function processPaymentAction(formData: any, orderId: string, idToken?: string) {
+export async function processPaymentAction(formData: MercadoPagoFormData, orderId: string, idToken?: string) {
   try {
     const session = await requireAuth(idToken);
     
     // 💉 Log de Auditoria: Dados que estão indo para o MP
     console.log(`📡 [MP-Checkout] Iniciando processamento para Ordem: ${orderId} | Usuário: ${session.email}`);
 
-    // 🧼 Sanitização de Documentos (Soberania de Dados: MP exige apenas números)
-    if (formData?.payer?.identification?.number) {
-      formData.payer.identification.number = formData.payer.identification.number.replace(/\D/g, "");
-    }
-
     const db = getAdminDb();
     const orderSnap = await db.collection(USER_ORDERS_COLLECTION).doc(orderId).get();
-    const productTitle = orderSnap.exists ? orderSnap.data()?.productTitle : "BPlen HUB";
+    const order = orderSnap.exists ? orderSnap.data() : undefined;
+    const productTitle = order?.productTitle || "BPlen HUB";
+    const orderAmount = asFiniteNumber(order?.finalPrice);
+    const transactionAmount = asFiniteNumber(formData.transaction_amount ?? formData.amount ?? orderAmount);
+    const installments = asFiniteNumber(formData.installments);
+    const issuerId = asFiniteNumber(formData.issuer_id);
+    const payerEmail = formData.payer?.email || session.email || order?.userEmail || "";
+    const identificationNumber = formData.payer?.identification?.number?.replace(/\D/g, "");
+
+    if (!transactionAmount) {
+      throw new Error("Valor do pagamento ausente ou inválido para o Mercado Pago.");
+    }
+
+    if (!payerEmail) {
+      throw new Error("E-mail do pagador ausente para o Mercado Pago.");
+    }
 
     // Importante: No caso do Preference ID, nós ainda dependemos da cobrança manual
     // Injectamos metadata para rastreabilidade do Webhook
     const payload = {
-      ...formData,
+      transaction_amount: transactionAmount,
+      ...(installments ? { installments } : {}),
+      ...(issuerId ? { issuer_id: issuerId } : {}),
+      ...(formData.token ? { token: formData.token } : {}),
+      ...(formData.payment_method_id ? { payment_method_id: formData.payment_method_id } : {}),
       description: `Contratação: ${productTitle}`,
       external_reference: orderId, // CRITICAL: Para o Webhook saber qual é o pedido
+      payer: {
+        ...(formData.payer || {}),
+        email: payerEmail,
+        ...(identificationNumber
+          ? {
+              identification: {
+                ...(formData.payer?.identification || {}),
+                number: identificationNumber,
+              },
+            }
+          : {}),
+      },
       metadata: {
         buyer_uid: session.uid,
         checkout_origin: "bplen_hub_v3_transparent"
@@ -242,6 +333,7 @@ export async function processPaymentAction(formData: any, orderId: string, idTok
     
     if (pendingStatuses.includes(payment.status || "")) {
       const { resolveUserNickname } = await import("@/lib/user-identity");
+      const { sendOrderRequestedEmail } = await import("@/lib/checkout-emails");
       const nickname = await resolveUserNickname(session.uid);
 
       const productTitle = payload.description || "Serviços BPlen HUB";
@@ -261,18 +353,23 @@ export async function processPaymentAction(formData: any, orderId: string, idTok
       paymentId: payment.id 
     };
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     // 🕵️ Captura Profunda de Erros do Mercado Pago
-    const mpError = error.response || error;
+    const mpError = summarizeMpError(error);
     console.error("❌ [MP Process Payment Error]:", JSON.stringify(mpError, null, 2));
 
-    // Extrair mensagem legível se disponível
-    let message = "Erro desconhecido no processamento. Tente outro cartão.";
-    if (error.message) message = error.message;
-    if (error.cause && Array.isArray(error.cause) && error.cause[0]?.description) {
-      message = error.cause[0].description;
+    try {
+      const db = getAdminDb();
+      await db.collection(USER_ORDERS_COLLECTION).doc(orderId).update({
+        status: "payment_failed",
+        gatewayError: mpError,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    } catch (auditError) {
+      console.error("❌ [MP Process Payment Audit Error]:", auditError);
     }
 
+    const message = extractMpErrorMessage(error);
     return { success: false, error: message };
   }
 }

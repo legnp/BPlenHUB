@@ -18,6 +18,7 @@ vi.mock('@/lib/firebase-admin', () => {
     id: 'mock-id',
     set: vi.fn().mockResolvedValue({}),
     update: vi.fn().mockResolvedValue({}),
+    get: vi.fn().mockResolvedValue({ exists: false }),
   });
 
   const mockCollection = vi.fn().mockReturnValue({
@@ -44,9 +45,11 @@ vi.mock('@/lib/firebase-admin', () => {
 vi.mock('mercadopago', () => {
   return {
     MercadoPagoConfig: vi.fn(),
-    Preference: vi.fn().mockImplementation(() => ({
+    Preference: vi.fn().mockImplementation(function PreferenceMock() {
+      return {
       create: vi.fn().mockResolvedValue({ id: 'mock-pref-id' }),
-    })),
+      };
+    }),
   };
 });
 
