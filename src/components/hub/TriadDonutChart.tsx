@@ -26,6 +26,13 @@ export function TriadDonutChart({ data, title, subtitle, mini = false }: TriadDo
 
   const totalPercentage = Math.round(data.reduce((acc, curr) => acc + curr.percentage, 0));
 
+  // Find predominant element (highest score) to show its initial (V, A, C, D)
+  const predominant = data && data.length > 0 
+    ? [...data].sort((a, b) => b.percentage - a.percentage)[0] 
+    : null;
+  const predominantLetter = predominant ? predominant.label.charAt(0).toUpperCase() : "";
+  const predominantColor = predominant ? predominant.color : "var(--text-primary)";
+
   return (
     <div className={`w-full flex flex-col ${mini ? 'items-center' : 'md:flex-row items-center justify-center'} gap-8`}>
       <div className="relative group/chart">
@@ -105,17 +112,17 @@ export function TriadDonutChart({ data, title, subtitle, mini = false }: TriadDo
                </motion.div>
              ) : (
                <motion.div
-                 key="total"
-                 initial={{ opacity: 0 }}
-                 animate={{ opacity: 1 }}
-                 exit={{ opacity: 0 }}
-                 className="flex flex-col items-center text-center"
+                 key="predominant"
+                 initial={{ opacity: 0, scale: 0.9 }}
+                 animate={{ opacity: 1, scale: 1 }}
+                 exit={{ opacity: 0, scale: 0.9 }}
+                 className="flex flex-col items-center justify-center text-center"
                >
-                 <span className={`font-black tracking-tighter text-[var(--text-primary)] ${mini ? 'text-xl' : 'text-4xl'}`}>
-                    {totalPercentage}%
-                 </span>
-                 <span className={`font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-40 ${mini ? 'text-[6px]' : 'text-[9px]'}`}>
-                    Total
+                 <span 
+                    className={`font-black tracking-tight ${mini ? 'text-2xl md:text-3xl' : 'text-5xl md:text-6xl'}`}
+                    style={{ color: predominantColor }}
+                 >
+                    {predominantLetter}
                  </span>
                </motion.div>
              )}

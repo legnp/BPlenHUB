@@ -150,10 +150,10 @@ export default function MemberDashboardView() {
   ] : [];
 
   const vacdData = aprendizadoResult?.scores ? [
-    { label: 'Vis', percentage: aprendizadoResult.scores.visual?.percentage || 0, color: '#ec4899' },
-    { label: 'Aud', percentage: aprendizadoResult.scores.auditivo?.percentage || 0, color: '#3b82f6' },
-    { label: 'Cin', percentage: aprendizadoResult.scores.cinestesico?.percentage || 0, color: '#10b981' },
-    { label: 'Dig', percentage: aprendizadoResult.scores.digital?.percentage || 0, color: '#f59e0b' },
+    { label: 'Visual', percentage: aprendizadoResult.scores.visual?.percentage || 0, color: '#ec4899' },
+    { label: 'Auditivo', percentage: aprendizadoResult.scores.auditivo?.percentage || 0, color: '#3b82f6' },
+    { label: 'Cinestésico', percentage: aprendizadoResult.scores.cinestesico?.percentage || 0, color: '#10b981' },
+    { label: 'Digital', percentage: aprendizadoResult.scores.digital?.percentage || 0, color: '#f59e0b' },
   ] : [];
 
   const reconhecimentoData = reconhecimentoResult?.scores ? [
