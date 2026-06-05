@@ -377,7 +377,7 @@ export function JourneyNav({ stages, currentStepId, stepStatusMap, getStageTelem
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   onClick={() => setDetailModalOpen(null)}
-                  className="absolute inset-0 bg-black/50 backdrop-blur-[8px] cursor-pointer" 
+                  className="absolute inset-0 bg-white/40 backdrop-blur-[8px] cursor-pointer" 
                />
                
                {/* Modal Content */}
