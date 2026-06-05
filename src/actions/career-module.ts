@@ -260,7 +260,7 @@ export async function getCareerPlanningDataAction(
         const discSnap = await db.doc(`User/${matricula}/results/disc`).get();
         if (discSnap.exists) {
           const discData = discSnap.data() || {};
-          if (discData.file && discData.file.url) {
+          if (discData.isReleased !== false && discData.file && discData.file.url) {
             const discDocRef = db.collection("User").doc(matricula).collection("Shared_Documents").doc("disc-devolutiva");
             await discDocRef.set({
               title: "Análise Comportamental DISC",

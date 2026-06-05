@@ -263,7 +263,7 @@ export default function MemberDashboardView() {
                            </div>
 
                            {discResult ? (
-                              <div className="space-y-6 relative z-10">
+                              <div className={`space-y-6 relative z-10 transition-all duration-700 ${discResult.isReleased === false ? 'blur-md grayscale opacity-30 select-none' : 'opacity-100'}`}>
                                  <DiscChart data={discData} mini />
                               </div>
                            ) : (
