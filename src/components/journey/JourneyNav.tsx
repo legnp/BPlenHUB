@@ -7,7 +7,8 @@ import * as LucideIcons from "lucide-react";
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { UpsellServiceModal } from "./UpsellServiceModal";
 import { getProductBySlug } from "@/actions/products";
 import { StageTelemetry } from "@/hooks/useJourney";
@@ -107,6 +108,11 @@ export function JourneyNav({ stages, currentStepId, stepStatusMap, getStageTelem
   // Sequence Lock State 🔒
   const [sequenceLockModalOpen, setSequenceLockModalOpen] = useState(false);
   const [prevStageTitle, setPrevStageTitle] = useState("");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const currentStepIndex = stages.findIndex(s => s.id === currentStepId);
 
@@ -361,8 +367,9 @@ export function JourneyNav({ stages, currentStepId, stepStatusMap, getStageTelem
       </div>
 
       {/* Modal de Detalhes Estratégicos */}
-      <AnimatePresence>
-         {detailModalOpen && (
+      {mounted && createPortal(
+        <AnimatePresence>
+           {detailModalOpen && (
             <div className="fixed inset-0 z-[200] flex items-start justify-center p-4 overflow-y-auto custom-scrollbar">
                {/* Backdrop */}
                <motion.div 
@@ -435,8 +442,10 @@ export function JourneyNav({ stages, currentStepId, stepStatusMap, getStageTelem
                   })()}
                </motion.div>
             </div>
-         )}
-      </AnimatePresence>
+           )}
+        </AnimatePresence>,
+        document.body
+      )}
 
       {/* Modal de Upsell Contextual ✨🧬 */}
       <UpsellServiceModal 
