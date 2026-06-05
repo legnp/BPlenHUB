@@ -29,6 +29,7 @@ import { toggleAssessmentRelease } from "@/actions/admin-assessments";
 import { DiscDevolutivaModal } from "@/components/admin/DiscDevolutivaModal";
 import { DiscChart } from "@/components/hub/DiscChart";
 import { TriadDonutChart } from "@/components/hub/TriadDonutChart";
+import { TriadVennChart } from "@/components/hub/TriadVennChart";
 import { StackedBarChart } from "@/components/hub/StackedBarChart";
 import { SURVEY_REGISTRY } from "@/config/surveys";
 import { FORMS_REGISTRY } from "@/config/forms";
@@ -173,9 +174,9 @@ export function DevolutivaComportamentalView({
   // Formulate structures arrays for display
   const gestaoResult = userData?.results?.gestao_tempo;
   const triadData = gestaoResult?.scores ? [
-    { label: "Importancia", percentage: gestaoResult.scores.importancia?.percentage || 0, color: "#ec4899" },
+    { label: "Importancia", percentage: gestaoResult.scores.importancia?.percentage || 0, color: "#10b981" },
     { label: "Urgencia", percentage: gestaoResult.scores.urgencia?.percentage || 0, color: "#facc15" },
-    { label: "Circunstancia", percentage: gestaoResult.scores.circunstancia?.percentage || 0, color: "#94a3b8" },
+    { label: "Circunstancia", percentage: gestaoResult.scores.circunstancia?.percentage || 0, color: "#ef4444" },
   ] : [];
 
   const aprendizadoResult = userData?.results?.preferencias_aprendizado;
@@ -530,7 +531,7 @@ export function DevolutivaComportamentalView({
                     {gestaoResult?.scores ? (
                       <div className="flex flex-col items-center gap-3">
                         <div className="w-28 h-28 flex items-center justify-center">
-                          <TriadDonutChart data={triadData} mini />
+                          <TriadVennChart data={triadData} mini />
                         </div>
                         <div className="flex flex-wrap justify-center gap-3">
                           {triadData.map(item => (

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { TriadDonutChart } from "@/components/hub/TriadDonutChart";
+import { TriadVennChart } from "@/components/hub/TriadVennChart";
 import { StackedBarChart } from "@/components/hub/StackedBarChart";
 import { DiscChart } from "@/components/hub/DiscChart";
 import { MemberJourneyHero } from "@/components/hub/MemberJourneyHero";
@@ -143,9 +144,9 @@ export default function MemberDashboardView() {
 
   // Mapeamentos de dados
   const triadData = gestaoResult?.scores ? [
-    { label: 'Importância', percentage: gestaoResult.scores.importancia?.percentage || 0, color: '#ec4899' },
+    { label: 'Importância', percentage: gestaoResult.scores.importancia?.percentage || 0, color: '#10b981' },
     { label: 'Urgência', percentage: gestaoResult.scores.urgencia?.percentage || 0, color: '#facc15' },
-    { label: 'Circunstância', percentage: gestaoResult.scores.circunstancia?.percentage || 0, color: '#94a3b8' },
+    { label: 'Circunstância', percentage: gestaoResult.scores.circunstancia?.percentage || 0, color: '#ef4444' },
   ] : [];
 
   const vacdData = aprendizadoResult?.scores ? [
@@ -254,7 +255,7 @@ export default function MemberDashboardView() {
                               isReleased={gestaoResult.isReleased !== false}
                               submittedAt={gestaoResult.submittedAt}
                               icon={<Clock size={14} className="text-[var(--accent-start)]" />}
-                              chart={<TriadDonutChart data={triadData} mini />}
+                              chart={<TriadVennChart data={triadData} mini />}
                               data={triadData} 
                            />
                         )}
