@@ -75,6 +75,14 @@ function summarizeMpError(error: unknown) {
   };
 }
 
+function isPaymentProcessableStatus(status?: string) {
+  return ["approved", "pending", "in_process", "in_mediation", "authorized"].includes(status || "");
+}
+
+function isPaymentRejectedStatus(status?: string) {
+  return ["rejected", "cancelled", "refunded", "charged_back"].includes(status || "");
+}
+
 /**
  * BPlen HUB — Mercado Pago Checkout Engine (🧠💳)
  * Cria a preferência de pagamento e gera o registro de auditoria da ordem.
@@ -328,6 +336,13 @@ export async function processPaymentAction(formData: MercadoPagoFormData, orderI
       requestOptions: { idempotencyKey: crypto.randomUUID() }
     });
 
+    await db.collection(USER_ORDERS_COLLECTION).doc(orderId).update({
+      status: payment.status || "unknown",
+      statusDetail: payment.status_detail || "",
+      mpPaymentId: payment.id ? String(payment.id) : "",
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
     // 📧 Disparo do E-mail 1: "Compra Solicitada" (Personalizado & Inteligente 🧠🧬)
     const pendingStatuses = ["pending", "in_process", "in_mediation", "authorized"];
     
@@ -346,6 +361,24 @@ export async function processPaymentAction(formData: MercadoPagoFormData, orderI
     }
 
     console.log(`✅ [MP-Checkout] Pagamento criado com sucesso: ${payment.id} (Status: ${payment.status})`);
+
+    if (isPaymentRejectedStatus(payment.status)) {
+      return {
+        success: false,
+        status: payment.status,
+        paymentId: payment.id,
+        error: `Pagamento ${payment.status_detail || payment.status || "não aprovado"} pelo Mercado Pago.`,
+      };
+    }
+
+    if (!isPaymentProcessableStatus(payment.status)) {
+      return {
+        success: false,
+        status: payment.status,
+        paymentId: payment.id,
+        error: `Status inesperado do Mercado Pago: ${payment.status || "desconhecido"}.`,
+      };
+    }
 
     return { 
       success: true, 

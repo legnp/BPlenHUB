@@ -59,6 +59,10 @@ function StatusBadge({ status }: { status: string }) {
   }
 }
 
+function canRetryPayment(status: string) {
+  return ["pending", "rejected", "cancelled", "payment_failed"].includes(status);
+}
+
 export default async function ContratosPage() {
   const session = await getServerSession();
   
@@ -138,7 +142,14 @@ export default async function ContratosPage() {
 
                 <div className="space-y-4 relative z-10">
                   <div className="flex justify-between items-start gap-4">
-                    <StatusBadge status={order.status} />
+                    <div className="space-y-1.5">
+                      <StatusBadge status={order.status} />
+                      {order.statusDetail ? (
+                        <p className="text-[8px] font-bold uppercase tracking-widest text-[var(--text-muted)] pl-1">
+                          {order.statusDetail}
+                        </p>
+                      ) : null}
+                    </div>
                     <span className="text-[10px] uppercase font-bold tracking-widest text-[var(--text-muted)]">
                       #{order.orderId.substring(0, 6)}
                     </span>
@@ -172,7 +183,7 @@ export default async function ContratosPage() {
                       Acessar HUB
                       <ExternalLink size={14} className="group-hover/btn:translate-x-1 transition-transform" />
                     </Link>
-                  ) : order.status === "pending" ? (
+                  ) : canRetryPayment(order.status) ? (
                     <Link 
                       href={`/hub/membro/checkout/${order.productSlug}`}
                       className="w-full py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all glass hover:bg-[var(--text-primary)] hover:text-[var(--bg-primary)] text-[var(--text-primary)] text-center flex items-center justify-center gap-2 border-[var(--glass-border)]"
