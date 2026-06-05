@@ -257,6 +257,7 @@ export default function MemberDashboardView() {
                               icon={<Clock size={14} className="text-[var(--accent-start)]" />}
                               chart={<TriadVennChart data={triadData} mini />}
                               data={triadData} 
+                              hideLegend
                            />
                         )}
 
@@ -416,7 +417,7 @@ export default function MemberDashboardView() {
   );
 }
 
-function MiniCard({ title, subtitle, data, icon, isReleased, submittedAt, chart }: any) {
+function MiniCard({ title, subtitle, data, icon, isReleased, submittedAt, chart, hideLegend }: any) {
   const formattedDate = submittedAt ? new Date(submittedAt.seconds ? submittedAt.seconds * 1000 : submittedAt).toLocaleDateString("pt-BR") : null;
 
   return (
@@ -441,7 +442,7 @@ function MiniCard({ title, subtitle, data, icon, isReleased, submittedAt, chart 
         )}
       </div>
 
-      {isReleased && data.length > 0 && (
+      {isReleased && data.length > 0 && !hideLegend && (
          <div className="flex flex-wrap justify-center gap-x-3 gap-y-1.5 px-4 opacity-70 group-hover/card:opacity-100 transition-opacity">
             {data.map((item: any) => (
                <div key={item.label} className="flex items-center gap-1.5">

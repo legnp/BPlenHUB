@@ -529,17 +529,9 @@ export function DevolutivaComportamentalView({
                     </div>
 
                     {gestaoResult?.scores ? (
-                      <div className="flex flex-col items-center gap-3">
-                        <div className="w-28 h-28 flex items-center justify-center">
+                      <div className="flex flex-col items-center">
+                        <div className="w-44 h-44 flex items-center justify-center mx-auto">
                           <TriadVennChart data={triadData} mini />
-                        </div>
-                        <div className="flex flex-wrap justify-center gap-3">
-                          {triadData.map(item => (
-                            <div key={item.label} className="flex items-center gap-1.5">
-                              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
-                              <span className="text-[8px] font-black uppercase tracking-wider text-[var(--text-muted)]">{item.label}</span>
-                            </div>
-                          ))}
                         </div>
                       </div>
                     ) : (

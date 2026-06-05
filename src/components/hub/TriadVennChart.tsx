@@ -137,13 +137,41 @@ export function TriadVennChart({ data, title, subtitle, mini = false }: TriadVen
     return data.find((item) => item.label.toLowerCase().includes(keyPart)) || { label: "", percentage: 0 };
   };
 
+  // Mini Venn Circle Positions (Equilateral arrangement in 420x250 viewBox for perfect side/top labels)
+  const miniCircles = [
+    {
+      id: "important",
+      label: "Importante",
+      keyPart: "importan",
+      cx: 210,
+      cy: 92,
+      r: 58,
+    },
+    {
+      id: "urgent",
+      label: "Urgente",
+      keyPart: "urgen",
+      cx: 178,
+      cy: 147,
+      r: 58,
+    },
+    {
+      id: "circumstance",
+      label: "Circunstancial",
+      keyPart: "circun",
+      cx: 242,
+      cy: 147,
+      r: 58,
+    },
+  ];
+
   if (mini) {
     // Mini Venn Render (used for grids or compact cards)
     return (
       <div className="relative flex flex-col items-center justify-center w-full h-full group/venn">
         <svg
-          viewBox="0 0 240 220"
-          className="w-24 h-24 md:w-28 md:h-28 overflow-visible"
+          viewBox="0 0 420 250"
+          className="w-40 h-40 md:w-44 md:h-44 overflow-visible"
         >
           <defs>
             {/* Gradients */}
@@ -163,8 +191,7 @@ export function TriadVennChart({ data, title, subtitle, mini = false }: TriadVen
 
           {/* Render Circles with blend overlay */}
           <g style={{ mixBlendMode: "screen" }}>
-            {circles.map((c) => {
-              const item = getDataItemForCircle(c.keyPart);
+            {miniCircles.map((c) => {
               const theme = getCategoryTheme(c.label);
               return (
                 <circle
@@ -181,6 +208,40 @@ export function TriadVennChart({ data, title, subtitle, mini = false }: TriadVen
               );
             })}
           </g>
+
+          {/* Symmetrical, beautiful labels next to each circle */}
+          <text
+            x={210}
+            y={22}
+            textAnchor="middle"
+            className="font-black uppercase tracking-[0.1em] text-[10px] select-none"
+            fill="#10b981"
+            style={{ textShadow: "0 1px 4px rgba(0,0,0,0.2)" }}
+          >
+            Importante {Math.round(getDataItemForCircle("importan").percentage)}%
+          </text>
+
+          <text
+            x={105}
+            y={151}
+            textAnchor="end"
+            className="font-black uppercase tracking-[0.1em] text-[10px] select-none"
+            fill="#facc15"
+            style={{ textShadow: "0 1px 4px rgba(0,0,0,0.2)" }}
+          >
+            Urgente {Math.round(getDataItemForCircle("urgen").percentage)}%
+          </text>
+
+          <text
+            x={315}
+            y={151}
+            textAnchor="start"
+            className="font-black uppercase tracking-[0.1em] text-[10px] select-none"
+            fill="#ef4444"
+            style={{ textShadow: "0 1px 4px rgba(0,0,0,0.2)" }}
+          >
+            Circunstancial {Math.round(getDataItemForCircle("circun").percentage)}%
+          </text>
         </svg>
 
         {/* Floating Mini Center Badge representing Diagnostic Winner */}
