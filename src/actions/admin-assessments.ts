@@ -67,7 +67,7 @@ function formatTitle(id: string): string {
   const map: Record<string, string> = {
     gestao_tempo: "Tríade do Tempo",
     preferencias_aprendizado: "Preferências de Aprendizado (VACD)",
-    preferencias_reconhecimento: "Linguagens de Reconhecimento",
+    preferencias_reconhecimento: "Preferências de Reconhecimento",
     pre_analise_comportamental: "Pré-Análise Comportamental",
     welcome_survey: "Onboarding (Welcome)"
   };

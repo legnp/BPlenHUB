@@ -76,7 +76,7 @@ export function DiscDevolutivaModal({ user, onClose, onSuccess }: DiscDevolutiva
                  <Trophy size={24} className="text-white" />
               </div>
               <div className="space-y-0.5">
-                 <h3 className="text-xl font-black text-white">Lançar Devolutiva <span className="text-blue-400 italic">DISC</span></h3>
+                 <h3 className="text-xl font-black text-white">Lançar Análise <span className="text-blue-400 italic">DISC</span></h3>
                  <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60">
                     Alvo: <span className="text-white">{user.name}</span> • {user.matricula}
                  </p>

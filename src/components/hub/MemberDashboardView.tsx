@@ -219,7 +219,7 @@ export default function MemberDashboardView() {
                         <div className={`p-8 bg-[var(--input-bg)]/20 border border-[var(--border-primary)] rounded-[2.5rem] space-y-4 transition-all relative overflow-hidden group/blade ${!discResult ? 'opacity-60 grayscale' : 'hover:bg-[var(--input-bg)]/40 hover:border-blue-500/30'}`}>
                            <div className="flex items-center justify-between mb-4 relative z-10">
                               <div className="flex flex-col">
-                                 <span className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)]">Lâmina 01</span>
+                                 <span className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)]">Analise 01</span>
                                  <h4 className="text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)]">Comportamental DISC</h4>
                               </div>
                               {discResult?.isReleased === false ? (
@@ -246,11 +246,11 @@ export default function MemberDashboardView() {
                            )}
                         </div>
 
-                        {/* Lâmina 02: Tempo */}
+                        {/* Análise 02: Tempo */}
                         {gestaoResult && (
                            <MiniCard 
                               title="Gestão do Tempo" 
-                              subtitle="Lâmina 02 / Tríade" 
+                              subtitle="Análise 02 / Tríade" 
                               isReleased={gestaoResult.isReleased !== false}
                               submittedAt={gestaoResult.submittedAt}
                               icon={<Clock size={14} className="text-[var(--accent-start)]" />}
@@ -259,11 +259,11 @@ export default function MemberDashboardView() {
                            />
                         )}
 
-                        {/* Lâmina 03: Aprendizado */}
+                        {/* Análise 03: Aprendizado */}
                         {aprendizadoResult && (
                            <MiniCard 
                               title="Aprendizado" 
-                              subtitle="Lâmina 03 / VACD" 
+                              subtitle="Análise 03 / VACD" 
                               isReleased={aprendizadoResult.isReleased !== false}
                               submittedAt={aprendizadoResult.submittedAt}
                               icon={<Sparkles size={14} className="text-[var(--accent-start)]" />}
@@ -272,11 +272,11 @@ export default function MemberDashboardView() {
                            />
                         )}
 
-                        {/* Lâmina 04: Reconhecimento */}
+                        {/* Análise 04: Reconhecimento */}
                         {reconhecimentoResult && (
                            <MiniCard 
                               title="Reconhecimento" 
-                              subtitle="Lâmina 04 / Premiações" 
+                              subtitle="Análise 04 / Premiações" 
                               isReleased={reconhecimentoResult.isReleased !== false}
                               submittedAt={reconhecimentoResult.submittedAt}
                               icon={<Target size={14} className="text-[var(--accent-start)]" />}

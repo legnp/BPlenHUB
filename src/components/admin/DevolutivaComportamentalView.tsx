@@ -295,7 +295,7 @@ export function DevolutivaComportamentalView({
       {!hideUserSelector && (
         <div className="relative w-full max-w-md">
           <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60 block mb-2">
-            Selecionar Alvo do Painel
+            Selecionar Usuário
           </label>
           <div className="relative">
             <button 
@@ -439,7 +439,7 @@ export function DevolutivaComportamentalView({
                     </p>
                   </div>
                   <div>
-                    <span className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60">Cargo Plataforma</span>
+                    <span className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60">Tipo de Acesso na Plataforma</span>
                     <p className="text-xs font-bold text-[var(--text-primary)] mt-0.5 uppercase tracking-wider font-mono">{userData.profile.role}</p>
                   </div>
                   <div>
@@ -467,7 +467,7 @@ export function DevolutivaComportamentalView({
                     <Brain size={18} />
                   </div>
                   <div className="flex flex-col text-left">
-                    <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)]">Resultados do Cliente</h3>
+                    <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)]">Resultados do Usuário</h3>
                     <p className="text-xs font-black text-[var(--text-primary)] tracking-tight mt-0.5">Visualizador de Assessments</p>
                   </div>
                 </div>
@@ -478,7 +478,7 @@ export function DevolutivaComportamentalView({
                   <div className={`p-6 bg-[var(--bg-primary)]/40 border border-[var(--border-primary)] rounded-[2rem] space-y-4 relative overflow-hidden group/blade`}>
                     <div className="flex items-center justify-between relative z-10">
                       <div className="flex flex-col">
-                        <span className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)]">Lamina 01</span>
+                        <span className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)]">Análise 01</span>
                         <h4 className="text-[9px] font-black uppercase tracking-widest text-[var(--text-primary)]">Comportamental DISC</h4>
                       </div>
                       
@@ -510,7 +510,7 @@ export function DevolutivaComportamentalView({
                   <div className="p-6 bg-[var(--bg-primary)]/40 border border-[var(--border-primary)] rounded-[2rem] space-y-4 relative overflow-hidden">
                     <div className="flex items-center justify-between relative z-10">
                       <div className="flex flex-col">
-                        <span className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)]">Lamina 02</span>
+                        <span className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)]">Análise 02</span>
                         <h4 className="text-[9px] font-black uppercase tracking-widest text-[var(--text-primary)]">Gestão do Tempo</h4>
                       </div>
                       
@@ -552,7 +552,7 @@ export function DevolutivaComportamentalView({
                   <div className="p-6 bg-[var(--bg-primary)]/40 border border-[var(--border-primary)] rounded-[2rem] space-y-4 relative overflow-hidden">
                     <div className="flex items-center justify-between relative z-10">
                       <div className="flex flex-col">
-                        <span className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)]">Lamina 03</span>
+                        <span className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)]">Análise 03</span>
                         <h4 className="text-[9px] font-black uppercase tracking-widest text-[var(--text-primary)]">Aprendizado VACD</h4>
                       </div>
                       
@@ -594,8 +594,8 @@ export function DevolutivaComportamentalView({
                   <div className="p-6 bg-[var(--bg-primary)]/40 border border-[var(--border-primary)] rounded-[2rem] space-y-4 relative overflow-hidden">
                     <div className="flex items-center justify-between relative z-10">
                       <div className="flex flex-col">
-                        <span className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)]">Lamina 04</span>
-                        <h4 className="text-[9px] font-black uppercase tracking-widest text-[var(--text-primary)]">Linguagens de Reconhecimento</h4>
+                        <span className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)]">Análise 04</span>
+                        <h4 className="text-[9px] font-black uppercase tracking-widest text-[var(--text-primary)]">Preferencias de Reconhecimento</h4>
                       </div>
                       
                       <button 
@@ -667,7 +667,7 @@ export function DevolutivaComportamentalView({
                   onClick={() => setShowDiscModal(true)}
                   className="w-full py-3.5 bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] text-white rounded-2xl text-[10px] font-bold uppercase tracking-[0.2em] shadow-lg shadow-[var(--accent-start)]/15 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2 group"
                 >
-                  <Trophy size={14} className="group-hover:rotate-6 transition-transform" /> Lançar Devolutiva DISC
+                  <Trophy size={14} className="group-hover:rotate-6 transition-transform" /> Lançar Análise DISC
                 </button>
               </div>
 
@@ -685,7 +685,7 @@ export function DevolutivaComportamentalView({
                       <FileText size={18} />
                     </div>
                     <div className="flex flex-col">
-                      <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)]">Histórico Operacional</h3>
+                      <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)]">Mapa da Jornada</h3>
                       <p className="text-xs font-black text-[var(--text-primary)] tracking-tight mt-0.5">Formulários & Surveys Preenchidos</p>
                     </div>
                   </div>
