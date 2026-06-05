@@ -530,7 +530,7 @@ export function DevolutivaComportamentalView({
 
                     {gestaoResult?.scores ? (
                       <div className="flex flex-col items-center">
-                        <div className="w-44 h-44 flex items-center justify-center mx-auto">
+                        <div className="w-56 h-56 sm:w-64 sm:h-64 flex items-center justify-center mx-auto">
                           <TriadVennChart data={triadData} mini />
                         </div>
                       </div>
