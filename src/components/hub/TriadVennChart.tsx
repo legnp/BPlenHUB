@@ -171,7 +171,7 @@ export function TriadVennChart({ data, title, subtitle, mini = false }: TriadVen
       <div className="relative flex flex-col items-center justify-center w-full h-full group/venn">
         <svg
           viewBox="0 0 420 310"
-          className="w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 overflow-visible"
+          className="w-48 h-36 sm:w-56 sm:h-40 md:w-64 md:h-48 overflow-visible"
         >
           <defs>
             {/* Gradients */}
