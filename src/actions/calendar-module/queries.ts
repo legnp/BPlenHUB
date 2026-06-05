@@ -244,30 +244,18 @@ export async function getEventNpsDetailsAction(
     const attendeesSnap = await eventRef.collection("attendees").get();
     const reviews: Array<{ nickname: string; matricula: string; rating: number; feedback: string; evaluatedAt: string | null }> = [];
     
-    await Promise.all(attendeesSnap.docs.map(async (att) => {
+    attendeesSnap.docs.forEach((att) => {
       const attData = att.data();
-      const attMatricula = attData.matricula;
-      if (!attMatricula) return;
-      
-      const bSnap = await db.collection("User").doc(attMatricula)
-        .collection("User_Bookings")
-        .where("eventId", "==", eventId)
-        .limit(1)
-        .get();
-      
-      bSnap.forEach(b => {
-        const bData = b.data();
-        if (bData.rating && bData.rating > 0) {
-          reviews.push({
-            nickname: attData.nickname || attMatricula,
-            matricula: attMatricula,
-            rating: bData.rating,
-            feedback: bData.feedback || "",
-            evaluatedAt: bData.evaluatedAt?.toDate?.()?.toISOString() || null
-          });
-        }
-      });
-    }));
+      if (attData.rating && attData.rating > 0) {
+        reviews.push({
+          nickname: attData.nickname || attData.matricula || "Participante",
+          matricula: attData.matricula || "",
+          rating: attData.rating,
+          feedback: attData.feedback || "",
+          evaluatedAt: attData.evaluatedAt?.toDate?.()?.toISOString() || null
+        });
+      }
+    });
     
     const totalRating = reviews.reduce((sum, r) => sum + r.rating, 0);
     const npsAvg = reviews.length > 0 ? parseFloat((totalRating / reviews.length).toFixed(1)) : 0;

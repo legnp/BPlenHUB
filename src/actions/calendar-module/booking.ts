@@ -7,7 +7,7 @@ import { Resend } from "resend";
 import { CALENDAR_CONFIG } from "@/config/calendarConfig";
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 import { GoogleCalendarEvent } from "@/types/calendar";
-import { updateGlobalProgramacaoRegistryAction } from "./post-event";
+import { updateGlobalProgramacaoRegistryAction, recalculateEventMetrics } from "./post-event";
 import { getBookingConfirmationEmail, getAdminInclusionEmail, getCancellationEmail, getRescheduleEmail } from "@/lib/email-templates";
 import { submitSurvey } from "../submit-survey";
 import { bookingEvaluationSurveyConfig } from "@/config/surveys/booking-evaluation";
@@ -323,6 +323,7 @@ export async function submitEvaluationAction(
     } catch (err) {}
 
     try {
+      await recalculateEventMetrics(eventId);
       await updateGlobalProgramacaoRegistryAction();
     } catch (registryErr) {}
 

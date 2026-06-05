@@ -292,6 +292,46 @@ export async function generateEventSummarySheetAction(
 }
 
 /**
+ * Recalcula as métricas (NPS, Presença, Reviews) de um evento específico 🛰️
+ */
+export async function recalculateEventMetrics(eventId: string) {
+  try {
+    const db = getAdminDb();
+    const eventRef = db.collection("Calendar_Events").doc(eventId);
+    const attendeesSnap = await eventRef.collection("attendees").get();
+    
+    let presenceCount = 0;
+    let totalRating = 0;
+    let reviewsCount = 0;
+
+    attendeesSnap.docs.forEach(doc => {
+      const data = doc.data();
+      if (data.attendanceStatus === "present") {
+        presenceCount++;
+      }
+      if (data.rating && data.rating > 0) {
+        totalRating += data.rating;
+        reviewsCount++;
+      }
+    });
+
+    const npsAvg = reviewsCount > 0 ? parseFloat((totalRating / reviewsCount).toFixed(1)) : 0;
+
+    const metrics = {
+      presenceCount,
+      npsAvg,
+      reviewsCount
+    };
+
+    await eventRef.set({ metrics }, { merge: true });
+    return metrics;
+  } catch (error) {
+    console.error(`Erro ao recalcular métricas do evento ${eventId}:`, error);
+    return null;
+  }
+}
+
+/**
  * THE BIG HEAL 🛰️
  */
 export async function healProgramacaoMasterAction(idToken: string) {
@@ -301,39 +341,7 @@ export async function healProgramacaoMasterAction(idToken: string) {
     const eventsSnap = await db.collection("Calendar_Events").get();
     
     const results = await Promise.all(eventsSnap.docs.map(async (doc) => {
-      const eventId = doc.id;
-      const eventRef = doc.ref;
-      const attendeesSnap = await eventRef.collection("attendees").get();
-      const presenceCount = attendeesSnap.docs.filter(d => d.data().attendanceStatus === "present").length;
-      
-      let totalRating = 0;
-      let reviewsCount = 0;
-
-      await Promise.all(attendeesSnap.docs.map(async (attDoc) => {
-        const attMatricula = attDoc.data().matricula;
-        if (attMatricula) {
-          const bSnap = await db.collection("User").doc(attMatricula)
-            .collection("User_Bookings")
-            .where("eventId", "==", eventId)
-            .get();
-          
-          bSnap.forEach(b => {
-            const r = b.data().rating;
-            if (r > 0) {
-              totalRating += r;
-              reviewsCount++;
-            }
-          });
-        }
-      }));
-
-      const npsAvg = reviewsCount > 0 ? parseFloat((totalRating / reviewsCount).toFixed(1)) : 0;
-
-      await eventRef.set({
-        metrics: { presenceCount, npsAvg, reviewsCount }
-      }, { merge: true });
-
-      return eventId;
+      return recalculateEventMetrics(doc.id);
     }));
 
     await updateGlobalProgramacaoRegistryAction();
