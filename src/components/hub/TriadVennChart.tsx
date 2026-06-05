@@ -209,38 +209,69 @@ export function TriadVennChart({ data, title, subtitle, mini = false }: TriadVen
             })}
           </g>
 
-          {/* Symmetrical, beautiful labels next to each circle */}
+          {/* Symmetrical, beautiful labels next to each circle (Only names, larger font) */}
           <text
             x={210}
-            y={18}
+            y={12}
             textAnchor="middle"
-            className="font-black uppercase tracking-[0.1em] text-[10px] select-none"
+            className="font-black uppercase tracking-[0.1em] text-[13px] select-none"
             fill="#10b981"
             style={{ textShadow: "0 1px 4px rgba(0,0,0,0.2)" }}
           >
-            Importante {Math.round(getDataItemForCircle("importan").percentage)}%
+            Importante
           </text>
 
           <text
-            x={58}
+            x={44}
             y={199}
             textAnchor="end"
-            className="font-black uppercase tracking-[0.1em] text-[10px] select-none"
+            className="font-black uppercase tracking-[0.1em] text-[13px] select-none"
             fill="#facc15"
             style={{ textShadow: "0 1px 4px rgba(0,0,0,0.2)" }}
           >
-            Urgente {Math.round(getDataItemForCircle("urgen").percentage)}%
+            Urgente
           </text>
 
           <text
-            x={362}
+            x={376}
             y={199}
             textAnchor="start"
-            className="font-black uppercase tracking-[0.1em] text-[10px] select-none"
+            className="font-black uppercase tracking-[0.1em] text-[13px] select-none"
             fill="#ef4444"
             style={{ textShadow: "0 1px 4px rgba(0,0,0,0.2)" }}
           >
-            Circunstancial {Math.round(getDataItemForCircle("circun").percentage)}%
+            Circunstancial
+          </text>
+
+          {/* Large percentage values rendered inside each circle */}
+          <text
+            x={210}
+            y={122}
+            textAnchor="middle"
+            className="font-black tracking-tight text-[21px] fill-white pointer-events-none select-none"
+            style={{ textShadow: "0 1.5px 5px rgba(0,0,0,0.75)" }}
+          >
+            {Math.round(getDataItemForCircle("importan").percentage)}%
+          </text>
+
+          <text
+            x={162}
+            y={202}
+            textAnchor="middle"
+            className="font-black tracking-tight text-[21px] fill-white pointer-events-none select-none"
+            style={{ textShadow: "0 1.5px 5px rgba(0,0,0,0.75)" }}
+          >
+            {Math.round(getDataItemForCircle("urgen").percentage)}%
+          </text>
+
+          <text
+            x={258}
+            y={202}
+            textAnchor="middle"
+            className="font-black tracking-tight text-[21px] fill-white pointer-events-none select-none"
+            style={{ textShadow: "0 1.5px 5px rgba(0,0,0,0.75)" }}
+          >
+            {Math.round(getDataItemForCircle("circun").percentage)}%
           </text>
         </svg>
 
