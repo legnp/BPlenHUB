@@ -397,7 +397,7 @@ export default function GestaoCarreiraPage() {
           </p>
         </div>
         <Link 
-          href="/hub"
+          href="/hub/membro"
           className="px-6 py-3 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-[var(--input-bg)]/80 text-[var(--text-primary)] transition-all flex items-center gap-2"
         >
           <ArrowLeft size={14} /> Voltar ao Painel Principal
@@ -420,7 +420,7 @@ export default function GestaoCarreiraPage() {
         <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-[var(--border-primary)]/40 pb-6">
           <div className="space-y-4">
             <Link 
-              href="/hub"
+              href="/hub/membro"
               className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors group"
             >
               <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
