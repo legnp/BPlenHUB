@@ -378,7 +378,7 @@ export function JourneyNav({ stages, currentStepId, stepStatusMap, getStageTelem
                   initial={{ opacity: 0, scale: 0.95, y: 10 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                  className="relative bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-[3rem] p-10 max-w-lg w-full shadow-[0_32px_64px_rgba(0,0,0,0.5)] z-10"
+                  className="relative bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-[3rem] p-10 max-w-lg w-full max-h-[90vh] overflow-y-auto custom-scrollbar shadow-[0_32px_64px_rgba(0,0,0,0.5)] z-10"
                >
                   <button 
                      onClick={() => setDetailModalOpen(null)}
