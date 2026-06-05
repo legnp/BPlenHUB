@@ -70,6 +70,21 @@ export async function getDevolutivaUserData(
 
     const userData = userSnap.data() || {};
 
+    // Autossincronização do UID (Soberania de Identidade 🧬)
+    let resolvedUid = userData.uid || "";
+    if (!resolvedUid) {
+      const authMapQuery = await db.collection("_AuthMap")
+        .where("matricula", "==", matricula)
+        .limit(1)
+        .get();
+
+      if (!authMapQuery.empty) {
+        resolvedUid = authMapQuery.docs[0].id;
+        await userDocRef.update({ uid: resolvedUid });
+        userData.uid = resolvedUid;
+      }
+    }
+
     // 3. Buscar progresso da jornada
     const journeyRef = db.doc(`User/${matricula}/User_JourneyMap/progress`);
     const journeySnap = await journeyRef.get();

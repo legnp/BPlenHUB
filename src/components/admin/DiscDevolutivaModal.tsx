@@ -92,6 +92,7 @@ export function DiscDevolutivaModal({ user, onClose, onSuccess }: DiscDevolutiva
            <FormsEngine 
              config={devolutivaDiscFormConfig} 
              userUid={user.uid || ""} 
+             matricula={user.matricula}
              customSubmit={handleCustomSubmit}
            />
         </div>

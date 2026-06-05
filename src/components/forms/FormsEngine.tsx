@@ -20,6 +20,7 @@ import { GLOBAL_COUNTRIES } from "@/utils/locations";
 interface FormsEngineProps {
   config: FormConfig;
   userUid: string;
+  matricula?: string;
   onComplete?: (matricula: string) => void;
   customSubmit?: (responses: FormResponse) => Promise<void>;
   isPreview?: boolean;
@@ -31,27 +32,37 @@ interface FormsEngineProps {
  * Evoluído para suportar Seções Operacionais (Forms_Global).
  * Mantém retrocompatibilidade automática com o modelo de 'steps'.
  */
-export function FormsEngine({ config, userUid, onComplete, customSubmit, isPreview, initialResponses }: FormsEngineProps) {
+export function FormsEngine({ config, userUid, matricula: explicitMatricula, onComplete, customSubmit, isPreview, initialResponses }: FormsEngineProps) {
   const { user, nickname } = useAuthContext();
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
   const [responses, setResponses] = useState<FormResponse>(initialResponses || {});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [matricula, setMatricula] = useState<string>("");
+  const [matricula, setMatricula] = useState<string>(explicitMatricula || "");
   const [isCEPChecking, setIsCEPChecking] = useState(false);
 
   React.useEffect(() => {
     async function initForm() {
+      if (explicitMatricula) {
+        setMatricula(explicitMatricula);
+        setResponses(prev => ({
+          ...prev,
+          matricula: explicitMatricula
+        }));
+      }
+
       if (userUid && !isPreview) {
         const mat = await resolveUserIdentity(config.id, {}, userUid);
-        setMatricula(mat);
+        if (!explicitMatricula) {
+          setMatricula(mat);
+        }
         
         // Injeção de Dados de Perfil (Pre-fill Inteligente 🧠)
         setResponses(prev => ({
           ...prev,
           email: user?.email || prev.email,
           user_name: user?.displayName || prev.user_name,
-          matricula: mat || prev.matricula
+          matricula: explicitMatricula || mat || prev.matricula
         }));
       } else if (isPreview) {
         // Dados Mock para Preview
@@ -64,7 +75,7 @@ export function FormsEngine({ config, userUid, onComplete, customSubmit, isPrevi
       }
     }
     initForm();
-  }, [userUid, config.id, user]);
+  }, [userUid, config.id, user, explicitMatricula, isPreview]);
 
   // Efeito de Busca de CEP Automática (ViaCEP 🛰️)
   React.useEffect(() => {
