@@ -35,6 +35,35 @@ export async function closeEventAction(
       postEventUpdatedBy: data.updatedBy
     }, { merge: true });
 
+    // Se houver arquivo de ata, replicar automaticamente para o histórico de Atas de todos os participantes
+    if (data.meetingMinutesFile && data.meetingMinutesFile.url) {
+      const eventSnap = await eventRef.get();
+      const eventData = eventSnap.data() || {};
+      const eventSummary = eventData.summary || "Sessão de Mentoria";
+      const eventStart = eventData.start || "";
+
+      const attendeesSnap = await eventRef.collection("attendees").get();
+      if (!attendeesSnap.empty) {
+        const batch = db.batch();
+        attendeesSnap.docs.forEach((doc) => {
+          const attData = doc.data();
+          const attendeeMatricula = attData.matricula;
+          if (attendeeMatricula && attendeeMatricula !== "PENDING") {
+            const ataId = `booking-${eventId}-ata`;
+            const ataRef = db.collection("User").doc(attendeeMatricula).collection("Atas").doc(ataId);
+            batch.set(ataRef, {
+              title: `Ata de Reunião - ${eventSummary}`,
+              meetingDate: eventStart ? eventStart.substring(0, 10) : new Date().toISOString().substring(0, 10),
+              fileUrl: data.meetingMinutesFile!.url,
+              contentSummary: data.publicGeneralComment || "Ata de mentoria consolidada.",
+              createdAt: data.meetingMinutesFile!.uploadedAt || new Date().toISOString()
+            }, { merge: true });
+          }
+        });
+        await batch.commit();
+      }
+    }
+
     await updateGlobalProgramacaoRegistryAction();
     return { success: true };
   } catch (error) {
@@ -109,6 +138,69 @@ export async function closeAttendeeAction(
           participantDocs: data.participantDocs,
           postEventUpdatedAt: admin.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
+      }
+
+      // -- AUTOMACAO GESTAO DE CARREIRA (ESPELHAMENTO RETROATIVO E DIRETO) --
+      if (matricula && matricula !== "PENDING") {
+        // 1. Replicar Feedback Qualitativo
+        if (data.participantFeedback && data.participantFeedback.trim()) {
+          const feedbackId = `booking-${eventId}`;
+          const feedbackRef = db.collection("User").doc(matricula).collection("Feedbacks").doc(feedbackId);
+          transaction.set(feedbackRef, {
+            title: `Feedback - ${eventData.summary || "Sessão de Mentoria"}`,
+            content: data.participantFeedback,
+            author: data.checkedBy || "Consultor BPlen",
+            createdAt: new Date().toISOString()
+          }, { merge: true });
+        }
+
+        // 2. Replicar Tarefas do Backlog (Quebrar por linha e limpar marcadores)
+        if (data.participantTasks && data.participantTasks.trim()) {
+          const taskLines = data.participantTasks
+            .split(/\r?\n/)
+            .map(line => line.replace(/^[\s*\-\d\.)]+/, "").trim())
+            .filter(line => line.length > 0);
+
+          taskLines.forEach((taskTitle, idx) => {
+            const taskId = `booking-${eventId}-task-${idx}`;
+            const taskRef = db.collection("User").doc(matricula).collection("Career_Backlog").doc(taskId);
+            transaction.set(taskRef, {
+              title: taskTitle,
+              status: "Sprint atual",
+              createdAt: new Date().toISOString(),
+              statusHistory: [{ status: "Sprint atual", changedAt: new Date().toISOString() }],
+              comments: []
+            }, { merge: true });
+          });
+        }
+
+        // 3. Replicar Documentos Compartilhados
+        if (data.participantDocs && data.participantDocs.length > 0) {
+          data.participantDocs.forEach((doc, idx) => {
+            const docId = `booking-${eventId}-doc-${idx}`;
+            const docRef = db.collection("User").doc(matricula).collection("Shared_Documents").doc(docId);
+            transaction.set(docRef, {
+              title: doc.fileName || `Documento - ${eventData.summary || "Mentoria"}`,
+              fileUrl: doc.url,
+              fileName: doc.fileName || "arquivo.pdf",
+              category: "Relatório",
+              createdAt: doc.uploadedAt || new Date().toISOString()
+            }, { merge: true });
+          });
+        }
+
+        // 4. Replicar Ata Geral do Evento (se houver)
+        if (eventData.meetingMinutesFile && eventData.meetingMinutesFile.url) {
+          const ataId = `booking-${eventId}-ata`;
+          const ataRef = db.collection("User").doc(matricula).collection("Atas").doc(ataId);
+          transaction.set(ataRef, {
+            title: `Ata de Reunião - ${eventData.summary || "Sessão"}`,
+            meetingDate: eventData.start ? eventData.start.substring(0, 10) : new Date().toISOString().substring(0, 10),
+            fileUrl: eventData.meetingMinutesFile.url,
+            contentSummary: eventData.publicGeneralComment || "Ata de mentoria consolidada.",
+            createdAt: eventData.meetingMinutesFile.uploadedAt || new Date().toISOString()
+          }, { merge: true });
+        }
       }
     });
 

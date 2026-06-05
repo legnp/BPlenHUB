@@ -117,7 +117,7 @@ export async function getCareerPlanningDataAction(
     const { db } = await checkAuthAndGetDb(matricula, idToken);
 
     // Buscar dados em paralelo para otimizar tempo de carregamento (Lazy/Parallel loading)
-    const [backlogSnap, feedbacksSnap, atasSnap, docsSnap, objectivesSnap, accessSnap] = await Promise.all([
+    const snaps = await Promise.all([
       db.collection(`User/${matricula}/Career_Backlog`).get(),
       db.collection(`User/${matricula}/Feedbacks`).get(),
       db.collection(`User/${matricula}/Atas`).get(),
@@ -125,6 +125,113 @@ export async function getCareerPlanningDataAction(
       db.collection(`User/${matricula}/Career_Objectives`).get(),
       db.doc(`User/${matricula}/User_Permissions/access`).get()
     ]);
+
+    const backlogSnap = snaps[0];
+    const feedbacksSnap = snaps[1];
+    const atasSnap = snaps[2];
+    const docsSnap = snaps[3];
+    const objectivesSnap = snaps[4];
+    const accessSnap = snaps[5];
+
+    const accessData = accessSnap.exists ? accessSnap.data() || {} : {};
+    const isCareerPlanningReleased = accessData.services?.career_planning === true;
+    const legacySynced = accessData.legacySynced === true;
+
+    // Se o plano de carreira está liberado mas nunca foi sincronizado retroativamente, rodar o resgate!
+    if (isCareerPlanningReleased && !legacySynced) {
+      console.log(`🧬 [Career Retroactive Sync] Sincronizando dados legados para matrícula ${matricula}...`);
+      const bookingsSnap = await db.collection(`User/${matricula}/User_Bookings`).get();
+      
+      const accessRef = db.doc(`User/${matricula}/User_Permissions/access`);
+
+      if (!bookingsSnap.empty) {
+        const batch = db.batch();
+        let operationsCount = 0;
+
+        for (const doc of bookingsSnap.docs) {
+          const bookingData = doc.data();
+          const eventId = bookingData.eventId || doc.id;
+
+          // 1. Feedback qualitativo legado
+          if (bookingData.participantFeedback && bookingData.participantFeedback.trim()) {
+            const feedbackId = `booking-${eventId}`;
+            const feedbackRef = db.collection("User").doc(matricula).collection("Feedbacks").doc(feedbackId);
+            batch.set(feedbackRef, {
+              title: `Feedback - Sessão de Mentoria`,
+              content: bookingData.participantFeedback,
+              author: "Consultor BPlen",
+              createdAt: bookingData.postEventUpdatedAt ? (bookingData.postEventUpdatedAt.toDate ? bookingData.postEventUpdatedAt.toDate().toISOString() : new Date().toISOString()) : new Date().toISOString()
+            }, { merge: true });
+            operationsCount++;
+          }
+
+          // 2. Tarefas do backlog legadas
+          if (bookingData.participantTasks && bookingData.participantTasks.trim()) {
+            const taskLines = bookingData.participantTasks
+              .split(/\r?\n/)
+              .map((line: string) => line.replace(/^[\s*\-\d\.)]+/, "").trim())
+              .filter((line: string) => line.length > 0);
+
+            taskLines.forEach((taskTitle: string, idx: number) => {
+              const taskId = `booking-${eventId}-task-${idx}`;
+              const taskRef = db.collection("User").doc(matricula).collection("Career_Backlog").doc(taskId);
+              batch.set(taskRef, {
+                title: taskTitle,
+                status: "Sprint atual",
+                createdAt: bookingData.postEventUpdatedAt ? (bookingData.postEventUpdatedAt.toDate ? bookingData.postEventUpdatedAt.toDate().toISOString() : new Date().toISOString()) : new Date().toISOString(),
+                statusHistory: [{ 
+                  status: "Sprint atual", 
+                  changedAt: bookingData.postEventUpdatedAt ? (bookingData.postEventUpdatedAt.toDate ? bookingData.postEventUpdatedAt.toDate().toISOString() : new Date().toISOString()) : new Date().toISOString() 
+                }],
+                comments: []
+              }, { merge: true });
+              operationsCount++;
+            });
+          }
+
+          // 3. Documentos compartilhados legados
+          if (bookingData.participantDocs && Array.isArray(bookingData.participantDocs) && bookingData.participantDocs.length > 0) {
+            bookingData.participantDocs.forEach((docItem: any, idx: number) => {
+              const docId = `booking-${eventId}-doc-${idx}`;
+              const docRef = db.collection("User").doc(matricula).collection("Shared_Documents").doc(docId);
+              batch.set(docRef, {
+                title: docItem.fileName || `Documento - Mentoria`,
+                fileUrl: docItem.url,
+                fileName: docItem.fileName || "arquivo.pdf",
+                category: "Relatório",
+                createdAt: docItem.uploadedAt || new Date().toISOString()
+              }, { merge: true });
+              operationsCount++;
+            });
+          }
+
+          // 4. Atas de reuniões legadas
+          if (bookingData.meetingMinutesFile && bookingData.meetingMinutesFile.url) {
+            const ataId = `booking-${eventId}-ata`;
+            const ataRef = db.collection("User").doc(matricula).collection("Atas").doc(ataId);
+            batch.set(ataRef, {
+              title: `Ata de Reunião`,
+              meetingDate: bookingData.postEventUpdatedAt ? (bookingData.postEventUpdatedAt.toDate ? bookingData.postEventUpdatedAt.toDate().toISOString().substring(0, 10) : new Date().toISOString().substring(0, 10)) : new Date().toISOString().substring(0, 10),
+              fileUrl: bookingData.meetingMinutesFile.url,
+              contentSummary: bookingData.publicGeneralComment || "Ata de mentoria retroativa.",
+              createdAt: bookingData.meetingMinutesFile.uploadedAt || new Date().toISOString()
+            }, { merge: true });
+            operationsCount++;
+          }
+        }
+
+        batch.set(accessRef, { legacySynced: true }, { merge: true });
+
+        if (operationsCount > 0) {
+          await batch.commit();
+          console.log(`🧬 [Career Retroactive Sync] Sincronização retroativa concluída com sucesso para matrícula ${matricula}. ${operationsCount} registros adicionados.`);
+          // Recarregar os dados de forma limpa usando recursão
+          return getCareerPlanningDataAction(matricula, idToken);
+        }
+      } else {
+        await accessRef.set({ legacySynced: true }, { merge: true });
+      }
+    }
 
     const backlog: CareerTask[] = [];
     backlogSnap.forEach((doc) => {
@@ -197,8 +304,7 @@ export async function getCareerPlanningDataAction(
     });
     objectives.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
-    const accessData = accessSnap.exists ? accessSnap.data() || {} : {};
-    const isCareerPlanningReleased = accessData.services?.career_planning === true;
+
 
     return {
       success: true,

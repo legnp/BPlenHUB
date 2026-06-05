@@ -157,7 +157,7 @@ export default function MemberDashboardView() {
     async function loadCareer() {
       setLoadingCareer(true);
       try {
-        const res = await getCareerPlanningDataAction(matricula);
+        const res = await getCareerPlanningDataAction(matricula!);
         if (res.success) setCareerData(res.data);
       } catch (err) {
         console.error("Erro ao carregar dados de carreira no dashboard:", err);
