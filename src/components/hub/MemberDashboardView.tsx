@@ -183,11 +183,11 @@ export default function MemberDashboardView() {
   ] : [];
 
   const reconhecimentoData = reconhecimentoResult?.scores ? [
-    { label: 'Afi', percentage: reconhecimentoResult.scores.afirmacao?.percentage || 0, color: '#ef4444' },
-    { label: 'Tem', percentage: reconhecimentoResult.scores.tempo?.percentage || 0, color: '#3b82f6' },
-    { label: 'Pre', percentage: reconhecimentoResult.scores.presentes?.percentage || 0, color: '#10b981' },
-    { label: 'Ser', percentage: reconhecimentoResult.scores.servico?.percentage || 0, color: '#f59e0b' },
-    { label: 'Toq', percentage: reconhecimentoResult.scores.toque?.percentage || 0, color: '#ec4899' },
+    { label: 'Palavras de Afirmação', percentage: reconhecimentoResult.scores.afirmacao?.percentage || 0, color: '#ef4444' },
+    { label: 'Tempo de Qualidade', percentage: reconhecimentoResult.scores.tempo?.percentage || 0, color: '#3b82f6' },
+    { label: 'Receber Presentes', percentage: reconhecimentoResult.scores.presentes?.percentage || 0, color: '#10b981' },
+    { label: 'Atos de Serviço', percentage: reconhecimentoResult.scores.servico?.percentage || 0, color: '#f59e0b' },
+    { label: 'Toque Físico', percentage: reconhecimentoResult.scores.toque?.percentage || 0, color: '#ec4899' },
   ] : [];
 
   const discData = discResult?.scores ? [

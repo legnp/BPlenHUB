@@ -88,15 +88,6 @@ export function StackedBarChart({ data }: StackedBarChartProps) {
         </div>
       </div>
 
-      {/* Indicador Central de Total (Opcional, similar ao Donut) */}
-      <div className="flex items-center justify-between px-2">
-         <span className="text-[10px] font-black tracking-tighter text-[var(--accent-start)]">
-            Composição de Reconhecimento
-         </span>
-         <span className="text-[10px] font-bold text-[var(--text-muted)] opacity-60">
-            {Math.round(total)}% Mapeado
-         </span>
-      </div>
     </div>
   );
 }
