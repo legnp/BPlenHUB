@@ -151,6 +151,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await clearSessionCookie();
       await signOut(auth);
+      window.location.href = "https://bplen.com";
     } catch (error) {
       console.error("❌ [AuthContext] Erro ao deslogar:", error);
     }
