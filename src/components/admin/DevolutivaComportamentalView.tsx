@@ -20,12 +20,23 @@ import {
   FileText,
   UserCheck,
   ChevronRight,
-  HelpCircle
+  HelpCircle,
+  Briefcase,
+  Upload,
+  MessageSquare,
+  Plus
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getDevolutivaUserData, DevolutivaUserData } from "@/actions/admin-devolutiva";
 import { getAdminUsersList, updateUserPermissions } from "@/actions/users-admin";
 import { toggleAssessmentRelease } from "@/actions/admin-assessments";
+import { 
+  getCareerPlanningDataAction, 
+  toggleCareerPlanningAccessAction,
+  addCareerAtaAction,
+  addCareerSharedDocumentAction,
+  addCareerFeedbackAction
+} from "@/actions/career-module";
 import { DiscDevolutivaModal } from "@/components/admin/DiscDevolutivaModal";
 import { DiscChart } from "@/components/hub/DiscChart";
 import { TriadDonutChart } from "@/components/hub/TriadDonutChart";
@@ -62,6 +73,31 @@ export function DevolutivaComportamentalView({
   // Accordion active keys
   const [expandedAccordions, setExpandedAccordions] = useState<Record<string, boolean>>({});
 
+  // Career Module states
+  const [careerData, setCareerData] = useState<any>(null);
+  const [loadingCareer, setLoadingCareer] = useState<boolean>(false);
+  const [togglingAccess, setTogglingAccess] = useState<boolean>(false);
+  
+  // Forms inputs
+  const [ataTitle, setAtaTitle] = useState<string>("");
+  const [ataDate, setAtaDate] = useState<string>("");
+  const [ataUrl, setAtaUrl] = useState<string>("");
+  const [ataSummary, setAtaSummary] = useState<string>("");
+  const [submittingAta, setSubmittingAta] = useState<boolean>(false);
+
+  const [docTitle, setDocTitle] = useState<string>("");
+  const [docUrl, setDocUrl] = useState<string>("");
+  const [docName, setDocName] = useState<string>("");
+  const [docCategory, setDocCategory] = useState<"Plano de Carreira" | "Relatório" | "Outros">("Outros");
+  const [submittingDoc, setSubmittingDoc] = useState<boolean>(false);
+
+  const [fbTitle, setFbTitle] = useState<string>("");
+  const [fbContent, setFbContent] = useState<string>("");
+  const [fbAuthor, setFbAuthor] = useState<string>("");
+  const [submittingFb, setSubmittingFb] = useState<boolean>(false);
+
+  const [careerTab, setCareerTab] = useState<"preview" | "ata" | "doc" | "feedback">("preview");
+
   // Load complete list of users if selector is not hidden
   useEffect(() => {
     if (!hideUserSelector) {
@@ -96,6 +132,159 @@ export function DevolutivaComportamentalView({
       setUserData(null);
     }
   }, [selectedMatricula]);
+
+  // Load career planning details when selectedMatricula changes
+  useEffect(() => {
+    if (selectedMatricula) {
+      setLoadingCareer(true);
+      getCareerPlanningDataAction(selectedMatricula)
+        .then((res) => {
+          if (res.success && res.data) {
+            setCareerData(res.data);
+          } else {
+            setCareerData(null);
+          }
+        })
+        .catch((err) => console.error("Erro ao carregar dados de carreira:", err))
+        .finally(() => setLoadingCareer(false));
+    } else {
+      setCareerData(null);
+    }
+  }, [selectedMatricula]);
+
+  const handleToggleCareerAccess = async () => {
+    if (!selectedMatricula || togglingAccess) return;
+    setTogglingAccess(true);
+    const currentStatus = careerData?.isCareerPlanningReleased || false;
+    try {
+      const res = await toggleCareerPlanningAccessAction(selectedMatricula, currentStatus);
+      if (res.success) {
+        setCareerData((prev: any) => ({
+          ...prev,
+          isCareerPlanningReleased: !currentStatus
+        }));
+      } else {
+        alert(res.error || "Erro ao atualizar permissao de carreira.");
+      }
+    } catch (err: any) {
+      console.error("Erro ao alternar acesso:", err);
+      alert("Erro ao salvar alteracao no servidor.");
+    } finally {
+      setTogglingAccess(false);
+    }
+  };
+
+  const handleSaveAta = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedMatricula || submittingAta) return;
+    if (!ataTitle.trim() || !ataDate || !ataUrl.trim()) {
+      alert("Titulo, data de reuniao e link do Google Drive sao obrigatorios.");
+      return;
+    }
+    setSubmittingAta(true);
+    try {
+      const res = await addCareerAtaAction(
+        selectedMatricula,
+        ataTitle,
+        ataDate,
+        ataUrl,
+        ataSummary
+      );
+      if (res.success && res.ata) {
+        alert("Ata de reuniao registrada com sucesso.");
+        // Refresh career data
+        const refresh = await getCareerPlanningDataAction(selectedMatricula);
+        if (refresh.success && refresh.data) {
+          setCareerData(refresh.data);
+        }
+        // Clear inputs
+        setAtaTitle("");
+        setAtaDate("");
+        setAtaUrl("");
+        setAtaSummary("");
+      } else {
+        alert(res.error || "Falha ao registrar ata.");
+      }
+    } catch (err: any) {
+      alert("Erro ao salvar ata: " + (err.message || "Erro desconhecido"));
+    } finally {
+      setSubmittingAta(false);
+    }
+  };
+
+  const handleSaveDoc = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedMatricula || submittingDoc) return;
+    if (!docTitle.trim() || !docUrl.trim() || !docName.trim()) {
+      alert("Titulo, link do arquivo e nome do arquivo sao obrigatorios.");
+      return;
+    }
+    setSubmittingDoc(true);
+    try {
+      const res = await addCareerSharedDocumentAction(
+        selectedMatricula,
+        docTitle,
+        docUrl,
+        docName,
+        docCategory
+      );
+      if (res.success && res.doc) {
+        alert("Documento compartilhado registrado com sucesso.");
+        // Refresh career data
+        const refresh = await getCareerPlanningDataAction(selectedMatricula);
+        if (refresh.success && refresh.data) {
+          setCareerData(refresh.data);
+        }
+        // Clear inputs
+        setDocTitle("");
+        setDocUrl("");
+        setDocName("");
+        setDocCategory("Outros");
+      } else {
+        alert(res.error || "Falha ao registrar documento.");
+      }
+    } catch (err: any) {
+      alert("Erro ao salvar documento: " + (err.message || "Erro desconhecido"));
+    } finally {
+      setSubmittingDoc(false);
+    }
+  };
+
+  const handleSaveFeedback = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedMatricula || submittingFb) return;
+    if (!fbTitle.trim() || !fbContent.trim()) {
+      alert("Titulo e conteudo sao obrigatorios.");
+      return;
+    }
+    setSubmittingFb(true);
+    try {
+      const res = await addCareerFeedbackAction(
+        selectedMatricula,
+        fbTitle,
+        fbContent,
+        fbAuthor
+      );
+      if (res.success && res.feedback) {
+        alert("Feedback registrado com sucesso.");
+        // Refresh career data
+        const refresh = await getCareerPlanningDataAction(selectedMatricula);
+        if (refresh.success && refresh.data) {
+          setCareerData(refresh.data);
+        }
+        // Clear inputs
+        setFbTitle("");
+        setFbContent("");
+        setFbAuthor("");
+      } else {
+        alert(res.error || "Falha ao registrar feedback.");
+      }
+    } catch (err: any) {
+      alert("Erro ao salvar feedback: " + (err.message || "Erro desconhecido"));
+    } finally {
+      setSubmittingFb(false);
+    }
+  };
 
   const handleToggleRelease = async (resultId: string, currentStatus: boolean) => {
     if (!selectedMatricula) return;
@@ -668,6 +857,319 @@ export function DevolutivaComportamentalView({
 
             {/* DIREITA: HISTÓRICO DE RESPOSTAS EM ACCORDIONS */}
             <div className="lg:col-span-7 space-y-6">
+              
+              {/* ACCORDION: MODULO DE GESTÃO DE CARREIRA */}
+              <div className="p-6 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-[3rem] space-y-6 shadow-sm">
+                {/* Header Accordion */}
+                <div className="flex items-center justify-between border-b border-[var(--border-primary)]/40 pb-5">
+                  <div className="flex items-center gap-4 text-left">
+                    <div className="p-3 bg-[var(--accent-start)]/10 rounded-2xl border border-[var(--accent-start)]/20 text-[var(--accent-start)]">
+                      <Briefcase size={18} />
+                    </div>
+                    <div className="flex flex-col">
+                      <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)]">Gestão de Carreira</h3>
+                      <p className="text-xs font-black text-[var(--text-primary)] tracking-tight mt-0.5">Gestão e Desenvolvimento da sua Carreira Profissional</p>
+                    </div>
+                  </div>
+                  
+                  {/* Switch button */}
+                  <button
+                    onClick={handleToggleCareerAccess}
+                    disabled={togglingAccess || loadingCareer}
+                    className={`px-4 py-2 rounded-2xl text-[8px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
+                      careerData?.isCareerPlanningReleased
+                        ? "bg-green-500/10 text-green-500 border border-green-500/20"
+                        : "bg-[var(--bg-primary)] text-[var(--text-muted)] border border-[var(--border-primary)]"
+                    }`}
+                  >
+                    {togglingAccess ? (
+                      <Loader2 size={12} className="animate-spin" />
+                    ) : careerData?.isCareerPlanningReleased ? (
+                      <Unlock size={12} />
+                    ) : (
+                      <Lock size={12} />
+                    )}
+                    <span>{careerData?.isCareerPlanningReleased ? "Módulo Ativo" : "Módulo Desativado"}</span>
+                  </button>
+                </div>
+
+                {loadingCareer ? (
+                  <div className="py-12 flex justify-center items-center gap-2 text-xs text-[var(--text-muted)] font-bold uppercase tracking-widest">
+                    <Loader2 size={14} className="animate-spin text-[var(--accent-start)]" /> Carregando módulo de carreira...
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {/* Navigation Tabs */}
+                    <div className="flex gap-2 p-1.5 bg-[var(--bg-primary)]/40 rounded-2xl border border-[var(--border-primary)]/50">
+                      {(["preview", "ata", "doc", "feedback"] as const).map((tab) => (
+                        <button
+                          key={tab}
+                          onClick={() => setCareerTab(tab)}
+                          className={`flex-1 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all ${
+                            careerTab === tab
+                              ? "bg-[var(--accent-start)] text-white shadow-md shadow-[var(--accent-start)]/15"
+                              : "hover:bg-[var(--input-bg)]/30 text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                          }`}
+                        >
+                          {tab === "preview" && "Visualização"}
+                          {tab === "ata" && "Registrar Ata"}
+                          {tab === "doc" && "Enviar Documento"}
+                          {tab === "feedback" && "Lançar Feedback"}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Tab 1: PREVIEW */}
+                    {careerTab === "preview" && (
+                      <div className="space-y-5 text-left">
+                        {/* Summary metrics */}
+                        <div className="grid grid-cols-3 gap-4">
+                          <div className="p-4 bg-[var(--bg-primary)]/40 border border-[var(--border-primary)]/60 rounded-2xl">
+                            <span className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)]">Tarefas Backlog</span>
+                            <p className="text-lg font-black text-[var(--text-primary)] mt-1">
+                              {careerData?.backlog?.length || 0}
+                            </p>
+                          </div>
+                          <div className="p-4 bg-[var(--bg-primary)]/40 border border-[var(--border-primary)]/60 rounded-2xl">
+                            <span className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)]">Atas de Reunião</span>
+                            <p className="text-lg font-black text-[var(--text-primary)] mt-1">
+                              {careerData?.atas?.length || 0}
+                            </p>
+                          </div>
+                          <div className="p-4 bg-[var(--bg-primary)]/40 border border-[var(--border-primary)]/60 rounded-2xl">
+                            <span className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)]">Feedbacks</span>
+                            <p className="text-lg font-black text-[var(--text-primary)] mt-1">
+                              {careerData?.feedbacks?.length || 0}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Checklist preview */}
+                        <div className="p-5 bg-[var(--bg-primary)]/20 border border-[var(--border-primary)]/60 rounded-2xl space-y-3">
+                          <span className="text-[9px] font-black uppercase tracking-widest text-[var(--accent-start)]">Progresso da Jornada</span>
+                          {userData?.journey ? (
+                            <div className="space-y-2">
+                              <div className="flex justify-between text-[10px] font-bold text-[var(--text-primary)]">
+                                <span>{userData.journey.currentPhase}</span>
+                                <span>{userData.journey.overallProgress}%</span>
+                              </div>
+                              <div className="w-full bg-[var(--border-primary)]/40 h-2 rounded-full overflow-hidden">
+                                <div 
+                                  className="bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] h-full transition-all duration-500"
+                                  style={{ width: `${userData.journey.overallProgress}%` }}
+                                />
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase">Sem jornada de membro associada</p>
+                          )}
+                        </div>
+
+                        {/* Recent tasks */}
+                        <div className="space-y-3">
+                          <span className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)]">Backlog de Carreira recente</span>
+                          {careerData?.backlog && careerData.backlog.length > 0 ? (
+                            <div className="space-y-2 max-h-[220px] overflow-y-auto custom-scrollbar pr-1">
+                              {careerData.backlog.slice(0, 5).map((task: any) => (
+                                <div key={task.id} className="p-3 bg-[var(--bg-primary)]/40 border border-[var(--border-primary)]/40 rounded-xl flex items-center justify-between">
+                                  <div className="flex flex-col gap-0.5 text-left max-w-[70%]">
+                                    <span className="text-[10px] font-bold text-[var(--text-primary)] truncate">{task.title}</span>
+                                    <span className="text-[8px] font-bold text-[var(--text-muted)] uppercase tracking-wider">{task.createdAt ? new Date(task.createdAt).toLocaleDateString("pt-BR") : "—"}</span>
+                                  </div>
+                                  <span className={`px-2 py-0.5 rounded-md text-[8px] font-bold uppercase tracking-wider ${
+                                    task.status === "Concluída" 
+                                      ? "bg-green-500/15 text-green-400" 
+                                      : task.status === "Sprint atual"
+                                      ? "bg-blue-500/15 text-blue-400"
+                                      : "bg-[var(--border-primary)]/60 text-[var(--text-muted)]"
+                                  }`}>
+                                    {task.status}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="py-6 text-center text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-50 border border-dashed border-[var(--border-primary)]/60 rounded-2xl">
+                              Nenhuma tarefa registrada no backlog
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Tab 2: REGISTRAR ATA */}
+                    {careerTab === "ata" && (
+                      <form onSubmit={handleSaveAta} className="space-y-4 text-left">
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)]">Título da Reunião</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="Alinhamento Estratégico de Carreira"
+                            value={ataTitle}
+                            onChange={(e) => setAtaTitle(e.target.value)}
+                            className="w-full bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-xl px-4 py-3 text-xs text-[var(--text-primary)] focus:border-[var(--accent-start)]/50 outline-none transition-all placeholder:opacity-30"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-1">
+                            <label className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)]">Data da Reunião</label>
+                            <input
+                              type="date"
+                              required
+                              value={ataDate}
+                              onChange={(e) => setAtaDate(e.target.value)}
+                              className="w-full bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-xl px-4 py-3 text-xs text-[var(--text-primary)] focus:border-[var(--accent-start)]/50 outline-none transition-all placeholder:opacity-30"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)]">Link PDF Google Drive</label>
+                            <input
+                              type="url"
+                              required
+                              placeholder="https://drive.google.com/file/d/..."
+                              value={ataUrl}
+                              onChange={(e) => setAtaUrl(e.target.value)}
+                              className="w-full bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-xl px-4 py-3 text-xs text-[var(--text-primary)] focus:border-[var(--accent-start)]/50 outline-none transition-all placeholder:opacity-30"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)]">Resumo da Reunião (Opcional)</label>
+                          <textarea
+                            rows={3}
+                            placeholder="Alinhamento sobre os próximos passos profissionais..."
+                            value={ataSummary}
+                            onChange={(e) => setAtaSummary(e.target.value)}
+                            className="w-full bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-xl px-4 py-3 text-xs text-[var(--text-primary)] focus:border-[var(--accent-start)]/50 outline-none transition-all placeholder:opacity-30 resize-none"
+                          />
+                        </div>
+
+                        <button
+                          type="submit"
+                          disabled={submittingAta}
+                          className="w-full py-3.5 bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] text-white rounded-2xl text-[10px] font-bold uppercase tracking-[0.2em] shadow-lg shadow-[var(--accent-start)]/15 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2"
+                        >
+                          {submittingAta ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />} Salvar Ata de Reunião
+                        </button>
+                      </form>
+                    )}
+
+                    {/* Tab 3: ENVIAR DOCUMENTO */}
+                    {careerTab === "doc" && (
+                      <form onSubmit={handleSaveDoc} className="space-y-4 text-left">
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)]">Título do Documento</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="Plano de Desenvolvimento de Carreira"
+                            value={docTitle}
+                            onChange={(e) => setDocTitle(e.target.value)}
+                            className="w-full bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-xl px-4 py-3 text-xs text-[var(--text-primary)] focus:border-[var(--accent-start)]/50 outline-none transition-all placeholder:opacity-30"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-1">
+                            <label className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)]">Nome do Arquivo</label>
+                            <input
+                              type="text"
+                              required
+                              placeholder="plano-carreira-v1.pdf"
+                              value={docName}
+                              onChange={(e) => setDocName(e.target.value)}
+                              className="w-full bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-xl px-4 py-3 text-xs text-[var(--text-primary)] focus:border-[var(--accent-start)]/50 outline-none transition-all placeholder:opacity-30"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)]">Categoria</label>
+                            <select
+                              value={docCategory}
+                              onChange={(e) => setDocCategory(e.target.value as any)}
+                              className="w-full bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-xl px-4 py-3 text-xs text-[var(--text-primary)] focus:border-[var(--accent-start)]/50 outline-none transition-all"
+                            >
+                              <option value="Plano de Carreira">Plano de Carreira</option>
+                              <option value="Relatório">Relatório</option>
+                              <option value="Outros">Outros</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)]">Link Google Drive</label>
+                          <input
+                            type="url"
+                            required
+                            placeholder="https://drive.google.com/file/d/..."
+                            value={docUrl}
+                            onChange={(e) => setDocUrl(e.target.value)}
+                            className="w-full bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-xl px-4 py-3 text-xs text-[var(--text-primary)] focus:border-[var(--accent-start)]/50 outline-none transition-all placeholder:opacity-30"
+                          />
+                        </div>
+
+                        <button
+                          type="submit"
+                          disabled={submittingDoc}
+                          className="w-full py-3.5 bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] text-white rounded-2xl text-[10px] font-bold uppercase tracking-[0.2em] shadow-lg shadow-[var(--accent-start)]/15 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2"
+                        >
+                          {submittingDoc ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />} Salvar Documento
+                        </button>
+                      </form>
+                    )}
+
+                    {/* Tab 4: LANÇAR FEEDBACK */}
+                    {careerTab === "feedback" && (
+                      <form onSubmit={handleSaveFeedback} className="space-y-4 text-left">
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)]">Título do Feedback</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="Avaliação e Recomendações de Gestão de Tempo"
+                            value={fbTitle}
+                            onChange={(e) => setFbTitle(e.target.value)}
+                            className="w-full bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-xl px-4 py-3 text-xs text-[var(--text-primary)] focus:border-[var(--accent-start)]/50 outline-none transition-all placeholder:opacity-30"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)]">Autor do Feedback (Consultor)</label>
+                          <input
+                            type="text"
+                            placeholder="Consultor BPlen"
+                            value={fbAuthor}
+                            onChange={(e) => setFbAuthor(e.target.value)}
+                            className="w-full bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-xl px-4 py-3 text-xs text-[var(--text-primary)] focus:border-[var(--accent-start)]/50 outline-none transition-all placeholder:opacity-30"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)]">Conteúdo do Feedback</label>
+                          <textarea
+                            rows={5}
+                            required
+                            placeholder="Com base na sua análise de Gestão de Tempo, identificamos..."
+                            value={fbContent}
+                            onChange={(e) => setFbContent(e.target.value)}
+                            className="w-full bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-xl px-4 py-3 text-xs text-[var(--text-primary)] focus:border-[var(--accent-start)]/50 outline-none transition-all placeholder:opacity-30 resize-none"
+                          />
+                        </div>
+
+                        <button
+                          type="submit"
+                          disabled={submittingFb}
+                          className="w-full py-3.5 bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] text-white rounded-2xl text-[10px] font-bold uppercase tracking-[0.2em] shadow-lg shadow-[var(--accent-start)]/15 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2"
+                        >
+                          {submittingFb ? <Loader2 size={14} className="animate-spin" /> : <MessageSquare size={14} />} Registrar Feedback
+                        </button>
+                      </form>
+                    )}
+                  </div>
+                )}
+              </div>
               
               <div className="p-6 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-[3rem] space-y-6 shadow-sm">
                 

@@ -45,7 +45,7 @@ import AtmosphericLoading from "@/components/shared/AtmosphericLoading";
  * Componente unificado para a nova Área de Membro Raiz.
  */
 export default function MemberDashboardView() {
-  const { user, matricula } = useAuthContext();
+  const { user, matricula, services } = useAuthContext();
   const [gestaoResult, setGestaoResult] = useState<any>(null);
   const [aprendizadoResult, setAprendizadoResult] = useState<any>(null);
   const [reconhecimentoResult, setReconhecimentoResult] = useState<any>(null);
@@ -344,21 +344,47 @@ export default function MemberDashboardView() {
                       </div>
                    </div>
 
-                   {/* Módulo Gestão de Carreira */}
-                   <div id="hub-carreira" className="p-8 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-[3.5rem] space-y-6 shadow-sm opacity-60">
-                      <div className="flex items-center gap-4">
-                         <div className="p-3 bg-pink-500/5 rounded-2xl border border-pink-500/20 text-pink-500">
-                            <Briefcase size={20} />
-                         </div>
-                         <div className="flex flex-col text-left">
-                            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)]">Módulo Complementar</h3>
-                            <p className="text-xs font-black text-[var(--text-primary)] tracking-tight mt-1">Gestão de Carreira</p>
-                         </div>
-                      </div>
-                      <div className="py-14 bg-[var(--input-bg)]/30 border border-dashed border-[var(--border-primary)] rounded-[2.5rem] flex flex-col items-center justify-center text-center">
-                         <p className="text-[9px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)] italic">Em desenvolvimento</p>
-                      </div>
-                   </div>
+                    {/* Módulo Gestão de Carreira */}
+                    {services?.career_planning ? (
+                       <div id="hub-carreira" className="p-8 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-[3.5rem] space-y-6 shadow-sm hover:scale-[1.01] transition-all group duration-300">
+                          <div className="flex items-center gap-4">
+                             <div className="p-3 bg-pink-500/10 rounded-2xl border border-pink-500/20 text-pink-500 group-hover:bg-pink-500/20 transition-all">
+                                <Briefcase size={20} />
+                             </div>
+                             <div className="flex flex-col text-left">
+                                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)]">Módulo Complementar</h3>
+                                <p className="text-xs font-black text-[var(--text-primary)] tracking-tight mt-1">Gestão de Carreira</p>
+                             </div>
+                          </div>
+                          <div className="py-10 bg-gradient-to-br from-pink-500/5 to-transparent border border-[var(--border-primary)] rounded-[2.5rem] flex flex-col items-center justify-center text-center px-6 space-y-4">
+                             <p className="text-xs text-[var(--text-secondary)] font-medium max-w-xs leading-relaxed">
+                                Cockpit de desenvolvimento profissional com metas de mentoria, objetivos, checklists de jornada e atas integradas.
+                             </p>
+                             <Link 
+                                href="/hub/membro/gestao_carreira"
+                                className="px-6 py-3 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-xl text-[9px] font-black uppercase tracking-[0.2em] hover:bg-[var(--text-primary)]/90 transition-all flex items-center gap-2 shadow-md"
+                             >
+                                Acessar Cockpit
+                                <ExternalLink size={10} />
+                             </Link>
+                          </div>
+                       </div>
+                    ) : (
+                       <div id="hub-carreira" className="p-8 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-[3.5rem] space-y-6 shadow-sm opacity-60">
+                          <div className="flex items-center gap-4">
+                             <div className="p-3 bg-pink-500/5 rounded-2xl border border-pink-500/20 text-pink-500">
+                                <Briefcase size={20} />
+                             </div>
+                             <div className="flex flex-col text-left">
+                                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)]">Módulo Complementar</h3>
+                                <p className="text-xs font-black text-[var(--text-primary)] tracking-tight mt-1">Gestão de Carreira</p>
+                             </div>
+                          </div>
+                          <div className="py-14 bg-[var(--input-bg)]/30 border border-dashed border-[var(--border-primary)] rounded-[2.5rem] flex flex-col items-center justify-center text-center">
+                             <p className="text-[9px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)] italic">Em desenvolvimento</p>
+                          </div>
+                       </div>
+                    )}
                 </div>
               </div>
 
