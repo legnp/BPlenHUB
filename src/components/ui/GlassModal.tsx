@@ -62,13 +62,13 @@ export default function GlassModal({
   const modalContent = (
     <AnimatePresence mode="wait">
       {isOpen && (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[1000] flex items-start justify-center p-4 overflow-y-auto custom-scrollbar">
           {/* Sombra imersiva sutil atrás do modal */}
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-black/5" 
+            className="absolute inset-0 bg-black/40 backdrop-blur-[8px]" 
             onClick={onClose} 
           />
 
@@ -77,7 +77,7 @@ export default function GlassModal({
             initial={{ scale: 0.9, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: 20 }}
-            className={`relative w-full ${maxWidth} ${className}`}
+            className={`relative w-full my-auto ${maxWidth} ${className}`}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Vidro Estático Nativo Tailwind (Sem backdrop-blur, agora que a página recua) */}

@@ -363,14 +363,14 @@ export function JourneyNav({ stages, currentStepId, stepStatusMap, getStageTelem
       {/* Modal de Detalhes Estratégicos */}
       <AnimatePresence>
          {detailModalOpen && (
-            <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+            <div className="fixed inset-0 z-[200] flex items-start justify-center p-4 overflow-y-auto custom-scrollbar">
                {/* Backdrop */}
                <motion.div 
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   onClick={() => setDetailModalOpen(null)}
-                  className="absolute inset-0 bg-black/60 backdrop-blur-sm cursor-pointer" 
+                  className="absolute inset-0 bg-black/50 backdrop-blur-[8px] cursor-pointer" 
                />
                
                {/* Modal Content */}
@@ -378,7 +378,7 @@ export function JourneyNav({ stages, currentStepId, stepStatusMap, getStageTelem
                   initial={{ opacity: 0, scale: 0.95, y: 10 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                  className="relative bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-[3rem] p-10 max-w-lg w-full max-h-[90vh] overflow-y-auto custom-scrollbar shadow-[0_32px_64px_rgba(0,0,0,0.5)] z-10"
+                  className="relative bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-[3rem] p-10 max-w-lg w-full my-auto shadow-[0_32px_64px_rgba(0,0,0,0.5)] z-10"
                >
                   <button 
                      onClick={() => setDetailModalOpen(null)}
