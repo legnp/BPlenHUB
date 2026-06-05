@@ -29,7 +29,9 @@ import {
   CalendarDays,
   Eye,
   Video,
-  Briefcase
+  Briefcase,
+  CheckCircle2,
+  Circle
 } from "lucide-react";
 import { HomeFooter } from "@/components/home/HomeFooter";
 import { useAuthContext } from "@/context/AuthContext";
@@ -37,6 +39,9 @@ import { parseISO, isBefore, isAfter, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { BookingDetailModal } from "@/components/ui/UserBookings";
 import { submitEvaluationAction } from "@/actions/calendar";
+import { getCareerPlanningDataAction } from "@/actions/career-module";
+import { useJourney } from "@/hooks/useJourney";
+import { CareerTask } from "@/types/career";
 import Link from "next/link";
 import AtmosphericLoading from "@/components/shared/AtmosphericLoading";
 
@@ -59,6 +64,11 @@ export default function MemberDashboardView() {
   // Dashboard Agenda Modal (Reuse)
   const [selectedBooking_Dashboard, setSelectedBooking_Dashboard] = useState<UserBooking | null>(null);
   const [isEvaluating_Dashboard, setIsEvaluating_Dashboard] = useState<string | null>(null);
+
+  // Career Module State
+  const [careerData, setCareerData] = useState<any>(null);
+  const [loadingCareer, setLoadingCareer] = useState(false);
+  const { stages, progress } = useJourney(user?.uid || "guest");
 
   // Guided Tour State
   const [isTourOpen, setIsTourOpen] = useState(false);
@@ -141,6 +151,22 @@ export default function MemberDashboardView() {
     }
     loadBookings();
   }, [matricula]);
+
+  useEffect(() => {
+    if (!matricula || !services?.career_planning) return;
+    async function loadCareer() {
+      setLoadingCareer(true);
+      try {
+        const res = await getCareerPlanningDataAction(matricula);
+        if (res.success) setCareerData(res.data);
+      } catch (err) {
+        console.error("Erro ao carregar dados de carreira no dashboard:", err);
+      } finally {
+        setLoadingCareer(false);
+      }
+    }
+    loadCareer();
+  }, [matricula, services?.career_planning]);
 
   // Mapeamentos de dados
   const triadData = gestaoResult?.scores ? [
@@ -352,21 +378,91 @@ export default function MemberDashboardView() {
                                 <Briefcase size={20} />
                              </div>
                              <div className="flex flex-col text-left">
-                                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)]">Módulo Complementar</h3>
-                                <p className="text-xs font-black text-[var(--text-primary)] tracking-tight mt-1">Gestão de Carreira</p>
+                                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)]">Gestão de Carreira</h3>
+                                <p className="text-xs font-black text-[var(--text-primary)] tracking-tight mt-1">Gerencie o progresso da sua jornada</p>
                              </div>
                           </div>
-                          <div className="py-10 bg-gradient-to-br from-pink-500/5 to-transparent border border-[var(--border-primary)] rounded-[2.5rem] flex flex-col items-center justify-center text-center px-6 space-y-4">
-                             <p className="text-xs text-[var(--text-secondary)] font-medium max-w-xs leading-relaxed">
-                                Cockpit de desenvolvimento profissional com metas de mentoria, objetivos, checklists de jornada e atas integradas.
-                             </p>
-                             <Link 
-                                href="/hub/membro/gestao_carreira"
-                                className="px-6 py-3 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-xl text-[9px] font-black uppercase tracking-[0.2em] hover:bg-[var(--text-primary)]/90 transition-all flex items-center gap-2 shadow-md"
-                             >
-                                Acessar Cockpit
-                                <ExternalLink size={10} />
-                             </Link>
+                          
+                          <div className="space-y-4">
+                             {loadingCareer ? (
+                                <div className="py-8 flex items-center gap-4 opacity-30">
+                                   <Loader2 className="w-5 h-5 animate-spin" />
+                                   <p className="text-[9px] font-black uppercase tracking-widest">Sincronizando carreira...</p>
+                                </div>
+                             ) : (
+                                <div className="space-y-4">
+                                   {/* Listagem Dinâmica de Tarefas ou Jornada */}
+                                   {careerData?.backlog && careerData.backlog.length > 0 ? (
+                                      <div className="space-y-2">
+                                         {careerData.backlog
+                                            .filter((t: CareerTask) => t.status === "Sprint atual" || t.status === "Próxima Sprint")
+                                            .sort((a: CareerTask, b: CareerTask) => a.status === "Sprint atual" ? -1 : 1)
+                                            .slice(0, 3)
+                                            .map((task: CareerTask) => (
+                                               <div key={task.id} className="p-4 bg-[var(--input-bg)]/40 border border-[var(--border-primary)]/60 rounded-2xl flex items-center justify-between">
+                                                  <div className="flex items-center gap-3 overflow-hidden">
+                                                     <div className={`w-2 h-2 rounded-full shrink-0 ${task.status === "Sprint atual" ? "bg-pink-500 animate-pulse" : "bg-blue-400"}`} />
+                                                     <span className="text-[10px] font-bold text-[var(--text-primary)] truncate">{task.title}</span>
+                                                  </div>
+                                                  <span className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)] shrink-0 ml-4">
+                                                     {task.status === "Sprint atual" ? "Sprint" : "Próxima"}
+                                                  </span>
+                                               </div>
+                                            ))
+                                         }
+                                         {careerData.backlog.filter((t: CareerTask) => t.status === "Sprint atual" || t.status === "Próxima Sprint").length === 0 && (
+                                            <div className="py-6 bg-[var(--input-bg)]/30 border border-dashed border-[var(--border-primary)] rounded-2xl text-center px-4">
+                                               <p className="text-[9px] font-medium text-[var(--text-muted)] italic">Acesse para planejar suas tarefas.</p>
+                                            </div>
+                                         )}
+                                      </div>
+                                   ) : (
+                                      /* Fallback: Etapas da Jornada */
+                                      <div className="space-y-2">
+                                         {(() => {
+                                            const currentIndex = stages.findIndex(s => s.id === progress?.lastActiveStepId);
+                                            const currentStage = stages[currentIndex];
+                                            const nextStage = stages[currentIndex + 1];
+
+                                            return (
+                                               <>
+                                                  {currentStage && (
+                                                     <div className="p-4 bg-[var(--input-bg)]/40 border border-[var(--border-primary)]/60 rounded-2xl flex items-center justify-between">
+                                                        <div className="flex items-center gap-3">
+                                                           <CheckCircle2 size={14} className="text-pink-500" />
+                                                           <div className="flex flex-col">
+                                                              <span className="text-[8px] font-black uppercase tracking-widest text-pink-500/60">Etapa Atual</span>
+                                                              <span className="text-[10px] font-bold text-[var(--text-primary)]">{currentStage.title}</span>
+                                                           </div>
+                                                        </div>
+                                                     </div>
+                                                  )}
+                                                  {nextStage && (
+                                                     <div className="p-4 bg-[var(--input-bg)]/10 border border-dashed border-[var(--border-primary)]/40 rounded-2xl flex items-center justify-between opacity-60">
+                                                        <div className="flex items-center gap-3">
+                                                           <Circle size={14} className="text-[var(--text-muted)]" />
+                                                           <div className="flex flex-col">
+                                                              <span className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)]">Próxima Etapa</span>
+                                                              <span className="text-[10px] font-bold text-[var(--text-primary)]">{nextStage.title}</span>
+                                                           </div>
+                                                        </div>
+                                                     </div>
+                                                  )}
+                                               </>
+                                            );
+                                         })()}
+                                      </div>
+                                   )}
+
+                                   <Link 
+                                      href="/hub/membro/gestao_carreira"
+                                      className="w-full py-4 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-2xl text-[9px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-2 hover:scale-[1.01] transition-all shadow-lg mt-4"
+                                   >
+                                      Gestão de carreira completa
+                                      <ExternalLink size={12} />
+                                   </Link>
+                                </div>
+                             )}
                           </div>
                        </div>
                     ) : (
@@ -376,8 +472,8 @@ export default function MemberDashboardView() {
                                 <Briefcase size={20} />
                              </div>
                              <div className="flex flex-col text-left">
-                                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)]">Módulo Complementar</h3>
-                                <p className="text-xs font-black text-[var(--text-primary)] tracking-tight mt-1">Gestão de Carreira</p>
+                                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)]">Gestão de Carreira</h3>
+                                <p className="text-xs font-black text-[var(--text-primary)] tracking-tight mt-1">Gerencie o progresso da sua jornada</p>
                              </div>
                           </div>
                           <div className="py-14 bg-[var(--input-bg)]/30 border border-dashed border-[var(--border-primary)] rounded-[2.5rem] flex flex-col items-center justify-center text-center">
