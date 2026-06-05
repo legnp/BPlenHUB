@@ -135,11 +135,11 @@ export async function getCareerPlanningDataAction(
 
     const accessData = accessSnap.exists ? accessSnap.data() || {} : {};
     const isCareerPlanningReleased = accessData.services?.career_planning === true;
-    const legacySynced = accessData.legacySynced === true;
+    const legacySynced = accessData.legacySynced_v3 === true;
 
-    // Se o plano de carreira está liberado mas nunca foi sincronizado retroativamente, rodar o resgate!
+    // Se o plano de carreira está liberado mas nunca foi sincronizado retroativamente com v3, rodar o resgate!
     if (isCareerPlanningReleased && !legacySynced) {
-      console.log(`🧬 [Career Retroactive Sync] Sincronizando dados legados para matrícula ${matricula}...`);
+      console.log(`[Career Retroactive Sync] Sincronizando dados legados para matricula ${matricula}...`);
       const bookingsSnap = await db.collection(`User/${matricula}/User_Bookings`).get();
       
       const accessRef = db.doc(`User/${matricula}/User_Permissions/access`);
@@ -148,16 +148,36 @@ export async function getCareerPlanningDataAction(
         const batch = db.batch();
         let operationsCount = 0;
 
+        // Buscar todos os eventos agendados em lote para capturar os titulos reais
+        const eventMap = new Map<string, any>();
+        const eventIds = bookingsSnap.docs.map(doc => doc.data().eventId || doc.id).filter(Boolean);
+        const eventRefs = Array.from(new Set(eventIds)).map(id => db.collection("Calendar_Events").doc(id));
+
+        if (eventRefs.length > 0) {
+          try {
+            const eventSnaps = await db.getAll(...eventRefs);
+            eventSnaps.forEach(snap => {
+              if (snap.exists) {
+                eventMap.set(snap.id, snap.data());
+              }
+            });
+          } catch (err) {
+            console.error("[Career Retroactive Sync] Erro ao carregar eventos em lote:", err);
+          }
+        }
+
         for (const doc of bookingsSnap.docs) {
           const bookingData = doc.data();
           const eventId = bookingData.eventId || doc.id;
+          const eventData = eventMap.get(eventId) || {};
+          const eventSummary = eventData.summary || "Sessão de Mentoria";
 
           // 1. Feedback qualitativo legado
           if (bookingData.participantFeedback && bookingData.participantFeedback.trim()) {
             const feedbackId = `booking-${eventId}`;
             const feedbackRef = db.collection("User").doc(matricula).collection("Feedbacks").doc(feedbackId);
             batch.set(feedbackRef, {
-              title: `Feedback - Sessão de Mentoria`,
+              title: `Feedback - ${eventSummary}`,
               content: bookingData.participantFeedback,
               author: "Consultor BPlen",
               createdAt: bookingData.postEventUpdatedAt ? (bookingData.postEventUpdatedAt.toDate ? bookingData.postEventUpdatedAt.toDate().toISOString() : new Date().toISOString()) : new Date().toISOString()
@@ -195,10 +215,10 @@ export async function getCareerPlanningDataAction(
               const docId = `booking-${eventId}-doc-${idx}`;
               const docRef = db.collection("User").doc(matricula).collection("Shared_Documents").doc(docId);
               batch.set(docRef, {
-                title: docItem.fileName || `Documento - Mentoria`,
+                title: docItem.fileName || `Documento - ${eventSummary}`,
                 fileUrl: docItem.url,
                 fileName: docItem.fileName || "arquivo.pdf",
-                category: "Relatório",
+                category: eventSummary,
                 createdAt: docItem.uploadedAt || new Date().toISOString()
               }, { merge: true });
               operationsCount++;
@@ -210,7 +230,7 @@ export async function getCareerPlanningDataAction(
             const ataId = `booking-${eventId}-ata`;
             const ataRef = db.collection("User").doc(matricula).collection("Atas").doc(ataId);
             batch.set(ataRef, {
-              title: `Ata de Reunião`,
+              title: `Ata de Reunião - ${eventSummary}`,
               meetingDate: bookingData.postEventUpdatedAt ? (bookingData.postEventUpdatedAt.toDate ? bookingData.postEventUpdatedAt.toDate().toISOString().substring(0, 10) : new Date().toISOString().substring(0, 10)) : new Date().toISOString().substring(0, 10),
               fileUrl: bookingData.meetingMinutesFile.url,
               contentSummary: bookingData.publicGeneralComment || "Ata de mentoria retroativa.",
@@ -220,16 +240,42 @@ export async function getCareerPlanningDataAction(
           }
         }
 
-        batch.set(accessRef, { legacySynced: true }, { merge: true });
+        batch.set(accessRef, { legacySynced_v3: true }, { merge: true });
 
         if (operationsCount > 0) {
           await batch.commit();
-          console.log(`🧬 [Career Retroactive Sync] Sincronização retroativa concluída com sucesso para matrícula ${matricula}. ${operationsCount} registros adicionados.`);
-          // Recarregar os dados de forma limpa usando recursão
+          console.log(`[Career Retroactive Sync] Sincronizacao retroativa concluida com sucesso para matricula ${matricula}. ${operationsCount} registros adicionados/atualizados.`);
+          // Recarregar os dados de forma limpa usando recursao
           return getCareerPlanningDataAction(matricula, idToken);
         }
       } else {
-        await accessRef.set({ legacySynced: true }, { merge: true });
+        await accessRef.set({ legacySynced_v3: true }, { merge: true });
+      }
+    }
+
+    // Se o documento disc-devolutiva ainda nao estiver em Shared_Documents mas existir em results/disc, resgatamos imediatamente (on-the-fly)
+    const hasDiscInDocs = docsSnap.docs.some(doc => doc.id === "disc-devolutiva");
+    if (!hasDiscInDocs) {
+      try {
+        const discSnap = await db.doc(`User/${matricula}/results/disc`).get();
+        if (discSnap.exists) {
+          const discData = discSnap.data() || {};
+          if (discData.file && discData.file.url) {
+            const discDocRef = db.collection("User").doc(matricula).collection("Shared_Documents").doc("disc-devolutiva");
+            await discDocRef.set({
+              title: "Análise Comportamental DISC",
+              fileUrl: discData.file.url,
+              fileName: discData.file.originalName || discData.file.name || "devolutiva-disc.pdf",
+              category: "Plano de Carreira",
+              createdAt: discData.submittedAt ? (discData.submittedAt.toDate ? discData.submittedAt.toDate().toISOString() : new Date().toISOString()) : new Date().toISOString()
+            }, { merge: true });
+            console.log(`[Career On-The-Fly Sync] DISC Devolutiva resgatada com sucesso para matricula ${matricula}`);
+            // Recarregar os dados de forma limpa usando recursao
+            return getCareerPlanningDataAction(matricula, idToken);
+          }
+        }
+      } catch (discErr) {
+        console.error("[Career On-The-Fly Sync] Erro ao buscar DISC legada:", discErr);
       }
     }
 

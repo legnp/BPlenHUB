@@ -40,6 +40,24 @@ import {
 } from "@/actions/career-module";
 import { CareerTask, CareerTaskStatus, CareerObjective, CareerGoal } from "@/types/career";
 
+function extractGoogleDriveFileId(url: string): string | null {
+  if (!url) return null;
+  
+  // Pattern 1: /file/d/([a-zA-Z0-9_-]+)
+  const fileDMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (fileDMatch && fileDMatch[1]) return fileDMatch[1];
+  
+  // Pattern 2: id=([a-zA-Z0-9_-]+)
+  const idMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (idMatch && idMatch[1]) return idMatch[1];
+  
+  // Pattern 3: /d/([a-zA-Z0-9_-]+)
+  const dMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  if (dMatch && dMatch[1]) return dMatch[1];
+  
+  return null;
+}
+
 export default function GestaoCarreiraPage() {
   const { user, matricula } = useAuthContext();
   
@@ -101,6 +119,25 @@ export default function GestaoCarreiraPage() {
   // Toggle Accordions
   const toggleAccordion = (section: string) => {
     setActiveAccordion(prev => (prev === section ? null : section));
+  };
+
+  // Handle secure Google Drive document downloading/viewing via proxy
+  const handleDownloadFile = async (e: React.MouseEvent, fileUrl: string) => {
+    e.preventDefault();
+    if (!user) return;
+
+    const fileId = extractGoogleDriveFileId(fileUrl);
+    if (fileId) {
+      try {
+        const token = await user.getIdToken();
+        window.open(`/api/docs/${fileId}?token=${token}`, "_blank");
+      } catch (err) {
+        console.error("Erro ao obter token de acesso para documento:", err);
+        window.open(fileUrl, "_blank"); // fallback seguro
+      }
+    } else {
+      window.open(fileUrl, "_blank"); // fallback seguro para URLs externas
+    }
   };
 
   // Add Backlog Task
@@ -682,14 +719,12 @@ export default function GestaoCarreiraPage() {
                                 )}
                               </p>
                             </div>
-                            <a 
-                              href={ata.fileUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="p-3 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-xl text-[9px] font-bold uppercase tracking-wider hover:bg-[var(--accent-start)] hover:text-white hover:border-transparent transition-all flex items-center gap-2"
+                            <button 
+                              onClick={(e) => handleDownloadFile(e, ata.fileUrl)}
+                              className="p-3 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-xl text-[9px] font-bold uppercase tracking-wider hover:bg-[var(--accent-start)] hover:text-white hover:border-transparent transition-all flex items-center gap-2 cursor-pointer"
                             >
                               <ExternalLink size={12} /> Ver Ata no Drive
-                            </a>
+                            </button>
                           </div>
                         ))}
                       </div>
@@ -740,14 +775,12 @@ export default function GestaoCarreiraPage() {
                               <h5 className="text-xs font-black text-[var(--text-primary)] leading-tight">{doc.title}</h5>
                               <p className="text-[8px] text-[var(--text-muted)] truncate font-mono">{doc.fileName}</p>
                             </div>
-                            <a 
-                              href={doc.fileUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="px-4 py-2.5 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-xl text-[8px] font-black uppercase tracking-wider hover:bg-[var(--accent-start)] hover:text-white hover:border-transparent transition-all flex items-center gap-1.5"
+                            <button 
+                              onClick={(e) => handleDownloadFile(e, doc.fileUrl)}
+                              className="px-4 py-2.5 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-xl text-[8px] font-black uppercase tracking-wider hover:bg-[var(--accent-start)] hover:text-white hover:border-transparent transition-all flex items-center gap-1.5 cursor-pointer"
                             >
                               <ExternalLink size={10} /> Baixar PDF
-                            </a>
+                            </button>
                           </div>
                         ))}
                       </div>

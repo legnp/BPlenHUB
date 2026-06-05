@@ -183,7 +183,7 @@ export async function closeAttendeeAction(
               title: doc.fileName || `Documento - ${eventData.summary || "Mentoria"}`,
               fileUrl: doc.url,
               fileName: doc.fileName || "arquivo.pdf",
-              category: "Relatório",
+              category: eventData.summary || "Mentoria",
               createdAt: doc.uploadedAt || new Date().toISOString()
             }, { merge: true });
           });
@@ -194,7 +194,7 @@ export async function closeAttendeeAction(
           const ataId = `booking-${eventId}-ata`;
           const ataRef = db.collection("User").doc(matricula).collection("Atas").doc(ataId);
           transaction.set(ataRef, {
-            title: `Ata de Reunião - ${eventData.summary || "Sessão"}`,
+            title: `Ata de Reunião - ${eventData.summary || "Sessão de Mentoria"}`,
             meetingDate: eventData.start ? eventData.start.substring(0, 10) : new Date().toISOString().substring(0, 10),
             fileUrl: eventData.meetingMinutesFile.url,
             contentSummary: eventData.publicGeneralComment || "Ata de mentoria consolidada.",

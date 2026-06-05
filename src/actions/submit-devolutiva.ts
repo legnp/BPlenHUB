@@ -61,6 +61,21 @@ export async function submitDevolutivaDisc(
 
     await resultRef.set(resultPayload, { merge: true });
 
+    // Injetar tambem em Shared_Documents para sincronizacao automatica com a Gestao de Carreira
+    try {
+      const discDocRef = db.collection("User").doc(targetMatricula).collection("Shared_Documents").doc("disc-devolutiva");
+      await discDocRef.set({
+        title: "Análise Comportamental DISC",
+        fileUrl: data.result_file.url,
+        fileName: data.result_file.fileName || "devolutiva-disc.pdf",
+        category: "Plano de Carreira",
+        createdAt: new Date().toISOString()
+      }, { merge: true });
+      console.log(`[SubmitDevolutiva] Shared_Document 'disc-devolutiva' sincronizado para matricula ${targetMatricula}`);
+    } catch (sharedDocErr) {
+      console.error("[SubmitDevolutiva] Erro ao sincronizar Shared_Documents:", sharedDocErr);
+    }
+
     // 3. Sincronização Google Sheets / Drive 🛰️
     try {
       const { getDriveClient, getSheetsClient } = await import("@/lib/google-auth");
