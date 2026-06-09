@@ -35,7 +35,7 @@ export function getBookingConfirmationEmail(data: BookingEmailData) {
     <div style="background: #F8FAFC; padding: 20px; border-radius: 12px; margin: 24px 0;">
       <p style="margin: 0 0 8px 0; font-size: 11px; color: #94A3B8; font-weight: bold; text-transform: uppercase;">Detalhes do Agendamento</p>
       <p style="margin: 4px 0; font-size: 14px;">Evento: <strong>${summary}</strong></p>
-      <p style="margin: 4px 0; font-size: 14px;">Data e Hora: <strong>${dateStr} às ${timeStr}h</strong></p>
+      <p style="margin: 4px 0; font-size: 14px;">Data e Hora: <strong>${dateStr} às ${timeStr}h (Horário de Brasília)</strong></p>
       <p style="margin: 4px 0; font-size: 14px;">Orientador: <strong>${mentor || "BPlen"}</strong></p>
       ${theme ? `<p style="margin: 4px 0; font-size: 14px;">Tema: <strong>${theme}</strong></p>` : ""}
       ${oneToOneInfo ? `<div style="margin-top: 12px; border-top: 1px solid #E2E8F0; padding-top: 12px;">${oneToOneInfo}</div>` : ""}
@@ -72,7 +72,7 @@ export function getAdminInclusionEmail(data: Omit<BookingEmailData, 'cancelLink'
     <div style="background: #F8FAFC; padding: 20px; border-radius: 12px; margin: 24px 0;">
       <p style="margin: 0 0 8px 0; font-size: 11px; color: #94A3B8; font-weight: bold; text-transform: uppercase;">Detalhes do Agendamento</p>
       <p style="margin: 4px 0; font-size: 14px;">Evento: <strong>${summary}</strong></p>
-      <p style="margin: 4px 0; font-size: 14px;">Data e Hora: <strong>${dateStr} às ${timeStr}h</strong></p>
+      <p style="margin: 4px 0; font-size: 14px;">Data e Hora: <strong>${dateStr} às ${timeStr}h (Horário de Brasília)</strong></p>
       <p style="margin: 4px 0; font-size: 14px;">Orientador: <strong>${mentor || "BPlen"}</strong></p>
     </div>
 
@@ -140,14 +140,14 @@ export function getRescheduleEmail(data: {
     <!-- Box Antigo (Cinza) -->
     <div style="background: #F8FAFC; padding: 20px; border-radius: 12px; margin: 24px 0;">
       <p style="margin: 0 0 8px 0; font-size: 11px; color: #94A3B8; font-weight: bold; text-transform: uppercase;">Agendamento Anterior</p>
-      <p style="margin: 4px 0; font-size: 14px; color: #64748B;">Data e Hora: <strong>${oldDateStr} às ${oldTimeStr}h</strong></p>
+      <p style="margin: 4px 0; font-size: 14px; color: #64748B;">Data e Hora: <strong>${oldDateStr} às ${oldTimeStr}h (Brasília)</strong></p>
       <p style="margin: 4px 0; font-size: 14px; color: #64748B;">Orientador: <strong>${oldMentor}</strong></p>
     </div>
 
     <!-- Box Novo (Verde suave) -->
     <div style="background: #F0FDF4; padding: 20px; border-radius: 12px; margin: 24px 0; border: 1px solid #BBF7D0;">
       <p style="margin: 0 0 8px 0; font-size: 11px; color: #16A34A; font-weight: bold; text-transform: uppercase;">Novo Agendamento</p>
-      <p style="margin: 4px 0; font-size: 14px; color: #15803D;">Data e Hora: <strong>${newDateStr} às ${newTimeStr}h</strong></p>
+      <p style="margin: 4px 0; font-size: 14px; color: #15803D;">Data e Hora: <strong>${newDateStr} às ${newTimeStr}h (Horário de Brasília)</strong></p>
       <p style="margin: 4px 0; font-size: 14px; color: #15803D;">Orientador: <strong>${newMentor}</strong></p>
     </div>
 

@@ -9,6 +9,7 @@ import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 import { GoogleCalendarEvent } from "@/types/calendar";
 import { updateGlobalProgramacaoRegistryAction, recalculateEventMetrics } from "./post-event";
 import { getBookingConfirmationEmail, getAdminInclusionEmail, getCancellationEmail, getRescheduleEmail } from "@/lib/email-templates";
+import { formatDateInBR, formatTimeInBR } from "@/lib/timezone";
 import { submitSurvey } from "../submit-survey";
 import { bookingEvaluationSurveyConfig } from "@/config/surveys/booking-evaluation";
 
@@ -105,8 +106,8 @@ export async function bookEventAction(
       const emailHtml = getBookingConfirmationEmail({
         displayName,
         summary: result.eventData.summary,
-        dateStr: format(parseISO(result.eventData.start), "dd 'de' MMMM", { locale: ptBR }),
-        timeStr: format(parseISO(result.eventData.start), "HH:mm"),
+        dateStr: formatDateInBR(result.eventData.start),
+        timeStr: formatTimeInBR(result.eventData.start),
         mentor: result.eventData.mentor,
         theme: result.eventData.theme,
         htmlLink: result.eventData.htmlLink || "",
@@ -439,11 +440,11 @@ export async function rescheduleAttendeeAction(
         const emailHtml = getRescheduleEmail({
           participantName,
           eventName: result.newEventData.summary,
-          oldDateStr: format(parseISO(result.oldEventData.start), "dd/MM/yyyy", { locale: ptBR }),
-          oldTimeStr: format(parseISO(result.oldEventData.start), "HH:mm"),
+          oldDateStr: formatDateInBR(result.oldEventData.start, "dd/MM/yyyy"),
+          oldTimeStr: formatTimeInBR(result.oldEventData.start),
           oldMentor: result.oldEventData.mentor || "BPlen",
-          newDateStr: format(parseISO(result.newEventData.start), "dd/MM/yyyy", { locale: ptBR }),
-          newTimeStr: format(parseISO(result.newEventData.start), "HH:mm"),
+          newDateStr: formatDateInBR(result.newEventData.start, "dd/MM/yyyy"),
+          newTimeStr: formatTimeInBR(result.newEventData.start),
           newMentor: result.newEventData.mentor || "BPlen",
           platformLink: "https://hub.bplen.com/hub/membro/dashboard"
         });

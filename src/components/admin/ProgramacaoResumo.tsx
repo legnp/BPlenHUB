@@ -39,6 +39,7 @@ import {
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { formatDateInBR, formatTimeInBR } from "@/lib/timezone";
 import { useAuthContext } from "@/context/AuthContext";
 import PostEventWizard from "./PostEventWizard";
 import GlassModal from "@/components/ui/GlassModal";
@@ -463,7 +464,7 @@ export default function ProgramacaoResumo() {
             >
               {/* Event Name & Theme */}
               <div className="flex flex-col gap-1 min-w-0">
-                <span className="text-[10px] font-bold text-[var(--text-muted)] opacity-50">{format(parseISO(ev.start), "dd/MM/yy - HH:mm", { locale: ptBR })}</span>
+                <span className="text-[10px] font-bold text-[var(--text-muted)] opacity-50">{formatDateInBR(ev.start, "dd/MM/yy - HH:mm")}</span>
                 <h4 className="text-sm font-black text-[var(--text-primary)] truncate">{ev.summary}</h4>
                 {ev.theme && <span className="text-[10px] font-medium text-[var(--accent-start)] opacity-70 truncate"># {ev.theme}</span>}
               </div>
@@ -749,7 +750,7 @@ export default function ProgramacaoResumo() {
                         {/* Timestamps */}
                         {attendee.timestamp && (
                           <p className="text-[8px] font-medium text-[var(--text-muted)] opacity-40">
-                            Agendado em: {format(parseISO(attendee.timestamp), "dd/MM/yy - HH:mm", { locale: ptBR })}
+                            Agendado em: {formatDateInBR(attendee.timestamp, "dd/MM/yy - HH:mm")}
                           </p>
                         )}
                       </div>
@@ -966,8 +967,8 @@ export default function ProgramacaoResumo() {
                     {availableEvents.map(ev => {
                       const isFull = ev.totalCapacity > 0 && ev.registeredCount >= ev.totalCapacity;
                       const vagasRestantes = ev.totalCapacity > 0 ? ev.totalCapacity - ev.registeredCount : 0;
-                      const dateStr = format(parseISO(ev.start), "dd/MM/yyyy", { locale: ptBR });
-                      const timeStr = format(parseISO(ev.start), "HH:mm");
+                      const dateStr = formatDateInBR(ev.start, "dd/MM/yyyy");
+                      const timeStr = formatTimeInBR(ev.start);
 
                       return (
                         <div 
@@ -977,7 +978,7 @@ export default function ProgramacaoResumo() {
                           <div>
                             <p className="text-xs font-black text-[var(--text-primary)]">{ev.summary}</p>
                             <p className="text-[10px] font-bold text-[var(--text-muted)] opacity-70">
-                              {dateStr} às {timeStr}h • {ev.mentor}
+                              {formatDateInBR(ev.start, "dd/MM/yyyy")} às {formatTimeInBR(ev.start)}h • {ev.mentor}
                             </p>
                             {ev.totalCapacity > 0 && (
                               <p className={`text-[9px] font-black uppercase tracking-widest mt-1 ${isFull ? 'text-red-500' : 'text-green-500'}`}>
