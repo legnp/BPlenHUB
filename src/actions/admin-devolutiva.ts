@@ -104,7 +104,7 @@ export async function getDevolutivaUserData(
         "offboarding": "Encerramento"
       };
 
-      const readableStep = stepMap[stepId] || stepId.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      const readableStep = stepMap[stepId] || stepId.replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
 
       journeyData = {
         currentPhase: "Jornada",
