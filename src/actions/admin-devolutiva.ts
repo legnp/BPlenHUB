@@ -85,18 +85,45 @@ export async function getDevolutivaUserData(
       }
     }
 
-    // 3. Buscar progresso da jornada
-    const journeyRef = db.doc(`User/${matricula}/User_JourneyMap/progress`);
-    const journeySnap = await journeyRef.get();
+    // 3. Buscar progresso da jornada (Priorizando V3 🧬)
+    const journeyV3Ref = db.doc(`User/${matricula}/User_Journey/progress`);
+    const journeyV3Snap = await journeyV3Ref.get();
     let journeyData = null;
 
-    if (journeySnap.exists) {
-      const jData = journeySnap.data() || {};
-      journeyData = {
-        currentPhase: jData.currentPhase || "venda",
-        currentStep: jData.currentStep || "onboarding",
-        overallProgress: jData.overallProgress || 0,
+    if (journeyV3Snap.exists) {
+      const v3Data = journeyV3Snap.data() || {};
+      const stepId = v3Data.lastActiveStepId || "onboarding";
+      
+      // Mapeamento simples de IDs para nomes amigáveis (Soberania de UX)
+      const stepMap: Record<string, string> = {
+        "onboarding": "Onboarding",
+        "analise-comportamental": "Análise Comportamental",
+        "plano-de-carreira": "Plano de Carreira",
+        "desenvolvimento-de-carreira": "Desenvolvimento",
+        "coaching-e-mentoria": "Coaching & Mentoria",
+        "offboarding": "Encerramento"
       };
+
+      const readableStep = stepMap[stepId] || stepId.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+
+      journeyData = {
+        currentPhase: "Jornada",
+        currentStep: readableStep,
+        overallProgress: v3Data.overallProgress || 0,
+      };
+    } else {
+      // Fallback para o mapa de jornada legado/estático
+      const journeyRef = db.doc(`User/${matricula}/User_JourneyMap/progress`);
+      const journeySnap = await journeyRef.get();
+
+      if (journeySnap.exists) {
+        const jData = journeySnap.data() || {};
+        journeyData = {
+          currentPhase: jData.currentPhase === "venda" ? "Jornada" : (jData.currentPhase || "Jornada"),
+          currentStep: jData.currentStep || "onboarding",
+          overallProgress: jData.overallProgress || 0,
+        };
+      }
     }
 
     // 4. Buscar permissoes e link DISC do usuario
