@@ -8,6 +8,27 @@ import { serverEnv } from "@/env";
  */
 
 // ──────────────────────────────
+// Governança de Pastas (Padrão BPlen)
+// ──────────────────────────────
+export const DRIVE_FOLDERS = {
+  ACOMPANHAMENTO: "0.Acompanhamento",
+  IDENTIDADE: "1.Identidade",
+  CADASTRO: "2.Cadastro",
+  SURVEYS: "3.Surveys",
+  RESULTADOS: "4.Resultados",
+  DOCUMENTOS: "5.Documentos",
+  FINANCEIRO: "6.Financeiro"
+} as const;
+
+export const LEGACY_FOLDERS = {
+  IDENTIDADE: ["Identidade"],
+  CADASTRO: ["dados_cadastrais", "2.Cadastro"], // If they had 2.Cadastro previously, not really legacy but good to cover
+  SURVEYS: ["1.Surveys", "Surveys"],
+  RESULTADOS: ["2.Resultados", "Resultados"],
+  DOCUMENTOS: ["2.Documentos", "Documentos"]
+};
+
+// ──────────────────────────────
 // 1. Diagnóstico de Chave Privada
 // ──────────────────────────────
 export function checkKeySignature() {
@@ -16,6 +37,7 @@ export function checkKeySignature() {
     throw new Error("Chave Privada malformada detectada. Verifique as variáveis de ambiente.");
   }
 }
+
 
 // ──────────────────────────────
 // 2. Navegador de Pastas Inteligente (Auto-Healing)
@@ -52,6 +74,60 @@ export async function ensureFolder(
   if (!createFolder.data.id) throw new Error(`Falha ao criar pasta: ${folderName}`);
   return createFolder.data.id;
 }
+
+/**
+ * Garante a existência de uma pasta no padrão de Governança, realizando "cura" (rename) 
+ * automática caso encontre a versão legada da pasta.
+ */
+export async function getStandardFolderWithHealing(
+  drive: drive_v3.Drive,
+  parentFolderId: string,
+  standardName: string,
+  legacyNames: string[] = []
+): Promise<string> {
+  // 1. Tentar encontrar a pasta pelo padrão correto
+  const listCorrect = await drive.files.list({
+    q: `'${parentFolderId}' in parents and name = '${standardName}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
+    fields: "files(id, name)",
+    supportsAllDrives: true,
+    includeItemsFromAllDrives: true,
+  });
+
+  if (listCorrect.data.files && listCorrect.data.files.length > 0) {
+    return listCorrect.data.files[0].id!;
+  }
+
+  // 2. Se não encontrou a correta, buscar pelas legadas
+  if (legacyNames.length > 0) {
+    const legacyQueries = legacyNames.map(name => `name = '${name}'`).join(" or ");
+    const listLegacy = await drive.files.list({
+      q: `'${parentFolderId}' in parents and (${legacyQueries}) and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
+      fields: "files(id, name)",
+      supportsAllDrives: true,
+      includeItemsFromAllDrives: true,
+    });
+
+    if (listLegacy.data.files && listLegacy.data.files.length > 0) {
+      const folderId = listLegacy.data.files[0].id!;
+      const oldName = listLegacy.data.files[0].name;
+      console.log(`[Drive:Governance] Curando pasta legada: ${oldName} -> ${standardName}`);
+      
+      // Renomear para o padrão correto
+      await drive.files.update({
+        fileId: folderId,
+        supportsAllDrives: true,
+        requestBody: { name: standardName }
+      });
+      
+      return folderId;
+    }
+  }
+
+  // 3. Se não encontrou nem a correta nem a legada, cria a nova
+  console.log(`[Drive:Governance] Criando nova pasta padrão: ${standardName}`);
+  return await ensureFolder(drive, parentFolderId, standardName);
+}
+
 
 // ──────────────────────────────
 // 3. Gerenciador de Planilhas
@@ -128,7 +204,7 @@ export async function getEventDriveFolder(
 }
 
 /**
- * Grava ou Atualiza dados na planilha.
+ * Grava ou Atualiza dados na planilha (Sobrescrevendo a primeira linha de dados).
  */
 export async function syncDataToSheet(
   sheets: sheets_v4.Sheets,
@@ -147,6 +223,46 @@ export async function syncDataToSheet(
     valueInputOption: "USER_ENTERED",
     requestBody: {
       values: [headers, rowData],
+    },
+  });
+}
+
+/**
+ * Anexa uma nova linha à planilha. Garante os cabeçalhos na primeira linha se estiver vazia.
+ */
+export async function appendDataToSheet(
+  sheets: sheets_v4.Sheets,
+  spreadsheetId: string,
+  headers: string[],
+  rowData: (string | number | boolean | null)[]
+) {
+  const spreadsheet = await sheets.spreadsheets.get({ spreadsheetId, includeGridData: true, ranges: ["A1:Z1"] });
+  const sheet = spreadsheet.data.sheets?.[0];
+  const sheetTitle = sheet?.properties?.title || "Sheet1";
+  
+  const hasHeaders = sheet?.data?.[0]?.rowData?.[0]?.values && sheet.data[0].rowData[0].values.length > 0;
+
+  // Se não tem headers, atualiza a primeira linha com os headers
+  if (!hasHeaders) {
+    const lastColLetter = String.fromCharCode(64 + headers.length);
+    await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range: `${sheetTitle}!A1:${lastColLetter}1`,
+      valueInputOption: "USER_ENTERED",
+      requestBody: {
+        values: [headers],
+      },
+    });
+  }
+
+  // Anexa os dados na próxima linha livre
+  await sheets.spreadsheets.values.append({
+    spreadsheetId,
+    range: `${sheetTitle}!A1`,
+    valueInputOption: "USER_ENTERED",
+    insertDataOption: "INSERT_ROWS",
+    requestBody: {
+      values: [rowData],
     },
   });
 }

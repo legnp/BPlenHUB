@@ -6,6 +6,7 @@ import { USER_ORDERS_COLLECTION } from "@/config/collections";
 import { grantServiceEntitlement } from "@/lib/checkout";
 import admin from "@/lib/firebase-admin";
 import { sendPaymentApprovedEmail, sendServiceGrantedEmail } from "@/lib/checkout-emails";
+import { syncOrderToUserDrive } from "@/lib/drive-sync";
 
 /**
  * BPlen HUB — Mercado Pago Webhook Handler (🛰️)
@@ -76,7 +77,7 @@ export async function POST(req: NextRequest) {
     // 3. Ativação de Serviço (Apenas se aprovado 🏆)
     if (status === "approved") {
       const order = orderSnap.data();
-      const { userId, userEmail, productId, productSlug, productTitle, finalPrice } = order!;
+      const { userId, userEmail, productId, productSlug, productTitle, finalPrice, matricula, createdAt, basePrice, appliedDiscount } = order!;
 
       // Ativação da Permissão
       await grantServiceEntitlement({
@@ -95,11 +96,24 @@ export async function POST(req: NextRequest) {
       const userObj = { email: userEmail, name: nickname };
       const orderObj = { orderId, productTitle, finalPrice };
 
+      // Preparar dados para o Extrato Financeiro
+      const orderDate = createdAt?.toDate ? createdAt.toDate().toLocaleDateString('pt-BR') : new Date().toLocaleDateString('pt-BR');
+      const rowData = [
+        orderDate,
+        orderId,
+        productTitle,
+        basePrice || finalPrice,
+        appliedDiscount || 0,
+        finalPrice,
+        "Aprovado"
+      ];
+
       // Passamos a promessa adiante mas não seguramos o Webhook. Mercado Pago exige resposta rápida!
       Promise.allSettled([
         sendPaymentApprovedEmail(userObj, orderObj, dataId),
-        sendServiceGrantedEmail(userObj, productTitle)
-      ]).catch(err => console.error("🚨 Erro nos e-mails do webhook:", err));
+        sendServiceGrantedEmail(userObj, productTitle),
+        ...(matricula && matricula !== "NAO_MAPEADA" ? [syncOrderToUserDrive(matricula, rowData)] : [])
+      ]).catch(err => console.error("🚨 Erro assíncrono no webhook (Email/Sync):", err));
 
     } else {
       console.log(`🟡 [Webhook:MP] Ordem ${orderId} status: ${status} (${status_detail})`);

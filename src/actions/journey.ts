@@ -5,6 +5,7 @@ import { Product } from "@/types/products";
 import { JourneyStep, SubStepConfig, JourneyProgress } from "@/types/journey";
 import { surveys } from "@/config/surveys";
 import { JOURNEY_STAGES } from "@/config/journey/steps-registry";
+import { syncJourneyToUserDrive } from "@/lib/drive-sync";
 
 /**
  * BPlen HUB — Grouped Journey Engine (Server Side) 🧬
@@ -419,7 +420,23 @@ export async function updateJourneySubStepAction(
       return finalProgress;
     });
 
-    return { success: true, progress: trxResult as unknown as JourneyProgress };
+    const finalProgressTyped = trxResult as unknown as JourneyProgress;
+
+    // 📡 Sincronizar Snapshot com o Google Drive (Assíncrono para não travar a UI)
+    try {
+      const updatedAtStr = new Date().toLocaleDateString('pt-BR');
+      const rowData = [
+        updatedAtStr,
+        stepId, 
+        subStepId, 
+        `${finalProgressTyped.overallProgress}%`
+      ];
+      syncJourneyToUserDrive(matricula, rowData).catch(err => console.error("🚨 [DriveSync:Journey] Erro na background task:", err));
+    } catch (e) {
+      console.error("🚨 [DriveSync:Journey] Erro ao engatilhar sync:", e);
+    }
+
+    return { success: true, progress: finalProgressTyped };
   } catch (error) {
     console.error("❌ [JourneyAction] Erro ao atualizar subpasso:", error);
     return { success: false };

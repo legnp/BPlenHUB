@@ -100,6 +100,7 @@ export async function closeAttendeeAction(
 
     let userEmail = "";
     let userName = "";
+    let tasksToSync: string[] = [];
 
     await db.runTransaction(async (transaction) => {
       const attendeeRef = eventRef.collection("attendees").doc(userId);
@@ -160,6 +161,8 @@ export async function closeAttendeeAction(
             .split(/\r?\n/)
             .map(line => line.replace(/^[\s*\-\d\.)]+/, "").trim())
             .filter(line => line.length > 0);
+
+          tasksToSync = taskLines; // Save for external sync
 
           taskLines.forEach((taskTitle, idx) => {
             const taskId = `booking-${eventId}-task-${idx}`;
@@ -230,6 +233,28 @@ export async function closeAttendeeAction(
         sendAbsenceRegisteredEmail(userDetail, eventTitle).catch((err) => {
           console.error("Erro ao enviar e-mail de falta:", err);
         });
+      }
+    }
+
+    // 📡 Sincronizar Tarefas com o Google Drive (Assíncrono)
+    if (tasksToSync.length > 0 && matricula && matricula !== "PENDING") {
+      try {
+        const { syncBacklogToUserDrive } = await import("@/lib/drive-sync");
+        const eventTitle = eventData.summary || "Sessão de Mentoria";
+        const dtAtribuicao = new Date().toLocaleDateString('pt-BR');
+
+        Promise.allSettled(tasksToSync.map(task => {
+          const rowData = [
+            dtAtribuicao,
+            eventTitle,
+            task,
+            "Sprint atual",
+            ""
+          ];
+          return syncBacklogToUserDrive(matricula, rowData);
+        })).catch(err => console.error("🚨 [DriveSync:Backlog] Erro ao engatilhar sync de tarefas:", err));
+      } catch (e) {
+         console.error("🚨 [DriveSync:Backlog] Falha de import/sync:", e);
       }
     }
 

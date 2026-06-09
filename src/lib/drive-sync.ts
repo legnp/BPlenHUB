@@ -1,6 +1,6 @@
 import { getDriveClient, getSheetsClient } from "@/lib/google-auth";
 import { serverEnv } from "@/env";
-import { ensureFolder, createSpreadsheet, syncDataToSheet } from "@/lib/drive-utils";
+import { ensureFolder, createSpreadsheet, syncDataToSheet, appendDataToSheet, getStandardFolderWithHealing, DRIVE_FOLDERS, LEGACY_FOLDERS } from "@/lib/drive-utils";
 
 /**
  * BPlen HUB — Drive Sync Service (🏁)
@@ -37,10 +37,16 @@ export async function syncSurveyToUserDrive(config: SurveySyncConfig) {
     // 2. Garantir hierarquia (Cascata 🛰️)
     const catFolderId = await ensureFolder(drive, baseFolderId, categoryName);
     const userFolderId = await ensureFolder(drive, catFolderId, matricula);
-    const surveyFolderId = await ensureFolder(drive, userFolderId, "1.Surveys");
+
+    // Identificar destino baseado no título
+    const isCadastro = surveyTitle.toLowerCase().includes("cadastro") || surveyTitle.toLowerCase().includes("perfil");
+    const targetFolder = isCadastro ? DRIVE_FOLDERS.CADASTRO : DRIVE_FOLDERS.SURVEYS;
+    const legacyFolders = isCadastro ? LEGACY_FOLDERS.CADASTRO : LEGACY_FOLDERS.SURVEYS;
+
+    const targetFolderId = await getStandardFolderWithHealing(drive, userFolderId, targetFolder, legacyFolders);
 
     // 3. Criar/Atualizar Planilha
-    const { id: spreadsheetId } = await createSpreadsheet(drive, surveyFolderId, `${surveyTitle} - ${matricula}`);
+    const { id: spreadsheetId } = await createSpreadsheet(drive, targetFolderId, `${surveyTitle} - ${matricula}`);
 
     // 4. Sincronizar Dados
     await syncDataToSheet(sheets, spreadsheetId, headers, rowData);
@@ -67,3 +73,83 @@ export async function getUserRootFolder(matricula: string) {
   const catFolderId = await ensureFolder(drive, baseFolderId, categoryName);
   return await ensureFolder(drive, catFolderId, matricula);
 }
+
+/**
+ * 💰 Sincroniza dados financeiros (Extrato de Ordens)
+ */
+export async function syncOrderToUserDrive(matricula: string, rowData: (string | number | boolean | null)[]) {
+  try {
+    const drive = await getDriveClient();
+    const sheets = await getSheetsClient();
+    const userFolderId = await getUserRootFolder(matricula);
+
+    const financeFolderId = await getStandardFolderWithHealing(drive, userFolderId, DRIVE_FOLDERS.FINANCEIRO);
+    const fileName = `Extrato_Financeiro - ${matricula}`;
+
+    const { id: spreadsheetId } = await createSpreadsheet(drive, financeFolderId, fileName);
+
+    const headers = ["Data", "Order ID", "Produto", "Valor Original", "Desconto", "Valor Pago", "Status"];
+    await appendDataToSheet(sheets, spreadsheetId, headers, rowData);
+
+    console.log(`✅ [DriveSync:Finance] Ordem anexada: ${matricula}`);
+    return spreadsheetId;
+  } catch (err) {
+    console.error(`❌ [DriveSync:Finance] Falha ao sincronizar ordem:`, err);
+    throw err;
+  }
+}
+
+/**
+ * 🗺️ Sincroniza o Snapshot da Jornada (Progresso)
+ */
+export async function syncJourneyToUserDrive(matricula: string, rowData: (string | number | boolean | null)[]) {
+  try {
+    const drive = await getDriveClient();
+    const sheets = await getSheetsClient();
+    const userFolderId = await getUserRootFolder(matricula);
+
+    const acompanhamentoFolderId = await getStandardFolderWithHealing(drive, userFolderId, DRIVE_FOLDERS.ACOMPANHAMENTO);
+    const fileName = `Progresso_Jornada - ${matricula}`;
+
+    const { id: spreadsheetId } = await createSpreadsheet(drive, acompanhamentoFolderId, fileName);
+
+    const headers = ["Última Atualização", "Fase Atual", "Etapa Atual", "Progresso Global (%)"];
+    
+    // Para jornada, nós sobrescrevemos (Snapshot)
+    await syncDataToSheet(sheets, spreadsheetId, headers, rowData);
+
+    console.log(`✅ [DriveSync:Journey] Snapshot de Jornada atualizado: ${matricula}`);
+    return spreadsheetId;
+  } catch (err) {
+    console.error(`❌ [DriveSync:Journey] Falha ao sincronizar jornada:`, err);
+    throw err;
+  }
+}
+
+/**
+ * ✅ Sincroniza o Backlog de Tarefas
+ */
+export async function syncBacklogToUserDrive(matricula: string, rowData: (string | number | boolean | null)[]) {
+  try {
+    const drive = await getDriveClient();
+    const sheets = await getSheetsClient();
+    const userFolderId = await getUserRootFolder(matricula);
+
+    const docsFolderId = await getStandardFolderWithHealing(drive, userFolderId, DRIVE_FOLDERS.DOCUMENTOS, LEGACY_FOLDERS.DOCUMENTOS);
+    const fileName = `Tarefas_Backlog - ${matricula}`;
+
+    const { id: spreadsheetId } = await createSpreadsheet(drive, docsFolderId, fileName);
+
+    const headers = ["Data Atribuição", "ID Evento/Origem", "Tarefa", "Status", "Comentários"];
+    
+    // Adiciona ao backlog (anexa linhas)
+    await appendDataToSheet(sheets, spreadsheetId, headers, rowData);
+
+    console.log(`✅ [DriveSync:Backlog] Tarefa anexada: ${matricula}`);
+    return spreadsheetId;
+  } catch (err) {
+    console.error(`❌ [DriveSync:Backlog] Falha ao sincronizar backlog:`, err);
+    throw err;
+  }
+}
+
