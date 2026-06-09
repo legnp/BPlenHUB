@@ -133,7 +133,7 @@ export async function getStandardFolderWithHealing(
 // 3. Gerenciador de Planilhas
 // ──────────────────────────────
 /**
- * Cria uma planilha do Google Sheets dentro de uma pasta específica.
+ * Cria uma planilha do Google Sheets dentro de uma pasta específica (Incondicionalmente).
  */
 export async function createSpreadsheet(
   drive: drive_v3.Drive,
@@ -155,6 +155,34 @@ export async function createSpreadsheet(
     id: sheetFile.data.id,
     webViewLink: sheetFile.data.webViewLink || ""
   };
+}
+
+/**
+ * Busca uma planilha pelo nome dentro de uma pasta. Se não existir, cria.
+ */
+export async function getOrCreateSpreadsheet(
+  drive: drive_v3.Drive,
+  parentFolderId: string,
+  fileName: string
+): Promise<{ id: string; webViewLink: string }> {
+  // Busca pela planilha com o nome exato na pasta
+  const searchResult = await drive.files.list({
+    q: `'${parentFolderId}' in parents and name = '${fileName}' and mimeType = 'application/vnd.google-apps.spreadsheet' and trashed = false`,
+    fields: "files(id, webViewLink)",
+    supportsAllDrives: true,
+    includeItemsFromAllDrives: true,
+  });
+
+  if (searchResult.data.files && searchResult.data.files.length > 0) {
+    const existingFile = searchResult.data.files[0];
+    return {
+      id: existingFile.id!,
+      webViewLink: existingFile.webViewLink || ""
+    };
+  }
+
+  // Se não encontrou, cria
+  return await createSpreadsheet(drive, parentFolderId, fileName);
 }
 
 /**

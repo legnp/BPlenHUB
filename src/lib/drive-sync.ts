@@ -1,6 +1,6 @@
 import { getDriveClient, getSheetsClient } from "@/lib/google-auth";
 import { serverEnv } from "@/env";
-import { ensureFolder, createSpreadsheet, syncDataToSheet, appendDataToSheet, getStandardFolderWithHealing, DRIVE_FOLDERS, LEGACY_FOLDERS } from "@/lib/drive-utils";
+import { ensureFolder, createSpreadsheet, getOrCreateSpreadsheet, syncDataToSheet, appendDataToSheet, getStandardFolderWithHealing, DRIVE_FOLDERS, LEGACY_FOLDERS } from "@/lib/drive-utils";
 
 /**
  * BPlen HUB — Drive Sync Service (🏁)
@@ -46,7 +46,7 @@ export async function syncSurveyToUserDrive(config: SurveySyncConfig) {
     const targetFolderId = await getStandardFolderWithHealing(drive, userFolderId, targetFolder, legacyFolders);
 
     // 3. Criar/Atualizar Planilha
-    const { id: spreadsheetId } = await createSpreadsheet(drive, targetFolderId, `${surveyTitle} - ${matricula}`);
+    const { id: spreadsheetId } = await getOrCreateSpreadsheet(drive, targetFolderId, `${surveyTitle} - ${matricula}`);
 
     // 4. Sincronizar Dados
     await syncDataToSheet(sheets, spreadsheetId, headers, rowData);
@@ -86,7 +86,7 @@ export async function syncOrderToUserDrive(matricula: string, rowData: (string |
     const financeFolderId = await getStandardFolderWithHealing(drive, userFolderId, DRIVE_FOLDERS.FINANCEIRO);
     const fileName = `Extrato_Financeiro - ${matricula}`;
 
-    const { id: spreadsheetId } = await createSpreadsheet(drive, financeFolderId, fileName);
+    const { id: spreadsheetId } = await getOrCreateSpreadsheet(drive, financeFolderId, fileName);
 
     const headers = ["Data", "Order ID", "Produto", "Valor Original", "Desconto", "Valor Pago", "Status"];
     await appendDataToSheet(sheets, spreadsheetId, headers, rowData);
@@ -111,7 +111,7 @@ export async function syncJourneyToUserDrive(matricula: string, rowData: (string
     const acompanhamentoFolderId = await getStandardFolderWithHealing(drive, userFolderId, DRIVE_FOLDERS.ACOMPANHAMENTO);
     const fileName = `Progresso_Jornada - ${matricula}`;
 
-    const { id: spreadsheetId } = await createSpreadsheet(drive, acompanhamentoFolderId, fileName);
+    const { id: spreadsheetId } = await getOrCreateSpreadsheet(drive, acompanhamentoFolderId, fileName);
 
     const headers = ["Última Atualização", "Fase Atual", "Etapa Atual", "Progresso Global (%)"];
     
@@ -138,7 +138,7 @@ export async function syncBacklogToUserDrive(matricula: string, rowData: (string
     const docsFolderId = await getStandardFolderWithHealing(drive, userFolderId, DRIVE_FOLDERS.DOCUMENTOS, LEGACY_FOLDERS.DOCUMENTOS);
     const fileName = `Tarefas_Backlog - ${matricula}`;
 
-    const { id: spreadsheetId } = await createSpreadsheet(drive, docsFolderId, fileName);
+    const { id: spreadsheetId } = await getOrCreateSpreadsheet(drive, docsFolderId, fileName);
 
     const headers = ["Data Atribuição", "ID Evento/Origem", "Tarefa", "Status", "Comentários"];
     
