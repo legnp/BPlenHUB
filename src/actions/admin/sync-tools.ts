@@ -4,6 +4,7 @@ import { getAdminDb } from "@/lib/firebase-admin";
 import { requireAdmin } from "@/lib/auth-guards";
 import { syncOrderToUserDrive, syncJourneyToUserDrive, syncBacklogToUserDrive } from "@/lib/drive-sync";
 import { USER_ORDERS_COLLECTION } from "@/config/collections";
+import { getJourneyStagesAction } from "@/actions/journey";
 
 /**
  * Ferramenta Administrativa para Sincronização Retroativa de Dados do Firestore para o Google Drive.
@@ -56,14 +57,34 @@ export async function triggerRetroactiveDriveSyncAction(targetMatricula: string,
       const data = progressSnap.data();
       const updatedAtStr = data?.updatedAt ? new Date(data.updatedAt).toLocaleDateString('pt-BR') : new Date().toLocaleDateString('pt-BR');
       
-      const rowData = [
-        updatedAtStr,
-        data?.lastActiveStepId || "N/A", 
-        "Snapshot Histórico Completo", 
-        `${data?.overallProgress || 0}%`
-      ];
+      const stages = await getJourneyStagesAction();
+      const rowsData: any[][] = [];
+
+      stages.forEach(stage => {
+        const stageProgress = data?.steps?.[stage.id];
+        const isStageLocked = stageProgress?.status === "locked" || !stageProgress;
+
+        stage.substeps.forEach(sub => {
+          let statusLabel = "Bloqueado";
+          if (!isStageLocked) {
+             const isCompleted = stageProgress?.completedSubSteps?.includes(sub.id);
+             if (isCompleted) statusLabel = "Concluído";
+             else statusLabel = "Pendente";
+          }
+          
+          rowsData.push([
+             stage.title,
+             sub.title,
+             statusLabel,
+             updatedAtStr,
+             `${data?.overallProgress || 0}%`
+          ]);
+        });
+      });
       
-      await syncJourneyToUserDrive(targetMatricula, rowData);
+      if (rowsData.length > 0) {
+        await syncJourneyToUserDrive(targetMatricula, rowsData);
+      }
     }
 
     // 4. Sincronizar Histórico do Backlog de Tarefas

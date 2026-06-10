@@ -238,19 +238,26 @@ export async function syncDataToSheet(
   sheets: sheets_v4.Sheets,
   spreadsheetId: string,
   headers: string[],
-  rowData: (string | number | boolean | null)[]
+  rowsData: (string | number | boolean | null)[][]
 ) {
   const spreadsheet = await sheets.spreadsheets.get({ spreadsheetId });
   const sheetTitle = spreadsheet.data.sheets?.[0].properties?.title || "Sheet1";
 
   const lastColLetter = String.fromCharCode(64 + headers.length); 
+  const totalRows = rowsData.length + 1;
+
+  // Limpar a aba para garantir Snapshot limpo, sem rastros do passado
+  await sheets.spreadsheets.values.clear({
+    spreadsheetId,
+    range: `${sheetTitle}!A:Z`
+  });
 
   await sheets.spreadsheets.values.update({
     spreadsheetId,
-    range: `${sheetTitle}!A1:${lastColLetter}2`,
+    range: `${sheetTitle}!A1:${lastColLetter}${totalRows}`,
     valueInputOption: "USER_ENTERED",
     requestBody: {
-      values: [headers, rowData],
+      values: [headers, ...rowsData],
     },
   });
 }

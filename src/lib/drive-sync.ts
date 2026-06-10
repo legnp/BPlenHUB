@@ -49,7 +49,7 @@ export async function syncSurveyToUserDrive(config: SurveySyncConfig) {
     const { id: spreadsheetId } = await getOrCreateSpreadsheet(drive, targetFolderId, `${surveyTitle} - ${matricula}`);
 
     // 4. Sincronizar Dados
-    await syncDataToSheet(sheets, spreadsheetId, headers, rowData);
+    await syncDataToSheet(sheets, spreadsheetId, headers, [rowData]);
 
     console.log(`✅ [DriveSync] Dados sincronizados: ${surveyTitle} -> ${matricula}`);
     return spreadsheetId;
@@ -102,8 +102,9 @@ export async function syncOrderToUserDrive(matricula: string, rowData: (string |
 /**
  * 🗺️ Sincroniza o Snapshot da Jornada (Progresso)
  */
-export async function syncJourneyToUserDrive(matricula: string, rowData: (string | number | boolean | null)[]) {
+export async function syncJourneyToUserDrive(matricula: string, rowsData: (string | number | boolean | null)[][]) {
   try {
+    console.log(`[DriveSync:Journey] Iniciando sincronização do Snapshot para ${matricula}...`);
     const drive = await getDriveClient();
     const sheets = await getSheetsClient();
     const userFolderId = await getUserRootFolder(matricula);
@@ -113,10 +114,10 @@ export async function syncJourneyToUserDrive(matricula: string, rowData: (string
 
     const { id: spreadsheetId } = await getOrCreateSpreadsheet(drive, acompanhamentoFolderId, fileName);
 
-    const headers = ["Última Atualização", "Fase Atual", "Etapa Atual", "Progresso Global (%)"];
+    const headers = ["Fase (Módulo)", "Checkpoint (Atividade)", "Status", "Última Atualização", "Progresso Global (%)"];
     
     // Para jornada, nós sobrescrevemos (Snapshot)
-    await syncDataToSheet(sheets, spreadsheetId, headers, rowData);
+    await syncDataToSheet(sheets, spreadsheetId, headers, rowsData);
 
     console.log(`✅ [DriveSync:Journey] Snapshot de Jornada atualizado: ${matricula}`);
     return spreadsheetId;

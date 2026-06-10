@@ -424,14 +424,36 @@ export async function updateJourneySubStepAction(
 
     // 📡 Sincronizar Snapshot com o Google Drive (Assíncrono para não travar a UI)
     try {
-      const updatedAtStr = new Date().toLocaleDateString('pt-BR');
-      const rowData = [
-        updatedAtStr,
-        stepId, 
-        subStepId, 
-        `${finalProgressTyped.overallProgress}%`
-      ];
-      syncJourneyToUserDrive(matricula, rowData).catch(err => console.error("🚨 [DriveSync:Journey] Erro na background task:", err));
+      getJourneyStagesAction().then(stages => {
+        const updatedAtStr = new Date().toLocaleDateString('pt-BR');
+        const rowsData: any[][] = [];
+
+        stages.forEach(stage => {
+          const stageProgress = finalProgressTyped.steps[stage.id];
+          const isStageLocked = stageProgress?.status === "locked" || !stageProgress;
+
+          stage.substeps.forEach(sub => {
+            let statusLabel = "Bloqueado";
+            if (!isStageLocked) {
+               const isCompleted = stageProgress?.completedSubSteps?.includes(sub.id);
+               if (isCompleted) statusLabel = "Concluído";
+               else statusLabel = "Pendente";
+            }
+            
+            rowsData.push([
+               stage.title,
+               sub.title,
+               statusLabel,
+               updatedAtStr,
+               `${finalProgressTyped.overallProgress}%`
+            ]);
+          });
+        });
+
+        if (rowsData.length > 0) {
+          syncJourneyToUserDrive(matricula, rowsData).catch(err => console.error("🚨 [DriveSync:Journey] Erro na background task:", err));
+        }
+      }).catch(err => console.error("🚨 [DriveSync:Journey] Erro buscando estágios:", err));
     } catch (e) {
       console.error("🚨 [DriveSync:Journey] Erro ao engatilhar sync:", e);
     }

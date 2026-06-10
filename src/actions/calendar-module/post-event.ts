@@ -390,9 +390,7 @@ export async function generateEventSummarySheetAction(
       a.participantFeedback || "", a.timestamp
     ]);
 
-    await syncDataToSheet(sheets, spreadsheetId, headers, rows[0]); // TODO: support multiple rows in syncDataToSheet if needed, currently it's for 1 row
-    // Actually syncDataToSheet in drive-utils.ts only supports [headers, rowData]. 
-    // I will refactor it later or just use it as is for now.
+    await syncDataToSheet(sheets, spreadsheetId, headers, rows);
 
     await eventRef.update({
       summarySheetId: spreadsheetId,
