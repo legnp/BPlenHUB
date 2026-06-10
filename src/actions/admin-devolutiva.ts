@@ -35,6 +35,7 @@ export interface DevolutivaUserData {
     role: string;
     hasCompletedWelcome: boolean;
     discLink?: string;
+    driveFolderUrl?: string;
   };
   journey: {
     currentPhase: string;
@@ -184,7 +185,19 @@ export async function getDevolutivaUserData(
       };
     }
 
-    // 8. Montar payload consolidado
+    // 8. Obter a pasta do Drive do usuário de forma dinâmica
+    let driveFolderUrl = "";
+    try {
+      const { getUserRootFolder } = await import("@/lib/drive-sync");
+      const folderId = await getUserRootFolder(matricula);
+      if (folderId) {
+        driveFolderUrl = `https://drive.google.com/drive/folders/${folderId}`;
+      }
+    } catch (driveErr) {
+      console.error(`⚠️ Erro ao obter pasta do Drive para matricula ${matricula}:`, driveErr);
+    }
+
+    // 9. Montar payload consolidado
     const rawPayload: DevolutivaUserData = {
       profile: {
         matricula,
@@ -196,6 +209,7 @@ export async function getDevolutivaUserData(
         role: accessData.role || (accessData.admin ? "admin" : "member"),
         hasCompletedWelcome: userData.hasCompletedWelcome || false,
         discLink,
+        driveFolderUrl,
       },
       journey: journeyData,
       results,
