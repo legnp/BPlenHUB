@@ -29,7 +29,20 @@ const nextConfig: NextConfig = {
   },
 
   // ──────────────────────────────
-  // 2. Security Headers (OWASP Compliance 🛡️)
+  // 2. Firebase Auth Proxied Rewrites (Soberania de Domínio 🔑)
+  // Evita o erro 404 de popup ao usar bplen.com como authDomain
+  // ──────────────────────────────
+  async rewrites() {
+    return [
+      {
+        source: "/__/auth/:path*",
+        destination: "https://bplenhub.firebaseapp.com/__/auth/:path*",
+      },
+    ];
+  },
+
+  // ──────────────────────────────
+  // 3. Security Headers (OWASP Compliance 🛡️)
   // ──────────────────────────────
   async headers() {
     return [
