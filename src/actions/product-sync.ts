@@ -60,7 +60,7 @@ export async function syncProductToDriveAction(product: Product) {
       new Date().toLocaleString("pt-BR")
     ];
 
-    await syncDataToSheet(sheets, sheetId, headers, rowData);
+    await syncDataToSheet(sheets, sheetId, headers, [rowData]);
 
     console.log(`✅ [Drive Sync] Serviço ${product.serviceCode} sincronizado.`);
 

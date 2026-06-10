@@ -42,9 +42,11 @@ export interface UserStepProgress {
   stepId: string;
   status: StepStatus;
   completedSubSteps: string[];
+  subStepCompletionDates?: Record<string, string>; // Mapeamento do subStepId para a data de conclusão
   currentSubStepId?: string;
   startedAt?: string;
   completedAt?: string;
+  updatedAt?: string;
 }
 
 export interface JourneyProgress {

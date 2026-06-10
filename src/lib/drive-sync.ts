@@ -114,7 +114,7 @@ export async function syncJourneyToUserDrive(matricula: string, rowsData: (strin
 
     const { id: spreadsheetId } = await getOrCreateSpreadsheet(drive, acompanhamentoFolderId, fileName);
 
-    const headers = ["Fase (Módulo)", "Checkpoint (Atividade)", "Status", "Última Atualização", "Progresso Global (%)"];
+    const headers = ["Fase (Módulo)", "Checkpoint (Atividade)", "Status", "Data de Conclusão", "Última Atualização", "Progresso Global (%)"];
     
     // Para jornada, nós sobrescrevemos (Snapshot)
     await syncDataToSheet(sheets, spreadsheetId, headers, rowsData);

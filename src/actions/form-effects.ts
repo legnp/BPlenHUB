@@ -45,7 +45,7 @@ export async function handleFormSideEffects(config: FormConfig, response: FormRe
       })
     ];
 
-    await syncDataToSheet(sheets, spreadsheetId, headers, rowData);
+    await syncDataToSheet(sheets, spreadsheetId, headers, [rowData]);
     console.log(`✅ [Form Effects] Sincronização Sheets Concluída: ${matricula}`);
 
     // E. Lógica de Persistência no Perfil do Usuário (Soberania de Dados)

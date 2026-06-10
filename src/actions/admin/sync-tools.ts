@@ -66,16 +66,25 @@ export async function triggerRetroactiveDriveSyncAction(targetMatricula: string,
 
         stage.substeps.forEach(sub => {
           let statusLabel = "Bloqueado";
+          let completionDate = "N/A";
+
           if (!isStageLocked) {
              const isCompleted = stageProgress?.completedSubSteps?.includes(sub.id);
-             if (isCompleted) statusLabel = "Concluído";
-             else statusLabel = "Pendente";
+             if (isCompleted) {
+                 statusLabel = "Concluído";
+                 const cDate = stageProgress?.subStepCompletionDates?.[sub.id];
+                 completionDate = cDate ? new Date(cDate).toLocaleDateString('pt-BR') : updatedAtStr;
+             }
+             else {
+                 statusLabel = "Pendente";
+             }
           }
           
           rowsData.push([
              stage.title,
              sub.title,
              statusLabel,
+             completionDate,
              updatedAtStr,
              `${data?.overallProgress || 0}%`
           ]);

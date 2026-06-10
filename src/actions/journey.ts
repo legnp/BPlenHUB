@@ -350,10 +350,14 @@ export async function updateJourneySubStepAction(
       };
 
       let newCompleted = [...(stepProgress.completedSubSteps || [])];
+      let newCompletionDates = { ...(stepProgress.subStepCompletionDates || {}) };
+
       if (completed) {
         if (!newCompleted.includes(subStepId)) newCompleted.push(subStepId);
+        newCompletionDates[subStepId] = new Date().toISOString();
       } else {
         newCompleted = newCompleted.filter(id => id !== subStepId);
+        delete newCompletionDates[subStepId];
       }
 
       // 🔍 DETECÇÃO DE CONCLUSÃO ROBUSTA (Global & Standalone) 🛡️
@@ -374,6 +378,7 @@ export async function updateJourneySubStepAction(
         [stepId]: {
           ...stepProgress,
           completedSubSteps: newCompleted,
+          subStepCompletionDates: newCompletionDates,
           status: newStatus,
           updatedAt: new Date().toISOString()
         }
@@ -434,16 +439,25 @@ export async function updateJourneySubStepAction(
 
           stage.substeps.forEach(sub => {
             let statusLabel = "Bloqueado";
+            let completionDate = "N/A";
+
             if (!isStageLocked) {
                const isCompleted = stageProgress?.completedSubSteps?.includes(sub.id);
-               if (isCompleted) statusLabel = "Concluído";
-               else statusLabel = "Pendente";
+               if (isCompleted) {
+                   statusLabel = "Concluído";
+                   const cDate = stageProgress?.subStepCompletionDates?.[sub.id];
+                   completionDate = cDate ? new Date(cDate).toLocaleDateString('pt-BR') : updatedAtStr;
+               }
+               else {
+                   statusLabel = "Pendente";
+               }
             }
             
             rowsData.push([
                stage.title,
                sub.title,
                statusLabel,
+               completionDate,
                updatedAtStr,
                `${finalProgressTyped.overallProgress}%`
             ]);
