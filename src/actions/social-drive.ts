@@ -1,6 +1,6 @@
 "use server";
 
-import { getDriveClient } from "@/lib/google-auth";
+import { getDriveClient, getSheetsClient } from "@/lib/google-auth";
 import { ensureFolder } from "@/lib/drive-utils";
 import { serverEnv } from "@/env";
 import { Readable } from "stream";
