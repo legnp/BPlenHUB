@@ -1,19 +1,7 @@
 "use server";
 
-import { 
-  collection, 
-  getDocs, 
-  addDoc, 
-  updateDoc, 
-  deleteDoc, 
-  doc, 
-  query, 
-  orderBy, 
-  where,
-  serverTimestamp,
-  Timestamp
-} from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import admin, { getAdminDb } from "@/lib/firebase-admin";
+import { Timestamp } from "firebase/firestore";
 import { SocialPost } from "@/types/social";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth-guards";
@@ -22,17 +10,14 @@ import { syncContentPostToDriveBackup } from "@/actions/social-drive";
 const COLLECTION_NAME = "content_posts";
 
 /**
- * BPlen HUB — Social Media Actions
- * Gerencia o CRUD de postagens manuais para a vitrine de conteúdo.
+ * BPlen HUB — Social Media Actions (Soberania de Dados)
+ * Gerencia o CRUD de postagens manuais para a vitrine de conteúdo usando o Admin SDK.
  */
 
 export async function getSocialPosts(onlyActive: boolean = false) {
   try {
-    const postsRef = collection(db, COLLECTION_NAME);
-    // Simplificamos a query para evitar a exigência de índices compostos no Firestore durante o build
-    const q = query(postsRef);
-
-    const querySnapshot = await getDocs(q);
+    const db = getAdminDb();
+    const querySnapshot = await db.collection(COLLECTION_NAME).get();
     let posts: SocialPost[] = [];
     
     querySnapshot.forEach((doc) => {
@@ -40,8 +25,8 @@ export async function getSocialPosts(onlyActive: boolean = false) {
       posts.push({
         id: doc.id,
         ...data,
-        createdAt: data.createdAt as Timestamp,
-        updatedAt: data.updatedAt as Timestamp,
+        createdAt: data.createdAt as any as Timestamp,
+        updatedAt: data.updatedAt as any as Timestamp,
       } as SocialPost);
     });
 
@@ -64,21 +49,21 @@ export async function getSocialPosts(onlyActive: boolean = false) {
 
 export async function getSocialPostById(id: string): Promise<SocialPost | null> {
   try {
-    const postRef = doc(db, COLLECTION_NAME, id);
-    const postSnap = await getDocs(query(collection(db, COLLECTION_NAME), where("__name__", "==", id)));
+    const db = getAdminDb();
+    const docSnap = await db.collection(COLLECTION_NAME).doc(id).get();
     
-    if (postSnap.empty) {
+    if (!docSnap.exists) {
       return null;
     }
 
-    const docSnap = postSnap.docs[0];
     const data = docSnap.data();
+    if (!data) return null;
 
     return {
       id: docSnap.id,
       ...data,
-      createdAt: data.createdAt as Timestamp,
-      updatedAt: data.updatedAt as Timestamp,
+      createdAt: data.createdAt as any as Timestamp,
+      updatedAt: data.updatedAt as any as Timestamp,
     } as SocialPost;
   } catch (error) {
     console.error(`Erro ao buscar post social ${id}:`, error);
@@ -91,11 +76,11 @@ export async function createSocialPost(data: Omit<SocialPost, "id" | "createdAt"
     // 🛡️ Segurança Real no Servidor
     await requireAdmin(adminToken);
 
-    const postsRef = collection(db, COLLECTION_NAME);
-    const docRef = await addDoc(postsRef, {
+    const db = getAdminDb();
+    const docRef = await db.collection(COLLECTION_NAME).add({
       ...data,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
     
     revalidatePath("/admin/social");
@@ -126,10 +111,10 @@ export async function updateSocialPost(id: string, data: Partial<SocialPost>, ad
     // 🛡️ Segurança Real no Servidor
     await requireAdmin(adminToken);
 
-    const postRef = doc(db, COLLECTION_NAME, id);
-    await updateDoc(postRef, {
+    const db = getAdminDb();
+    await db.collection(COLLECTION_NAME).doc(id).update({
       ...data,
-      updatedAt: serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
     
     revalidatePath("/admin/social");
@@ -162,8 +147,8 @@ export async function deleteSocialPost(id: string, adminToken?: string) {
     // 🛡️ Segurança Real no Servidor
     await requireAdmin(adminToken);
 
-    const postRef = doc(db, COLLECTION_NAME, id);
-    await deleteDoc(postRef);
+    const db = getAdminDb();
+    await db.collection(COLLECTION_NAME).doc(id).delete();
     
     revalidatePath("/admin/social");
     revalidatePath("/conteudo");
@@ -190,10 +175,10 @@ export async function togglePostStatus(id: string, field: "isActive" | "isFeatur
     // 🛡️ Segurança Real no Servidor
     await requireAdmin(adminToken);
 
-    const postRef = doc(db, COLLECTION_NAME, id);
-    await updateDoc(postRef, {
+    const db = getAdminDb();
+    await db.collection(COLLECTION_NAME).doc(id).update({
       [field]: !currentValue,
-      updatedAt: serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
     
     revalidatePath("/admin/social");
