@@ -14,6 +14,6 @@ export interface SocialPost {
   isFeatured: boolean;
   content?: string; // Conteúdo Markdown para artigos
   author?: string;  // Nome do autor do artigo
-  createdAt?: Timestamp;
-  updatedAt?: Timestamp;
+  createdAt?: any;
+  updatedAt?: any;
 }
