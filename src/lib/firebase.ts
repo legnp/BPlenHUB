@@ -8,9 +8,14 @@ import { clientEnv } from "@/env";
  * Inicializa os serviços do Firebase para uso no navegador.
  */
 
+const rawAuthDomain = clientEnv.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN;
+const resolvedAuthDomain = (rawAuthDomain === "bplen.com" || rawAuthDomain === "www.bplen.com")
+  ? "bplenhub.firebaseapp.com"
+  : (rawAuthDomain || "bplenhub.firebaseapp.com");
+
 const firebaseConfig = {
   apiKey: clientEnv.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: clientEnv.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  authDomain: resolvedAuthDomain,
   projectId: clientEnv.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
   storageBucket: clientEnv.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: clientEnv.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,

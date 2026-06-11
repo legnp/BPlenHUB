@@ -38,6 +38,10 @@ const nextConfig: NextConfig = {
         source: "/__/auth/:path*",
         destination: "https://bplenhub.firebaseapp.com/__/auth/:path*",
       },
+      {
+        source: "/__/firebase/:path*",
+        destination: "https://bplenhub.firebaseapp.com/__/firebase/:path*",
+      },
     ];
   },
 
