@@ -16,7 +16,9 @@ import {
   AlertCircle,
   Upload,
   CheckCircle2,
-  HardDrive
+  HardDrive,
+  User,
+  FileText
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { auth } from "@/lib/firebase";
@@ -25,6 +27,8 @@ import { createSocialPost, updateSocialPost } from "@/actions/social";
 import { uploadSocialThumbnailToDrive, deleteSocialThumbnailFromDrive } from "@/actions/social-drive";
 
 import GlassModal from "@/components/ui/GlassModal";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface SocialPostFormProps {
   post?: SocialPost | null;
@@ -33,6 +37,7 @@ interface SocialPostFormProps {
 }
 
 const PLATFORMS: { id: SocialPlatform; label: string; icon: any }[] = [
+  { id: 'article', label: 'Artigos', icon: FileText },
   { id: 'linkedin', label: 'LinkedIn', icon: Share2 },
   { id: 'instagram', label: 'Instagram', icon: Share2 },
   { id: 'tiktok', label: 'TikTok', icon: Globe },
@@ -47,7 +52,7 @@ export function SocialPostForm({ post, onClose, onSuccess }: SocialPostFormProps
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState<Omit<SocialPost, 'id' | 'createdAt' | 'updatedAt'>>({
-    platform: 'linkedin',
+    platform: 'article',
     title: '',
     summary: '',
     url: '',
@@ -55,6 +60,8 @@ export function SocialPostForm({ post, onClose, onSuccess }: SocialPostFormProps
     publishedAt: new Date().toISOString().split('T')[0],
     isActive: true,
     isFeatured: false,
+    content: '',
+    author: '',
   });
 
   useEffect(() => {
@@ -68,6 +75,8 @@ export function SocialPostForm({ post, onClose, onSuccess }: SocialPostFormProps
         publishedAt: post.publishedAt,
         isActive: post.isActive,
         isFeatured: post.isFeatured,
+        content: post.content || '',
+        author: post.author || '',
       });
     }
   }, [post]);
@@ -142,13 +151,16 @@ export function SocialPostForm({ post, onClose, onSuccess }: SocialPostFormProps
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-3">
-              <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-40 ml-1">Rede Social</label>
-              <div className="grid grid-cols-3 gap-2">
+              <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-40 ml-1">Formato / Rede Social</label>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                 {PLATFORMS.map((p) => (
                   <button
                     key={p.id}
                     type="button"
-                    onClick={() => setFormData({ ...formData, platform: p.id })}
+                    onClick={() => {
+                      const newUrl = p.id === 'article' ? 'https://bplen.com/conteudo' : formData.url;
+                      setFormData({ ...formData, platform: p.id, url: newUrl });
+                    }}
                     className={`flex items-center gap-2 p-3 rounded-xl border text-[9px] font-bold uppercase tracking-tighter transition-all ${
                       formData.platform === p.id 
                       ? "bg-[var(--accent-start)]/10 border-[var(--accent-start)] text-[var(--accent-start)]" 
@@ -261,13 +273,32 @@ export function SocialPostForm({ post, onClose, onSuccess }: SocialPostFormProps
               </div>
             </div>
 
+            {formData.platform === 'article' && (
+              <div className="space-y-2">
+                <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-40 ml-1">Autor do Artigo</label>
+                <div className="relative">
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] opacity-40 shrink-0" />
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ex: Sandra Lencina"
+                    value={formData.author}
+                    onChange={(e) => setFormData({ ...formData, author: e.target.value })}
+                    className="w-full bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-start)]/50 transition-all shadow-sm"
+                  />
+                </div>
+              </div>
+            )}
+
             <div className="space-y-2">
-              <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-40 ml-1">Link do Post Original</label>
+              <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-40 ml-1">
+                {formData.platform === 'article' ? "Link de Referência (Opcional)" : "Link do Post Original"}
+              </label>
               <div className="relative">
                 <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] opacity-40" />
                 <input
                   type="url"
-                  required
+                  required={formData.platform !== 'article'}
                   placeholder="https://www.linkedin.com/posts/..."
                   value={formData.url}
                   onChange={(e) => setFormData({ ...formData, url: e.target.value })}
@@ -275,6 +306,34 @@ export function SocialPostForm({ post, onClose, onSuccess }: SocialPostFormProps
                 />
               </div>
             </div>
+
+            {formData.platform === 'article' && (
+              <div className="space-y-4 pt-4">
+                <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-40 ml-1">Conteúdo do Artigo (Markdown)</label>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {/* Editor */}
+                  <textarea
+                    required
+                    rows={15}
+                    placeholder="Escreva seu artigo aqui usando formatação Markdown. Use **negrito**, # Títulos, etc."
+                    value={formData.content}
+                    onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                    className="w-full h-[400px] bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-2xl p-4 text-sm font-medium text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-start)]/50 transition-all resize-none shadow-sm custom-scrollbar"
+                  />
+
+                  {/* Live Preview */}
+                  <div className="h-[400px] overflow-y-auto bg-white/50 border border-[var(--border-primary)] rounded-2xl p-6 shadow-inner custom-scrollbar">
+                    <h3 className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-50 mb-4 border-b pb-2 border-black/5">Preview (Live)</h3>
+                    <div className="prose prose-sm prose-slate max-w-none">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {formData.content || "*Preview do artigo aparecerá aqui...*"}
+                      </ReactMarkdown>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex gap-4 pt-6 border-t border-[var(--border-primary)]">

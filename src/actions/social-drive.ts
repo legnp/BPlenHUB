@@ -122,3 +122,69 @@ export async function deleteSocialThumbnailFromDrive(urlOrId: string, adminToken
     return { success: false, error: error.message };
   }
 }
+
+/**
+ * 👑 BPlen HUB — Backup Mestre de Conteúdos (Soberania de Dados)
+ * Registra cada criação ou edição de postagem/artigo em uma planilha consolidada no Drive.
+ */
+export async function syncContentPostToDriveBackup(
+  postData: { id: string; title: string; platform: string; url?: string; summary?: string; author?: string; isActive: boolean; isFeatured: boolean; actionType: "CREATE" | "UPDATE" | "DELETE" },
+  adminToken?: string
+) {
+  try {
+    // 🛡️ Segurança Real no Servidor
+    await requireAdmin(adminToken);
+
+    console.log(`[SocialBackup] Iniciando backup do conteudo no Drive: id=${postData.id}`);
+    
+    const drive = await getDriveClient();
+    const sheets = await getSheetsClient();
+    
+    // O backup ficará na pasta raiz de social media do portfólio
+    const socialFolderId = await ensureFolder(
+      drive, 
+      serverEnv.GOOGLE_DRIVE_PORTFOLIO_ID, 
+      SOCIAL_FOLDER_NAME
+    );
+
+    const fileName = "BPlen_Backup_Conteudos";
+    const { getOrCreateSpreadsheet, appendDataToSheet } = await import("@/lib/drive-utils");
+    
+    const { id: spreadsheetId } = await getOrCreateSpreadsheet(drive, socialFolderId, fileName);
+
+    const headers = [
+      "Data da Ação", 
+      "Ação", 
+      "ID do Post", 
+      "Tipo/Plataforma", 
+      "Autor", 
+      "Título", 
+      "URL/Referência", 
+      "Resumo", 
+      "Ativo?", 
+      "Destaque?"
+    ];
+
+    const rowData = [
+      new Date().toLocaleString("pt-BR"),
+      postData.actionType,
+      postData.id,
+      postData.platform,
+      postData.author || "N/A",
+      postData.title,
+      postData.url || "Interno",
+      postData.summary || "N/A",
+      postData.isActive ? "Sim" : "Não",
+      postData.isFeatured ? "Sim" : "Não"
+    ];
+
+    await appendDataToSheet(sheets, spreadsheetId, headers, rowData);
+
+    console.log(`[SocialBackup] Backup concluido com sucesso no Google Drive.`);
+    return { success: true };
+  } catch (err: any) {
+    // Fail-soft para não impedir a gravação no banco principal
+    console.error(`❌ [SocialBackup] Falha ao sincronizar backup no Drive:`, err);
+    return { success: false, error: err.message };
+  }
+}

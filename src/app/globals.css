@@ -1,5 +1,5 @@
 @import "tailwindcss";
-
+@plugin "@tailwindcss/typography";
 /* ============================================
    BPlen HUB — Design System Glassmorphism v3.1
    Apple IOS Pro · Escala -10%

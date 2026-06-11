@@ -145,7 +145,13 @@ export async function handleSurveySideEffects(surveyId: string, responses: Recor
         break;
 
       default:
-        console.warn(`⚠️ [SurveyEffects] Nenhum efeito colateral mapeado para: ${surveyId}`);
+        if (surveyId.startsWith("content_evaluation_")) {
+          // Extraímos o título dinâmico da avaliação, se não existir, usa o ID
+          const tituloAvaliacao = String(responses.title || `Artigo/Post ID: ${surveyId.replace("content_evaluation_", "")}`);
+          await handleContentFeedbackEffect(responses, matricula, `Avaliação - ${tituloAvaliacao}`);
+        } else {
+          console.warn(`⚠️ [SurveyEffects] Nenhum efeito colateral mapeado para: ${surveyId}`);
+        }
     }
   } catch (globalErr) {
     console.error(`🚨 [SurveyEffects:Fatal] Falha no Dispatcher (${surveyId}):`, globalErr);

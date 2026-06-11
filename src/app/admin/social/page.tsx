@@ -17,7 +17,8 @@ import {
   Loader2, 
   Calendar as CalendarIcon,
   LayoutDashboard,
-  ArrowRight
+  ArrowRight,
+  FileText
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { SocialPost, SocialPlatform } from "@/types/social";
@@ -95,6 +96,7 @@ export default function SocialManagementPage() {
   };
 
   const platformIcons: Record<SocialPlatform, any> = {
+    article: FileText,
     linkedin: Share2,
     instagram: Share2,
     tiktok: Globe,
@@ -171,17 +173,17 @@ export default function SocialManagementPage() {
           />
         </div>
 
-        <div className="flex items-center bg-[var(--bg-primary)]/50 p-1.5 rounded-2xl border border-[var(--input-border)] gap-1">
-          {['all', 'linkedin', 'instagram', 'tiktok', 'whatsapp'].map((plat) => (
+        <div className="flex items-center bg-[var(--bg-primary)]/50 p-1.5 rounded-2xl border border-[var(--input-border)] gap-1 overflow-x-auto">
+          {['all', 'article', 'linkedin', 'instagram', 'tiktok', 'whatsapp'].map((plat) => (
             <button
               key={plat}
               onClick={() => setPlatformFilter(plat as any)}
-              className={`px-4 py-2 rounded-xl text-[9px] font-bold transition-all uppercase tracking-widest ${platformFilter === plat
+              className={`px-4 py-2 rounded-xl text-[9px] font-bold transition-all uppercase tracking-widest shrink-0 ${platformFilter === plat
                   ? "bg-[var(--accent-start)] text-white shadow-xl shadow-[var(--accent-start)]/20"
                   : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
                 }`}
             >
-              {plat === 'all' ? 'Todos' : plat}
+              {plat === 'all' ? 'Todos' : plat === 'article' ? 'Artigos' : plat}
             </button>
           ))}
         </div>
@@ -282,13 +284,23 @@ export default function SocialManagementPage() {
                     </button>
                   </div>
 
-                  <a 
-                    href={post.url} 
-                    target="_blank" 
-                    className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest text-[var(--accent-start)] hover:gap-3 transition-all"
-                  >
-                    Ver original <ArrowRight size={14} />
-                  </a>
+                  {post.platform === 'article' ? (
+                    <Link 
+                      href={`/conteudo/artigo/${post.id}`}
+                      target="_blank" 
+                      className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest text-[var(--accent-start)] hover:gap-3 transition-all"
+                    >
+                      Ler Artigo <ArrowRight size={14} />
+                    </Link>
+                  ) : (
+                    <a 
+                      href={post.url} 
+                      target="_blank" 
+                      className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest text-[var(--accent-start)] hover:gap-3 transition-all"
+                    >
+                      Ver original <ArrowRight size={14} />
+                    </a>
+                  )}
                 </div>
               </div>
             </motion.div>

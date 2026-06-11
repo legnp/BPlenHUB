@@ -17,6 +17,7 @@ import { db } from "@/lib/firebase";
 import { SocialPost } from "@/types/social";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth-guards";
+import { syncContentPostToDriveBackup } from "@/actions/social-drive";
 
 const COLLECTION_NAME = "content_posts";
 
@@ -61,6 +62,30 @@ export async function getSocialPosts(onlyActive: boolean = false) {
   }
 }
 
+export async function getSocialPostById(id: string): Promise<SocialPost | null> {
+  try {
+    const postRef = doc(db, COLLECTION_NAME, id);
+    const postSnap = await getDocs(query(collection(db, COLLECTION_NAME), where("__name__", "==", id)));
+    
+    if (postSnap.empty) {
+      return null;
+    }
+
+    const docSnap = postSnap.docs[0];
+    const data = docSnap.data();
+
+    return {
+      id: docSnap.id,
+      ...data,
+      createdAt: data.createdAt as Timestamp,
+      updatedAt: data.updatedAt as Timestamp,
+    } as SocialPost;
+  } catch (error) {
+    console.error(`Erro ao buscar post social ${id}:`, error);
+    return null;
+  }
+}
+
 export async function createSocialPost(data: Omit<SocialPost, "id" | "createdAt" | "updatedAt">, adminToken?: string) {
   try {
     // 🛡️ Segurança Real no Servidor
@@ -76,6 +101,19 @@ export async function createSocialPost(data: Omit<SocialPost, "id" | "createdAt"
     revalidatePath("/admin/social");
     revalidatePath("/conteudo");
     
+    // Backup Assíncrono no Google Drive
+    syncContentPostToDriveBackup({
+      id: docRef.id,
+      title: data.title,
+      platform: data.platform,
+      url: data.url,
+      summary: data.summary,
+      author: data.author,
+      isActive: data.isActive,
+      isFeatured: data.isFeatured,
+      actionType: "CREATE"
+    }, adminToken).catch(console.error);
+
     return { success: true, id: docRef.id };
   } catch (error: any) {
     console.error("Erro ao criar post social:", error);
@@ -97,6 +135,21 @@ export async function updateSocialPost(id: string, data: Partial<SocialPost>, ad
     revalidatePath("/admin/social");
     revalidatePath("/conteudo");
     
+    // Backup Assíncrono no Google Drive
+    // Precisamos buscar o post original caso os dados parciais não tenham os dados essenciais para o log.
+    // Para simplificar, registramos apenas os dados atualizados.
+    syncContentPostToDriveBackup({
+      id: id,
+      title: data.title || "TÍTULO NÃO ATUALIZADO",
+      platform: data.platform || "other",
+      url: data.url,
+      summary: data.summary,
+      author: data.author,
+      isActive: data.isActive ?? false,
+      isFeatured: data.isFeatured ?? false,
+      actionType: "UPDATE"
+    }, adminToken).catch(console.error);
+
     return { success: true };
   } catch (error: any) {
     console.error("Erro ao atualizar post social:", error);
@@ -115,6 +168,16 @@ export async function deleteSocialPost(id: string, adminToken?: string) {
     revalidatePath("/admin/social");
     revalidatePath("/conteudo");
     
+    // Backup Assíncrono no Google Drive
+    syncContentPostToDriveBackup({
+      id: id,
+      title: "POST REMOVIDO",
+      platform: "other",
+      isActive: false,
+      isFeatured: false,
+      actionType: "DELETE"
+    }, adminToken).catch(console.error);
+
     return { success: true };
   } catch (error: any) {
     console.error("Erro ao deletar post social:", error);
@@ -136,6 +199,16 @@ export async function togglePostStatus(id: string, field: "isActive" | "isFeatur
     revalidatePath("/admin/social");
     revalidatePath("/conteudo");
     
+    // Backup Assíncrono no Google Drive
+    syncContentPostToDriveBackup({
+      id: id,
+      title: `Alteração de Status: ${field}`,
+      platform: "other",
+      isActive: field === 'isActive' ? !currentValue : false,
+      isFeatured: field === 'isFeatured' ? !currentValue : false,
+      actionType: "UPDATE"
+    }, adminToken).catch(console.error);
+
     return { success: true };
   } catch (error: any) {
     console.error("Erro ao alternar status do post:", error);
