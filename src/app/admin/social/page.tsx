@@ -286,7 +286,7 @@ export default function SocialManagementPage() {
 
                   {post.platform === 'article' ? (
                     <Link 
-                      href={`/conteudo/artigo/${post.id}`}
+                      href={`/conteudo/artigo/${post.slug || post.id}`}
                       target="_blank" 
                       className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest text-[var(--accent-start)] hover:gap-3 transition-all"
                     >

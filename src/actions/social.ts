@@ -30,6 +30,82 @@ function serializeTimestamp(timestamp: any): string | null {
   return null;
 }
 
+function slugify(text: string): string {
+  return text
+    .toString()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/[\s_]+/g, "-")
+    .replace(/-+/g, "-");
+}
+
+export async function checkSlugExists(slug: string, excludeId?: string): Promise<boolean> {
+  try {
+    const db = getAdminDb();
+    const querySnapshot = await db.collection(COLLECTION_NAME).where("slug", "==", slug).get();
+    
+    if (querySnapshot.empty) {
+      return false;
+    }
+
+    if (excludeId) {
+      let hasOther = false;
+      querySnapshot.forEach((doc) => {
+        if (doc.id !== excludeId) {
+          hasOther = true;
+        }
+      });
+      return hasOther;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Erro ao verificar duplicidade de slug:", error);
+    return false;
+  }
+}
+
+export async function getSocialPostBySlugOrId(idOrSlug: string): Promise<SocialPost | null> {
+  try {
+    const db = getAdminDb();
+    
+    // 1. Tentar buscar por slug primeiro
+    const slugQuery = await db.collection(COLLECTION_NAME).where("slug", "==", idOrSlug).limit(1).get();
+    if (!slugQuery.empty) {
+      const doc = slugQuery.docs[0];
+      const data = doc.data();
+      return {
+        id: doc.id,
+        ...data,
+        createdAt: serializeTimestamp(data.createdAt),
+        updatedAt: serializeTimestamp(data.updatedAt),
+      } as SocialPost;
+    }
+
+    // 2. Se não encontrou, tenta buscar diretamente pelo ID do documento (legado)
+    const docSnap = await db.collection(COLLECTION_NAME).doc(idOrSlug).get();
+    if (docSnap.exists) {
+      const data = docSnap.data();
+      if (data) {
+        return {
+          id: docSnap.id,
+          ...data,
+          createdAt: serializeTimestamp(data.createdAt),
+          updatedAt: serializeTimestamp(data.updatedAt),
+        } as SocialPost;
+      }
+    }
+
+    return null;
+  } catch (error) {
+    console.error(`Erro ao buscar post social por slug/id ${idOrSlug}:`, error);
+    return null;
+  }
+}
+
 export async function getSocialPosts(onlyActive: boolean = false) {
   try {
     const db = getAdminDb();
@@ -93,8 +169,19 @@ export async function createSocialPost(data: Omit<SocialPost, "id" | "createdAt"
     await requireAdmin(adminToken);
 
     const db = getAdminDb();
+    
+    let slugValue: string | undefined = undefined;
+    if (data.platform === 'article') {
+      slugValue = slugify(data.title);
+      const isDuplicate = await checkSlugExists(slugValue);
+      if (isDuplicate) {
+        throw new Error("Já existe um artigo publicado com este título.");
+      }
+    }
+
     const docRef = await db.collection(COLLECTION_NAME).add({
       ...data,
+      slug: slugValue,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
@@ -128,8 +215,19 @@ export async function updateSocialPost(id: string, data: Partial<SocialPost>, ad
     await requireAdmin(adminToken);
 
     const db = getAdminDb();
+    const updateData = { ...data };
+
+    if (data.platform === 'article' && data.title) {
+      const slugValue = slugify(data.title);
+      const isDuplicate = await checkSlugExists(slugValue, id);
+      if (isDuplicate) {
+        throw new Error("Já existe um artigo publicado com este título.");
+      }
+      updateData.slug = slugValue;
+    }
+
     await db.collection(COLLECTION_NAME).doc(id).update({
-      ...data,
+      ...updateData,
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
     

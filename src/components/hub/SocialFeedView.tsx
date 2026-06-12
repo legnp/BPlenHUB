@@ -18,6 +18,14 @@ interface SocialFeedViewProps {
   posts: SocialPost[];
 }
 
+function calculateReadingTime(text: string): number {
+  if (!text) return 1;
+  const cleanText = text.replace(/[#*`_~\[\]()\-+]/g, " ");
+  const words = cleanText.trim().split(/\s+/);
+  const wordCount = words.filter((word) => word.length > 0).length;
+  return Math.max(1, Math.ceil(wordCount / 200));
+}
+
 const platformLogos: Record<SocialPlatform, string | null> = {
   linkedin: "/linkedin.webp",
   instagram: "/insta.png",
@@ -171,7 +179,7 @@ export function SocialFeedView({ posts }: SocialFeedViewProps) {
                 transition={{ delay: idx * 0.1 }}
                 className="group p-5 bg-white border border-gray-100 rounded-3xl shadow-sm hover:shadow-xl hover:border-gray-200 transition-all cursor-pointer"
               >
-                <Link href={`/conteudo/artigo/${article.id}`}>
+                <Link href={`/conteudo/artigo/${article.slug || article.id}`}>
                   <div className="flex items-center gap-2 mb-3">
                     <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded-lg text-[9px] font-black uppercase tracking-widest">
                       Artigo
@@ -192,7 +200,7 @@ export function SocialFeedView({ posts }: SocialFeedViewProps) {
                   </p>
 
                   <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                    {article.author || "BPlen"} | {article.publishedAt} | 3 min de leitura
+                    {article.author || "BPlen"} | {article.publishedAt} | {calculateReadingTime(article.content || "")} min de leitura
                   </div>
                 </Link>
               </motion.div>

@@ -4,6 +4,7 @@ export type SocialPlatform = 'linkedin' | 'instagram' | 'tiktok' | 'whatsapp' | 
 
 export interface SocialPost {
   id: string;
+  slug?: string;
   platform: SocialPlatform;
   url: string;
   title: string;

@@ -30,12 +30,24 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { auth } from "@/lib/firebase";
 import { SocialPost, SocialPlatform } from "@/types/social";
-import { createSocialPost, updateSocialPost } from "@/actions/social";
+import { createSocialPost, updateSocialPost, checkSlugExists } from "@/actions/social";
 import { uploadSocialThumbnailToDrive, deleteSocialThumbnailFromDrive } from "@/actions/social-drive";
 
 import GlassModal from "@/components/ui/GlassModal";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+
+function slugify(text: string): string {
+  return text
+    .toString()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/[\s_]+/g, "-")
+    .replace(/-+/g, "-");
+}
 
 interface SocialPostFormProps {
   post?: SocialPost | null;
@@ -56,6 +68,8 @@ export function SocialPostForm({ post, onClose, onSuccess }: SocialPostFormProps
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isSlugDuplicate, setIsSlugDuplicate] = useState(false);
+  const [isValidatingSlug, setIsValidatingSlug] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -113,6 +127,28 @@ export function SocialPostForm({ post, onClose, onSuccess }: SocialPostFormProps
     }
   }, [post]);
 
+  useEffect(() => {
+    if (formData.platform !== 'article' || !formData.title.trim()) {
+      setIsSlugDuplicate(false);
+      return;
+    }
+
+    const delayDebounceFn = setTimeout(async () => {
+      setIsValidatingSlug(true);
+      try {
+        const slugValue = slugify(formData.title);
+        const exists = await checkSlugExists(slugValue, post?.id);
+        setIsSlugDuplicate(exists);
+      } catch (err) {
+        console.error("Erro ao validar duplicidade do link:", err);
+      } finally {
+        setIsValidatingSlug(false);
+      }
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [formData.title, formData.platform, post]);
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -147,6 +183,10 @@ export function SocialPostForm({ post, onClose, onSuccess }: SocialPostFormProps
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (formData.platform === 'article' && isSlugDuplicate) {
+      setError("Não é possível salvar. Já existe uma publicação com este título ou link amigável.");
+      return;
+    }
     setIsSaving(true);
     setError(null);
 
@@ -286,9 +326,35 @@ export function SocialPostForm({ post, onClose, onSuccess }: SocialPostFormProps
                   placeholder="Ex: Como o DISC transforma lideranças..."
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-start)]/50 transition-all shadow-sm"
+                  className={`w-full bg-[var(--input-bg)] border rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-start)]/50 transition-all shadow-sm ${
+                    isSlugDuplicate ? "border-red-500/50 focus:border-red-500" : "border-[var(--border-primary)]"
+                  }`}
                 />
               </div>
+              <AnimatePresence>
+                {formData.platform === 'article' && isSlugDuplicate && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl flex items-start gap-2.5 text-red-500 text-[9px] font-bold uppercase tracking-widest leading-normal"
+                  >
+                    <AlertCircle size={14} className="shrink-0 mt-0.5" />
+                    <span>Aviso: Já existe uma publicação com este título ou link amigável. Por favor, ajuste o título para evitar duplicidade de links.</span>
+                  </motion.div>
+                )}
+                {formData.platform === 'article' && isValidatingSlug && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="text-[8px] font-bold text-[var(--accent-start)] uppercase tracking-widest ml-1 flex items-center gap-1.5"
+                  >
+                    <Loader2 size={10} className="animate-spin" />
+                    Validando link amigável...
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             <div className="space-y-2">

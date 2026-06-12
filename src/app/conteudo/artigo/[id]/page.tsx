@@ -1,6 +1,6 @@
 import React from "react";
 import { notFound } from "next/navigation";
-import { getSocialPostById } from "@/actions/social";
+import { getSocialPostBySlugOrId } from "@/actions/social";
 import { ArrowLeft, Clock, Calendar, User } from "lucide-react";
 import Link from "next/link";
 import { ArticleContent } from "@/components/hub/ArticleContent";
@@ -20,7 +20,7 @@ interface ArticlePageProps {
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { id } = await params;
-  const post = await getSocialPostById(id);
+  const post = await getSocialPostBySlugOrId(id);
 
   if (!post || post.platform !== 'article') {
     notFound();
