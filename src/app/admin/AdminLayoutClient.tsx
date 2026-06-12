@@ -18,7 +18,8 @@ import {
   Ticket,
   Handshake,
   FlaskConical,
-  Activity
+  Activity,
+  QrCode
 } from "lucide-react";
 import { HubHeader } from "@/components/hub/HubHeader";
 
@@ -70,6 +71,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <NavLink href="/admin/partners" icon={<Handshake size={18} />}>GESTÃO DE PARCEIROS</NavLink>
           <NavLink href="/admin/marketing" icon={<Ticket size={18} />}>CUPONS E OFERTAS</NavLink>
           <NavLink href="/admin/social" icon={<Globe size={18} />}>MEDIA E EDITORIAL</NavLink>
+          <NavLink href="/admin/qrcodes" icon={<QrCode size={18} />}>MÁQUINA DE QR CODES</NavLink>
           
           <div className="pt-4 pb-2 px-4 text-[8px] font-bold uppercase tracking-[0.3em] text-[var(--text-muted)] opacity-40">Dados & Usuários</div>
           <NavLink href="/admin/users" icon={<Users size={18} />}>GESTÃO DE USUÁRIOS</NavLink>
