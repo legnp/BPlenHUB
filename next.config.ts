@@ -7,6 +7,15 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
 
   // ──────────────────────────────
+  // 0. Configurações Experimentais (Limite de Upload de Server Actions)
+  // ──────────────────────────────
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "10mb", // Aumenta o limite padrão de 1MB para suportar anexos de pós-evento de até 5MB
+    },
+  },
+
+  // ──────────────────────────────
   // 1. Otimização de Imagens (Domínios Autorizados)
   // ──────────────────────────────
   images: {
