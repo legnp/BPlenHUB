@@ -18,7 +18,14 @@ import {
   CheckCircle2,
   HardDrive,
   User,
-  FileText
+  FileText,
+  Bold,
+  Italic,
+  Heading1,
+  Quote,
+  List,
+  ListOrdered,
+  Code
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { auth } from "@/lib/firebase";
@@ -50,6 +57,31 @@ export function SocialPostForm({ post, onClose, onSuccess }: SocialPostFormProps
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const handleInsertMarkdown = (syntaxBefore: string, syntaxAfter: string = "") => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = textarea.value;
+    const selectedText = text.substring(start, end);
+
+    const replacement = syntaxBefore + selectedText + syntaxAfter;
+    const newValue = text.substring(0, start) + replacement + text.substring(end);
+
+    setFormData(prev => ({ ...prev, content: newValue }));
+
+    // Colocar foco e selecionar o termo
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(
+        start + syntaxBefore.length,
+        start + syntaxBefore.length + selectedText.length
+      );
+    }, 0);
+  };
 
   const [formData, setFormData] = useState<Omit<SocialPost, 'id' | 'createdAt' | 'updatedAt'>>({
     platform: 'article',
@@ -140,6 +172,7 @@ export function SocialPostForm({ post, onClose, onSuccess }: SocialPostFormProps
       onClose={onClose}
       title={post ? "Editar Postagem" : "Nova Postagem Social"}
       subtitle="Gestão estratégica de conteúdo via Google Drive."
+      maxWidth={formData.platform === 'article' ? "max-w-6xl" : "max-w-2xl"}
     >
         <form onSubmit={handleSubmit} className="p-2 space-y-8 text-left max-h-[70vh] overflow-y-auto custom-scrollbar">
           {error && (
@@ -311,12 +344,38 @@ export function SocialPostForm({ post, onClose, onSuccess }: SocialPostFormProps
               <div className="space-y-4 pt-4">
                 <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-40 ml-1">Conteúdo do Artigo (Markdown)</label>
                 
+                {/* Barra de Ferramentas de Formatação (Sem Emojis) */}
+                <div className="flex flex-wrap items-center gap-1.5 p-2 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-2xl shadow-sm">
+                  {[
+                    { icon: Bold, label: "Negrito", syntaxBefore: "**", syntaxAfter: "**" },
+                    { icon: Italic, label: "Itálico", syntaxBefore: "*", syntaxAfter: "*" },
+                    { icon: Heading1, label: "Título", syntaxBefore: "# ", syntaxAfter: "" },
+                    { icon: Quote, label: "Citação", syntaxBefore: "> ", syntaxAfter: "" },
+                    { icon: Code, label: "Código", syntaxBefore: "`", syntaxAfter: "`" },
+                    { icon: List, label: "Lista", syntaxBefore: "- ", syntaxAfter: "" },
+                    { icon: ListOrdered, label: "Lista Numerada", syntaxBefore: "1. ", syntaxAfter: "" },
+                    { icon: LinkIcon, label: "Link", syntaxBefore: "[", syntaxAfter: "](url)" },
+                    { icon: ImageIcon, label: "Imagem", syntaxBefore: "![legenda](", syntaxAfter: ")" },
+                  ].map((item, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => handleInsertMarkdown(item.syntaxBefore, item.syntaxAfter)}
+                      title={item.label}
+                      className="p-2.5 rounded-xl hover:bg-[var(--accent-start)]/10 hover:text-[var(--accent-start)] text-[var(--text-muted)] transition-all active:scale-95"
+                    >
+                      <item.icon size={15} />
+                    </button>
+                  ))}
+                </div>
+
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   {/* Editor */}
                   <textarea
+                    ref={textareaRef}
                     required
                     rows={15}
-                    placeholder="Escreva seu artigo aqui usando formatação Markdown. Use **negrito**, # Títulos, etc."
+                    placeholder="Escreva seu artigo aqui usando formatação Markdown. Use os botões da barra de ferramentas acima para formatar seu texto..."
                     value={formData.content}
                     onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                     className="w-full h-[400px] bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-2xl p-4 text-sm font-medium text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-start)]/50 transition-all resize-none shadow-sm custom-scrollbar"
