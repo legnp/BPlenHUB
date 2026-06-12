@@ -297,6 +297,7 @@ export default function QRCodesManagementPage() {
         isOpen={isFormOpen}
         onClose={() => setIsFormOpen(false)}
         title="Novo QR Code"
+        maxWidth="max-w-4xl"
       >
         <QRCodeForm 
           onSuccess={fetchQRCodes} 

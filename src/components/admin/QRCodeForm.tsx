@@ -201,12 +201,12 @@ export default function QRCodeForm({ onSuccess, onClose }: QRCodeFormProps) {
         </AnimatePresence>
 
         {/* Botoes de Acao */}
-        <div className="flex items-center gap-3 pt-4 border-t border-[var(--border-primary)]/50">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 pt-4 border-t border-[var(--border-primary)]/50">
           <button
             type="button"
             disabled={loading || success}
             onClick={onClose}
-            className="px-5 h-11 rounded-xl border border-[var(--border-primary)] text-xs font-bold uppercase tracking-widest hover:bg-[var(--bg-primary)] transition-all cursor-pointer disabled:opacity-50"
+            className="w-full sm:w-auto px-5 h-11 rounded-xl border border-[var(--border-primary)] text-xs font-bold uppercase tracking-widest hover:bg-[var(--bg-primary)] transition-all cursor-pointer disabled:opacity-50"
           >
             Cancelar
           </button>
@@ -215,7 +215,7 @@ export default function QRCodeForm({ onSuccess, onClose }: QRCodeFormProps) {
             type="button"
             disabled={loading || success || !title || !link}
             onClick={handleDownload}
-            className="px-5 h-11 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-primary)] hover:border-[var(--accent-start)]/40 hover:text-[var(--accent-start)] text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-all cursor-pointer disabled:opacity-40"
+            className="w-full sm:w-auto px-5 h-11 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-primary)] hover:border-[var(--accent-start)]/40 hover:text-[var(--accent-start)] text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-40"
           >
             <Download size={14} />
             Baixar PNG
@@ -224,7 +224,7 @@ export default function QRCodeForm({ onSuccess, onClose }: QRCodeFormProps) {
           <button
             type="submit"
             disabled={loading || success}
-            className="flex-1 px-6 h-11 rounded-xl bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] hover:opacity-90 text-white text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-[0_4px_20px_rgba(102,126,234,0.15)] transition-all cursor-pointer disabled:opacity-50"
+            className="w-full sm:flex-1 px-6 h-11 rounded-xl bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] hover:opacity-90 text-white text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-[0_4px_20px_rgba(102,126,234,0.15)] transition-all cursor-pointer disabled:opacity-50"
           >
             {loading ? (
               <>
