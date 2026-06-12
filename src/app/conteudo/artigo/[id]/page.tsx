@@ -7,11 +7,12 @@ import { ArticleContent } from "@/components/hub/ArticleContent";
 import { DynamicFeedbackForm } from "@/components/hub/DynamicFeedbackForm";
 
 interface ArticlePageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
-  const post = await getSocialPostById(params.id);
+  const { id } = await params;
+  const post = await getSocialPostById(id);
 
   if (!post || post.platform !== 'article') {
     notFound();
