@@ -185,6 +185,13 @@ export default function PostEventWizard({ isOpen, onClose, event, onSuccess }: P
   const handleFileUpload = async (file: File, type: 'minutes' | 'individual', attendeeUserId?: string) => {
     if (!user || !event) return;
     
+    // Validar limite de tamanho de 5MB (5 * 1024 * 1024 bytes)
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      alert(`O arquivo selecionado (${(file.size / (1024 * 1024)).toFixed(2)}MB) excede o limite maximo permitido de 5MB.`);
+      return;
+    }
+    
     const isGeneral = type === 'minutes';
     const targetMatricula = attendeeUserId 
       ? attendees.find(a => a.userId === attendeeUserId)?.matricula 

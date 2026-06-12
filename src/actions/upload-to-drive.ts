@@ -95,6 +95,12 @@ export async function uploadPostEventDocAction(formData: FormData) {
       throw new Error(`Dados incompletos para upload (File: ${!!file}, Matricula: ${!!matricula}, EventId: ${!!eventId}, Token: ${!!idToken}).`);
     }
 
+    // Validar limite de tamanho de 5MB (5 * 1024 * 1024 bytes)
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      throw new Error(`O arquivo selecionado (${(file.size / (1024 * 1024)).toFixed(2)}MB) excede o limite maximo de 5MB.`);
+    }
+
     // 1. Validar Sessão 🛡️
     const auth = getAdminAuth();
     await auth.verifyIdToken(idToken);
