@@ -6,6 +6,14 @@ import Link from "next/link";
 import { ArticleContent } from "@/components/hub/ArticleContent";
 import { DynamicFeedbackForm } from "@/components/hub/DynamicFeedbackForm";
 
+function calculateReadingTime(text: string): number {
+  if (!text) return 1;
+  const cleanText = text.replace(/[#*`_~\[\]()\-+]/g, " ");
+  const words = cleanText.trim().split(/\s+/);
+  const wordCount = words.filter((word) => word.length > 0).length;
+  return Math.max(1, Math.ceil(wordCount / 200));
+}
+
 interface ArticlePageProps {
   params: Promise<{ id: string }>;
 }
@@ -45,7 +53,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               <span className="w-1 h-1 rounded-full bg-gray-300" />
               <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> {post.publishedAt}</span>
               <span className="w-1 h-1 rounded-full bg-gray-300" />
-              <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> 3 min leitura</span>
+              <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> {calculateReadingTime(post.content || "")} min leitura</span>
             </div>
           </div>
 
