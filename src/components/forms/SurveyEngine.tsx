@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Rocket, Link2, ExternalLink } from "lucide-react";
+import { Search, Rocket, Link2, ExternalLink, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { format, parseISO } from "date-fns";
 import { SurveyConfig, SurveyFieldConfig, SurveyValue } from "@/types/survey";
 import { NarrativeReveal } from "@/components/ui/NarrativeReveal";
 import { NavButton } from "@/components/ui/NavButton";
@@ -24,6 +25,8 @@ import { FileField } from "./SurveyFields/FileField";
 import { EvidenceField } from "./SurveyFields/EvidenceField";
 import { NarrativeContent } from "./NarrativeContent";
 import { resolveUserIdentity, getUserMetadata } from "@/actions/survey-effects";
+import Calendar, { CalendarEvent } from "@/components/ui/Calendar";
+import { getProgramacaoForMemberAction } from "@/actions/calendar";
 
 
 
@@ -94,7 +97,8 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
   const [startTime] = useState<number>(Date.now());
   const [matricula, setMatricula] = useState<string>("");
   const [pendingUploads, setPendingUploads] = useState<number>(0);
-
+  const [calendarEvents, setCalendarEvents] = useState<any[]>([]);
+  const [loadingCalendar, setLoadingCalendar] = useState(false);
 
   useEffect(() => {
     async function loadMatricula() {
@@ -108,21 +112,43 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
     loadMatricula();
   }, [userUid, config.id]);
 
+  useEffect(() => {
+    async function loadCalendarEvents() {
+      setLoadingCalendar(true);
+      try {
+        const events = await getProgramacaoForMemberAction();
+        setCalendarEvents(events || []);
+      } catch (err) {
+        console.error("Erro ao buscar programação de reuniões:", err);
+      } finally {
+        setLoadingCalendar(false);
+      }
+    }
+    loadCalendarEvents();
+  }, []);
+
   const currentStep = config.steps[currentStepIndex];
 
-  // Preparação de campos (Randomização) 🧬
+  // Preparação de campos (Randomização & Interceptação de C3 Customizado) 🧬
   const preparedFields = useMemo(() => {
     return currentStep.fields.map(field => {
-      if (field.randomize && field.options && Array.isArray(field.options)) {
-        return { ...field, options: shuffleOptions(field.options) };
+      let currentOptions = field.options;
+      if (field.id === "combustiveis_selecionados" && userMetadata?.combustiveis_custom && Array.isArray(userMetadata.combustiveis_custom) && userMetadata.combustiveis_custom.length > 0) {
+        currentOptions = userMetadata.combustiveis_custom;
+      } else if (field.id === "barreiras_selecionadas" && userMetadata?.barreiras_custom && Array.isArray(userMetadata.barreiras_custom) && userMetadata.barreiras_custom.length > 0) {
+        currentOptions = userMetadata.barreiras_custom;
       }
-      return field;
+
+      if (field.randomize && currentOptions && Array.isArray(currentOptions)) {
+        return { ...field, options: shuffleOptions(currentOptions) };
+      }
+      return { ...field, options: currentOptions };
     });
-  }, [currentStepIndex, config.id, currentStep.fields]);
+  }, [currentStepIndex, config.id, currentStep.fields, userMetadata]);
 
   const isLastStep = currentStepIndex === config.steps.length - 1;
 
-  // Lógica de Interpolação de Texto Reativa (Suporta {{nickname}} e {User-nickname})
+  // Lógica de Interpolação de Texto Reativa (Suporta {{nickname}} e {User-nickname}, arrays joined, fallbacks Maslow/carreira)
   const interpolate = (text: string) => {
     const combinedData = {
       ...(config.templateData || {}),
@@ -131,13 +157,59 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
     };
 
     let interpolated = text;
+
+    // Normalizar chaves para busca case-insensitive e converter arrays para string .join(", ")
+    const normalizedData: Record<string, string> = {};
     Object.entries(combinedData).forEach(([key, value]) => {
-      const valStr = typeof value === "string" || typeof value === "number" ? String(value) : "";
-      interpolated = interpolated.replace(new RegExp(`{{${key}}}`, 'g'), valStr);
-      interpolated = interpolated.replace(new RegExp(`{${key}}`, 'g'), valStr);
+      let valStr = "";
+      if (Array.isArray(value)) {
+        valStr = value.join(", ");
+      } else if (typeof value === "object" && value !== null) {
+        valStr = JSON.stringify(value);
+      } else if (value !== undefined && value !== null) {
+        valStr = String(value);
+      }
+      normalizedData[key.toLowerCase()] = valStr;
     });
 
-    // Fallback explícito para evitar chaves quebradas na tela se apagadas do BD
+    // Encontrar todos os padrões {{Chave}} ou {Chave} no texto e substituir
+    const regex = /\{\{([^}]+)\}\}|\{([^}]+)\}/g;
+    let match;
+    const matchesToReplace: Array<{ original: string; keyName: string }> = [];
+
+    while ((match = regex.exec(text)) !== null) {
+      const original = match[0];
+      const keyName = (match[1] || match[2]).trim();
+      matchesToReplace.push({ original, keyName });
+    }
+
+    matchesToReplace.forEach(({ original, keyName }) => {
+      const lowerKey = keyName.toLowerCase();
+      if (normalizedData[lowerKey] !== undefined && normalizedData[lowerKey] !== "") {
+        interpolated = interpolated.replace(original, normalizedData[lowerKey]);
+      } else {
+        // Fallbacks inteligentes para Maslow e referências de outras etapas
+        let fallback = "";
+        if (lowerKey === "user_nickname") {
+          fallback = combinedData["User_Nickname"] || (userMetadata?.name ? userMetadata.name.split(" ")[0] : "Membro");
+        } else if (lowerKey === "maslow_menor_pilar") {
+          fallback = "Segurança/Estima";
+        } else if (lowerKey === "maslow_maior_pilar") {
+          fallback = "Autorrealização";
+        } else if (lowerKey === "objetivo_principal_fase1" || lowerKey === "objetivo_principal") {
+          fallback = "seu objetivo de carreira";
+        } else if (lowerKey === "barreiras_selecionadas") {
+          fallback = "suas barreiras mapeadas";
+        } else if (lowerKey === "combustiveis_selecionados") {
+          fallback = "seus combustíveis de aceleração";
+        } else {
+          fallback = `[${keyName}]`;
+        }
+        interpolated = interpolated.replace(original, fallback);
+      }
+    });
+
+    // Fallback explícito para User_Nickname
     const fallbackName = combinedData["User_Nickname"] || (userMetadata?.name ? userMetadata.name.split(" ")[0] : "Membro");
     interpolated = interpolated.replace(/\{\{User_Nickname\}\}/gi, fallbackName);
     interpolated = interpolated.replace(/\{User_Nickname\}/gi, fallbackName);
@@ -614,6 +686,84 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
           </div>
         );
 
+      case "slider":
+        const minVal = 1;
+        const maxVal = 100;
+        const currentVal = rawValue !== undefined ? Number(rawValue) : 50;
+        return (
+          <div className="space-y-4 pt-4 pb-2">
+            {field.label && (
+              <label className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-start)] ml-1">
+                {field.label}
+              </label>
+            )}
+            
+            <div className="relative pt-6 px-2">
+              <input
+                type="range"
+                min={minVal}
+                max={maxVal}
+                value={currentVal}
+                onChange={(e) => updateResponse(field.id, Number(e.target.value))}
+                className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[var(--accent-start)] outline-none focus:outline-none focus:ring-0"
+                style={{
+                  background: `linear-gradient(to right, var(--accent-start) 0%, var(--accent-start) ${((currentVal - minVal) / (maxVal - minVal)) * 100}%, rgba(255, 255, 255, 0.1) ${((currentVal - minVal) / (maxVal - minVal)) * 100}%, rgba(255, 255, 255, 0.1) 100%)`
+                }}
+              />
+              
+              {/* Dynamic Bubble showing the current value */}
+              <div 
+                className="absolute -top-3 px-2 py-1 bg-[var(--accent-start)] text-white text-[9px] font-black tracking-wider rounded-md shadow-lg shadow-[var(--accent-start)]/20 -translate-x-1/2 flex items-center justify-center min-w-[24px]"
+                style={{
+                  left: `${((currentVal - minVal) / (maxVal - minVal)) * 100}%`
+                }}
+              >
+                {currentVal}
+              </div>
+            </div>
+
+            {/* Extreme labels */}
+            <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60 px-1">
+              <span>Muito Difícil (1)</span>
+              <span>Totalmente Fácil (100)</span>
+            </div>
+          </div>
+        );
+
+      case "calendar_embed":
+        return (
+          <div className="space-y-4 pt-4">
+            <Calendar
+              events={calendarEvents}
+              isLoading={loadingCalendar}
+              onBookingSuccess={(bookedEvent) => {
+                if (bookedEvent?.start) {
+                  const dt = parseISO(bookedEvent.start);
+                  const dataStr = format(dt, "dd/MM/yyyy");
+                  const horaStr = format(dt, "HH:mm");
+                  
+                  setResponses(prev => ({
+                    ...prev,
+                    [field.id]: "agendado",
+                    Data_Agendamento: dataStr,
+                    Horario_Agendamento: horaStr
+                  }));
+
+                  setUserMetadata(prev => ({
+                    ...prev,
+                    Data_Agendamento: dataStr,
+                    Horario_Agendamento: horaStr
+                  }));
+
+                  setTimeout(() => {
+                    handleNext();
+                  }, 1500);
+                }
+              }}
+            />
+          </div>
+        );
+
       default:
         return <p className="text-red-500">Tipo de campo não suportado: {field.type}</p>;
     }
@@ -652,6 +802,12 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
       const v = (val as Record<string, number>) || {};
       const usedRanks = Object.values(v);
       return usedRanks.length === f.options?.length && new Set(usedRanks).size === f.options?.length;
+    }
+    if (f.type === "slider") {
+      return true; // Unblocked by default since it has initial value 50
+    }
+    if (f.type === "calendar_embed") {
+      return val === "agendado"; // Valid once an appointment is made
     }
     if (f.type === "info") return true;
     return val !== undefined && val !== null && String(val).trim().length > 0;

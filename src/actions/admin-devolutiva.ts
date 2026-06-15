@@ -36,6 +36,8 @@ export interface DevolutivaUserData {
     hasCompletedWelcome: boolean;
     discLink?: string;
     driveFolderUrl?: string;
+    combustiveis_custom?: string[];
+    barreiras_custom?: string[];
   };
   journey: {
     currentPhase: string;
@@ -132,6 +134,8 @@ export async function getDevolutivaUserData(
     const accessSnap = await accessRef.get();
     const accessData = accessSnap.data() || {};
     const discLink = accessData.metadata?.disc_link || "";
+    const combustiveis_custom = accessData.metadata?.combustiveis_custom || [];
+    const barreiras_custom = accessData.metadata?.barreiras_custom || [];
 
     // 5. Carregar resultados de assessments
     const resultsSnap = await db.collection(`User/${matricula}/results`).get();
@@ -210,6 +214,8 @@ export async function getDevolutivaUserData(
         hasCompletedWelcome: userData.hasCompletedWelcome || false,
         discLink,
         driveFolderUrl,
+        combustiveis_custom,
+        barreiras_custom,
       },
       journey: journeyData,
       results,

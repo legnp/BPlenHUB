@@ -64,7 +64,7 @@ interface CalendarProps {
   events?: CalendarEvent[];
   isLoading?: boolean;
   onMonthChange?: (date: Date) => void;
-  onBookingSuccess?: () => void;
+  onBookingSuccess?: (event?: CalendarEvent) => void;
 }
 
 export default function Calendar({
@@ -151,7 +151,7 @@ export default function Calendar({
       );
       if (result.success) {
         setBookingStatus({ id: eventId, message: "Agendamento realizado com sucesso!", type: 'success' });
-        onBookingSuccess?.();
+        onBookingSuccess?.(eventToConfirm || undefined);
         setIsConfirmModalOpen(false);
         setExpectations("");
         setSelectedType("");

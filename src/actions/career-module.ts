@@ -795,3 +795,47 @@ export async function addCareerSharedDocumentAction(
     return { success: false, error: error.message || "Falha ao gravar documento." };
   }
 }
+
+/**
+ * saveCustomResourcesAction (Exclusivo Admin)
+ * Salva combustíveis e barreiras customizadas no metadado do usuário.
+ */
+export async function saveCustomResourcesAction(
+  matricula: string,
+  combustiveis: string[],
+  barreiras: string[],
+  adminToken?: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const session = await requireAdmin(adminToken);
+    const db = getAdminDb();
+
+    const accessRef = db.doc(`User/${matricula}/User_Permissions/access`);
+
+    await db.runTransaction(async (transaction) => {
+      const snap = await transaction.get(accessRef);
+      const data = snap.exists ? snap.data() || {} : {};
+      
+      const currentMetadata = data.metadata || {};
+      const updatedMetadata = {
+        ...currentMetadata,
+        combustiveis_custom: combustiveis,
+        barreiras_custom: barreiras
+      };
+
+      transaction.set(accessRef, {
+        ...data,
+        metadata: updatedMetadata,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedBy: `ADMIN:${session.email || session.uid}`
+      }, { merge: true });
+    });
+
+    console.log(`✅ [Career Action] Recursos customizados salvos para o usuário ${matricula}`);
+    return { success: true };
+  } catch (error: any) {
+    console.error("❌ [Career Action] Erro ao salvar recursos customizados:", error);
+    return { success: false, error: error.message || "Falha ao salvar recursos customizados no servidor." };
+  }
+}
+

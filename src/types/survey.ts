@@ -47,7 +47,7 @@ export interface SurveyStep {
 
 export interface SurveyFieldConfig {
   id: string;
-  type: "choice" | "text" | "textarea" | "scale" | "info" | "buttons" | "multi_select" | "cascaded" | "benefits" | "currency_group" | "likert" | "ranking" | "likert_group" | "file" | "evidence_upload" | "portal_link" | "date";
+  type: "choice" | "text" | "textarea" | "scale" | "info" | "buttons" | "multi_select" | "cascaded" | "benefits" | "currency_group" | "likert" | "ranking" | "likert_group" | "file" | "evidence_upload" | "portal_link" | "date" | "slider" | "calendar_embed";
   label?: string;
   placeholder?: string;
   options?: string[] | { label: string; value: string; subOptions?: string[] }[]; 

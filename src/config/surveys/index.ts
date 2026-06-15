@@ -9,6 +9,14 @@ import { discSurvey } from "./definitions/disc";
 import { desmistificandoCandidaturasSurvey } from "./definitions/desmistificando-candidaturas";
 import { revisaoCurriculoSurvey } from "./definitions/revisao-curriculo";
 
+// Career module surveys
+import { planoAcordosSurvey } from "./definitions/plano-acordos";
+import { planoFase1Survey } from "./definitions/plano-fase1";
+import { planoFase2Survey } from "./definitions/plano-fase2";
+import { planoFase3Survey } from "./definitions/plano-fase3";
+import { planoFase4Survey } from "./definitions/plano-fase4";
+import { agendamentoDevolutivaSurvey } from "./definitions/agendamento-devolutiva";
+
 /**
  * BPlen HUB — Survey Registry (🗂️)
  * Centraliza todas as definições de pesquisa do projeto
@@ -24,7 +32,15 @@ export const surveys = {
   "pre_analise_comportamental": preAnaliseComportamentalSurvey,
   "disc": discSurvey,
   "desmistificando_candidaturas": desmistificandoCandidaturasSurvey,
-  "revisao_curriculo": revisaoCurriculoSurvey
+  "revisao_curriculo": revisaoCurriculoSurvey,
+
+  // Career Planning Surveys
+  "survey_plano_acordos": planoAcordosSurvey,
+  "survey_plano_fase1": planoFase1Survey,
+  "survey_plano_fase2": planoFase2Survey,
+  "survey_plano_fase3": planoFase3Survey,
+  "survey_plano_fase4": planoFase4Survey,
+  "survey_agendamento_devolutiva": agendamentoDevolutivaSurvey
 };
 
 export const SURVEY_REGISTRY = Object.values(surveys);

@@ -35,7 +35,8 @@ import {
   toggleCareerPlanningAccessAction,
   addCareerAtaAction,
   addCareerSharedDocumentAction,
-  addCareerFeedbackAction
+  addCareerFeedbackAction,
+  saveCustomResourcesAction
 } from "@/actions/career-module";
 import { DiscDevolutivaModal } from "@/components/admin/DiscDevolutivaModal";
 import { DiscChart } from "@/components/hub/DiscChart";
@@ -44,6 +45,51 @@ import { TriadVennChart } from "@/components/hub/TriadVennChart";
 import { StackedBarChart } from "@/components/hub/StackedBarChart";
 import { SURVEY_REGISTRY } from "@/config/surveys";
 import { FORMS_REGISTRY } from "@/config/forms";
+const GLOBAL_COMBUSTIVEIS = [
+  "Capacidade de comunicação e persuasão",
+  "Alto nível de organização e planejamento",
+  "Energia e rapidez na execução de tarefas",
+  "Habilidade analítica e leitura de dados",
+  "Facilidade em criar conexões e networking",
+  "Conhecimento técnico e especialização",
+  "Reservas financeiras atuais",
+  "Flexibilidade de tempo na agenda atual",
+  "Gestão emocional para lidar com crises",
+  "Capacidade de adaptação rápida a mudanças",
+  "Foco em resultados e alcance de metas",
+  "Habilidade de mediar conflitos e apaziguar",
+  "Criatividade e facilidade para gerar novas ideias",
+  "Disciplina para manter rotinas consistentes",
+  "Empatia e facilidade em entender o outro",
+  "Rede de apoio familiar ou pessoal estruturada",
+  "Coragem para assumir riscos calculados",
+  "Pensamento estratégico e visão de longo prazo",
+  "Autodidatismo e facilidade para aprender rápido",
+  "Alta tolerância à frustração e resiliência"
+];
+
+const GLOBAL_BARREIRAS = [
+  "Dificuldade em dizer 'não' e impor limites",
+  "Excesso de perfeccionismo (demorar para entregar)",
+  "Falta de recursos financeiros no curto prazo",
+  "Medo da exposição ou do julgamento alheio",
+  "Desorganização e perda de tempo com circunstâncias",
+  "Impaciência e necessidade de resultados imediatos",
+  "Dificuldade em focar em uma única tarefa",
+  "Falta de uma rede de apoio ou parceiros estratégicos",
+  "Procrastinação de tarefas difíceis ou chatas",
+  "Resistência ou medo de mudanças repentinas",
+  "Dificuldade em delegar e centralização excessiva",
+  "Síndrome do impostor e autocrítica severa",
+  "Dificuldade em lidar com críticas e feedbacks negativos",
+  "Baixa tolerância à frustração diante de erros",
+  "Sobrecarga por assumir responsabilidades de terceiros",
+  "Necessidade excessiva de agradar ou ser aceito",
+  "Insegurança para tomar decisões sem consultar outros",
+  "Comunicação ríspida ou agressiva sob pressão",
+  "Apego excessivo a métodos antigos (falta de inovação)",
+  "Fuga de conversas difíceis ou conflitos"
+];
 
 interface DevolutivaComportamentalViewProps {
   matricula?: string;
@@ -98,6 +144,12 @@ export function DevolutivaComportamentalView({
 
   const [careerTab, setCareerTab] = useState<"preview" | "ata" | "doc" | "feedback">("preview");
 
+  // Customization states
+  const [customizationTab, setCustomizationTab] = useState<"disc" | "c3">("disc");
+  const [selectedCombustiveis, setSelectedCombustiveis] = useState<string[]>([]);
+  const [selectedBarreiras, setSelectedBarreiras] = useState<string[]>([]);
+  const [savingC3, setSavingC3] = useState<boolean>(false);
+
   // Load complete list of users if selector is not hidden
   useEffect(() => {
     if (!hideUserSelector) {
@@ -122,14 +174,20 @@ export function DevolutivaComportamentalView({
           if (res.success && res.data) {
             setUserData(res.data);
             setDiscLinkInput(res.data.profile.discLink || "");
+            setSelectedCombustiveis(res.data.profile.combustiveis_custom || []);
+            setSelectedBarreiras(res.data.profile.barreiras_custom || []);
           } else {
             setUserData(null);
+            setSelectedCombustiveis([]);
+            setSelectedBarreiras([]);
           }
         })
         .catch((err) => console.error("Erro ao carregar dados comportamentais:", err))
         .finally(() => setLoadingData(false));
     } else {
       setUserData(null);
+      setSelectedCombustiveis([]);
+      setSelectedBarreiras([]);
     }
   }, [selectedMatricula]);
 
@@ -341,6 +399,69 @@ export function DevolutivaComportamentalView({
       alert("Erro ao salvar link do portal: " + (err.message || "Erro desconhecido"));
     } finally {
       setSavingDiscLink(false);
+    }
+  };
+
+  const toggleCombustivel = (item: string) => {
+    setSelectedCombustiveis(prev => {
+      if (prev.includes(item)) {
+        return prev.filter(x => x !== item);
+      } else {
+        if (prev.length >= 10) {
+          return prev;
+        }
+        return [...prev, item];
+      }
+    });
+  };
+
+  const toggleBarreira = (item: string) => {
+    setSelectedBarreiras(prev => {
+      if (prev.includes(item)) {
+        return prev.filter(x => x !== item);
+      } else {
+        if (prev.length >= 10) {
+          return prev;
+        }
+        return [...prev, item];
+      }
+    });
+  };
+
+  const handleSaveC3 = async () => {
+    if (!selectedMatricula || savingC3) return;
+    if (selectedCombustiveis.length !== 10 || selectedBarreiras.length !== 10) {
+      alert("Selecione exatamente 10 combustíveis e 10 barreiras.");
+      return;
+    }
+    setSavingC3(true);
+    try {
+      const res = await saveCustomResourcesAction(
+        selectedMatricula,
+        selectedCombustiveis,
+        selectedBarreiras
+      );
+      if (res.success) {
+        alert("Configuração C3 salva com sucesso.");
+        setUserData(prev => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            profile: {
+              ...prev.profile,
+              combustiveis_custom: selectedCombustiveis,
+              barreiras_custom: selectedBarreiras
+            }
+          };
+        });
+      } else {
+        alert(res.error || "Erro ao salvar Configuração C3.");
+      }
+    } catch (err: any) {
+      console.error("Erro ao salvar Configuração C3:", err);
+      alert("Erro ao salvar Configuração C3: " + (err.message || "Erro desconhecido"));
+    } finally {
+      setSavingC3(false);
     }
   };
 
@@ -834,48 +955,169 @@ export function DevolutivaComportamentalView({
 
               </div>
 
-              {/* Portal DISC (External Link & Lançar Devolutiva manual) */}
-              <div className="p-6 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-[3rem] space-y-5">
-                <div className="flex items-center gap-3 text-left">
-                  <div className="p-2.5 bg-[var(--accent-start)]/10 rounded-2xl text-[var(--accent-start)] border border-[var(--accent-start)]/20">
-                    <Link2 size={16} />
-                  </div>
-                  <div>
-                    <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--accent-start)]">Portal DISC Link</h4>
-                    <p className="text-[8px] font-bold text-[var(--text-muted)] uppercase tracking-wider mt-0.5">Insira o link individual gerado no portal DISC</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-2">
-                  <input 
-                    type="text" 
-                    placeholder="https://vrs.com.br/disc/resultado/..."
-                    value={discLinkInput}
-                    onChange={(e) => setDiscLinkInput(e.target.value)}
-                    className="bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-xl px-4 py-2.5 text-[10px] font-mono flex-1 text-[var(--text-primary)] focus:border-[var(--accent-start)]/50 outline-none transition-all placeholder:opacity-30"
-                  />
-                  <button 
-                    onClick={handleSaveDiscLink}
-                    disabled={savingDiscLink}
-                    className="px-4 bg-[var(--accent-start)]/10 text-[var(--accent-start)] border border-[var(--accent-start)]/20 rounded-xl text-[9px] font-bold uppercase tracking-widest hover:bg-[var(--accent-start)] hover:text-white transition-all flex items-center gap-1.5"
-                  >
-                    {savingDiscLink ? <Loader2 size={12} className="animate-spin" /> : <Settings size={12} />} Salvar
-                  </button>
-                </div>
-
-                <button 
-                  onClick={() => setShowDiscModal(true)}
-                  className="w-full py-3.5 bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] text-white rounded-2xl text-[10px] font-bold uppercase tracking-[0.2em] shadow-lg shadow-[var(--accent-start)]/15 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2 group"
-                >
-                  <Trophy size={14} className="group-hover:rotate-6 transition-transform" /> Lançar Análise DISC
-                </button>
-              </div>
-
             </div>
 
             {/* DIREITA: HISTÓRICO DE RESPOSTAS EM ACCORDIONS */}
             <div className="lg:col-span-7 space-y-6">
-              
+
+              {/* CUSTOMIZAÇÃO DE JORNADA */}
+              <div className="p-6 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-[3rem] space-y-6 shadow-sm">
+                
+                {/* Header CUSTOMIZAÇÃO DE JORNADA */}
+                <div className="flex items-center gap-4 text-left border-b border-[var(--border-primary)]/40 pb-5">
+                  <div className="p-3 bg-[var(--accent-start)]/10 rounded-2xl border border-[var(--accent-start)]/20 text-[var(--accent-start)]">
+                    <Settings size={18} />
+                  </div>
+                  <div className="flex flex-col">
+                    <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)]">CUSTOMIZAÇÃO DE JORNADA</h3>
+                    <p className="text-xs font-black text-[var(--text-primary)] tracking-tight mt-0.5">Ajuste de Recursos Comportamentais & Integrações</p>
+                  </div>
+                </div>
+
+                {/* Sub tabs inside Customização de Jornada */}
+                <div className="flex gap-2 p-1 bg-[var(--bg-primary)]/40 rounded-2xl border border-[var(--border-primary)]/50">
+                  <button
+                    onClick={() => setCustomizationTab("disc")}
+                    className={`flex-1 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all ${
+                      customizationTab === "disc"
+                        ? "bg-[var(--accent-start)] text-white shadow-md shadow-[var(--accent-start)]/15"
+                        : "hover:bg-[var(--input-bg)]/30 text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                    }`}
+                  >
+                    Portal DISC Link
+                  </button>
+                  <button
+                    onClick={() => setCustomizationTab("c3")}
+                    className={`flex-1 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all ${
+                      customizationTab === "c3"
+                        ? "bg-[var(--accent-start)] text-white shadow-md shadow-[var(--accent-start)]/15"
+                        : "hover:bg-[var(--input-bg)]/30 text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                    }`}
+                  >
+                    Configurar C3
+                  </button>
+                </div>
+
+                {/* Tab Content 1: PORTAL DISC */}
+                {customizationTab === "disc" && (
+                  <div className="space-y-5 text-left animate-fade-in-up">
+                    <div className="space-y-1">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)]">Link Individual do Portal DISC</span>
+                      <p className="text-[8px] font-bold text-[var(--text-muted)] uppercase tracking-wider opacity-60">Insira o link individual gerado no portal DISC</p>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <input 
+                        type="text" 
+                        placeholder="https://vrs.com.br/disc/resultado/..."
+                        value={discLinkInput}
+                        onChange={(e) => setDiscLinkInput(e.target.value)}
+                        className="bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-xl px-4 py-2.5 text-[10px] font-mono flex-1 text-[var(--text-primary)] focus:border-[var(--accent-start)]/50 outline-none transition-all placeholder:opacity-30"
+                      />
+                      <button 
+                        onClick={handleSaveDiscLink}
+                        disabled={savingDiscLink}
+                        className="px-4 bg-[var(--accent-start)]/10 text-[var(--accent-start)] border border-[var(--accent-start)]/20 rounded-xl text-[9px] font-bold uppercase tracking-widest hover:bg-[var(--accent-start)] hover:text-white transition-all flex items-center gap-1.5"
+                      >
+                        {savingDiscLink ? <Loader2 size={12} className="animate-spin" /> : <Settings size={12} />} Salvar
+                      </button>
+                    </div>
+
+                    <button 
+                      onClick={() => setShowDiscModal(true)}
+                      className="w-full py-3.5 bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] text-white rounded-2xl text-[10px] font-bold uppercase tracking-[0.2em] shadow-lg shadow-[var(--accent-start)]/15 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2 group"
+                    >
+                      <Trophy size={14} className="group-hover:rotate-6 transition-transform" /> Lançar Análise DISC
+                    </button>
+                  </div>
+                )}
+
+                {/* Tab Content 2: CONFIGURAR C3 */}
+                {customizationTab === "c3" && (
+                  <div className="space-y-6 text-left animate-fade-in-up">
+                    <div className="space-y-1">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)]">Curadoria de Opções C3</span>
+                      <p className="text-[8px] font-bold text-[var(--text-muted)] uppercase tracking-wider opacity-60">
+                        Selecione exatamente 10 combustíveis e 10 barreiras para personalizar a pesquisa do usuário (Fase 2)
+                      </p>
+                    </div>
+
+                    {/* Columns grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      
+                      {/* Column 1: Combustíveis */}
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center bg-[var(--bg-primary)]/20 p-2.5 rounded-xl border border-[var(--border-primary)]/40">
+                          <span className="text-[9px] font-black uppercase tracking-wider text-[var(--text-primary)]">Combustíveis</span>
+                          <span className={`text-[9px] font-black font-mono px-2 py-0.5 rounded-md ${selectedCombustiveis.length === 10 ? "bg-green-500/15 text-green-400" : "bg-amber-500/15 text-amber-400"}`}>
+                            {selectedCombustiveis.length}/10
+                          </span>
+                        </div>
+                        <div className="space-y-1.5 max-h-[300px] overflow-y-auto custom-scrollbar pr-1">
+                          {GLOBAL_COMBUSTIVEIS.map((item) => {
+                            const isSelected = selectedCombustiveis.includes(item);
+                            return (
+                              <button
+                                key={item}
+                                onClick={() => toggleCombustivel(item)}
+                                className={`w-full text-left p-3 rounded-xl border text-[9px] font-bold transition-all flex items-center justify-between leading-relaxed ${
+                                  isSelected
+                                    ? "bg-[var(--accent-soft)] text-[var(--accent-start)] border-[var(--accent-start)]/60"
+                                    : "bg-[var(--bg-primary)]/40 text-[var(--text-primary)] border-[var(--border-primary)]/40 hover:border-[var(--border-primary)]"
+                                }`}
+                              >
+                                <span>{item}</span>
+                                {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent-start)] shrink-0 ml-2" />}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Column 2: Barreiras */}
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center bg-[var(--bg-primary)]/20 p-2.5 rounded-xl border border-[var(--border-primary)]/40">
+                          <span className="text-[9px] font-black uppercase tracking-wider text-[var(--text-primary)]">Barreiras</span>
+                          <span className={`text-[9px] font-black font-mono px-2 py-0.5 rounded-md ${selectedBarreiras.length === 10 ? "bg-green-500/15 text-green-400" : "bg-amber-500/15 text-amber-400"}`}>
+                            {selectedBarreiras.length}/10
+                          </span>
+                        </div>
+                        <div className="space-y-1.5 max-h-[300px] overflow-y-auto custom-scrollbar pr-1">
+                          {GLOBAL_BARREIRAS.map((item) => {
+                            const isSelected = selectedBarreiras.includes(item);
+                            return (
+                              <button
+                                key={item}
+                                onClick={() => toggleBarreira(item)}
+                                className={`w-full text-left p-3 rounded-xl border text-[9px] font-bold transition-all flex items-center justify-between leading-relaxed ${
+                                  isSelected
+                                    ? "bg-[var(--accent-soft)] text-[var(--accent-start)] border-[var(--accent-start)]/60"
+                                    : "bg-[var(--bg-primary)]/40 text-[var(--text-primary)] border-[var(--border-primary)]/40 hover:border-[var(--border-primary)]"
+                                }`}
+                              >
+                                <span>{item}</span>
+                                {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent-start)] shrink-0 ml-2" />}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                    </div>
+
+                    {/* Save button */}
+                    <button
+                      onClick={handleSaveC3}
+                      disabled={savingC3 || selectedCombustiveis.length !== 10 || selectedBarreiras.length !== 10}
+                      className="w-full py-3.5 bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] text-white rounded-2xl text-[10px] font-bold uppercase tracking-[0.2em] shadow-lg shadow-[var(--accent-start)]/15 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:hover:scale-100 disabled:cursor-not-allowed"
+                    >
+                      {savingC3 ? <Loader2 size={14} className="animate-spin" /> : <Settings size={14} />} Salvar Configuração C3
+                    </button>
+                  </div>
+                )}
+
+              </div>
+
               {/* ACCORDION: MODULO DE GESTÃO DE CARREIRA */}
               <div className="p-6 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-[3rem] space-y-6 shadow-sm">
                 {/* Header Accordion */}
@@ -1207,83 +1449,85 @@ export function DevolutivaComportamentalView({
                   </span>
                 </div>
 
-                {/* Submissions accordions list */}
-                <div className="space-y-4">
+                {/* Submissions list (Single unified compact container) */}
+                <div>
                   {allSubmissionsList.length > 0 ? (
-                    allSubmissionsList.map((sub) => {
-                      const id = sub.type === "survey" ? sub.surveyId : sub.formId;
-                      const isOpen = !!expandedAccordions[id];
-                      const title = getSubmissionTitle(sub);
-                      const renderableFields = getRenderableFields(sub);
+                    <div className="border border-[var(--border-primary)]/40 rounded-[2rem] overflow-hidden bg-[var(--bg-primary)]/10 divide-y divide-[var(--border-primary)]/30">
+                      {allSubmissionsList.map((sub) => {
+                        const id = sub.type === "survey" ? sub.surveyId : sub.formId;
+                        const isOpen = !!expandedAccordions[id];
+                        const title = getSubmissionTitle(sub);
+                        const renderableFields = getRenderableFields(sub);
 
-                      return (
-                        <div 
-                          key={sub.type + id} 
-                          className="border border-[var(--border-primary)]/60 rounded-[1.5rem] overflow-hidden bg-[var(--bg-primary)]/20 transition-all hover:border-[var(--border-primary)]"
-                        >
-                          {/* Accordion Trigger Header */}
-                          <button
-                            onClick={() => toggleAccordion(id)}
-                            className="w-full px-6 py-4 flex items-center justify-between text-left transition-colors hover:bg-[var(--input-bg)]/25"
+                        return (
+                          <div 
+                            key={sub.type + id} 
+                            className="transition-all hover:bg-[var(--bg-primary)]/20"
                           >
-                            <div className="space-y-1 max-w-[80%]">
-                              <h4 className="text-xs font-black text-[var(--text-primary)] tracking-tight truncate group-hover:text-[var(--accent-start)] transition-colors">
-                                {title}
-                              </h4>
-                              <p className="text-[8px] font-bold text-[var(--text-muted)] uppercase tracking-wider flex items-center gap-1.5 opacity-60">
-                                <span className={`w-1.5 h-1.5 rounded-full ${sub.type === "survey" ? "bg-amber-500" : "bg-blue-500"}`} />
-                                <span className="font-mono">{id}</span>
-                                <span>•</span>
-                                <span>{sub.submittedAt ? new Date(sub.submittedAt).toLocaleDateString("pt-BR") : "—"}</span>
-                              </p>
-                            </div>
-                            <div className="p-2 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-primary)] text-[var(--text-muted)]">
-                              <ChevronRight size={14} className={`transition-transform duration-300 ${isOpen ? "rotate-90" : ""}`} />
-                            </div>
-                          </button>
+                            {/* Accordion Trigger Header */}
+                            <button
+                              onClick={() => toggleAccordion(id)}
+                              className="w-full px-5 py-3.5 flex items-center justify-between text-left transition-colors"
+                            >
+                              <div className="space-y-0.5 max-w-[80%]">
+                                <h4 className="text-xs font-bold text-[var(--text-primary)] tracking-tight truncate hover:text-[var(--accent-start)] transition-colors">
+                                  {title}
+                                </h4>
+                                <p className="text-[8px] font-bold text-[var(--text-muted)] uppercase tracking-wider flex items-center gap-1.5 opacity-60">
+                                  <span className={`w-1.5 h-1.5 rounded-full ${sub.type === "survey" ? "bg-amber-500" : "bg-blue-500"}`} />
+                                  <span className="font-mono">{id}</span>
+                                  <span>•</span>
+                                  <span>{sub.submittedAt ? new Date(sub.submittedAt).toLocaleDateString("pt-BR") : "—"}</span>
+                                </p>
+                              </div>
+                              <div className="p-1.5 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-primary)] text-[var(--text-muted)]">
+                                <ChevronRight size={12} className={`transition-transform duration-300 ${isOpen ? "rotate-90" : ""}`} />
+                              </div>
+                            </button>
 
-                          {/* Accordion Content */}
-                          <AnimatePresence initial={false}>
-                            {isOpen && (
-                              <motion.div
-                                initial={{ height: 0 }}
-                                animate={{ height: "auto" }}
-                                exit={{ height: 0 }}
-                                className="overflow-hidden"
-                              >
-                                <div className="px-6 pb-6 pt-2 border-t border-[var(--border-primary)]/40 bg-[var(--bg-primary)]/10 space-y-4">
-                                  {renderableFields.length > 0 ? (
-                                    <div className="grid grid-cols-1 gap-4 text-left">
-                                      {renderableFields.map((field, idx) => (
-                                        <div key={idx} className="space-y-1">
-                                          <span className="text-[8px] font-black uppercase tracking-wider text-[var(--text-muted)] opacity-70 flex items-center gap-1">
-                                            <ChevronRight size={10} className="text-[var(--accent-start)]" /> {field.label}
-                                          </span>
-                                          <p className="text-xs font-medium text-[var(--text-primary)] leading-relaxed pl-3 whitespace-pre-line font-medium break-all">
-                                            {field.value}
-                                          </p>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  ) : (
-                                    <div className="py-4 text-center text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-50 flex items-center justify-center gap-2">
-                                      <HelpCircle size={12} /> Nenhuma resposta registrada neste formulario
-                                    </div>
-                                  )}
-                                </div>
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                        </div>
-                      );
-                    })
+                            {/* Accordion Content */}
+                            <AnimatePresence initial={false}>
+                              {isOpen && (
+                                <motion.div
+                                  initial={{ height: 0 }}
+                                  animate={{ height: "auto" }}
+                                  exit={{ height: 0 }}
+                                  className="overflow-hidden bg-[var(--bg-primary)]/15"
+                                >
+                                  <div className="px-5 pb-5 pt-2 border-t border-[var(--border-primary)]/20 space-y-3">
+                                    {renderableFields.length > 0 ? (
+                                      <div className="grid grid-cols-1 gap-3.5 text-left">
+                                        {renderableFields.map((field, idx) => (
+                                          <div key={idx} className="space-y-0.5">
+                                            <span className="text-[8px] font-black uppercase tracking-wider text-[var(--text-muted)] opacity-70 flex items-center gap-1">
+                                              <ChevronRight size={8} className="text-[var(--accent-start)]" /> {field.label}
+                                            </span>
+                                            <p className="text-xs font-medium text-[var(--text-primary)] leading-relaxed pl-2.5 whitespace-pre-line break-all">
+                                              {field.value}
+                                            </p>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    ) : (
+                                      <div className="py-3 text-center text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-50 flex items-center justify-center gap-2">
+                                        <HelpCircle size={10} /> Nenhuma resposta registrada neste formulário
+                                      </div>
+                                    )}
+                                  </div>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
+                        );
+                      })}
+                    </div>
                   ) : (
                     <div className="py-16 text-center space-y-3">
                       <div className="w-14 h-14 mx-auto rounded-full border border-dashed border-[var(--border-primary)] flex items-center justify-center bg-[var(--bg-primary)]/30">
                         <FileText size={18} className="text-[var(--text-muted)] opacity-20" />
                       </div>
                       <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-50">
-                        Nenhuma submissao registrada para este usuario
+                        Nenhuma submissão registrada para este usuário
                       </p>
                     </div>
                   )}
