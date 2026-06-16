@@ -80,7 +80,7 @@ export async function closeAttendeeAction(eventId: string, userId: string, matri
 }
 
 export async function adminAddAttendeeAction(eventId: string, matricula: string, idToken: string) {
-  return PostEvent.adminAddAttendeeAction(eventId, matricula, idToken);
+  return Booking.adminAddAttendeeAction(eventId, matricula, idToken);
 }
 
 export async function generateEventSummarySheetAction(eventId: string, adminToken: string) {

@@ -266,7 +266,7 @@ export async function adminAddAttendeeAction(
     const userUid = authMapDoc.exists ? authMapDoc.data()?.uid : matricula;
 
     const eventRef = db.collection("Calendar_Events").doc(eventId);
-    const displayName = userData?.User_Nickname || userData?.Authentication_Name || "Membro BPlen";
+    const displayName = userData?.User_Nickname || userData?.User_Welcome?.User_Nickname || userData?.Authentication_Name || userData?.User_Name || "Membro BPlen";
     const userEmail = userData?.email || "";
 
     await db.runTransaction(async (transaction) => {

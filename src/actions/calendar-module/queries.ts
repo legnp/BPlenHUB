@@ -154,6 +154,7 @@ export async function getEventAttendees(eventId: string): Promise<AttendeeData[]
         const data = doc.data();
         let realProfilePhoto = null;
         let realPhone = data.phone || null;
+        let realNickname = data.nickname || data.displayName || "Participante";
         
         if (data.matricula && typeof data.matricula === "string" && data.matricula.trim() !== "") {
           const userDoc = await db.collection("User").doc(data.matricula).get();
@@ -163,6 +164,7 @@ export async function getEventAttendees(eventId: string): Promise<AttendeeData[]
             if (uData?.Authentication_Phone) {
               realPhone = uData.Authentication_Phone;
             }
+            realNickname = uData?.User_Nickname || uData?.User_Welcome?.User_Nickname || uData?.Authentication_Name || uData?.User_Name || realNickname;
           }
         }
         
@@ -177,7 +179,7 @@ export async function getEventAttendees(eventId: string): Promise<AttendeeData[]
 
         return safeSerialize<AttendeeData>({
           ...data,
-          nickname: data.nickname || data.displayName || "Participante",
+          nickname: realNickname,
           photoUrl: realProfilePhoto,
           phone: realPhone,
           userId: doc.id,
