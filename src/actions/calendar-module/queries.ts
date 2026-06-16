@@ -170,6 +170,11 @@ export async function getEventAttendees(eventId: string): Promise<AttendeeData[]
         const timestamp = toISOSafe(data.bookedAt || data.timestamp);
         const attendanceCheckedAt = toISOSafe(data.attendanceCheckedAt);
 
+        // Extração segura dos campos aninhados do 1 to 1 para atender às expectativas de UI
+        const oneToOne = data.oneToOneData || null;
+        const type = oneToOne?.type || null;
+        const expectations = oneToOne?.expectations || null;
+
         return safeSerialize<AttendeeData>({
           ...data,
           nickname: data.nickname || data.displayName || "Participante",
@@ -178,6 +183,8 @@ export async function getEventAttendees(eventId: string): Promise<AttendeeData[]
           userId: doc.id,
           timestamp,
           attendanceCheckedAt,
+          type: type || data.type || null,
+          expectations: expectations || data.expectations || null,
         });
       } catch (innerError) {
         console.error(`Erro ao processar inscrito ${doc.id}:`, innerError);
