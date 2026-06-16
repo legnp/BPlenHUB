@@ -470,6 +470,15 @@ export async function rescheduleAttendeeAction(
       const newEventData = newEventDoc.data() as GoogleCalendarEvent;
       const attendeeData = attendeeDoc.data() as any;
 
+      let userData: any = null;
+      if (attendeeData.matricula) {
+        const userRef = db.collection("User").doc(attendeeData.matricula);
+        const userDoc = await transaction.get(userRef);
+        if (userDoc.exists) {
+          userData = userDoc.data();
+        }
+      }
+
       // Validação de vagas no novo evento
       const newAttendeesCol = newEventRef.collection("attendees");
       const newAttendeesSnap = await transaction.get(newAttendeesCol);
@@ -494,8 +503,14 @@ export async function rescheduleAttendeeAction(
       // Inscreve no novo evento
       const { attendanceCheckedAt, attendanceCheckedBy, ...restAttendeeData } = attendeeData;
 
+      const resolvedName = userData
+        ? (userData.User_Nickname || userData.User_Welcome?.User_Nickname || userData.Authentication_Name || userData.User_Name || "Membro BPlen")
+        : (attendeeData.nickname || attendeeData.displayName || "Membro BPlen");
+
       const newAttendeePayload = {
         ...restAttendeeData,
+        displayName: resolvedName,
+        nickname: resolvedName,
         week,
         year,
         bookedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -531,7 +546,11 @@ export async function rescheduleAttendeeAction(
         success: true,
         oldEventData,
         newEventData,
-        attendeeData
+        attendeeData: {
+          ...attendeeData,
+          displayName: resolvedName,
+          nickname: resolvedName
+        }
       };
     });
 
