@@ -767,19 +767,22 @@ export default function ProgramacaoResumo() {
                           </span>
                         )}
 
-                        {/* 1 to 1 Badge */}
-                        {attendee.type && (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded bg-[var(--accent-start)]/10 text-[var(--accent-start)] border border-[var(--accent-start)]/20 text-[8px] font-black uppercase tracking-widest" title={attendee.expectations}>
-                            {attendee.type}
-                          </span>
-                        )}
-
                         {/* Attendance Badge */}
                         {attendanceBadge}
                       </div>
 
                       {/* Interactive Buttons */}
                       <div className="flex items-center gap-1.5 border-l border-[var(--border-primary)] pl-3 ml-1">
+                        {/* 1 to 1 Expectations Info (Ponto de Exclamação) */}
+                        {attendee.type && (
+                          <div
+                            className="p-2 rounded-xl bg-[var(--accent-soft)] hover:bg-[var(--accent-start)]/20 text-[var(--accent-start)] border border-[var(--accent-start)]/25 transition-all cursor-help"
+                            title={`DEMANDA 1 TO 1: ${attendee.type.toUpperCase()}\n\nEXPECTATIVAS:\n"${attendee.expectations || "Nenhuma expectativa informada"}"`}
+                          >
+                            <AlertCircle className="w-3.5 h-3.5" />
+                          </div>
+                        )}
+
                         {/* Email Link */}
                         <a
                           href={`mailto:${attendee.email}`}
