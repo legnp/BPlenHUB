@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { 
   getProgramacaoSummaryAction, 
   getEventNpsDetailsAction,
@@ -96,6 +97,11 @@ export default function ProgramacaoResumo() {
   const [events, setEvents] = useState<EventSummary[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshCounter, setRefreshCounter] = useState(0);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   
   // Modal Wizard State
   const [selectedEvent, setSelectedEvent] = useState<EventSummary | null>(null);
@@ -745,7 +751,7 @@ export default function ProgramacaoResumo() {
       {/* Attendees Detail Modal */}
       <GlassModal
         isOpen={!!attendeesModalEvent}
-        onClose={() => { setAttendeesModalEvent(null); setAttendeesData([]); }}
+        onClose={() => { setAttendeesModalEvent(null); setAttendeesData([]); setIsUserSearchOpen(false); }}
         title="Lista de Inscritos"
         subtitle={attendeesModalEvent?.summary}
         maxWidth="max-w-2xl"
@@ -765,7 +771,7 @@ export default function ProgramacaoResumo() {
                 className="flex items-center gap-2 px-4 py-2 bg-[var(--accent-start)] hover:bg-[var(--accent-start)]/90 hover:scale-105 active:scale-95 text-white rounded-xl font-black text-[9px] uppercase tracking-widest transition-all shadow-md shadow-[var(--accent-start)]/10"
               >
                 <User className="w-3.5 h-3.5 stroke-[3]" />
-                Adicionar Aluno
+                Adicionar participante
               </button>
             </div>
           )}
@@ -1112,75 +1118,78 @@ export default function ProgramacaoResumo() {
       </GlassModal>
 
       {/* Manual User Search Modal (Overlay) */}
-      <AnimatePresence>
-        {isUserSearchOpen && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-            <div 
-              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-              onClick={() => setIsUserSearchOpen(false)}
-            />
-            <div className="relative w-full max-w-md bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-              <div className="p-8 space-y-6">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-sm font-black uppercase tracking-widest">Adicionar Aluno</h3>
-                  <button onClick={() => setIsUserSearchOpen(false)} className="opacity-30 hover:opacity-100 transition-opacity text-[var(--text-primary)]">
-                    <XCircle size={20} />
-                  </button>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="relative">
-                    <input 
-                      type="text"
-                      placeholder="Buscar por nome ou matrícula..."
-                      value={userSearchQuery}
-                      onChange={(e) => setUserSearchQuery(e.target.value)}
-                      className="w-full h-12 pl-12 pr-4 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-2xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[var(--accent-start)]/20 text-[var(--text-primary)]"
-                      autoFocus
-                    />
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] opacity-30" />
+      {mounted && typeof window !== "undefined" && createPortal(
+        <AnimatePresence>
+          {isUserSearchOpen && (
+            <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4">
+              <div 
+                className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+                onClick={() => setIsUserSearchOpen(false)}
+              />
+              <div className="relative w-full max-w-md bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+                <div className="p-8 space-y-6">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-sm font-black uppercase tracking-widest">Adicionar participante</h3>
+                    <button onClick={() => setIsUserSearchOpen(false)} className="opacity-30 hover:opacity-100 transition-opacity text-[var(--text-primary)]">
+                      <XCircle size={20} />
+                    </button>
                   </div>
 
-                  <div className="max-h-64 overflow-y-auto custom-scrollbar space-y-2 pr-2">
-                    {isSearchingUsers ? (
-                      <div className="p-8 flex items-center justify-center">
-                        <Loader2 className="w-5 h-5 animate-spin text-[var(--accent-start)]" />
-                      </div>
-                    ) : (
-                      allUsers
-                        .filter(u => 
-                          u.name.toLowerCase().includes(userSearchQuery.toLowerCase()) || 
-                          u.matricula.toLowerCase().includes(userSearchQuery.toLowerCase())
-                        )
-                        .slice(0, 10) // Limit to avoid chaos
-                        .map(u => (
-                          <button
-                            key={u.matricula}
-                            onClick={() => handleAddParticipant(u.matricula)}
-                            disabled={isSaving}
-                            className="w-full p-4 bg-[var(--input-bg)] hover:bg-[var(--accent-soft)] border border-transparent hover:border-[var(--accent-start)]/20 rounded-2xl flex items-center justify-between transition-all group disabled:opacity-50"
-                          >
-                            <div className="text-left">
-                              <p className="text-[10px] font-black group-hover:text-[var(--accent-start)] transition-colors text-[var(--text-primary)]">{u.name}</p>
-                              <p className="text-[8px] font-black text-[var(--text-muted)] uppercase tracking-wider">{u.matricula}</p>
-                            </div>
-                            <ChevronRight size={14} className="text-[var(--text-muted)] opacity-20 group-hover:opacity-100" />
-                          </button>
-                        ))
-                    )}
-                    {!isSearchingUsers && userSearchQuery && allUsers.filter(u => u.name.toLowerCase().includes(userSearchQuery.toLowerCase()) || u.matricula.toLowerCase().includes(userSearchQuery.toLowerCase())).length === 0 && (
-                      <p className="text-center text-[9px] font-black uppercase text-[var(--text-muted)] opacity-40 py-8">Nenhum usuário encontrado.</p>
-                    )}
-                    {!isSearchingUsers && !userSearchQuery && (
-                      <p className="text-center text-[9px] font-black uppercase text-[var(--text-muted)] opacity-40 py-8">Digite para iniciar a busca...</p>
-                    )}
+                  <div className="space-y-4">
+                    <div className="relative">
+                      <input 
+                        type="text"
+                        placeholder="Buscar por nome ou matrícula..."
+                        value={userSearchQuery}
+                        onChange={(e) => setUserSearchQuery(e.target.value)}
+                        className="w-full h-12 pl-12 pr-4 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-2xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[var(--accent-start)]/20 text-[var(--text-primary)]"
+                        autoFocus
+                      />
+                      <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] opacity-30" />
+                    </div>
+
+                    <div className="max-h-64 overflow-y-auto custom-scrollbar space-y-2 pr-2">
+                      {isSearchingUsers ? (
+                        <div className="p-8 flex items-center justify-center">
+                          <Loader2 className="w-5 h-5 animate-spin text-[var(--accent-start)]" />
+                        </div>
+                      ) : (
+                        allUsers
+                          .filter(u => 
+                            u.name.toLowerCase().includes(userSearchQuery.toLowerCase()) || 
+                            u.matricula.toLowerCase().includes(userSearchQuery.toLowerCase())
+                          )
+                          .slice(0, 10) // Limit to avoid chaos
+                          .map(u => (
+                            <button
+                              key={u.matricula}
+                              onClick={() => handleAddParticipant(u.matricula)}
+                              disabled={isSaving}
+                              className="w-full p-4 bg-[var(--input-bg)] hover:bg-[var(--accent-soft)] border border-transparent hover:border-[var(--accent-start)]/20 rounded-2xl flex items-center justify-between transition-all group disabled:opacity-50"
+                            >
+                              <div className="text-left">
+                                <p className="text-[10px] font-black group-hover:text-[var(--accent-start)] transition-colors text-[var(--text-primary)]">{u.name}</p>
+                                <p className="text-[8px] font-black text-[var(--text-muted)] uppercase tracking-wider">{u.matricula}</p>
+                              </div>
+                              <ChevronRight size={14} className="text-[var(--text-muted)] opacity-20 group-hover:opacity-100" />
+                            </button>
+                          ))
+                      )}
+                      {!isSearchingUsers && userSearchQuery && allUsers.filter(u => u.name.toLowerCase().includes(userSearchQuery.toLowerCase()) || u.matricula.toLowerCase().includes(userSearchQuery.toLowerCase())).length === 0 && (
+                        <p className="text-center text-[9px] font-black uppercase text-[var(--text-muted)] opacity-40 py-8">Nenhum usuário encontrado.</p>
+                      )}
+                      {!isSearchingUsers && !userSearchQuery && (
+                        <p className="text-center text-[9px] font-black uppercase text-[var(--text-muted)] opacity-40 py-8">Digite para iniciar a busca...</p>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </div>
   );
 }
