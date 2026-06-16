@@ -8,7 +8,7 @@ import { CALENDAR_CONFIG } from "@/config/calendarConfig";
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 import { GoogleCalendarEvent } from "@/types/calendar";
 import { updateGlobalProgramacaoRegistryAction, recalculateEventMetrics } from "./post-event";
-import { getBookingConfirmationEmail, getAdminInclusionEmail, getCancellationEmail, getRescheduleEmail } from "@/lib/email-templates";
+import { getBookingConfirmationEmail, getAdminInclusionEmail, getCancellationEmail, getRescheduleEmail, getTeamBookingNotificationEmail, getTeamCancellationNotificationEmail, getTeamInclusionNotificationEmail, getTeamRescheduleNotificationEmail } from "@/lib/email-templates";
 import { formatDateInBR, formatTimeInBR } from "@/lib/timezone";
 import { submitSurvey } from "../submit-survey";
 import { bookingEvaluationSurveyConfig } from "@/config/surveys/booking-evaluation";
@@ -121,6 +121,29 @@ export async function bookEventAction(
         subject: `${displayName}, seu evento ${result.eventData.summary} foi agendado.`,
         html: emailHtml
       });
+
+      try {
+        const teamEmailHtml = getTeamBookingNotificationEmail({
+          displayName,
+          userEmail,
+          summary: result.eventData.summary,
+          dateStr: formatDateInBR(result.eventData.start),
+          timeStr: formatTimeInBR(result.eventData.start),
+          mentor: result.eventData.mentor,
+          theme: result.eventData.theme,
+          oneToOneInfo: oneToOneData ? `<p><b>Tipo:</b> ${oneToOneData.type}<br/><b>Expectativas:</b> ${oneToOneData.expectations}</p>` : undefined,
+          isLead: !!leadInfo
+        });
+
+        await resend.emails.send({
+          from: OFFICIAL_SENDER,
+          to: "notificacao@bplen.com",
+          subject: `Novo agendamento: ${result.eventData.summary} - ${displayName}`,
+          html: teamEmailHtml
+        });
+      } catch (teamErr) {
+        console.error("Erro ao enviar email de notificacao para a equipe:", teamErr);
+      }
     } catch (e) {}
 
     return { success: true };
@@ -179,6 +202,23 @@ export async function cancelBookingAction(
           subject: `${result.nickname}, seu evento ${result.eventData.summary} foi cancelado.`,
           html: emailHtml
         });
+
+        try {
+          const teamEmailHtml = getTeamCancellationNotificationEmail({
+            nickname: result.nickname,
+            email: result.email || "",
+            eventSummary: result.eventData.summary
+          });
+
+          await resend.emails.send({
+            from: OFFICIAL_SENDER,
+            to: "notificacao@bplen.com",
+            subject: `Cancelamento de agendamento: ${result.eventData.summary} - ${result.nickname}`,
+            html: teamEmailHtml
+          });
+        } catch (teamErr) {
+          console.error("Erro ao enviar email de notificacao para a equipe:", teamErr);
+        }
       }
     } catch (e) {}
 
@@ -266,6 +306,28 @@ export async function adminAddAttendeeAction(
           subject: `${displayName}, você foi incluído no evento.`,
           html: emailHtml
         });
+
+        try {
+          const eventDoc = await eventRef.get();
+          const evData = eventDoc.data();
+          const teamEmailHtml = getTeamInclusionNotificationEmail({
+            displayName,
+            userEmail,
+            summary: evData?.summary || eventId,
+            dateStr: evData?.start ? formatDateInBR(evData.start) : "Não informada",
+            timeStr: evData?.start ? formatTimeInBR(evData.start) : "Não informado",
+            mentor: evData?.mentor || "BPlen"
+          });
+
+          await resend.emails.send({
+            from: OFFICIAL_SENDER,
+            to: "notificacao@bplen.com",
+            subject: `Inclusao administrativa: ${evData?.summary || eventId} - ${displayName}`,
+            html: teamEmailHtml
+          });
+        } catch (teamErr) {
+          console.error("Erro ao enviar email de notificacao para a equipe:", teamErr);
+        }
       }
     } catch (e) {}
 
@@ -458,6 +520,29 @@ export async function rescheduleAttendeeAction(
           subject: subject,
           html: emailHtml
         });
+
+        try {
+          const teamEmailHtml = getTeamRescheduleNotificationEmail({
+            participantName,
+            email: result.attendeeData.email,
+            eventName: result.newEventData.summary,
+            oldDateStr: formatDateInBR(result.oldEventData.start, "dd/MM/yyyy"),
+            oldTimeStr: formatTimeInBR(result.oldEventData.start),
+            oldMentor: result.oldEventData.mentor || "BPlen",
+            newDateStr: formatDateInBR(result.newEventData.start, "dd/MM/yyyy"),
+            newTimeStr: formatTimeInBR(result.newEventData.start),
+            newMentor: result.newEventData.mentor || "BPlen"
+          });
+
+          await resend.emails.send({
+            from: OFFICIAL_SENDER,
+            to: "notificacao@bplen.com",
+            subject: `Reagendamento de evento: ${result.oldEventData.summary} para ${result.newEventData.summary} - ${participantName}`,
+            html: teamEmailHtml
+          });
+        } catch (teamErr) {
+          console.error("Erro ao enviar email de notificacao para a equipe:", teamErr);
+        }
       }
     } catch (e) {
       console.error("Erro ao enviar e-mail de reagendamento:", e);

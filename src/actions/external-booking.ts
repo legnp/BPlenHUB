@@ -15,6 +15,7 @@ import { CALENDAR_CONFIG } from "@/config/calendarConfig";
 import { bookEventAction } from "./calendar";
 import { Resend } from "resend";
 import { buildSoberanaEmail, EMAIL_STYLES } from "@/lib/emails/soberana-layout";
+import { getTeamProposalNotificationEmail } from "@/lib/email-templates";
 
 const resend = new Resend(serverEnv.RESEND_API_KEY);
 
@@ -310,6 +311,34 @@ export async function submitBookingProposalAction(formData: {
           </p>
         `, "BPlen HUB - Inteligência em Gestão e Desenvolvimento")
       });
+
+      try {
+        const teamOptionsHtml = formData.options.map(opt => {
+          const d = parseISO(opt.date);
+          return `<li style="margin-bottom: 8px;"><b>${d.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })}</b> as <b>${opt.time}h</b></li>`;
+        }).join('');
+
+        const screeningHtml = Object.entries(formData.screening).map(([key, value]) => {
+          return `<p style="margin: 4px 0; font-size: 14px;"><b>${key.toUpperCase().replace(/_/g, ' ')}:</b> ${value}</p>`;
+        }).join('');
+
+        const teamEmailHtml = getTeamProposalNotificationEmail({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          optionsHtml: teamOptionsHtml,
+          screeningHtml
+        });
+
+        await resend.emails.send({
+          from: `BPlen HUB <hub@bplen.com>`,
+          to: "notificacao@bplen.com",
+          subject: `Nova proposta de agendamento: ${formData.name}`,
+          html: teamEmailHtml
+        });
+      } catch (teamErr) {
+        console.error("Erro ao enviar email de notificacao de proposta para a equipe:", teamErr);
+      }
     } catch (emailErr) {
       console.error("Erro ao enviar e-mail de proposta (ignorado):", emailErr);
     }
