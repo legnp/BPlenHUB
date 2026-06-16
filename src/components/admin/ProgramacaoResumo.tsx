@@ -5,8 +5,11 @@ import {
   getProgramacaoSummaryAction, 
   getEventNpsDetailsAction,
   getEventAttendees,
-  rescheduleAttendeeAction
+  rescheduleAttendeeAction,
+  adminAddAttendeeAction
 } from "@/actions/calendar";
+import { getAdminUsersList } from "@/actions/users-admin";
+import { AdminUser } from "@/types/users";
 import { 
   GoogleCalendarEvent,
   EventLifecycleStatus 
@@ -35,7 +38,9 @@ import {
   Phone,
   Mail,
   RefreshCw,
-  Video
+  Video,
+  User,
+  XCircle
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -43,6 +48,8 @@ import { formatDateInBR, formatTimeInBR } from "@/lib/timezone";
 import { useAuthContext } from "@/context/AuthContext";
 import PostEventWizard from "./PostEventWizard";
 import GlassModal from "@/components/ui/GlassModal";
+import { motion, AnimatePresence } from "framer-motion";
+
 
 interface EventSummary {
   id: string;
@@ -123,6 +130,67 @@ export default function ProgramacaoResumo() {
   const [attendeesModalEvent, setAttendeesModalEvent] = useState<EventSummary | null>(null);
   const [attendeesData, setAttendeesData] = useState<any[]>([]);
   const [isLoadingAttendees, setIsLoadingAttendees] = useState(false);
+
+  // User Search State for manual inclusion inside the list of attendees modal
+  const [isUserSearchOpen, setIsUserSearchOpen] = useState(false);
+  const [allUsers, setAllUsers] = useState<AdminUser[]>([]);
+  const [userSearchQuery, setUserSearchQuery] = useState("");
+  const [isSearchingUsers, setIsSearchingUsers] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const loadAllUsers = async () => {
+    if (!user) return;
+    setIsSearchingUsers(true);
+    try {
+      const idToken = await user.getIdToken();
+      const res = await getAdminUsersList(idToken);
+      if (res.success && res.data) {
+        setAllUsers(res.data);
+      }
+    } catch (error) {
+      console.error("Erro ao carregar lista de usuários:", error);
+    } finally {
+      setIsSearchingUsers(false);
+    }
+  };
+
+  const handleAddParticipant = async (matricula: string) => {
+    if (!attendeesModalEvent || !user) return;
+    
+    // Check if already in attendees list
+    if (attendeesData.some(a => a.matricula === matricula)) {
+      alert("Este aluno já está na lista deste evento.");
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const idToken = await user.getIdToken();
+      const res = await adminAddAttendeeAction(attendeesModalEvent.id, matricula, idToken);
+      
+      if (res.success) {
+        setIsUserSearchOpen(false);
+        setUserSearchQuery("");
+        
+        // Reload attendees
+        setIsLoadingAttendees(true);
+        const refreshed = await getEventAttendees(attendeesModalEvent.id);
+        setAttendeesData(refreshed || []);
+        setIsLoadingAttendees(false);
+        
+        // Refresh main programming summary numbers
+        setRefreshCounter(p => p + 1);
+        alert("Participante adicionado com sucesso!");
+      } else {
+        alert("Erro ao adicionar participante: " + res.message);
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Erro crítico ao adicionar participante.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const handleOpenAttendeesModal = async (ev: EventSummary) => {
     setAttendeesModalEvent(ev);
@@ -683,6 +751,25 @@ export default function ProgramacaoResumo() {
         maxWidth="max-w-2xl"
       >
         <div className="space-y-6 max-h-[65vh] overflow-y-auto custom-scrollbar pr-1">
+          {/* Header Action Bar to Add Participant */}
+          {!isLoadingAttendees && attendeesModalEvent && (
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-[var(--input-bg)]/30 border border-[var(--border-primary)]/50 p-4 rounded-2xl gap-3">
+              <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-70">
+                Inscritos: {attendeesData.length} de {attendeesModalEvent.totalCapacity || 10} vagas
+              </span>
+              <button
+                onClick={() => {
+                  setIsUserSearchOpen(true);
+                  loadAllUsers();
+                }}
+                className="flex items-center gap-2 px-4 py-2 bg-[var(--accent-start)] hover:bg-[var(--accent-start)]/90 hover:scale-105 active:scale-95 text-white rounded-xl font-black text-[9px] uppercase tracking-widest transition-all shadow-md shadow-[var(--accent-start)]/10"
+              >
+                <User className="w-3.5 h-3.5 stroke-[3]" />
+                Adicionar Aluno
+              </button>
+            </div>
+          )}
+
           {isLoadingAttendees ? (
             <div className="py-16 flex flex-col items-center justify-center gap-3 opacity-40">
               <Loader2 className="w-6 h-6 animate-spin text-[var(--accent-start)]" />
@@ -1023,6 +1110,77 @@ export default function ProgramacaoResumo() {
           })()}
         </div>
       </GlassModal>
+
+      {/* Manual User Search Modal (Overlay) */}
+      <AnimatePresence>
+        {isUserSearchOpen && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+            <div 
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+              onClick={() => setIsUserSearchOpen(false)}
+            />
+            <div className="relative w-full max-w-md bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+              <div className="p-8 space-y-6">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-sm font-black uppercase tracking-widest">Adicionar Aluno</h3>
+                  <button onClick={() => setIsUserSearchOpen(false)} className="opacity-30 hover:opacity-100 transition-opacity text-[var(--text-primary)]">
+                    <XCircle size={20} />
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="relative">
+                    <input 
+                      type="text"
+                      placeholder="Buscar por nome ou matrícula..."
+                      value={userSearchQuery}
+                      onChange={(e) => setUserSearchQuery(e.target.value)}
+                      className="w-full h-12 pl-12 pr-4 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-2xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[var(--accent-start)]/20 text-[var(--text-primary)]"
+                      autoFocus
+                    />
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] opacity-30" />
+                  </div>
+
+                  <div className="max-h-64 overflow-y-auto custom-scrollbar space-y-2 pr-2">
+                    {isSearchingUsers ? (
+                      <div className="p-8 flex items-center justify-center">
+                        <Loader2 className="w-5 h-5 animate-spin text-[var(--accent-start)]" />
+                      </div>
+                    ) : (
+                      allUsers
+                        .filter(u => 
+                          u.name.toLowerCase().includes(userSearchQuery.toLowerCase()) || 
+                          u.matricula.toLowerCase().includes(userSearchQuery.toLowerCase())
+                        )
+                        .slice(0, 10) // Limit to avoid chaos
+                        .map(u => (
+                          <button
+                            key={u.matricula}
+                            onClick={() => handleAddParticipant(u.matricula)}
+                            disabled={isSaving}
+                            className="w-full p-4 bg-[var(--input-bg)] hover:bg-[var(--accent-soft)] border border-transparent hover:border-[var(--accent-start)]/20 rounded-2xl flex items-center justify-between transition-all group disabled:opacity-50"
+                          >
+                            <div className="text-left">
+                              <p className="text-[10px] font-black group-hover:text-[var(--accent-start)] transition-colors text-[var(--text-primary)]">{u.name}</p>
+                              <p className="text-[8px] font-black text-[var(--text-muted)] uppercase tracking-wider">{u.matricula}</p>
+                            </div>
+                            <ChevronRight size={14} className="text-[var(--text-muted)] opacity-20 group-hover:opacity-100" />
+                          </button>
+                        ))
+                    )}
+                    {!isSearchingUsers && userSearchQuery && allUsers.filter(u => u.name.toLowerCase().includes(userSearchQuery.toLowerCase()) || u.matricula.toLowerCase().includes(userSearchQuery.toLowerCase())).length === 0 && (
+                      <p className="text-center text-[9px] font-black uppercase text-[var(--text-muted)] opacity-40 py-8">Nenhum usuário encontrado.</p>
+                    )}
+                    {!isSearchingUsers && !userSearchQuery && (
+                      <p className="text-center text-[9px] font-black uppercase text-[var(--text-muted)] opacity-40 py-8">Digite para iniciar a busca...</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
