@@ -10,6 +10,7 @@ import { GoogleCalendarEvent } from "@/types/calendar";
 import { updateGlobalProgramacaoRegistryAction, recalculateEventMetrics } from "./post-event";
 import { getBookingConfirmationEmail, getAdminInclusionEmail, getCancellationEmail, getRescheduleEmail, getTeamBookingNotificationEmail, getTeamCancellationNotificationEmail, getTeamInclusionNotificationEmail, getTeamRescheduleNotificationEmail } from "@/lib/email-templates";
 import { formatDateInBR, formatTimeInBR } from "@/lib/timezone";
+import { generateIcsString } from "@/lib/ics-utils";
 import { submitSurvey } from "../submit-survey";
 import { bookingEvaluationSurveyConfig } from "@/config/surveys/booking-evaluation";
 
@@ -115,11 +116,26 @@ export async function bookEventAction(
         oneToOneInfo: oneToOneData ? `<p><b>Tipo:</b> ${oneToOneData.type}<br/><b>Expectativas:</b> ${oneToOneData.expectations}</p>` : undefined
       });
 
+      const icsString = generateIcsString({
+        title: result.eventData.summary,
+        description: `Sessão de mentoria com ${result.eventData.mentor || 'BPlen'}${result.eventData.theme ? ` - Tema: ${result.eventData.theme}` : ''}`,
+        location: result.eventData.htmlLink || 'Online (BPlen HUB)',
+        start: new Date(result.eventData.start),
+        end: new Date(result.eventData.end),
+        uid: result.eventData.id || `booking-${userId}`
+      });
+
       await resend.emails.send({
         from: OFFICIAL_SENDER,
         to: userEmail,
         subject: `${displayName}, seu evento ${result.eventData.summary} foi agendado.`,
-        html: emailHtml
+        html: emailHtml,
+        attachments: [
+          {
+            filename: "invite.ics",
+            content: Buffer.from(icsString)
+          }
+        ]
       });
 
       try {
@@ -291,25 +307,49 @@ export async function adminAddAttendeeAction(
 
     try {
       if (userEmail) {
+        const eventDoc = await eventRef.get();
+        const evData = eventDoc.data() as GoogleCalendarEvent | undefined;
+
         const emailHtml = getAdminInclusionEmail({
           displayName,
-          summary: eventId,
-          dateStr: "Sessão Agendada",
-          timeStr: "Consultar Painel",
-          mentor: "BPlen",
-          htmlLink: "https://hub.bplen.com/hub/membro/dashboard"
+          summary: evData?.summary || eventId,
+          dateStr: evData?.start ? formatDateInBR(evData.start) : "Sessão Agendada",
+          timeStr: evData?.start ? formatTimeInBR(evData.start) : "Consultar Painel",
+          mentor: evData?.mentor || "BPlen",
+          htmlLink: evData?.htmlLink || "https://hub.bplen.com/hub/membro/dashboard"
         });
+
+        let attachments: { filename: string; content: Buffer }[] = [];
+        if (evData?.start && evData?.end) {
+          try {
+            const icsString = generateIcsString({
+              title: evData.summary,
+              description: `Sessão de mentoria com ${evData.mentor || 'BPlen'}${evData.theme ? ` - Tema: ${evData.theme}` : ''}`,
+              location: evData.htmlLink || 'Online (BPlen HUB)',
+              start: new Date(evData.start),
+              end: new Date(evData.end),
+              uid: evData.id || `inclusion-${eventId}-${userUid}`
+            });
+            attachments = [
+              {
+                filename: "invite.ics",
+                content: Buffer.from(icsString)
+              }
+            ];
+          } catch (icsErr) {
+            console.error("Erro ao gerar ICS de inclusao manual:", icsErr);
+          }
+        }
 
         await resend.emails.send({
           from: OFFICIAL_SENDER,
           to: userEmail,
           subject: `${displayName}, você foi incluído no evento.`,
-          html: emailHtml
+          html: emailHtml,
+          attachments: attachments.length > 0 ? attachments : undefined
         });
 
         try {
-          const eventDoc = await eventRef.get();
-          const evData = eventDoc.data();
           const teamEmailHtml = getTeamInclusionNotificationEmail({
             displayName,
             userEmail,
@@ -514,11 +554,32 @@ export async function rescheduleAttendeeAction(
         // Subject based on the new email
         const subject = `seu evento ${result.oldEventData.summary} foi alterado para...`;
 
+        let attachments: { filename: string; content: Buffer }[] = [];
+        try {
+          const icsString = generateIcsString({
+            title: result.newEventData.summary,
+            description: `Sessão de mentoria com ${result.newEventData.mentor || 'BPlen'}${result.newEventData.theme ? ` - Tema: ${result.newEventData.theme}` : ''}`,
+            location: result.newEventData.htmlLink || 'Online (BPlen HUB)',
+            start: new Date(result.newEventData.start),
+            end: new Date(result.newEventData.end),
+            uid: result.newEventData.id || `reschedule-${result.newEventData.id}`
+          });
+          attachments = [
+            {
+              filename: "invite.ics",
+              content: Buffer.from(icsString)
+            }
+          ];
+        } catch (icsErr) {
+          console.error("Erro ao gerar ICS de reagendamento:", icsErr);
+        }
+
         await resend.emails.send({
           from: OFFICIAL_SENDER,
           to: result.attendeeData.email,
           subject: subject,
-          html: emailHtml
+          html: emailHtml,
+          attachments: attachments.length > 0 ? attachments : undefined
         });
 
         try {
