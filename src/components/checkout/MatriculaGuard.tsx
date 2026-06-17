@@ -37,14 +37,20 @@ export function MatriculaGuard({ productSlug, className, children }: MatriculaGu
       return;
     }
 
+    // 🧬 CONEXÃO DE FLOW: Plano Junior redireciona diretamente para os Primeiros Passos
+    if (productSlug === "junior") {
+      router.push("/hub/primeiros_passos");
+      return;
+    }
+
     router.push(`/hub/membro/checkout/${productSlug}`);
   }
 
   function handleModalConfirm() {
     setIsModalOpen(false);
     if (modalMode === "login") {
-       // Redireciona para login e volta para o checkout do produto
-       const targetPath = `/hub/membro/checkout/${productSlug}`;
+       // Redireciona para login e volta para o checkout do produto (ou Primeiros Passos se Junior)
+       const targetPath = productSlug === "junior" ? "/hub/primeiros_passos" : `/hub/membro/checkout/${productSlug}`;
        router.push(`/?auth=required&returnTo=${encodeURIComponent(targetPath)}`);
     }
   }

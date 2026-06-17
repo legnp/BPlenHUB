@@ -18,6 +18,8 @@ import { FloatingCTAs } from "@/components/layout/FloatingCTAs";
 import { SocialSidebar } from "@/components/layout/SocialSidebar";
 import { LANDING_TOKENS } from "@/constants/landing-tokens";
 import { notFound } from "next/navigation";
+import { ComparisonTable } from "@/components/services/ComparisonTable";
+import { seedComparisonProductsAction } from "@/actions/seed-comparison-products";
 
 interface PageProps {
   params: Promise<{
@@ -65,6 +67,15 @@ export default async function SegmentedServicesPage({ params }: PageProps) {
 
   if (!config) notFound();
 
+  // Executa o seed sob demanda de forma resiliente para manter consistência do banco de dados 🧬
+  if (config.id === 'people') {
+    try {
+      await seedComparisonProductsAction();
+    } catch (err) {
+      console.error("Erro silenciado ao semear produtos PF:", err);
+    }
+  }
+
   const products = await getProductsByAudience(config.id);
 
   return (
@@ -97,6 +108,18 @@ export default async function SegmentedServicesPage({ params }: PageProps) {
       {/* dynamic Products Grid */}
       <section className="pb-32 px-6">
         <div className={LANDING_TOKENS.container}>
+          
+          {/* Comparison Table Section for People (PF) */}
+          {config.id === 'people' && (
+            <div className="mb-24 animate-fade-in">
+              <div className="mb-10 text-center md:text-left">
+                <span className="text-[10px] font-black uppercase tracking-widest text-[#ff0080]/80 block mb-2">Visão Geral Comparativa</span>
+                <h2 className="text-3xl font-black uppercase tracking-tighter text-white">Escolha o seu <span className="text-gray-500">Nível Estratégico</span></h2>
+              </div>
+              <ComparisonTable />
+            </div>
+          )}
+
           {products.length === 0 ? (
             <div className="p-20 text-center border border-white/5 bg-white/5 rounded-[3rem] opacity-40">
                <Package size={48} className="mx-auto mb-4 opacity-20" />
@@ -146,11 +169,20 @@ export default async function SegmentedServicesPage({ params }: PageProps) {
                     )}
                   </ul>
 
-                  <div className="mb-4">
+                  <div className="mb-6 h-[50px] flex flex-col justify-end">
                     <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Investimento</span>
-                    <span className="text-xl font-black text-white">
-                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.price)}
-                    </span>
+                    {product.price > 0 ? (
+                      <div>
+                        <span className="text-xl font-black text-white">
+                          5x {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.price / 5)}
+                        </span>
+                        <span className="block text-[9px] font-black text-[#ff0080] uppercase tracking-wider mt-0.5 opacity-90">
+                          5% de desconto à vista
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-xl font-black text-white">Sem Custo</span>
+                    )}
                   </div>
 
                   <Link 
