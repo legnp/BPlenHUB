@@ -27,23 +27,26 @@ interface PageProps {
   }>;
 }
 
-const audienceMap: Record<string, { id: 'people' | 'companies' | 'partners', title: string, kicker: string, icon: any }> = {
+const audienceMap: Record<string, { id: 'people' | 'companies' | 'partners', title: string, kicker: string, description: string, icon: any }> = {
   "pessoas": { 
     id: 'people', 
     title: "Para Pessoas", 
-    kicker: "Desenvolvimento Individual",
+    kicker: "Desenvolva sua carreira",
+    description: "Conheça nossos serviços desenhados especificamente para desenvolver a sua carreira. Transforme seu potencial em resultados reais com a BPlen.",
     icon: <User className="w-8 h-8 text-[#ff0080]" />
   },
   "empresas": { 
     id: 'companies', 
     title: "Para Empresas", 
     kicker: "HRBP & Estratégia",
+    description: "Explore nossas soluções desenhadas especificamente para empresas. Transforme potencial em resultados reais com o ecossistema BPlen.",
     icon: <Users className="w-8 h-8 text-[#667eea]" />
   },
   "parceiros": { 
     id: 'partners', 
     title: "Para Parceiros", 
     kicker: "Ecossistema BPlen",
+    description: "Explore nossas soluções desenhadas especificamente para parceiros. Transforme potencial em resultados reais com o ecossistema BPlen.",
     icon: <Handshake className="w-8 h-8 text-[#ff0080]" />
   }
 };
@@ -87,7 +90,7 @@ export default async function SegmentedServicesPage({ params }: PageProps) {
 
 
       {/* Hero Section */}
-      <section className="pt-12 pb-[60px] px-6">
+      <section className="pt-12 pb-[40px] px-6">
         <div className={LANDING_TOKENS.container}>
           <div className={`${LANDING_TOKENS.header.centered} !mb-0`}>
             <div className="mb-6 p-4 bg-white/5 rounded-2xl w-fit mx-auto border border-white/10 shadow-2xl">
@@ -98,8 +101,7 @@ export default async function SegmentedServicesPage({ params }: PageProps) {
               {config.title.split(' ')[0]} <span className="text-gray-500">{config.title.split(' ')[1]}</span>
             </h1>
             <p className={LANDING_TOKENS.header.descriptionCentered}>
-              Explore nossas soluções desenhadas especificamente para {audience}. 
-              Transforme potencial em resultados reais com o ecossistema BPlen.
+              {config.description}
             </p>
           </div>
         </div>

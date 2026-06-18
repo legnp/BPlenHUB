@@ -63,7 +63,7 @@ export function ComparisonTable() {
             </tr>
             <tr className="border-b border-white/5">
               {/* External Grouping Header Column */}
-              <th className="px-2 py-3 text-center text-[9px] font-black uppercase tracking-wider text-gray-500">Serviço</th>
+              <th className="px-2 py-3"></th>
               {/* Deliverables Header Column */}
               <th className="p-3 text-[9px] font-black uppercase tracking-wider text-gray-400">O que o pacote entrega</th>
               {columns.map(col => (
@@ -89,13 +89,15 @@ export function ComparisonTable() {
                   {isFirstSelfService ? (
                     <td 
                       rowSpan={3} 
-                      className="text-center p-2 font-black text-[8px] tracking-widest text-[#ff0080] bg-gradient-to-r from-[#ff0080]/5 to-transparent uppercase align-middle select-none border-b border-white/10"
+                      className="p-2 select-none border-b border-white/10 bg-gradient-to-r from-[#ff0080]/5 to-transparent align-middle"
                     >
-                      <div className="rotate-0 md:rotate-[-90deg] whitespace-normal md:whitespace-nowrap leading-tight">
-                        Self-Service
-                        <span className="block text-[6px] font-bold text-gray-400 normal-case tracking-normal mt-0.5 opacity-70">
-                          (Sem Acompanhamento)
-                        </span>
+                      <div className="flex flex-col items-center justify-center h-full">
+                        <div className="rotate-0 md:rotate-[-90deg] text-center font-black text-[8px] tracking-widest text-[#ff0080] uppercase whitespace-normal md:whitespace-nowrap leading-tight">
+                          Self-Service
+                          <span className="block text-[6px] font-bold text-gray-400 normal-case tracking-normal mt-0.5 opacity-70">
+                            (Sem consultor)
+                          </span>
+                        </div>
                       </div>
                     </td>
                   ) : !feat.isSelfService ? (
@@ -142,7 +144,7 @@ export function ComparisonTable() {
             <tr className="bg-white/[0.04]">
               <td className="p-3 select-none"></td>
               <td className="p-3">
-                <span className="text-[9px] font-bold text-gray-500 italic opacity-60">Escolha o seu nível estratégico</span>
+                <span className="text-[9px] font-bold text-gray-500 italic opacity-60">Escolha o seu foco</span>
               </td>
               {columns.map(col => (
                 <td key={col.id} className="p-3 text-center">
