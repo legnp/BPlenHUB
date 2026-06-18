@@ -35,14 +35,14 @@ export function ComparisonTable() {
   ];
 
   return (
-    <div className="w-full rounded-[2.5rem] border border-white/10 bg-gradient-to-b from-white/5 to-transparent backdrop-blur-xl p-1 md:p-2 shadow-2xl relative overflow-hidden text-white">
+    <div className="w-full max-w-[760px] mx-auto rounded-[2.5rem] border border-white/10 bg-gradient-to-b from-white/5 to-transparent backdrop-blur-xl p-1 md:p-2 shadow-2xl relative overflow-hidden text-white">
       
       {/* Decorative Glow */}
       <div className="absolute top-0 left-1/4 w-[180px] h-[180px] bg-[#ff0080]/10 rounded-full blur-[80px] pointer-events-none" />
 
       {/* Main Table Grid wrapper */}
       <div className="overflow-x-auto w-full scrollbar-none flex justify-center">
-        <table className="border-collapse text-left text-xs table-fixed mx-auto" style={{ width: '725px' }}>
+        <table className="border-collapse text-left text-xs table-fixed mx-auto" style={{ width: '740px' }}>
           <thead>
             {/* New Title Row */}
             <tr className="bg-white/5 border-b border-white/10">
@@ -56,7 +56,7 @@ export function ComparisonTable() {
               {/* External Grouping Header Column */}
               <th className="w-[60px] p-3 text-[9px] font-black uppercase tracking-wider text-gray-500">Serviço</th>
               {/* Deliverables Header Column */}
-              <th className="w-[265px] p-3 text-[9px] font-black uppercase tracking-wider text-gray-400">O que o pacote entrega</th>
+              <th className="w-[280px] p-3 text-[9px] font-black uppercase tracking-wider text-gray-400">O que o pacote entrega</th>
               {columns.map(col => (
                 <th key={col.id} className="w-[100px] p-3 text-center">
                   <div className="space-y-0.5">
