@@ -2,13 +2,9 @@ import React from "react";
 import { Metadata } from "next";
 import { getProductBySlug } from "@/actions/products";
 import { 
-  ChevronRight, 
-  CheckCircle2, 
   ArrowLeft,
-  Package,
   ShieldCheck,
   CreditCard,
-  MessageSquare,
   FileText
 } from "lucide-react";
 import Link from "next/link";
@@ -19,6 +15,8 @@ import { SocialSidebar } from "@/components/layout/SocialSidebar";
 import { MatriculaGuard } from "@/components/checkout/MatriculaGuard";
 import { LANDING_TOKENS } from "@/constants/landing-tokens";
 import { notFound } from "next/navigation";
+import { HyperlinkAgendar } from "@/components/products/HyperlinkAgendar";
+import FAQContactModal from "@/components/products/FAQContactModal";
 
 interface PageProps {
   params: Promise<{
@@ -60,7 +58,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
            className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-white transition-colors group"
          >
             <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
-            Voltar para {audience.charAt(0).toUpperCase() + audience.slice(1)}
+            Voltar
          </Link>
       </div>
 
@@ -72,17 +70,17 @@ export default async function ProductDetailPage({ params }: PageProps) {
              {/* Text Side */}
              <div className="flex-1 space-y-8">
                 <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                     <span className="px-3 py-1 bg-[#ff0080]/10 border border-[#ff0080]/20 rounded-full text-[#ff0080] text-[10px] font-black uppercase tracking-widest">
-                       Serviço de Elite
-                     </span>
-                     <span className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-gray-400 text-[10px] font-black uppercase tracking-widest">
-                       {audience.toUpperCase()}
-                     </span>
-                  </div>
-                  <h1 className="text-5xl md:text-7xl font-black tracking-tighter leading-tight">
-                    {product.title}
-                  </h1>
+                   <div className="flex items-center gap-3">
+                      <span className="px-3 py-1 bg-[#ff0080]/10 border border-[#ff0080]/20 rounded-full text-[#ff0080] text-[10px] font-black uppercase tracking-widest">
+                        {product.kicker || "Serviço de Elite"}
+                      </span>
+                      <span className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-gray-400 text-[10px] font-black uppercase tracking-widest">
+                        {audience.toUpperCase()}
+                      </span>
+                   </div>
+                   <h1 className="text-5xl md:text-7xl font-black tracking-tighter leading-tight">
+                     {product.title}
+                   </h1>
                 </div>
 
                 <div className="p-8 rounded-[2.5rem] bg-white/5 border border-white/10 backdrop-blur-xl relative overflow-hidden group">
@@ -95,8 +93,8 @@ export default async function ProductDetailPage({ params }: PageProps) {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                   <BenefitCard icon={<Zap size={18} />} title="Ativo Imediato" text="Acesso liberado após confirmação de faturamento." />
-                   <BenefitCard icon={<ShieldCheck size={18} />} title="Segurança Total" text="Proteção de dados e conformidade estratégica." />
+                   <BenefitCard icon={<Zap size={18} />} title="Ativação Imediata" text="Acesso liberado após confirmação de faturamento." />
+                   <BenefitCard icon={<ShieldCheck size={18} />} title="Segurança Total" text="Proteção de dados em conformidade com a LGPD." />
                 </div>
              </div>
 
@@ -104,15 +102,15 @@ export default async function ProductDetailPage({ params }: PageProps) {
              <div className="w-full lg:w-[400px] sticky top-32">
                 <div className="p-10 rounded-[3rem] bg-gradient-to-b from-white/10 to-transparent border border-white/20 shadow-2xl space-y-8 backdrop-blur-2xl">
                    <div className="space-y-4">
-                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">Investimento Único</p>
+                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">Investimento</p>
                       <div className="flex items-baseline gap-2">
                          <span className="text-sm font-bold opacity-40">R$</span>
                          <span className="text-6xl font-black tracking-tighter">
-                            {product.price > 0 ? product.price.toLocaleString('pt-BR') : "Consulte"}
+                            {product.price > 0 ? product.price.toLocaleString('pt-BR') : "Sob consulta"}
                          </span>
                       </div>
                       <p className="text-[10px] font-bold text-gray-400 leading-relaxed italic opacity-60">
-                        {product.sheet.paymentConditions || "Condições flexíveis disponíveis via consultoria."}
+                         <HyperlinkAgendar text={product.sheet.paymentConditions || "Agende uma conversa com a equipe BPlen para consultar as condições disponíveis."} />
                       </p>
                    </div>
 
@@ -123,11 +121,11 @@ export default async function ProductDetailPage({ params }: PageProps) {
                    <div className="pt-6 border-t border-white/10 space-y-4">
                       <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-tight text-gray-500">
                          <CreditCard size={14} className="text-gray-600" />
-                         Pagamento Seguro via Stripe
+                         Pagamento Seguro
                       </div>
                       <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-tight text-gray-500">
                          <FileText size={14} className="text-gray-600" />
-                         Emissão automática de Nota Fiscal
+                         Emissão de Nota Fiscal
                       </div>
                    </div>
                 </div>
@@ -149,14 +147,22 @@ export default async function ProductDetailPage({ params }: PageProps) {
                  </div>
                  
                  <div className="space-y-6">
-                    {product.sheet.faq.length > 0 ? product.sheet.faq.map((item, idx) => (
-                       <div key={idx} className="p-8 rounded-3xl bg-white/5 border border-white/10 space-y-3">
-                          <h4 className="text-sm font-black uppercase tracking-widest text-[#ff0080]/80">{item.question}</h4>
-                          <p className="text-sm text-gray-400 leading-relaxed font-bold tracking-tight opacity-80">{item.answer}</p>
+                    {product.sheet.faq.length > 0 ? (
+                       <div className="space-y-6">
+                          {product.sheet.faq.map((item, idx) => (
+                             <div key={idx} className="p-8 rounded-3xl bg-white/5 border border-white/10 space-y-3">
+                                <h4 className="text-sm font-black uppercase tracking-widest text-[#ff0080]/80">{item.question}</h4>
+                                <p className="text-sm text-gray-400 leading-relaxed font-bold tracking-tight opacity-80">
+                                   <HyperlinkAgendar text={item.answer} />
+                                </p>
+                             </div>
+                          ))}
                        </div>
-                    )) : (
-                       <p className="text-xs text-gray-500 italic">FAQ em atualização pelo Admin.</p>
+                    ) : (
+                       <p className="text-xs text-gray-500 italic">FAQ em Desenvolvimento.</p>
                     )}
+                    
+                    <FAQContactModal productName={product.title} productSlug={product.slug} />
                  </div>
               </div>
 
@@ -164,7 +170,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
               <div className="space-y-12">
                  <div className="space-y-4">
                     <h2 className="text-3xl font-black tracking-tighter uppercase">Workflow de <span className="opacity-40">Entrega</span></h2>
-                    <p className="text-gray-500 text-sm font-bold tracking-tight">O que compõe a sua experiência conosco.</p>
+                    <p className="text-gray-500 text-sm font-bold tracking-tight">O que te entregamos durante a sua jornada conosco.</p>
                  </div>
 
                  <div className="space-y-4">
@@ -175,7 +181,9 @@ export default async function ProductDetailPage({ params }: PageProps) {
                           </div>
                           <div className="space-y-1">
                              <h5 className="text-[11px] font-black uppercase tracking-widest">{step.title}</h5>
-                             <p className="text-[10px] text-gray-500 font-bold tracking-tight">{step.description || "Atividade estratégica mapeada."}</p>
+                             <p className="text-[10px] text-gray-500 font-bold tracking-tight">
+                                <HyperlinkAgendar text={step.description || "Agende uma conversa com a equipe BPlen para saber mais."} />
+                             </p>
                           </div>
                        </div>
                     ))}

@@ -6,6 +6,10 @@ import { Product } from "@/types/products";
 import { safeSerialize } from "@/lib/utils/firestore";
 import { revalidatePath } from "next/cache";
 import { PRODUCTS_COLLECTION } from "@/config/collections";
+import { Resend } from "resend";
+import { serverEnv } from "@/env";
+import { buildSoberanaEmail, EMAIL_STYLES } from "@/lib/emails/soberana-layout";
+
 
 /**
  * BPlen HUB — Product Engine Server Actions 🧬
@@ -182,3 +186,83 @@ export async function getJourneyProducts(): Promise<Product[]> {
     return [];
   }
 }
+
+/**
+ * Registra uma dúvida de FAQ e dispara e-mails de confirmação e notificação (Dual Dispatch) 📧💎
+ */
+export async function registerFaqQuestionAction(data: {
+  name: string;
+  email: string;
+  message: string;
+  productName: string;
+  productSlug: string;
+}) {
+  try {
+    const { name, email, message, productName, productSlug } = data;
+    if (!name || !email || !message) {
+      throw new Error("Campos obrigatórios ausentes.");
+    }
+
+    const resend = new Resend(serverEnv.RESEND_API_KEY);
+
+    // 1. Enviar e-mail de confirmação para o Usuário
+    const userEmailHtml = buildSoberanaEmail(`
+      <h2 style="${EMAIL_STYLES.h2}">Sua dúvida foi registrada.</h2>
+      <p style="${EMAIL_STYLES.p}">
+        Olá, <strong>${name}</strong>.
+      </p>
+      <p style="${EMAIL_STYLES.p}">
+        Confirmamos o registro de sua dúvida sobre o serviço <strong>${productName}</strong>. A nossa equipe analisará a sua pergunta e responderá o mais breve possível.
+      </p>
+      <div style="background: #F8FAFC; padding: 20px; border-radius: 12px; margin: 24px 0; border: 1px solid #E2E8F0;">
+        <p style="margin: 0 0 8px 0; font-size: 11px; color: #94A3B8; font-weight: bold; text-transform: uppercase;">Dúvida Registrada</p>
+        <p style="margin: 4px 0; font-size: 14px; line-height: 1.6; color: #1D1D1F; white-space: pre-line;">${message}</p>
+      </div>
+      <p style="${EMAIL_STYLES.p}">
+        Agradecemos o seu contato e o seu interesse em descomplicar o desenvolvimento humano conosco.
+      </p>
+    `, "Equipe BPlen HUB");
+
+    await resend.emails.send({
+      from: "BPlen HUB <hub@bplen.com>",
+      to: email,
+      subject: "FAQ BPlen | Dúvida registrada",
+      html: userEmailHtml,
+    });
+
+    // 2. Enviar e-mail de notificação para a equipe BPlen (notificacao@bplen.com)
+    const adminEmailHtml = buildSoberanaEmail(`
+      <h2 style="${EMAIL_STYLES.h2}; color: #ff2c8d;">Nova dúvida registrada no FAQ</h2>
+      <p style="${EMAIL_STYLES.p}">
+        Olá equipe BPlen,
+      </p>
+      <p style="${EMAIL_STYLES.p}">
+        Uma nova dúvida de FAQ foi enviada pelo portal para o serviço <strong>${productName}</strong>.
+      </p>
+      <div style="background: #F8FAFC; padding: 20px; border-radius: 12px; margin: 24px 0; border: 1px solid #E2E8F0;">
+        <p style="margin: 0 0 8px 0; font-size: 11px; color: #94A3B8; font-weight: bold; text-transform: uppercase;">Dados do Lead / Membro</p>
+        <p style="margin: 4px 0; font-size: 14px; color: #1D1D1F;">Nome: <strong>${name}</strong></p>
+        <p style="margin: 4px 0; font-size: 14px; color: #1D1D1F;">E-mail: <strong>${email}</strong></p>
+        <p style="margin: 4px 0; font-size: 14px; color: #1D1D1F;">Serviço: <strong>${productName} (Slug: ${productSlug})</strong></p>
+      </div>
+      <div style="background: #FFF1F2; padding: 20px; border-radius: 12px; margin: 24px 0; border: 1px solid #FECDD3;">
+        <p style="margin: 0 0 8px 0; font-size: 11px; color: #E11D48; font-weight: bold; text-transform: uppercase;">Mensagem / Dúvida</p>
+        <p style="margin: 4px 0; font-size: 14px; line-height: 1.6; color: #1D1D1F; white-space: pre-line;">${message}</p>
+      </div>
+    `, "BPlen HUB - Notificações Internas");
+
+    await resend.emails.send({
+      from: "BPlen HUB <hub@bplen.com>",
+      to: "notificacao@bplen.com",
+      subject: `FAQ BPlen | Dúvida registrada - ${name}`,
+      html: adminEmailHtml,
+    });
+
+    console.log(`✉️ [FAQ Contact] E-mails de dúvida enviados com sucesso para ${email} e notificacao@bplen.com`);
+    return { success: true };
+  } catch (error: any) {
+    console.error("❌ Erro ao processar envio de dúvida de FAQ:", error);
+    return { success: false, error: error.message || "Erro desconhecido" };
+  }
+}
+
