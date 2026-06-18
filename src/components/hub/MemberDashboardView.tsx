@@ -328,7 +328,7 @@ export default function MemberDashboardView() {
                          </div>
                          <div className="flex flex-col text-left">
                             <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)]">Sua agenda BPlen</h3>
-                            <p className="text-xs font-black text-[var(--text-primary)] tracking-tight mt-1">1 to 1 & Sessões</p>
+                            <p className="text-xs font-black text-[var(--text-primary)] tracking-tight mt-1">Consultoria, 1 to 1 e Sessões</p>
                          </div>
                       </div>
 
@@ -336,12 +336,12 @@ export default function MemberDashboardView() {
                         {loadingBookings ? (
                            <div className="py-8 flex items-center gap-4 opacity-30">
                               <Loader2 className="w-5 h-5 animate-spin" />
-                              <p className="text-[9px] font-black uppercase tracking-widest">Sincronizando...</p>
+                              <p className="text-[9px] font-black uppercase tracking-widest">Sincronizando agenda...</p>
                            </div>
                         ) : historyBookings.length === 0 ? (
                            <div className="py-10 bg-[var(--input-bg)]/30 border border-dashed border-[var(--border-primary)] rounded-2xl text-center px-6">
                               <p className="text-[9px] font-medium text-[var(--text-muted)] italic leading-relaxed">
-                                Suas atividades de mentoria aparecerão aqui.
+                                O histórico e programação da sua agenda aparecerão aqui.
                               </p>
                            </div>
                         ) : (
