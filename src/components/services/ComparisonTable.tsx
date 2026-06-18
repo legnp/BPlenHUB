@@ -43,6 +43,15 @@ export function ComparisonTable() {
       {/* Main Table Grid wrapper */}
       <div className="overflow-x-auto w-full scrollbar-none flex justify-center">
         <table className="border-collapse text-left text-xs table-fixed mx-auto" style={{ width: '780px' }}>
+          {/* Definição rigorosa de larguras para evitar que o colSpan do thead quebre o layout */}
+          <colgroup>
+            <col style={{ width: '50px' }} />  {/* Serviço */}
+            <col style={{ width: '330px' }} /> {/* O que entrega */}
+            <col style={{ width: '100px' }} /> {/* Junior */}
+            <col style={{ width: '100px' }} /> {/* Pleno */}
+            <col style={{ width: '100px' }} /> {/* Senior */}
+            <col style={{ width: '100px' }} /> {/* Lider */}
+          </colgroup>
           <thead>
             {/* New Title Row */}
             <tr className="bg-white/5 border-b border-white/10">
@@ -54,11 +63,11 @@ export function ComparisonTable() {
             </tr>
             <tr className="border-b border-white/5">
               {/* External Grouping Header Column */}
-              <th className="w-[55px] px-2 py-3 text-center text-[9px] font-black uppercase tracking-wider text-gray-500">Serviço</th>
+              <th className="px-2 py-3 text-center text-[9px] font-black uppercase tracking-wider text-gray-500">Serviço</th>
               {/* Deliverables Header Column */}
-              <th className="w-[325px] p-3 text-[9px] font-black uppercase tracking-wider text-gray-400">O que o pacote entrega</th>
+              <th className="p-3 text-[9px] font-black uppercase tracking-wider text-gray-400">O que o pacote entrega</th>
               {columns.map(col => (
-                <th key={col.id} className="w-[100px] p-3 text-center">
+                <th key={col.id} className="p-3 text-center">
                   <div className="space-y-0.5">
                     <span className="text-[11px] font-black tracking-tight text-white block">{col.name}</span>
                     <span className="block text-[8px] font-bold text-gray-500 uppercase tracking-widest">{col.duration}</span>
@@ -100,7 +109,7 @@ export function ComparisonTable() {
                   {columns.map(col => {
                     const hasFeature = feat.values[col.id as keyof typeof feat.values];
                     return (
-                      <td key={col.id} className="p-2 text-center w-[100px]">
+                      <td key={col.id} className="p-2 text-center">
                         {hasFeature ? (
                           <div className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-[#ff0080]/10 border border-[#ff0080]/20 text-[#ff0080] shadow-[0_0_10px_rgba(255,0,128,0.15)]">
                             <Check size={9} className="stroke-[3.5]" />
@@ -120,7 +129,7 @@ export function ComparisonTable() {
               <td className="p-3 select-none"></td>
               <td className="p-3 font-black uppercase text-[9px] tracking-widest text-gray-300">Investimento</td>
               {columns.map(col => (
-                <td key={col.id} className="p-3 text-center align-middle w-[100px]">
+                <td key={col.id} className="p-3 text-center align-middle">
                   <div className="space-y-0.5">
                     <span className="text-[13px] font-black text-white tracking-tight block">{col.priceInstallment}</span>
                     <span className="block text-[7px] font-black text-[#ff0080] uppercase tracking-wider opacity-90">{col.cashDiscount}</span>
@@ -136,7 +145,7 @@ export function ComparisonTable() {
                 <span className="text-[9px] font-bold text-gray-500 italic opacity-60">Escolha o seu nível estratégico</span>
               </td>
               {columns.map(col => (
-                <td key={col.id} className="p-3 text-center w-[100px]">
+                <td key={col.id} className="p-3 text-center">
                   <Link 
                     href={`/servicos/pessoas/${col.slug}`}
                     className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-white text-black text-[8px] font-black uppercase tracking-wider hover:scale-[1.03] active:scale-[0.98] transition-all group/btn w-full shadow-lg"
