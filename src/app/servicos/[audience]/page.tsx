@@ -111,11 +111,7 @@ export default async function SegmentedServicesPage({ params }: PageProps) {
           
           {/* Comparison Table Section for People (PF) */}
           {config.id === 'people' && (
-            <div className="mb-24 animate-fade-in">
-              <div className="mb-10 text-center md:text-left">
-                <span className="text-[10px] font-black uppercase tracking-widest text-[#ff0080]/80 block mb-2">Visão Geral Comparativa</span>
-                <h2 className="text-3xl font-black uppercase tracking-tighter text-white">Escolha o seu <span className="text-gray-500">Nível Estratégico</span></h2>
-              </div>
+            <div className="mb-16 animate-fade-in">
               <ComparisonTable />
             </div>
           )}

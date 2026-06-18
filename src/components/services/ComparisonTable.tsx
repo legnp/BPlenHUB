@@ -46,16 +46,24 @@ export function ComparisonTable() {
       <div className="overflow-x-auto w-full scrollbar-none">
         <table className="w-full border-collapse text-left text-xs min-w-[800px] table-fixed">
           <thead>
+            {/* New Title Row */}
+            <tr className="bg-white/5 border-b border-white/10">
+              <th colSpan={6} className="p-3 text-center">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white">
+                  Encontre o pacote que mais combina com sua carreira
+                </span>
+              </th>
+            </tr>
             <tr className="border-b border-white/5">
               {/* External Grouping Header Column */}
-              <th className="w-[120px] p-5 text-[9px] font-black uppercase tracking-wider text-gray-500">Serviço</th>
+              <th className="w-[80px] p-3 text-[9px] font-black uppercase tracking-wider text-gray-500">Serviço</th>
               {/* Deliverables Header Column */}
-              <th className="w-[280px] p-5 text-[9px] font-black uppercase tracking-wider text-gray-400">Entregáveis por Categoria</th>
+              <th className="w-[260px] p-3 text-[9px] font-black uppercase tracking-wider text-gray-400">Entregáveis por Categoria</th>
               {columns.map(col => (
-                <th key={col.id} className="p-5 text-center">
-                  <div className="space-y-1">
-                    <span className="text-sm font-black tracking-tight text-white block">{col.name}</span>
-                    <span className="block text-[9px] font-bold text-gray-500 uppercase tracking-widest">{col.duration}</span>
+                <th key={col.id} className="p-3 text-center">
+                  <div className="space-y-0.5">
+                    <span className="text-[11px] font-black tracking-tight text-white block">{col.name}</span>
+                    <span className="block text-[8px] font-bold text-gray-500 uppercase tracking-widest">{col.duration}</span>
                   </div>
                 </th>
               ))}
@@ -74,33 +82,33 @@ export function ComparisonTable() {
                   {isFirstSelfService ? (
                     <td 
                       rowSpan={3} 
-                      className="border-r border-white/10 text-center p-3 font-black text-[9px] tracking-widest text-[#ff0080] bg-gradient-to-r from-[#ff0080]/5 to-transparent uppercase align-middle select-none"
+                      className="text-center p-2 font-black text-[8px] tracking-widest text-[#ff0080] bg-gradient-to-r from-[#ff0080]/5 to-transparent uppercase align-middle select-none border-b border-white/10"
                     >
                       <div className="rotate-0 md:rotate-[-90deg] whitespace-normal md:whitespace-nowrap leading-tight">
                         Self-Service
-                        <span className="block text-[7px] font-bold text-gray-400 normal-case tracking-normal mt-1 opacity-70">
+                        <span className="block text-[6px] font-bold text-gray-400 normal-case tracking-normal mt-0.5 opacity-70">
                           (Sem Acompanhamento)
                         </span>
                       </div>
                     </td>
                   ) : !feat.isSelfService ? (
-                    <td className="border-r border-white/5 p-3 text-center text-gray-700 font-medium select-none">—</td>
+                    <td className="p-2 select-none"></td>
                   ) : null}
 
                   {/* Feature Title */}
-                  <td className="p-4 font-bold text-gray-300 pl-6 leading-relaxed">{feat.name}</td>
+                  <td className="p-2.5 font-bold text-gray-300 pl-6 leading-relaxed text-[11px]">{feat.name}</td>
 
                   {/* Column feature checks */}
                   {columns.map(col => {
                     const hasFeature = feat.values[col.id as keyof typeof feat.values];
                     return (
-                      <td key={col.id} className="p-4 text-center">
+                      <td key={col.id} className="p-2 text-center">
                         {hasFeature ? (
-                          <div className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#ff0080]/10 border border-[#ff0080]/20 text-[#ff0080] shadow-[0_0_10px_rgba(255,0,128,0.15)]">
-                            <Check size={10} className="stroke-[3.5]" />
+                          <div className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-[#ff0080]/10 border border-[#ff0080]/20 text-[#ff0080] shadow-[0_0_10px_rgba(255,0,128,0.15)]">
+                            <Check size={9} className="stroke-[3.5]" />
                           </div>
                         ) : (
-                          <span className="text-gray-700 font-medium select-none">—</span>
+                          <span className="text-gray-800 font-medium select-none text-[10px]">—</span>
                         )}
                       </td>
                     );
@@ -111,13 +119,13 @@ export function ComparisonTable() {
 
             {/* Pricing Installments Row */}
             <tr className="border-t-2 border-white/10 bg-white/[0.02]">
-              <td className="border-r border-white/5 p-5 text-center text-gray-700 font-medium select-none">—</td>
-              <td className="p-5 font-black uppercase text-[10px] tracking-widest text-gray-300">Investimento</td>
+              <td className="p-3 select-none"></td>
+              <td className="p-3 font-black uppercase text-[9px] tracking-widest text-gray-300">Investimento</td>
               {columns.map(col => (
-                <td key={col.id} className="p-5 text-center align-middle">
+                <td key={col.id} className="p-3 text-center align-middle">
                   <div className="space-y-0.5">
-                    <span className="text-base font-black text-white tracking-tight block">{col.priceInstallment}</span>
-                    <span className="block text-[8px] font-black text-[#ff0080] uppercase tracking-wider opacity-90">{col.cashDiscount}</span>
+                    <span className="text-[13px] font-black text-white tracking-tight block">{col.priceInstallment}</span>
+                    <span className="block text-[7px] font-black text-[#ff0080] uppercase tracking-wider opacity-90">{col.cashDiscount}</span>
                   </div>
                 </td>
               ))}
@@ -125,15 +133,15 @@ export function ComparisonTable() {
 
             {/* Action / Detail CTA Row */}
             <tr className="bg-white/[0.04]">
-              <td className="border-r border-white/5 p-5 text-center text-gray-700 font-medium select-none">—</td>
-              <td className="p-5">
-                <span className="text-[10px] font-bold text-gray-500 italic opacity-60">Escolha o seu nível estratégico</span>
+              <td className="p-3 select-none"></td>
+              <td className="p-3">
+                <span className="text-[9px] font-bold text-gray-500 italic opacity-60">Escolha o seu nível estratégico</span>
               </td>
               {columns.map(col => (
-                <td key={col.id} className="p-5 text-center">
+                <td key={col.id} className="p-3 text-center">
                   <Link 
                     href={`/servicos/pessoas/${col.slug}`}
-                    className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-white text-black text-[9px] font-black uppercase tracking-wider hover:scale-[1.03] active:scale-[0.98] transition-all group/btn w-full shadow-lg"
+                    className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-white text-black text-[8px] font-black uppercase tracking-wider hover:scale-[1.03] active:scale-[0.98] transition-all group/btn w-full shadow-lg"
                   >
                     Ver Mais
                     <ChevronRight size={10} className="group-hover/btn:translate-x-0.5 duration-300" />
