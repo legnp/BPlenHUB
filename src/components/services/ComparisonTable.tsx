@@ -25,15 +25,13 @@ export function ComparisonTable() {
     { name: "Revisão e elaboração de CV", values: { junior: true, pleno: true, senior: true, lider: true }, isSelfService: true },
     { name: "PDI Básico", values: { junior: true, pleno: true, senior: true, lider: true }, isSelfService: true },
     { name: "Preparação para Entrevista", values: { junior: true, pleno: true, senior: true, lider: true }, isSelfService: true },
-    { name: "Análise Comportamental (DISC)", values: { junior: false, pleno: true, senior: true, lider: true } },
+    { name: "Análise Comportamental", values: { junior: false, pleno: true, senior: true, lider: true } },
     { name: "Plano de Carreira", values: { junior: false, pleno: false, senior: true, lider: true } },
-    { name: "PDI Avançado & Consultoria Dedicada", values: { junior: false, pleno: false, senior: true, lider: true } },
     { name: "Gestão e Desenvolvimento de Carreira", values: { junior: false, pleno: false, senior: false, lider: true } },
-    { name: "Assessoria de Carreira Personalizada", values: { junior: false, pleno: false, senior: false, lider: true } },
-    { name: "Consultoria (Reuniões de Devolutivas & Alinhamentos)", values: { junior: false, pleno: true, senior: true, lider: true } },
-    { name: "1to1 de Acompanhamento (Mentoria & Feedback)", values: { junior: false, pleno: false, senior: true, lider: true } },
+    { name: "Consultoria de Carreira", values: { junior: false, pleno: true, senior: true, lider: true } },
+    { name: "1to1 de Desenvolvimento", values: { junior: false, pleno: false, senior: true, lider: true } },
     { name: "Acesso à Área de Membro BPlen", values: { junior: false, pleno: true, senior: true, lider: true } },
-    { name: "Acesso ao Networking de Negócios BPlen", values: { junior: false, pleno: false, senior: false, lider: true } },
+    { name: "Acesso ao Networking BPlen", values: { junior: false, pleno: false, senior: false, lider: true } },
   ];
 
   return (
@@ -44,7 +42,7 @@ export function ComparisonTable() {
 
       {/* Main Table Grid wrapper */}
       <div className="overflow-x-auto w-full scrollbar-none">
-        <table className="w-full border-collapse text-left text-xs min-w-[800px] table-fixed">
+        <table className="w-full border-collapse text-left text-xs min-w-[750px] table-fixed">
           <thead>
             {/* New Title Row */}
             <tr className="bg-white/5 border-b border-white/10">
@@ -56,11 +54,11 @@ export function ComparisonTable() {
             </tr>
             <tr className="border-b border-white/5">
               {/* External Grouping Header Column */}
-              <th className="w-[80px] p-3 text-[9px] font-black uppercase tracking-wider text-gray-500">Serviço</th>
+              <th className="w-[65px] p-3 text-[9px] font-black uppercase tracking-wider text-gray-500">Serviço</th>
               {/* Deliverables Header Column */}
-              <th className="w-[260px] p-3 text-[9px] font-black uppercase tracking-wider text-gray-400">Entregáveis por Categoria</th>
+              <th className="w-[260px] p-3 text-[9px] font-black uppercase tracking-wider text-gray-400">O que o pacote entrega</th>
               {columns.map(col => (
-                <th key={col.id} className="p-3 text-center">
+                <th key={col.id} className="w-[110px] p-3 text-center">
                   <div className="space-y-0.5">
                     <span className="text-[11px] font-black tracking-tight text-white block">{col.name}</span>
                     <span className="block text-[8px] font-bold text-gray-500 uppercase tracking-widest">{col.duration}</span>
@@ -102,7 +100,7 @@ export function ComparisonTable() {
                   {columns.map(col => {
                     const hasFeature = feat.values[col.id as keyof typeof feat.values];
                     return (
-                      <td key={col.id} className="p-2 text-center">
+                      <td key={col.id} className="p-2 text-center w-[110px]">
                         {hasFeature ? (
                           <div className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-[#ff0080]/10 border border-[#ff0080]/20 text-[#ff0080] shadow-[0_0_10px_rgba(255,0,128,0.15)]">
                             <Check size={9} className="stroke-[3.5]" />
@@ -122,7 +120,7 @@ export function ComparisonTable() {
               <td className="p-3 select-none"></td>
               <td className="p-3 font-black uppercase text-[9px] tracking-widest text-gray-300">Investimento</td>
               {columns.map(col => (
-                <td key={col.id} className="p-3 text-center align-middle">
+                <td key={col.id} className="p-3 text-center align-middle w-[110px]">
                   <div className="space-y-0.5">
                     <span className="text-[13px] font-black text-white tracking-tight block">{col.priceInstallment}</span>
                     <span className="block text-[7px] font-black text-[#ff0080] uppercase tracking-wider opacity-90">{col.cashDiscount}</span>
@@ -138,7 +136,7 @@ export function ComparisonTable() {
                 <span className="text-[9px] font-bold text-gray-500 italic opacity-60">Escolha o seu nível estratégico</span>
               </td>
               {columns.map(col => (
-                <td key={col.id} className="p-3 text-center">
+                <td key={col.id} className="p-3 text-center w-[110px]">
                   <Link 
                     href={`/servicos/pessoas/${col.slug}`}
                     className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-white text-black text-[8px] font-black uppercase tracking-wider hover:scale-[1.03] active:scale-[0.98] transition-all group/btn w-full shadow-lg"

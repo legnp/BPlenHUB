@@ -89,7 +89,7 @@ export default async function SegmentedServicesPage({ params }: PageProps) {
       {/* Hero Section */}
       <section className="pt-12 pb-[60px] px-6">
         <div className={LANDING_TOKENS.container}>
-          <div className={LANDING_TOKENS.header.centered}>
+          <div className={`${LANDING_TOKENS.header.centered} !mb-0`}>
             <div className="mb-6 p-4 bg-white/5 rounded-2xl w-fit mx-auto border border-white/10 shadow-2xl">
               {config.icon}
             </div>
