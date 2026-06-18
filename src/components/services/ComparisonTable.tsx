@@ -42,11 +42,11 @@ export function ComparisonTable() {
 
       {/* Main Table Grid wrapper */}
       <div className="overflow-x-auto w-full scrollbar-none flex justify-center">
-        <table className="border-collapse text-left text-xs table-fixed mx-auto" style={{ width: '820px' }}>
+        <table className="border-collapse text-left text-xs table-fixed mx-auto" style={{ width: '790px' }}>
           {/* Definição rigorosa de larguras para evitar que o colSpan do thead quebre o layout */}
           <colgroup>
             <col style={{ width: '50px' }} />  {/* Serviço */}
-            <col style={{ width: '330px' }} /> {/* O que entrega */}
+            <col style={{ width: '300px' }} /> {/* O que entrega */}
             <col style={{ width: '110px' }} /> {/* Junior */}
             <col style={{ width: '110px' }} /> {/* Pleno */}
             <col style={{ width: '110px' }} /> {/* Senior */}
