@@ -41,8 +41,8 @@ export function ComparisonTable() {
       <div className="absolute top-0 left-1/4 w-[180px] h-[180px] bg-[#ff0080]/10 rounded-full blur-[80px] pointer-events-none" />
 
       {/* Main Table Grid wrapper */}
-      <div className="overflow-x-auto w-full scrollbar-none">
-        <table className="w-full border-collapse text-left text-xs min-w-[750px] table-fixed">
+      <div className="overflow-x-auto w-full scrollbar-none flex justify-center">
+        <table className="border-collapse text-left text-xs table-fixed mx-auto" style={{ width: '725px' }}>
           <thead>
             {/* New Title Row */}
             <tr className="bg-white/5 border-b border-white/10">
@@ -54,11 +54,11 @@ export function ComparisonTable() {
             </tr>
             <tr className="border-b border-white/5">
               {/* External Grouping Header Column */}
-              <th className="w-[65px] p-3 text-[9px] font-black uppercase tracking-wider text-gray-500">Serviço</th>
+              <th className="w-[60px] p-3 text-[9px] font-black uppercase tracking-wider text-gray-500">Serviço</th>
               {/* Deliverables Header Column */}
-              <th className="w-[260px] p-3 text-[9px] font-black uppercase tracking-wider text-gray-400">O que o pacote entrega</th>
+              <th className="w-[265px] p-3 text-[9px] font-black uppercase tracking-wider text-gray-400">O que o pacote entrega</th>
               {columns.map(col => (
-                <th key={col.id} className="w-[110px] p-3 text-center">
+                <th key={col.id} className="w-[100px] p-3 text-center">
                   <div className="space-y-0.5">
                     <span className="text-[11px] font-black tracking-tight text-white block">{col.name}</span>
                     <span className="block text-[8px] font-bold text-gray-500 uppercase tracking-widest">{col.duration}</span>
@@ -100,7 +100,7 @@ export function ComparisonTable() {
                   {columns.map(col => {
                     const hasFeature = feat.values[col.id as keyof typeof feat.values];
                     return (
-                      <td key={col.id} className="p-2 text-center w-[110px]">
+                      <td key={col.id} className="p-2 text-center w-[100px]">
                         {hasFeature ? (
                           <div className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-[#ff0080]/10 border border-[#ff0080]/20 text-[#ff0080] shadow-[0_0_10px_rgba(255,0,128,0.15)]">
                             <Check size={9} className="stroke-[3.5]" />
@@ -120,7 +120,7 @@ export function ComparisonTable() {
               <td className="p-3 select-none"></td>
               <td className="p-3 font-black uppercase text-[9px] tracking-widest text-gray-300">Investimento</td>
               {columns.map(col => (
-                <td key={col.id} className="p-3 text-center align-middle w-[110px]">
+                <td key={col.id} className="p-3 text-center align-middle w-[100px]">
                   <div className="space-y-0.5">
                     <span className="text-[13px] font-black text-white tracking-tight block">{col.priceInstallment}</span>
                     <span className="block text-[7px] font-black text-[#ff0080] uppercase tracking-wider opacity-90">{col.cashDiscount}</span>
@@ -136,7 +136,7 @@ export function ComparisonTable() {
                 <span className="text-[9px] font-bold text-gray-500 italic opacity-60">Escolha o seu nível estratégico</span>
               </td>
               {columns.map(col => (
-                <td key={col.id} className="p-3 text-center w-[110px]">
+                <td key={col.id} className="p-3 text-center w-[100px]">
                   <Link 
                     href={`/servicos/pessoas/${col.slug}`}
                     className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-white text-black text-[8px] font-black uppercase tracking-wider hover:scale-[1.03] active:scale-[0.98] transition-all group/btn w-full shadow-lg"
