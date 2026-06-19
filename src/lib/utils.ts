@@ -42,3 +42,20 @@ export function getEventStandardSlug(summary: string, dateIso: string, eventId: 
     return `${slugify(summary || "evento")}_${eventId}`;
   }
 }
+
+/**
+ * Normaliza uma string de forma resiliente para comparacao de chaves.
+ * Remove acentos, pontuacoes, substitui underlines/hifens por espacos,
+ * remove stop words comuns e espacos extras.
+ */
+export function normalizeString(str: string): string {
+  if (!str) return "";
+  return str
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[-_]/g, " ")
+    .replace(/\b(de|em|e|para|da|do|dos|das)\b/g, "")
+    .replace(/[^a-z0-9]/g, "");
+}
+

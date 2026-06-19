@@ -3,6 +3,8 @@ import { JourneyProgress, StepStatus, UserStepProgress, JourneyStep } from "@/ty
 import { getJourneyStagesAction, getJourneyProgressAction, updateJourneySubStepAction } from "@/actions/journey";
 import { getMemberQuotasAction } from "@/actions/quotas";
 import { MemberQuotaWallet } from "@/types/entitlements";
+import { normalizeString } from "@/lib/utils";
+
 
 export interface StageTelemetry {
   status: string;
@@ -41,7 +43,21 @@ export function useJourney(uid: string) {
       const dbProgress = await getJourneyProgressAction(uid);
       
       if (dbProgress) {
-        setProgress(dbProgress);
+        const normalizedSteps: Record<string, UserStepProgress> = {};
+        for (const [key, val] of Object.entries(dbProgress.steps)) {
+          const matchedStage = dynamicStages.find(stage => 
+            normalizeString(stage.id) === normalizeString(key)
+          );
+          const finalKey = matchedStage ? matchedStage.id : key;
+          normalizedSteps[finalKey] = {
+            ...val,
+            stepId: finalKey
+          };
+        }
+        setProgress({
+          ...dbProgress,
+          steps: normalizedSteps
+        });
       } else {
         // Fallback: Initialize local layout for first-time use
         const initialSteps: Record<string, UserStepProgress> = {};
@@ -70,6 +86,7 @@ export function useJourney(uid: string) {
 
   useEffect(() => {
     if (uid && uid !== "guest") init();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uid]);
 
   /**
@@ -81,7 +98,21 @@ export function useJourney(uid: string) {
     try {
       const result = await updateJourneySubStepAction(uid, stepId, subStepId, completed);
       if (result.success && result.progress) {
-        setProgress(result.progress);
+        const normalizedSteps: Record<string, UserStepProgress> = {};
+        for (const [key, val] of Object.entries(result.progress.steps)) {
+          const matchedStage = stages.find(stage => 
+            normalizeString(stage.id) === normalizeString(key)
+          );
+          const finalKey = matchedStage ? matchedStage.id : key;
+          normalizedSteps[finalKey] = {
+            ...val,
+            stepId: finalKey
+          };
+        }
+        setProgress({
+          ...result.progress,
+          steps: normalizedSteps
+        });
       }
     } catch (error) {
       console.error("❌ [useJourney] Erro ao salvar progresso:", error);
@@ -106,18 +137,20 @@ export function useJourney(uid: string) {
     let hasQuota = false;
 
     if (quotas && quotas.quotas) {
+       const stepIdNormalized = normalizeString(stepId);
        for (const [quotaKey, quotaData] of Object.entries(quotas.quotas)) {
           if (quotaData.total <= 0) continue;
           
-          const keyUpper = quotaKey.toUpperCase();
+          const quotaKeyNormalized = normalizeString(quotaKey);
           
-          // Match direto ou se o EventType (ex: DEVOLUTIVA-ANALISE-COMPORTAMENTAL) contém a fase (ANALISE-COMPORTAMENTAL)
-          if (keyUpper === stepIdUpper || keyUpper.includes(stepIdUpper) || stepIdUpper.includes(keyUpper)) {
+          // Match direto ou se o EventType contem a fase ou vice-versa, com suporte a normalizacao
+          if (quotaKeyNormalized === stepIdNormalized || quotaKeyNormalized.includes(stepIdNormalized) || stepIdNormalized.includes(quotaKeyNormalized)) {
              hasQuota = true;
              break;
           }
           
-          // Fallbacks metodológicos (ex: Coaching-e-mentoria desbloqueado por sessão de coaching)
+          const keyUpper = quotaKey.toUpperCase();
+          // Fallbacks metodologicos (ex: Coaching-e-mentoria desbloqueado por sessao de coaching)
           if (stepIdUpper === 'COACHING-E-MENTORIA' && (keyUpper.includes('COACHING') || keyUpper.includes('MENTORIA'))) {
              hasQuota = true;
              break;

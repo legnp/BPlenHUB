@@ -6,6 +6,8 @@ import { JourneyStep, SubStepConfig, JourneyProgress } from "@/types/journey";
 import { surveys } from "@/config/surveys";
 import { JOURNEY_STAGES } from "@/config/journey/steps-registry";
 import { syncJourneyToUserDrive } from "@/lib/drive-sync";
+import { normalizeString } from "@/lib/utils";
+
 
 /**
  * BPlen HUB — Grouped Journey Engine (Server Side) 🧬
@@ -343,8 +345,20 @@ export async function updateJourneySubStepAction(
       const snap = await transaction.get(progressRef);
       const current = snap.exists ? snap.data() : { steps: {}, lastActiveStepId: stepId };
       
-      const stepProgress = current?.steps[stepId] || {
-        stepId,
+      // Resolve matched database key based on normalized stepId comparison
+      let matchedDbKey = stepId;
+      if (current?.steps) {
+        const stepIdNormalized = normalizeString(stepId);
+        for (const key of Object.keys(current.steps)) {
+          if (normalizeString(key) === stepIdNormalized) {
+            matchedDbKey = key;
+            break;
+          }
+        }
+      }
+
+      const stepProgress = current?.steps[matchedDbKey] || {
+        stepId: matchedDbKey,
         status: "current",
         completedSubSteps: []
       };
@@ -360,10 +374,9 @@ export async function updateJourneySubStepAction(
         delete newCompletionDates[subStepId];
       }
 
-      // 🔍 DETECÇÃO DE CONCLUSÃO ROBUSTA (Global & Standalone) 🛡️
-      // Precisamos saber o total de paradas para marcar como 'completed'
+      // Deteccao de conclusao robusta (Global & Standalone)
       const stages = await getJourneyStagesAction();
-      let stage = stages.find(s => s.id === stepId);
+      let stage = stages.find(s => s.id === stepId || normalizeString(s.id) === normalizeString(stepId));
       
       // Fallback para estágios especiais (Step 00 / Standalone)
       if (!stage) {
@@ -375,7 +388,7 @@ export async function updateJourneySubStepAction(
 
       const updatedSteps = {
         ...current?.steps,
-        [stepId]: {
+        [matchedDbKey]: {
           ...stepProgress,
           completedSubSteps: newCompleted,
           subStepCompletionDates: newCompletionDates,
