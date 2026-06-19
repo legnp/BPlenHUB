@@ -167,7 +167,7 @@ export function JourneyNav({ stages, currentStepId, stepStatusMap, getStageTelem
         />
 
         <div className="flex justify-between items-center relative z-10 w-full">
-          {stages.map((stage, index) => {
+          {stages.map((stage) => {
             const telemetry = getStageTelemetry ? getStageTelemetry(stage.id) : {
               status: stepStatusMap[stage.id] || "locked",
               percentage: 0,
@@ -261,7 +261,8 @@ export function JourneyNav({ stages, currentStepId, stepStatusMap, getStageTelem
                       
                       <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden mt-3">
                          <motion.div 
-                            className={cn("h-full", theme.gradient.replace('from-', 'bg-'))}
+                            className="h-full rounded-full"
+                            style={{ backgroundColor: theme.color }}
                             initial={{ width: 0 }}
                             animate={{ width: `${telemetry.percentage}%` }}
                          />
