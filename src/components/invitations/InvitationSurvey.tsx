@@ -92,7 +92,7 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
 
   // 2. Efeito para redirecionamento automático nas telas de encerramento
   useEffect(() => {
-    if (step === "ending_a" || step === "ending_b" || step === "ending_c") {
+    if (step === "ending_a" || step === "ending_b") {
       const interval = setInterval(() => {
         setCountdown((prev) => {
           if (prev <= 1) {
@@ -1130,7 +1130,7 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
                 </button>
 
                 <p className="text-[9px] text-gray-500 uppercase tracking-widest font-mono">
-                  Salvando automaticamente em {countdown}s
+                  BPlen HUB
                 </p>
               </div>
             </motion.div>
