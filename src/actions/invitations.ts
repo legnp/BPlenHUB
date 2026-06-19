@@ -32,6 +32,47 @@ function serializeDoc<T>(docSnap: admin.firestore.DocumentSnapshot): T | null {
 }
 
 /**
+ * Gera o conteudo do arquivo iCalendar (.ics) nativamente com compensacao de fuso horario de Brasilia (UTC-3).
+ */
+function generateIcsContent(event: { name: string; date: string; time: string; location: string; description: string }): string {
+  try {
+    const [year, month, day] = event.date.split("-").map(Number);
+    const [hours, minutes] = event.time.split(":").map(Number);
+
+    // Date.UTC interpreta os valores em UTC. Como Brasilia eh UTC-3, 
+    // somamos 3 horas em milissegundos para obter o horario UTC equivalente correto.
+    const startUtcMs = Date.UTC(year, month - 1, day, hours, minutes);
+    const startDate = new Date(startUtcMs + 3 * 60 * 60 * 1000); 
+    const endDate = new Date(startDate.getTime() + 3 * 60 * 60 * 1000); // 3 horas de duracao por padrao
+
+    const toIcsFormat = (d: Date) => d.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+    const sanitize = (str: string) => str.replace(/[,;]/g, "\\$&").replace(/\n/g, "\\n");
+
+    return [
+      "BEGIN:VCALENDAR",
+      "VERSION:2.0",
+      "PRODID:-//BPlen HUB//NONSGML v1.0//EN",
+      "CALSCALE:GREGORIAN",
+      "METHOD:PUBLISH",
+      "BEGIN:VEVENT",
+      `UID:${event.name.toLowerCase().replace(/[^a-z0-9]/g, "")}_${event.date.replace(/-/g, "")}@bplen.com`,
+      `DTSTAMP:${toIcsFormat(new Date())}`,
+      "ORGANIZER;CN=BPlen HUB:MAILTO:hub@bplen.com",
+      `DTSTART:${toIcsFormat(startDate)}`,
+      `DTEND:${toIcsFormat(endDate)}`,
+      `SUMMARY:${sanitize(event.name)}`,
+      `DESCRIPTION:${sanitize(event.description)}`,
+      `LOCATION:${sanitize(event.location)}`,
+      "END:VEVENT",
+      "END:VCALENDAR"
+    ].join("\r\n");
+  } catch (error) {
+    console.error("[generateIcsContent] Erro ao gerar ICS:", error);
+    return "";
+  }
+}
+
+/**
  * 1. Busca e valida a existência do evento de convite.
  */
 export async function getInvitationEventAction(slug: string): Promise<{ success: boolean; data?: InvitationEvent; error?: string }> {
@@ -314,6 +355,7 @@ export async function sendInvitationRsvpEmailsAction(
     // ──────────────────────────────
     let guestSubject = `Confirmacao de Presenca: ${eventData.name}`;
     let guestContent = "";
+    let attachments: { filename: string; content: Buffer; contentType: string }[] | undefined = undefined;
 
     if (rsvpStatus === "com_certeza") {
       guestContent = `
@@ -332,6 +374,24 @@ export async function sendInvitationRsvpEmailsAction(
         <p style="${EMAIL_STYLES.p}">Seus comentários e pedidos especiais já foram encaminhados à nossa equipe organizadora.</p>
         <p style="${EMAIL_STYLES.p}">Nos vemos em breve! Até lá!</p>
       `;
+
+      const icsString = generateIcsContent({
+        name: eventData.name,
+        date: eventData.date,
+        time: eventData.time,
+        location: eventData.location,
+        description: eventData.description || "Seu convite exclusivo BPlen HUB."
+      });
+
+      if (icsString) {
+        attachments = [
+          {
+            filename: "agenda-bplen.ics",
+            content: Buffer.from(icsString),
+            contentType: "text/calendar"
+          }
+        ];
+      }
     } else if (rsvpStatus === "talvez") {
       guestSubject = `Agendamento de Contato: ${eventData.name}`;
       guestContent = `
@@ -367,6 +427,7 @@ export async function sendInvitationRsvpEmailsAction(
       to: userEmail,
       subject: guestSubject,
       html: guestEmailBody,
+      ...(attachments ? { attachments } : {})
     });
 
     // ──────────────────────────────

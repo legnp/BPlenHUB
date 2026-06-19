@@ -276,8 +276,11 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
   };
 
   const dateText = getEventDateText();
-  const preposition = (event.name.toLowerCase().includes("inauguracao") || event.name.toLowerCase().includes("inauguração")) ? "a nossa" : "o nosso";
-  const pronomDem = (event.name.toLowerCase().includes("inauguracao") || event.name.toLowerCase().includes("inauguração")) ? "essa pré-inauguração" : "esse evento";
+  const eventLower = event.name.toLowerCase();
+  const isEventFeminine = eventLower.includes("inauguracao") || eventLower.includes("inauguração") || eventLower.includes("pesquisa") || eventLower.includes("série") || eventLower.includes("abertura");
+  const preposition = isEventFeminine ? "a nossa" : "o nosso";
+  const pronomDem = isEventFeminine ? `esta ${event.name}` : `este ${event.name}`;
+  const eventPreposition = isEventFeminine ? "na" : "no";
 
   return (
     <div className="theme-dark min-h-screen bg-[#000000] text-white flex flex-col items-center justify-center p-4 selection:bg-[#ff2c8d] selection:text-white font-sans relative overflow-hidden">
@@ -286,14 +289,12 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#ff0080] rounded-full blur-[150px] opacity-[0.08] pointer-events-none z-0 animate-pulse-slow" />
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white rounded-full blur-[120px] opacity-[0.05] pointer-events-none z-0" />
 
-      {/* Logo no topo para TODAS as etapas (incluindo a de entrada, garantindo branding oficial constante) */}
-      {step !== "token_input" && (
-        <div className="absolute top-6 left-6 flex items-center gap-1 z-10">
-          <BPlenLogo size={28} variant="hub" />
-        </div>
-      )}
-
-      <div className={cn("w-full z-10 relative transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]", step === "token_input" ? "max-w-4xl" : "max-w-xl")}>
+      <div className={cn("w-full z-10 relative transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col items-center", step === "token_input" ? "max-w-4xl" : "max-w-xl")}>
+        {step !== "token_input" && (
+          <div className="mb-10 flex justify-center w-full">
+            <BPlenLogo size="200px" variant="hub" />
+          </div>
+        )}
         <AnimatePresence mode="wait">
 
           {/* ───────────────────────────────────────────
@@ -312,38 +313,21 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
                 <BPlenLogo size="300px" variant="hub" />
               </div>
 
-              <span className="font-extrabold text-xs tracking-[0.25em] uppercase text-[#ff2c8d] mb-6 block">
+              <span className="font-extrabold text-xs tracking-[0.25em] uppercase text-[#ff2c8d] mb-4 block">
                 Convite Exclusivo
               </span>
-              
+
+              <p className="text-sm text-gray-300 font-light mb-12 max-w-sm mx-auto tracking-wide leading-relaxed">
+                Você foi convidado para {preposition} <strong className="text-white font-semibold">{event.name}</strong>.
+              </p>
+
               <button 
                 onClick={() => setIsTokenModalOpen(true)}
-                className="group flex flex-col items-center justify-center text-center cursor-pointer transition-transform hover:scale-[1.02] mx-auto select-none mb-8"
-                aria-label="Clique aqui para descomplicar o desenvolvimento humano no trabalho"
+                className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-r from-[#ff0080] to-[#7928ca] text-white flex items-center justify-center animate-float-pulse shadow-[0_4px_24px_rgba(255,44,141,0.3)] transition-transform hover:scale-105 active:scale-95 cursor-pointer mx-auto mb-12"
+                aria-label="Acessar convite exclusivo"
               >
-                <span className="text-[var(--text-muted)] text-xs tracking-widest lowercase mb-1 group-hover:text-[var(--text-primary)] transition-colors">
-                  clique aqui para
-                </span>
-                <span className="text-white text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight block -mb-2 z-10">
-                  descomplicar o
-                </span>
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ff0080] via-[#c026d3] to-[#7928ca] bg-[size:200%_auto] animate-gradient-flow text-5xl md:text-7xl lg:text-[6.5rem] font-black tracking-tighter leading-[0.85] z-20 pb-2">
-                  desenvolvimento
-                </span>
-                <span 
-                  className="text-transparent bg-clip-text bg-gradient-to-r from-[#c026d3] via-[#ff0080] to-[#7928ca] bg-[size:200%_auto] animate-gradient-flow text-5xl md:text-7xl lg:text-[6.5rem] font-black tracking-tighter leading-[0.85] -mt-1 md:-mt-3 z-30 pb-2"
-                  style={{ animationDelay: "2s" }}
-                >
-                  humano
-                </span>
-                <span className="text-[var(--text-secondary)] text-xl md:text-2xl font-medium tracking-tight mt-1 group-hover:text-[var(--text-primary)] transition-colors">
-                  no trabalho
-                </span>
+                <ArrowRight className="w-6 h-6 md:w-8 md:h-8 text-white" />
               </button>
-
-              <p className="text-sm text-gray-400 font-light mb-12 max-w-sm mx-auto tracking-wide">
-                Você foi convidado para a <strong className="text-white font-semibold">{event.name}</strong>.
-              </p>
 
               <div className="flex flex-col items-center gap-4">
                 {isActionLoading && (
@@ -417,14 +401,14 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="px-4 text-left"
+              className="px-4 text-left min-h-[380px] flex flex-col justify-start relative pt-4"
             >
               <NarrativeReveal 
                 text={`Olá ${nickname}!`} 
                 variant="h2" 
                 className="mb-4"
                 onComplete={() => setTypingPhase(1)} 
-                speed={30} 
+                speed={40} 
                 active={step === "survey_step_1"}
               />
               
@@ -434,7 +418,7 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
                     text={`Ficamos muito felizes em te receber por aqui...\n\ne mais empolgados ainda em te convidar para ${preposition} **${event.name}**!`} 
                     variant="p" 
                     onComplete={() => setTypingPhase(2)} 
-                    speed={20} 
+                    speed={30} 
                     active={step === "survey_step_1"}
                   />
                 </div>
@@ -446,7 +430,7 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
                   variant="p" 
                   className="!text-gray-400 mb-8"
                   onComplete={() => setTypingPhase(3)} 
-                  speed={15} 
+                  speed={30} 
                   active={step === "survey_step_1"}
                 />
               )}
@@ -484,14 +468,14 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="px-4 text-left"
+              className="px-4 text-left min-h-[380px] flex flex-col justify-start relative pt-4"
             >
               <div className="max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar space-y-6">
                 <NarrativeReveal 
                   text={`${nickname}, a BPlen nasceu para ampliar o acesso aos recursos e métodos de Desenvolvimento Humano no Trabalho de forma sólida, consistente e sustentável.`} 
                   variant="p" 
                   onComplete={() => setTypingPhase(1)} 
-                  speed={15} 
+                  speed={30} 
                   active={step === "survey_step_2_a"}
                 />
 
@@ -500,7 +484,7 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
                     text="Além de promover como construir uma carreira de sucesso alinhada ao próprio perfil comportamental e objetivos situacionais, a BPlen visa mediar espaços de Networking de qualidade, contribuir para boas práticas psicológicas e desmistificar 2 crenças:" 
                     variant="p" 
                     onComplete={() => setTypingPhase(2)} 
-                    speed={15} 
+                    speed={30} 
                     active={step === "survey_step_2_a"}
                   />
                 )}
@@ -516,7 +500,7 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
                       variant="p" 
                       className="text-xs !text-gray-400"
                       onComplete={() => setTypingPhase(3)}
-                      speed={15}
+                      speed={30}
                       active={step === "survey_step_2_a"}
                     />
                     {typingPhase >= 3 && (
@@ -525,7 +509,7 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
                         variant="p" 
                         className="text-xs !text-gray-400"
                         onComplete={() => setTypingPhase(4)}
-                        speed={15}
+                        speed={30}
                         active={step === "survey_step_2_a"}
                       />
                     )}
@@ -534,10 +518,10 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
 
                 {typingPhase >= 4 && (
                   <NarrativeReveal 
-                    text="... e o resto da história a Lis te contará na pré-inauguração!" 
+                    text={`... e o resto da história a Lis te contará ${eventPreposition} ${event.name}!`} 
                     variant="p" 
                     onComplete={() => setTypingPhase(5)} 
-                    speed={15} 
+                    speed={30} 
                     active={step === "survey_step_2_a"}
                   />
                 )}
@@ -548,7 +532,7 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
                     variant="p" 
                     className="!text-gray-400 font-normal pt-2"
                     onComplete={() => setTypingPhase(6)} 
-                    speed={15} 
+                    speed={30} 
                     active={step === "survey_step_2_a"}
                   />
                 )}
@@ -595,14 +579,14 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="px-4 text-left"
+              className="px-4 text-left min-h-[380px] flex flex-col justify-start relative pt-4"
             >
               <NarrativeReveal 
                 text={`${nickname}, então você já sabe que não poderia faltar a nossa curiosidade sobre o seu contexto profissional...`} 
                 variant="p"
                 className="text-base text-gray-300 font-light mb-4 leading-relaxed"
                 onComplete={() => setTypingPhase(1)}
-                speed={20}
+                speed={30}
                 active={step === "survey_step_2_b"}
               />
               
@@ -612,7 +596,7 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
                   variant="p"
                   className="text-sm text-gray-400 mb-8 leading-relaxed"
                   onComplete={() => setTypingPhase(2)}
-                  speed={20}
+                  speed={30}
                   active={step === "survey_step_2_b"}
                 />
               )}
@@ -659,7 +643,7 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="px-4 text-left"
+              className="px-4 text-left min-h-[380px] flex flex-col justify-start relative pt-4"
             >
               <NarrativeReveal 
                 text="Sua Jornada" 
@@ -676,7 +660,7 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
                   variant="h2"
                   className="text-xl sm:text-2xl font-bold tracking-tight mb-8 leading-snug"
                   onComplete={() => setTypingPhase(2)}
-                  speed={20}
+                  speed={40}
                   active={step === "survey_step_3"}
                 />
               )}
@@ -718,14 +702,14 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="px-4 text-left"
+              className="px-4 text-left min-h-[380px] flex flex-col justify-start relative pt-4"
             >
               <NarrativeReveal 
                 text="É isso, e só isso! No evento podemos falar mais!" 
                 variant="p"
                 className="text-sm text-gray-400 mb-2 leading-relaxed"
                 onComplete={() => setTypingPhase(1)}
-                speed={25}
+                speed={30}
                 active={step === "survey_step_4"}
               />
               
@@ -735,7 +719,7 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
                   variant="p"
                   className="text-base text-gray-300 font-light mb-8 leading-relaxed"
                   onComplete={() => setTypingPhase(2)}
-                  speed={20}
+                  speed={30}
                   active={step === "survey_step_4"}
                 />
               )}
@@ -779,7 +763,7 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
                     variant="p"
                     className="text-sm font-medium text-white mb-6"
                     onComplete={() => setTypingPhase(3)}
-                    speed={20}
+                    speed={30}
                     active={step === "survey_step_4"}
                   />
                 </motion.div>
@@ -826,14 +810,14 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="px-4 text-left"
+              className="px-4 text-left min-h-[380px] flex flex-col justify-start relative pt-4"
             >
               <NarrativeReveal 
                 text="Você gostaria que te convidassemos para uma próxima oportunidade?" 
                 variant="h2"
                 className="text-xl sm:text-2xl font-bold tracking-tight mb-8 leading-snug"
                 onComplete={() => setTypingPhase(1)}
-                speed={20}
+                speed={40}
                 active={step === "survey_sub_nao"}
               />
 
@@ -876,7 +860,7 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="px-4 text-left"
+              className="px-4 text-left min-h-[380px] flex flex-col justify-start relative pt-4"
             >
               {/* Condicional 1: Se veio do Não Poderei + Quer convite futuro, dá 3 sugestões de datas */}
               {answers.future_invite === "sim" ? (
@@ -886,7 +870,7 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
                     variant="h2"
                     className="text-xl sm:text-2xl font-bold tracking-tight mb-4 leading-snug"
                     onComplete={() => setTypingPhase(1)}
-                    speed={20}
+                    speed={40}
                     active={step === "survey_sub_talvez"}
                   />
 
@@ -896,7 +880,7 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
                       variant="p"
                       className="text-sm text-gray-400 mb-8 leading-relaxed"
                       onComplete={() => setTypingPhase(2)}
-                      speed={15}
+                      speed={30}
                       active={step === "survey_sub_talvez"}
                     />
                   )}
@@ -957,7 +941,7 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
                     variant="h2"
                     className="text-xl sm:text-2xl font-bold tracking-tight mb-8 leading-snug"
                     onComplete={() => setTypingPhase(1)}
-                    speed={20}
+                    speed={40}
                     active={step === "survey_sub_talvez"}
                   />
 
