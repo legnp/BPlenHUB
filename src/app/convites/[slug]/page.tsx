@@ -2,6 +2,7 @@ import React from "react";
 import { Metadata } from "next";
 import { getInvitationEventAction, seedInvitationEventAndTokens } from "@/actions/invitations";
 import { InvitationSurvey } from "@/components/invitations/InvitationSurvey";
+import { BPlenLogo } from "@/components/shared/BPlenLogo";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -49,9 +50,9 @@ export default async function InvitationPage({ params }: PageProps) {
             border: "1px solid rgba(255, 255, 255, 0.08)",
           }}
         >
-          <span className="font-extrabold text-2xl tracking-wider uppercase text-[#ff2c8d] block mb-4">
-            BPlen <span className="text-white font-light">HUB</span>
-          </span>
+          <div className="flex justify-center mb-6">
+            <BPlenLogo size={42} variant="hub" />
+          </div>
           <h1 className="text-xl font-bold mb-2">Acesso Invalido</h1>
           <p className="text-sm text-gray-400 mb-6">
             O link de convite acessado nao corresponde a um evento ativo ou expirou. Por favor, verifique se o endereço está correto.

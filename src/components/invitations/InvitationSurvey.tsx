@@ -17,6 +17,9 @@ import {
   AlertCircle,
   Sparkles
 } from "lucide-react";
+import { BPlenLogo } from "@/components/shared/BPlenLogo";
+import { NarrativeReveal } from "@/components/ui/NarrativeReveal";
+import { cn } from "@/lib/utils";
 import { InvitationEvent } from "@/types/invitations";
 import { 
   validateInvitationTokenAction, 
@@ -68,6 +71,14 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
 
   // Timer para redirecionamento
   const [countdown, setCountdown] = useState(5);
+
+  // Controle de digitação sequencial por etapas
+  const [typingPhase, setTypingPhase] = useState(0);
+
+  // Reseta a fase de digitação sempre que mudar de etapa
+  useEffect(() => {
+    setTypingPhase(0);
+  }, [step]);
 
   // 1. Efeito para carregar token da URL automaticamente
   useEffect(() => {
@@ -271,20 +282,16 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
   return (
     <div className="theme-dark min-h-screen bg-[#000000] text-white flex flex-col items-center justify-center p-4 selection:bg-[#ff2c8d] selection:text-white font-sans relative overflow-hidden">
       
-      {/* Background Glows */}
-      <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] rounded-full bg-[#ff2c8d] opacity-[0.05] blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-[350px] h-[350px] rounded-full bg-[#ff006e] opacity-[0.05] blur-[100px] pointer-events-none" />
+      {/* 🔮 Background Glow Elements (Aura Premium) */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#ff0080] rounded-full blur-[150px] opacity-[0.08] pointer-events-none z-0 animate-pulse-slow" />
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white rounded-full blur-[120px] opacity-[0.05] pointer-events-none z-0" />
 
-      {/* Logo no topo (para a survey e etapas) */}
-      {step !== "token_input" && (
-        <div className="absolute top-6 left-6 flex items-center gap-1 z-10">
-          <span className="font-black text-sm tracking-widest uppercase">
-            BPlen <span className="text-[#ff2c8d]">HUB</span>
-          </span>
-        </div>
-      )}
+      {/* Logo no topo para TODAS as etapas (incluindo a de entrada, garantindo branding oficial constante) */}
+      <div className="absolute top-6 left-6 flex items-center gap-1 z-10">
+        <BPlenLogo size={28} variant="hub" />
+      </div>
 
-      <div className="w-full max-w-xl z-10 relative">
+      <div className={cn("w-full z-10 relative transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]", step === "token_input" ? "max-w-4xl" : "max-w-xl")}>
         <AnimatePresence mode="wait">
 
           {/* ───────────────────────────────────────────
@@ -303,9 +310,30 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
                 Convite Exclusivo
               </span>
               
-              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight leading-[1.15] mb-8 max-w-lg mx-auto">
-                Clique aqui para descomplicar o desenvolvimento humano no trabalho
-              </h1>
+              <button 
+                onClick={() => setIsTokenModalOpen(true)}
+                className="group flex flex-col items-center justify-center text-center cursor-pointer transition-transform hover:scale-[1.02] mx-auto select-none mb-8"
+                aria-label="Clique aqui para descomplicar o desenvolvimento humano no trabalho"
+              >
+                <span className="text-[var(--text-muted)] text-xs tracking-widest lowercase mb-1 group-hover:text-[var(--text-primary)] transition-colors">
+                  clique aqui para
+                </span>
+                <span className="text-white text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight block -mb-2 z-10">
+                  descomplicar o
+                </span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ff0080] via-[#c026d3] to-[#7928ca] bg-[size:200%_auto] animate-gradient-flow text-5xl md:text-7xl lg:text-[6.5rem] font-black tracking-tighter leading-[0.85] z-20 pb-2">
+                  desenvolvimento
+                </span>
+                <span 
+                  className="text-transparent bg-clip-text bg-gradient-to-r from-[#c026d3] via-[#ff0080] to-[#7928ca] bg-[size:200%_auto] animate-gradient-flow text-5xl md:text-7xl lg:text-[6.5rem] font-black tracking-tighter leading-[0.85] -mt-1 md:-mt-3 z-30 pb-2"
+                  style={{ animationDelay: "2s" }}
+                >
+                  humano
+                </span>
+                <span className="text-[var(--text-secondary)] text-xl md:text-2xl font-medium tracking-tight mt-1 group-hover:text-[var(--text-primary)] transition-colors">
+                  no trabalho
+                </span>
+              </button>
 
               <p className="text-sm text-gray-400 font-light mb-12 max-w-sm mx-auto tracking-wide">
                 Você foi convidado para a <strong className="text-white font-semibold">{event.name}</strong>. Participe da nossa confirmação premium.
@@ -396,33 +424,59 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
               exit={{ opacity: 0, x: -20 }}
               className="px-4 text-left"
             >
-              <h2 className="text-2xl font-bold tracking-tight mb-4 leading-snug">
-                Olá {nickname}!
-              </h2>
-              <p className="text-base text-gray-300 font-light mb-2 leading-relaxed">
-                Ficamos muito felizes em te receber por aqui...
-              </p>
-              <p className="text-base text-gray-300 font-light mb-8 leading-relaxed">
-                e mais empolgados ainda em te convidar para {preposition} <strong className="text-white font-semibold">{event.name}</strong>!
-              </p>
-              <p className="text-sm text-gray-400 mb-8 leading-relaxed">
-                Antes de te apresentar mais detalhes do evento, a Lis já te contou um pouco sobre a BPlen?
-              </p>
+              <NarrativeReveal 
+                text={`Olá ${nickname}!`} 
+                variant="h2" 
+                className="mb-4"
+                onComplete={() => setTypingPhase(1)} 
+                speed={30} 
+                active={step === "survey_step_1"}
+              />
+              
+              {typingPhase >= 1 && (
+                <div className="text-base text-gray-300 font-light mb-8 space-y-4 leading-relaxed">
+                  <NarrativeReveal 
+                    text={`Ficamos muito felizes em te receber por aqui...\n\ne mais empolgados ainda em te convidar para ${preposition} **${event.name}**!`} 
+                    variant="p" 
+                    onComplete={() => setTypingPhase(2)} 
+                    speed={20} 
+                    active={step === "survey_step_1"}
+                  />
+                </div>
+              )}
 
-              <div className="grid grid-cols-2 gap-4">
-                <button
-                  onClick={() => handleSaveStepAnswer("knows_bplen", "sim", "survey_step_2_b")}
-                  className="py-4 rounded-2xl font-semibold text-sm transition-all border border-white/10 hover:border-white/20 bg-white/5 hover:bg-white/10 text-center active:scale-95"
+              {typingPhase >= 2 && (
+                <NarrativeReveal 
+                  text="Antes de te apresentar mais detalhes do evento, a Lis já te contou um pouco sobre a BPlen?" 
+                  variant="p" 
+                  className="!text-gray-400 mb-8"
+                  onComplete={() => setTypingPhase(3)} 
+                  speed={15} 
+                  active={step === "survey_step_1"}
+                />
+              )}
+
+              {typingPhase >= 3 && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4 }}
+                  className="grid grid-cols-2 gap-4 mt-8"
                 >
-                  Sim
-                </button>
-                <button
-                  onClick={() => handleSaveStepAnswer("knows_bplen", "nao", "survey_step_2_a")}
-                  className="py-4 rounded-2xl font-semibold text-sm transition-all border border-white/10 hover:border-white/20 bg-white/5 hover:bg-white/10 text-center active:scale-95"
-                >
-                  Não
-                </button>
-              </div>
+                  <button
+                    onClick={() => handleSaveStepAnswer("knows_bplen", "sim", "survey_step_2_b")}
+                    className="py-4 rounded-2xl font-semibold text-sm transition-all border border-white/10 hover:border-white/20 bg-white/5 hover:bg-white/10 text-center active:scale-95"
+                  >
+                    Sim
+                  </button>
+                  <button
+                    onClick={() => handleSaveStepAnswer("knows_bplen", "nao", "survey_step_2_a")}
+                    className="py-4 rounded-2xl font-semibold text-sm transition-all border border-white/10 hover:border-white/20 bg-white/5 hover:bg-white/10 text-center active:scale-95"
+                  >
+                    Não
+                  </button>
+                </motion.div>
+              )}
             </motion.div>
           )}
 
@@ -438,32 +492,144 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
               className="px-4 text-left"
             >
               <div className="max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar space-y-6">
-                <p className="text-sm text-gray-300 font-light leading-relaxed">
-                  <strong className="text-white font-semibold">{nickname}</strong>, a BPlen nasceu para ampliar o acesso aos recursos e métodos de Desenvolvimento Humano no Trabalho de forma sólida, consistente e sustentável.
-                </p>
-                <p className="text-sm text-gray-300 font-light leading-relaxed">
-                  Além de promover como construir uma carreira de sucesso alinhada ao próprio perfil comportamental e objetivos situacionais, a BPlen visa mediar espaços de Networking de qualidade, contribuir para boas práticas psicológicas e desmistificar 2 crenças:
-                </p>
+                <NarrativeReveal 
+                  text={`${nickname}, a BPlen nasceu para ampliar o acesso aos recursos e métodos de Desenvolvimento Humano no Trabalho de forma sólida, consistente e sustentável.`} 
+                  variant="p" 
+                  onComplete={() => setTypingPhase(1)} 
+                  speed={15} 
+                  active={step === "survey_step_2_a"}
+                />
 
-                <div className="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-3">
-                  <p className="text-xs text-gray-400 leading-relaxed">
-                    <span className="text-[#ff2c8d] font-bold">1ª</span> - Que o mercado de trabalho é complexo e só tem sucesso quem <span className="text-white font-medium">se limita a replicar fórmulas prontas</span>.
-                  </p>
-                  <p className="text-xs text-gray-400 leading-relaxed">
-                    <span className="text-[#ff2c8d] font-bold">2ª</span> - Que a tecnologia substituirá o trabalho humano.
-                  </p>
-                </div>
+                {typingPhase >= 1 && (
+                  <NarrativeReveal 
+                    text="Além de promover como construir uma carreira de sucesso alinhada ao próprio perfil comportamental e objetivos situacionais, a BPlen visa mediar espaços de Networking de qualidade, contribuir para boas práticas psicológicas e desmistificar 2 crenças:" 
+                    variant="p" 
+                    onComplete={() => setTypingPhase(2)} 
+                    speed={15} 
+                    active={step === "survey_step_2_a"}
+                  />
+                )}
 
-                <p className="text-sm text-gray-300 font-light leading-relaxed">
-                  ... e o resto da história a Lis te contará na pré-inauguração!
-                </p>
+                {typingPhase >= 2 && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-3"
+                  >
+                    <NarrativeReveal 
+                      text="**1ª** - Que o mercado de trabalho é complexo e só tem sucesso quem **se limita a replicar fórmulas prontas**." 
+                      variant="p" 
+                      className="text-xs !text-gray-400"
+                      onComplete={() => setTypingPhase(3)}
+                      speed={15}
+                      active={step === "survey_step_2_a"}
+                    />
+                    {typingPhase >= 3 && (
+                      <NarrativeReveal 
+                        text="**2ª** - Que a tecnologia substituirá o trabalho humano." 
+                        variant="p" 
+                        className="text-xs !text-gray-400"
+                        onComplete={() => setTypingPhase(4)}
+                        speed={15}
+                        active={step === "survey_step_2_a"}
+                      />
+                    )}
+                  </motion.div>
+                )}
 
-                <p className="text-sm text-gray-400 font-normal leading-relaxed pt-2">
-                  Mas {nickname}, conta para a gente: o quanto hoje você sente que a sua carreira profissional te possibilita desfrutar o melhor que a sua rotina diária proporciona?
-                </p>
+                {typingPhase >= 4 && (
+                  <NarrativeReveal 
+                    text="... e o resto da história a Lis te contará na pré-inauguração!" 
+                    variant="p" 
+                    onComplete={() => setTypingPhase(5)} 
+                    speed={15} 
+                    active={step === "survey_step_2_a"}
+                  />
+                )}
+
+                {typingPhase >= 5 && (
+                  <NarrativeReveal 
+                    text={`Mas ${nickname}, conta para a gente: o quanto hoje você sente que a sua carreira profissional te possibilita desfrutar o melhor que a sua rotina diária proporciona?`} 
+                    variant="p" 
+                    className="!text-gray-400 font-normal pt-2"
+                    onComplete={() => setTypingPhase(6)} 
+                    speed={15} 
+                    active={step === "survey_step_2_a"}
+                  />
+                )}
 
                 {/* Componente Estrelas */}
-                <div className="flex items-center gap-3 justify-center py-4">
+                {typingPhase >= 6 && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex items-center gap-3 justify-center py-4"
+                  >
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        onClick={() => {
+                          setSelectedStars(star);
+                          handleSaveStepAnswer("career_rating", star, "survey_step_3");
+                        }}
+                        onMouseEnter={() => setSelectedStars(star)}
+                        onMouseLeave={() => setSelectedStars(0)}
+                        className="transition-transform hover:scale-125 duration-150 active:scale-95 p-1"
+                      >
+                        <Star 
+                          className={`w-8 h-8 transition-colors duration-150 ${
+                            star <= (selectedStars || 0) 
+                              ? "fill-[#ff2c8d] text-[#ff2c8d]" 
+                              : "text-gray-600 hover:text-gray-400"
+                          }`} 
+                        />
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </div>
+            </motion.div>
+          )}
+
+          {/* ───────────────────────────────────────────
+              PASSO 2.B: ESTRELAS (JÁ CONHECIA)
+              ─────────────────────────────────────────── */}
+          {step === "survey_step_2_b" && (
+            <motion.div
+              key="step2b"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="px-4 text-left"
+            >
+              <NarrativeReveal 
+                text={`${nickname}, então você já sabe que não poderia faltar a nossa curiosidade sobre o seu contexto profissional...`} 
+                variant="p"
+                className="text-base text-gray-300 font-light mb-4 leading-relaxed"
+                onComplete={() => setTypingPhase(1)}
+                speed={20}
+                active={step === "survey_step_2_b"}
+              />
+              
+              {typingPhase >= 1 && (
+                <NarrativeReveal 
+                  text="Então conta para a gente: o quanto hoje você sente que a sua carreira profissional te possibilita desfrutar o melhor que a sua rotina diária te proporciona?" 
+                  variant="p"
+                  className="text-sm text-gray-400 mb-8 leading-relaxed"
+                  onComplete={() => setTypingPhase(2)}
+                  speed={20}
+                  active={step === "survey_step_2_b"}
+                />
+              )}
+
+              {/* Componente Estrelas */}
+              {typingPhase >= 2 && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4 }}
+                  className="flex items-center gap-3 justify-center py-6"
+                >
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
                       key={star}
@@ -484,52 +650,8 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
                       />
                     </button>
                   ))}
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          {/* ───────────────────────────────────────────
-              PASSO 2.B: ESTRELAS (JÁ CONHECIA)
-              ─────────────────────────────────────────── */}
-          {step === "survey_step_2_b" && (
-            <motion.div
-              key="step2b"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="px-4 text-left"
-            >
-              <p className="text-base text-gray-300 font-light mb-4 leading-relaxed">
-                {nickname}, então você já sabe que não poderia faltar a nossa curiosidade sobre o seu contexto profissional...
-              </p>
-              <p className="text-sm text-gray-400 mb-8 leading-relaxed">
-                Então conta para a gente: o quanto hoje você sente que a sua carreira profissional te possibilita desfrutar o melhor que a sua rotina diária te proporciona?
-              </p>
-
-              {/* Componente Estrelas */}
-              <div className="flex items-center gap-3 justify-center py-6">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <button
-                    key={star}
-                    onClick={() => {
-                      setSelectedStars(star);
-                      handleSaveStepAnswer("career_rating", star, "survey_step_3");
-                    }}
-                    onMouseEnter={() => setSelectedStars(star)}
-                    onMouseLeave={() => setSelectedStars(0)}
-                    className="transition-transform hover:scale-125 duration-150 active:scale-95 p-1"
-                  >
-                    <Star 
-                      className={`w-8 h-8 transition-colors duration-150 ${
-                        star <= (selectedStars || 0) 
-                          ? "fill-[#ff2c8d] text-[#ff2c8d]" 
-                          : "text-gray-600 hover:text-gray-400"
-                      }`} 
-                    />
-                  </button>
-                ))}
-              </div>
+                </motion.div>
+              )}
             </motion.div>
           )}
 
@@ -544,31 +666,51 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
               exit={{ opacity: 0, x: -20 }}
               className="px-4 text-left"
             >
-              <p className="text-sm text-gray-400 tracking-wider uppercase mb-3 font-semibold">
-                Sua Jornada
-              </p>
-              <h2 className="text-xl sm:text-2xl font-bold tracking-tight mb-8 leading-snug">
-                Em uma única frase, descreva: quando você chegar no seu próximo objetivo profissional, o que estará te esperando ao final da jornada?
-              </h2>
-
-              <div className="space-y-6">
-                <textarea
-                  value={openText}
-                  onChange={(e) => setOpenText(e.target.value)}
-                  placeholder="Escreva sua frase aqui..."
-                  rows={3}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#ff2c8d] focus:ring-1 focus:ring-[#ff2c8d] transition-all resize-none font-light leading-relaxed"
+              <NarrativeReveal 
+                text="Sua Jornada" 
+                variant="p"
+                className="text-sm text-gray-400 tracking-wider uppercase mb-3 font-semibold"
+                onComplete={() => setTypingPhase(1)}
+                speed={30}
+                active={step === "survey_step_3"}
+              />
+              
+              {typingPhase >= 1 && (
+                <NarrativeReveal 
+                  text="Em uma única frase, descreva: quando você chegar no seu próximo objetivo profissional, o que estará te esperando ao final da jornada?" 
+                  variant="h2"
+                  className="text-xl sm:text-2xl font-bold tracking-tight mb-8 leading-snug"
+                  onComplete={() => setTypingPhase(2)}
+                  speed={20}
+                  active={step === "survey_step_3"}
                 />
+              )}
 
-                <button
-                  onClick={handleStep3Submit}
-                  disabled={!openText.trim()}
-                  className="w-full py-3.5 rounded-xl font-semibold text-xs tracking-wider uppercase flex items-center justify-center gap-2 bg-white text-black hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
+              {typingPhase >= 2 && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4 }}
+                  className="space-y-6"
                 >
-                  <span>Avançar</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
+                  <textarea
+                    value={openText}
+                    onChange={(e) => setOpenText(e.target.value)}
+                    placeholder="Escreva sua frase aqui..."
+                    rows={3}
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#ff2c8d] focus:ring-1 focus:ring-[#ff2c8d] transition-all resize-none font-light leading-relaxed"
+                  />
+
+                  <button
+                    onClick={handleStep3Submit}
+                    disabled={!openText.trim()}
+                    className="w-full py-3.5 rounded-xl font-semibold text-xs tracking-wider uppercase flex items-center justify-center gap-2 bg-white text-black hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
+                  >
+                    <span>Avançar</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </motion.div>
+              )}
             </motion.div>
           )}
 
@@ -583,68 +725,100 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
               exit={{ opacity: 0, x: -20 }}
               className="px-4 text-left"
             >
-              <p className="text-sm text-gray-400 mb-2 leading-relaxed">
-                É isso, e só isso! No evento podemos falar mais!
-              </p>
-              <p className="text-base text-gray-300 font-light mb-8 leading-relaxed">
-                {nickname}, {pronomDem} será <strong className="text-white font-medium">{event.specificMessage || "intimista com convidados especiais"}</strong>, e contamos com você!
-              </p>
+              <NarrativeReveal 
+                text="É isso, e só isso! No evento podemos falar mais!" 
+                variant="p"
+                className="text-sm text-gray-400 mb-2 leading-relaxed"
+                onComplete={() => setTypingPhase(1)}
+                speed={25}
+                active={step === "survey_step_4"}
+              />
+              
+              {typingPhase >= 1 && (
+                <NarrativeReveal 
+                  text={`${nickname}, ${pronomDem} será ${event.specificMessage || "intimista com convidados especiais"}, e contamos com você!`} 
+                  variant="p"
+                  className="text-base text-gray-300 font-light mb-8 leading-relaxed"
+                  onComplete={() => setTypingPhase(2)}
+                  speed={20}
+                  active={step === "survey_step_4"}
+                />
+              )}
 
-              <div className="p-5 rounded-2xl bg-white/5 border border-white/10 mb-8 space-y-4">
-                <div className="flex items-start gap-3">
-                  <Calendar className="w-5 h-5 text-[#ff2c8d] shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-semibold text-white">Data e Dia</p>
-                    <p className="text-xs text-gray-400 mt-0.5">
-                      {dateText.formatted}, será {dateText.prepDia} {dateText.dayOfWeek}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <Clock className="w-5 h-5 text-[#ff2c8d] shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-semibold text-white">Horário</p>
-                    <p className="text-xs text-gray-400 mt-0.5">{event.time}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <MapPin className="w-5 h-5 text-[#ff2c8d] shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-semibold text-white">Localização</p>
-                    <p className="text-xs text-gray-400 mt-0.5 leading-relaxed">{event.location}</p>
-                  </div>
-                </div>
-              </div>
-
-              <p className="text-sm font-medium text-white mb-6">
-                Podemos contar com a sua participação?
-              </p>
-
-              <div className="flex flex-col gap-3">
-                <button
-                  onClick={() => handleFinalSubmit("com_certeza")}
-                  disabled={isActionLoading}
-                  className="w-full py-3.5 rounded-xl font-bold text-xs tracking-wider uppercase text-center bg-white text-black hover:bg-gray-100 transition-all active:scale-[0.98]"
+              {typingPhase >= 2 && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4 }}
                 >
-                  Com certeza
-                </button>
-                <button
-                  onClick={() => handleSaveStepAnswer("rsvp", "talvez", "survey_sub_talvez")}
-                  disabled={isActionLoading}
-                  className="w-full py-3.5 rounded-xl font-semibold text-xs tracking-wider uppercase text-center border border-white/10 bg-white/5 hover:bg-white/10 transition-all active:scale-[0.98]"
+                  <div className="p-5 rounded-2xl bg-white/5 border border-white/10 mb-8 space-y-4">
+                    <div className="flex items-start gap-3">
+                      <Calendar className="w-5 h-5 text-[#ff2c8d] shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-semibold text-white">Data e Dia</p>
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          {dateText.formatted}, será {dateText.prepDia} {dateText.dayOfWeek}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <Clock className="w-5 h-5 text-[#ff2c8d] shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-semibold text-white">Horário</p>
+                        <p className="text-xs text-gray-400 mt-0.5">{event.time}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <MapPin className="w-5 h-5 text-[#ff2c8d] shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-semibold text-white">Localização</p>
+                        <p className="text-xs text-gray-400 mt-0.5 leading-relaxed">{event.location}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <NarrativeReveal 
+                    text="Podemos contar com a sua participação?" 
+                    variant="p"
+                    className="text-sm font-medium text-white mb-6"
+                    onComplete={() => setTypingPhase(3)}
+                    speed={20}
+                    active={step === "survey_step_4"}
+                  />
+                </motion.div>
+              )}
+
+              {typingPhase >= 3 && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex flex-col gap-3"
                 >
-                  Não tenho certeza
-                </button>
-                <button
-                  onClick={() => handleSaveStepAnswer("rsvp", "nao", "survey_sub_nao")}
-                  disabled={isActionLoading}
-                  className="w-full py-3.5 rounded-xl font-semibold text-xs tracking-wider uppercase text-center border border-white/10 bg-white/5 hover:bg-white/10 transition-all active:scale-[0.98]"
-                >
-                  Não poderei
-                </button>
-              </div>
+                  <button
+                    onClick={() => handleFinalSubmit("com_certeza")}
+                    disabled={isActionLoading}
+                    className="w-full py-3.5 rounded-xl font-bold text-xs tracking-wider uppercase text-center bg-white text-black hover:bg-gray-100 transition-all active:scale-[0.98]"
+                  >
+                    Com certeza
+                  </button>
+                  <button
+                    onClick={() => handleSaveStepAnswer("rsvp", "talvez", "survey_sub_talvez")}
+                    disabled={isActionLoading}
+                    className="w-full py-3.5 rounded-xl font-semibold text-xs tracking-wider uppercase text-center border border-white/10 bg-white/5 hover:bg-white/10 transition-all active:scale-[0.98]"
+                  >
+                    Não tenho certeza
+                  </button>
+                  <button
+                    onClick={() => handleSaveStepAnswer("rsvp", "nao", "survey_sub_nao")}
+                    disabled={isActionLoading}
+                    className="w-full py-3.5 rounded-xl font-semibold text-xs tracking-wider uppercase text-center border border-white/10 bg-white/5 hover:bg-white/10 transition-all active:scale-[0.98]"
+                  >
+                    Não poderei
+                  </button>
+                </motion.div>
+              )}
             </motion.div>
           )}
 
@@ -659,31 +833,42 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
               exit={{ opacity: 0, x: -20 }}
               className="px-4 text-left"
             >
-              <h2 className="text-xl sm:text-2xl font-bold tracking-tight mb-8 leading-snug">
-                Você gostaria que te convidassemos para uma próxima oportunidade?
-              </h2>
+              <NarrativeReveal 
+                text="Você gostaria que te convidassemos para uma próxima oportunidade?" 
+                variant="h2"
+                className="text-xl sm:text-2xl font-bold tracking-tight mb-8 leading-snug"
+                onComplete={() => setTypingPhase(1)}
+                speed={20}
+                active={step === "survey_sub_nao"}
+              />
 
-              <div className="flex flex-col gap-4">
-                <button
-                  onClick={() => {
-                    // Sim -> Oferece seleção de datas
-                    setAnswers(prev => ({ ...prev, future_invite: "sim" }));
-                    setStep("survey_sub_talvez"); // Reutiliza layout para dar as 3 sugestões
-                  }}
-                  className="w-full py-4 rounded-xl font-semibold text-sm border border-white/10 bg-white/5 hover:bg-white/10 text-center transition-all"
+              {typingPhase >= 1 && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex flex-col gap-4"
                 >
-                  Sim
-                </button>
-                <button
-                  onClick={() => {
-                    // Não -> Encerramento A
-                    handleFinalSubmit("nao", { future_invite: "nao" });
-                  }}
-                  className="w-full py-4 rounded-xl font-semibold text-sm border border-white/10 bg-white/5 hover:bg-white/10 text-center transition-all"
-                >
-                  Não
-                </button>
-              </div>
+                  <button
+                    onClick={() => {
+                      // Sim -> Oferece seleção de datas
+                      setAnswers(prev => ({ ...prev, future_invite: "sim" }));
+                      setStep("survey_sub_talvez"); // Reutiliza layout para dar as 3 sugestões
+                    }}
+                    className="w-full py-4 rounded-xl font-semibold text-sm border border-white/10 bg-white/5 hover:bg-white/10 text-center transition-all"
+                  >
+                    Sim
+                  </button>
+                  <button
+                    onClick={() => {
+                      // Não -> Encerramento A
+                      handleFinalSubmit("nao", { future_invite: "nao" });
+                    }}
+                    className="w-full py-4 rounded-xl font-semibold text-sm border border-white/10 bg-white/5 hover:bg-white/10 text-center transition-all"
+                  >
+                    Não
+                  </button>
+                </motion.div>
+              )}
             </motion.div>
           )}
 
@@ -701,76 +886,108 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
               {/* Condicional 1: Se veio do Não Poderei + Quer convite futuro, dá 3 sugestões de datas */}
               {answers.future_invite === "sim" ? (
                 <>
-                  <h2 className="text-xl sm:text-2xl font-bold tracking-tight mb-4 leading-snug">
-                    Escolha de preferência
-                  </h2>
-                  <p className="text-sm text-gray-400 mb-8 leading-relaxed">
-                    Selecione uma ou mais sugestões de períodos ideais para organizarmos as próximas oportunidades exclusivas:
-                  </p>
+                  <NarrativeReveal 
+                    text="Escolha de preferência" 
+                    variant="h2"
+                    className="text-xl sm:text-2xl font-bold tracking-tight mb-4 leading-snug"
+                    onComplete={() => setTypingPhase(1)}
+                    speed={20}
+                    active={step === "survey_sub_talvez"}
+                  />
 
-                  <div className="flex flex-col gap-3 mb-8">
-                    {[
-                      "Quinta-feira, 16 de Julho de 2026, as 19:00",
-                      "Quinta-feira, 30 de Julho de 2026, as 19:00",
-                      "Quinta-feira, 13 de Agosto de 2026, as 19:00"
-                    ].map((opt) => {
-                      const isSelected = suggestedDate.includes(opt);
-                      return (
-                        <button
-                          key={opt}
-                          onClick={() => {
-                            if (isSelected) {
-                              setSuggestedDates(prev => prev.filter(x => x !== opt));
-                            } else {
-                              setSuggestedDates(prev => [...prev, opt]);
-                            }
-                          }}
-                          className={`p-4 rounded-2xl text-left text-xs font-medium border transition-all ${
-                            isSelected 
-                              ? "border-[#ff2c8d] bg-[#ff2c8d]/5 text-white" 
-                              : "border-white/10 bg-white/5 hover:bg-white/10 text-gray-300"
-                          }`}
-                        >
-                          {opt}
-                        </button>
-                      );
-                    })}
-                  </div>
+                  {typingPhase >= 1 && (
+                    <NarrativeReveal 
+                      text="Selecione uma ou mais sugestões de períodos ideais para organizarmos as próximas oportunidades exclusivas:" 
+                      variant="p"
+                      className="text-sm text-gray-400 mb-8 leading-relaxed"
+                      onComplete={() => setTypingPhase(2)}
+                      speed={15}
+                      active={step === "survey_sub_talvez"}
+                    />
+                  )}
 
-                  <button
-                    onClick={() => {
-                      const datesJoined = suggestedDate.length > 0 ? suggestedDate.join(" | ") : "Nenhuma preferida";
-                      handleFinalSubmit("nao", { future_invite: "sim", suggested_dates: datesJoined });
-                    }}
-                    disabled={isActionLoading}
-                    className="w-full py-3.5 rounded-xl font-bold text-xs tracking-wider uppercase text-center bg-white text-black hover:bg-gray-100 transition-all"
-                  >
-                    Confirmar Sugestoes
-                  </button>
+                  {typingPhase >= 2 && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.4 }}
+                    >
+                      <div className="flex flex-col gap-3 mb-8">
+                        {[
+                          "Quinta-feira, 16 de Julho de 2026, as 19:00",
+                          "Quinta-feira, 30 de Julho de 2026, as 19:00",
+                          "Quinta-feira, 13 de Agosto de 2026, as 19:00"
+                        ].map((opt) => {
+                          const isSelected = suggestedDate.includes(opt);
+                          return (
+                            <button
+                              key={opt}
+                              onClick={() => {
+                                if (isSelected) {
+                                  setSuggestedDates(prev => prev.filter(x => x !== opt));
+                                } else {
+                                  setSuggestedDates(prev => [...prev, opt]);
+                                }
+                              }}
+                              className={`p-4 rounded-2xl text-left text-xs font-medium border transition-all ${
+                                isSelected 
+                                  ? "border-[#ff2c8d] bg-[#ff2c8d]/5 text-white" 
+                                  : "border-white/10 bg-white/5 hover:bg-white/10 text-gray-300"
+                              }`}
+                            >
+                              {opt}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      <button
+                        onClick={() => {
+                          const datesJoined = suggestedDate.length > 0 ? suggestedDate.join(" | ") : "Nenhuma preferida";
+                          handleFinalSubmit("nao", { future_invite: "sim", suggested_dates: datesJoined });
+                        }}
+                        disabled={isActionLoading}
+                        className="w-full py-3.5 rounded-xl font-bold text-xs tracking-wider uppercase text-center bg-white text-black hover:bg-gray-100 transition-all"
+                      >
+                        Confirmar Sugestoes
+                      </button>
+                    </motion.div>
+                  )}
                 </>
               ) : (
                 /* Condicional 2: Se veio do Não Tenho Certeza do RSVP */
                 <>
-                  <h2 className="text-xl sm:text-2xl font-bold tracking-tight mb-8 leading-snug">
-                    Tudo bem, não se preocupe. Alguns dias antes entraremos em contato com você para verificar a sua disponibilidade, tudo bem?
-                  </h2>
+                  <NarrativeReveal 
+                    text="Tudo bem, não se preocupe. Alguns dias antes entraremos em contato com você para verificar a sua disponibilidade, tudo bem?" 
+                    variant="h2"
+                    className="text-xl sm:text-2xl font-bold tracking-tight mb-8 leading-snug"
+                    onComplete={() => setTypingPhase(1)}
+                    speed={20}
+                    active={step === "survey_sub_talvez"}
+                  />
 
-                  <div className="flex flex-col gap-3">
-                    <button
-                      onClick={() => handleFinalSubmit("talvez", { allow_followup: "claro" })}
-                      disabled={isActionLoading}
-                      className="w-full py-3.5 rounded-xl font-bold text-xs tracking-wider uppercase text-center bg-white text-black hover:bg-gray-100 transition-all"
+                  {typingPhase >= 1 && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex flex-col gap-3"
                     >
-                      Claro!
-                    </button>
-                    <button
-                      onClick={() => handleFinalSubmit("nao", { allow_followup: "melhor_nao" })}
-                      disabled={isActionLoading}
-                      className="w-full py-3.5 rounded-xl font-semibold text-xs tracking-wider uppercase text-center border border-white/10 bg-white/5 hover:bg-white/10 transition-all"
-                    >
-                      Melhor não
-                    </button>
-                  </div>
+                      <button
+                        onClick={() => handleFinalSubmit("talvez", { allow_followup: "claro" })}
+                        disabled={isActionLoading}
+                        className="w-full py-3.5 rounded-xl font-bold text-xs tracking-wider uppercase text-center bg-white text-black hover:bg-gray-100 transition-all"
+                      >
+                        Claro!
+                      </button>
+                      <button
+                        onClick={() => handleFinalSubmit("nao", { allow_followup: "melhor_nao" })}
+                        disabled={isActionLoading}
+                        className="w-full py-3.5 rounded-xl font-semibold text-xs tracking-wider uppercase text-center border border-white/10 bg-white/5 hover:bg-white/10 transition-all"
+                      >
+                        Melhor não
+                      </button>
+                    </motion.div>
+                  )}
                 </>
               )}
             </motion.div>

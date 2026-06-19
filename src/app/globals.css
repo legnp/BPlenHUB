@@ -279,3 +279,19 @@ body.glass-modal-open {
 .animate-gradient-flow {
   animation: gradientFlow 14s ease-in-out infinite;
 }
+
+/* Animação de Pulsar Suave e Lento para Brilhos Ambientais (Aura Premium) */
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 0.05;
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+  50% {
+    opacity: 0.12;
+    transform: translate(-50%, -50%) scale(1.05);
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 8s ease-in-out infinite;
+}

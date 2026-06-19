@@ -14,7 +14,7 @@ interface BPlenLogoProps {
  * Gerencia a logo da consultoria e a versão HUB de forma unificada.
  * Utiliza o ativo único logo.svg para garantir consistência.
  */
-export function BPlenLogo({ variant = "hub", className, size = 32 }: BPlenLogoProps) {
+export function BPlenLogo({ className, size = 32 }: BPlenLogoProps) {
   return (
     <div className={cn("flex items-center gap-2 group cursor-pointer select-none", className)}>
       {/* Símbolo/Logo Base */}
