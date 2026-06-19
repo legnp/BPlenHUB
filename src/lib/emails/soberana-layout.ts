@@ -1,5 +1,5 @@
 /**
- * BPlen HUB — Soberana v3.1 Email Engine (📧💎)
+ * BPlen HUB — Soberana v3.1 Email Engine
  * Motor central de renderização de e-mails, garantindo governança de design
  * system, uso de aliases e tipografia alinhada em todas as notificações transacionais.
  */

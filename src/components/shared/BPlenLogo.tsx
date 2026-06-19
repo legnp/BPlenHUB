@@ -15,16 +15,16 @@ interface BPlenLogoProps {
  * Utiliza o ativo único logo.svg para garantir consistência.
  */
 export function BPlenLogo({ className, size = 32 }: BPlenLogoProps) {
+  const style = typeof size === "number" ? { height: size, width: "auto" } : { width: size, height: "auto" };
   return (
     <div className={cn("flex items-center gap-2 group cursor-pointer select-none", className)}>
       {/* Símbolo/Logo Base */}
       <img 
         src="/logo_bplen/logo.svg" 
         alt="BPlen"
-        style={{ height: size, width: 'auto' }}
+        style={style}
         className="object-contain"
       />
-      
     </div>
   );
 }

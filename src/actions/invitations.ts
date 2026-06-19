@@ -324,9 +324,9 @@ export async function sendInvitationRsvpEmailsAction(
         
         <div style="margin: 24px 0; padding: 20px; background-color: #F9FAFB; border-radius: 12px; border-left: 4px solid #ff2c8d;">
           <p style="margin: 0 0 8px 0; font-size: 14px; color: #1D1D1F;"><strong>Detalhes do Evento:</strong></p>
-          <p style="margin: 0 0 4px 0; font-size: 13px; color: #3F3F46;">📅 Data: ${dateFormatted}</p>
-          <p style="margin: 0 0 4px 0; font-size: 13px; color: #3F3F46;">🕒 Horário: ${eventData.time}</p>
-          <p style="margin: 0; font-size: 13px; color: #3F3F46;">📍 Local: ${eventData.location}</p>
+          <p style="margin: 0 0 4px 0; font-size: 13px; color: #3F3F46;">Data: ${dateFormatted}</p>
+          <p style="margin: 0 0 4px 0; font-size: 13px; color: #3F3F46;">Horário: ${eventData.time}</p>
+          <p style="margin: 0; font-size: 13px; color: #3F3F46;">Local: ${eventData.location}</p>
         </div>
         
         <p style="${EMAIL_STYLES.p}">Seus comentários e pedidos especiais já foram encaminhados à nossa equipe organizadora.</p>
@@ -342,9 +342,9 @@ export async function sendInvitationRsvpEmailsAction(
         
         <div style="margin: 24px 0; padding: 20px; background-color: #F9FAFB; border-radius: 12px; border-left: 4px solid #9CA3AF;">
           <p style="margin: 0 0 8px 0; font-size: 14px; color: #1D1D1F;"><strong>Informacoes do Evento:</strong></p>
-          <p style="margin: 0 0 4px 0; font-size: 13px; color: #3F3F46;">📅 Data: ${dateFormatted}</p>
-          <p style="margin: 0 0 4px 0; font-size: 13px; color: #3F3F46;">🕒 Horário: ${eventData.time}</p>
-          <p style="margin: 0; font-size: 13px; color: #3F3F46;">📍 Local: ${eventData.location}</p>
+          <p style="margin: 0 0 4px 0; font-size: 13px; color: #3F3F46;">Data: ${dateFormatted}</p>
+          <p style="margin: 0 0 4px 0; font-size: 13px; color: #3F3F46;">Horário: ${eventData.time}</p>
+          <p style="margin: 0; font-size: 13px; color: #3F3F46;">Local: ${eventData.location}</p>
         </div>
         
         <p style="${EMAIL_STYLES.p}">Se precisar confirmar antes, basta entrar em contato conosco.</p>
@@ -379,21 +379,21 @@ export async function sendInvitationRsvpEmailsAction(
       
       <div style="margin: 20px 0; padding: 20px; background-color: #F9FAFB; border-radius: 12px; border: 1px solid #E5E7EB;">
         <p style="margin: 0 0 8px 0; font-size: 14px; color: #1D1D1F;"><strong>Dados do Convidado:</strong></p>
-        <p style="margin: 0 0 4px 0; font-size: 13px; color: #3F3F46;">👤 Nome/Nickname: ${nickname}</p>
-        <p style="margin: 0 0 4px 0; font-size: 13px; color: #3F3F46;">📧 E-mail: ${userEmail}</p>
-        <p style="margin: 0 0 4px 0; font-size: 13px; color: #3F3F46;">🔢 Matrícula: ${matricula}</p>
-        <p style="margin: 0 0 12px 0; font-size: 13px; color: #3F3F46;">🎟️ ID Evento: ${eventSlug}</p>
+        <p style="margin: 0 0 4px 0; font-size: 13px; color: #3F3F46;">Nome/Nickname: ${nickname}</p>
+        <p style="margin: 0 0 4px 0; font-size: 13px; color: #3F3F46;">E-mail: ${userEmail}</p>
+        <p style="margin: 0 0 4px 0; font-size: 13px; color: #3F3F46;">Matrícula: ${matricula}</p>
+        <p style="margin: 0 0 12px 0; font-size: 13px; color: #3F3F46;">ID Evento: ${eventSlug}</p>
         
         <p style="margin: 12px 0 8px 0; font-size: 14px; color: #1D1D1F;"><strong>Respostas do Roteiro:</strong></p>
-        <p style="margin: 0 0 4px 0; font-size: 13px; color: #3F3F46;">❓ Conhecia a BPlen? ${answers.knows_bplen === "sim" ? "Sim" : "Não"}</p>
-        <p style="margin: 0 0 4px 0; font-size: 13px; color: #3F3F46;">⭐ Nota Carreira (1-5): ${answers.career_rating || "N/A"}</p>
-        <p style="margin: 0 0 12px 0; font-size: 13px; color: #3F3F46;">✍️ Próximo Objetivo: "${answers.next_objective || "N/A"}"</p>
+        <p style="margin: 0 0 4px 0; font-size: 13px; color: #3F3F46;">Conhecia a BPlen? ${answers.knows_bplen === "sim" ? "Sim" : "Não"}</p>
+        <p style="margin: 0 0 4px 0; font-size: 13px; color: #3F3F46;">Nota Carreira (1-5): ${answers.career_rating || "N/A"}</p>
+        <p style="margin: 0 0 12px 0; font-size: 13px; color: #3F3F46;">Próximo Objetivo: "${answers.next_objective || "N/A"}"</p>
         
         <p style="margin: 12px 0 4px 0; font-size: 14px; color: #1D1D1F;"><strong>RSVP Final:</strong></p>
-        <p style="margin: 0 0 4px 0; font-size: 13px; color: #3F3F46;">🎯 Participará? <strong>${rsvpStatus === "com_certeza" ? "Sim, com certeza!" : rsvpStatus === "talvez" ? "Não tenho certeza (Entrar em contato)" : "Não poderei"}</strong></p>
-        ${rsvpStatus === "nao" ? `<p style="margin: 0 0 4px 0; font-size: 13px; color: #3F3F46;">📅 Quer próximos convites? ${answers.future_invite === "sim" ? "Sim" : "Não"}</p>` : ""}
-        ${rsvpStatus === "nao" && answers.future_invite === "sim" ? `<p style="margin: 0 0 4px 0; font-size: 13px; color: #3F3F46;">⏰ Sugestões de datas de preferência: ${answers.suggested_dates || "N/A"}</p>` : ""}
-        ${rsvpStatus === "talvez" ? `<p style="margin: 0 0 4px 0; font-size: 13px; color: #3F3F46;">📞 Permite contato posterior? ${answers.allow_followup === "claro" ? "Sim, Claro!" : "Melhor nao"}</p>` : ""}
+        <p style="margin: 0 0 4px 0; font-size: 13px; color: #3F3F46;">Participará? <strong>${rsvpStatus === "com_certeza" ? "Sim, com certeza!" : rsvpStatus === "talvez" ? "Não tenho certeza (Entrar em contato)" : "Não poderei"}</strong></p>
+        ${rsvpStatus === "nao" ? `<p style="margin: 0 0 4px 0; font-size: 13px; color: #3F3F46;">Quer próximos convites? ${answers.future_invite === "sim" ? "Sim" : "Não"}</p>` : ""}
+        ${rsvpStatus === "nao" && answers.future_invite === "sim" ? `<p style="margin: 0 0 4px 0; font-size: 13px; color: #3F3F46;">Sugestões de datas de preferência: ${answers.suggested_dates || "N/A"}</p>` : ""}
+        ${rsvpStatus === "talvez" ? `<p style="margin: 0 0 4px 0; font-size: 13px; color: #3F3F46;">Permite contato posterior? ${answers.allow_followup === "claro" ? "Sim, Claro!" : "Melhor nao"}</p>` : ""}
         
         <p style="margin: 16px 0 4px 0; font-size: 14px; color: #1D1D1F;"><strong>Comentário / Pedido Especial:</strong></p>
         <p style="margin: 0; font-size: 13px; color: #3F3F46; font-style: italic;">"${comment}"</p>

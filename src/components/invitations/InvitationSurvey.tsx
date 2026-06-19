@@ -97,7 +97,7 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
         setCountdown((prev) => {
           if (prev <= 1) {
             clearInterval(interval);
-            router.push("https://bplen.com/home");
+            router.push("https://www.bplen.com/");
             return 0;
           }
           return prev - 1;
@@ -282,14 +282,16 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
   return (
     <div className="theme-dark min-h-screen bg-[#000000] text-white flex flex-col items-center justify-center p-4 selection:bg-[#ff2c8d] selection:text-white font-sans relative overflow-hidden">
       
-      {/* 🔮 Background Glow Elements (Aura Premium) */}
+      {/* Background Glow Elements (Aura Premium) */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#ff0080] rounded-full blur-[150px] opacity-[0.08] pointer-events-none z-0 animate-pulse-slow" />
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white rounded-full blur-[120px] opacity-[0.05] pointer-events-none z-0" />
 
       {/* Logo no topo para TODAS as etapas (incluindo a de entrada, garantindo branding oficial constante) */}
-      <div className="absolute top-6 left-6 flex items-center gap-1 z-10">
-        <BPlenLogo size={28} variant="hub" />
-      </div>
+      {step !== "token_input" && (
+        <div className="absolute top-6 left-6 flex items-center gap-1 z-10">
+          <BPlenLogo size={28} variant="hub" />
+        </div>
+      )}
 
       <div className={cn("w-full z-10 relative transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]", step === "token_input" ? "max-w-4xl" : "max-w-xl")}>
         <AnimatePresence mode="wait">
@@ -306,6 +308,10 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
               transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
               className="text-center px-4"
             >
+              <div className="flex justify-center mb-8">
+                <BPlenLogo size="300px" variant="hub" />
+              </div>
+
               <span className="font-extrabold text-xs tracking-[0.25em] uppercase text-[#ff2c8d] mb-6 block">
                 Convite Exclusivo
               </span>
@@ -336,30 +342,19 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
               </button>
 
               <p className="text-sm text-gray-400 font-light mb-12 max-w-sm mx-auto tracking-wide">
-                Você foi convidado para a <strong className="text-white font-semibold">{event.name}</strong>. Participe da nossa confirmação premium.
+                Você foi convidado para a <strong className="text-white font-semibold">{event.name}</strong>.
               </p>
 
               <div className="flex flex-col items-center gap-4">
-                <button
-                  onClick={() => setIsTokenModalOpen(true)}
-                  disabled={isActionLoading}
-                  className="px-8 py-3.5 rounded-full font-semibold text-xs tracking-wider uppercase bg-white text-[#1d1d1f] hover:bg-gray-100 transition-all hover:scale-105 shadow-[0_4px_24px_rgba(255,255,255,0.08)] flex items-center gap-2 group disabled:opacity-50"
-                >
-                  {isActionLoading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Validando...
-                    </>
-                  ) : (
-                    <>
-                      Acessar Convite
-                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                    </>
-                  )}
-                </button>
+                {isActionLoading && (
+                  <div className="flex items-center gap-2 text-xs text-gray-400">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Validando...</span>
+                  </div>
+                )}
                 
                 {error && (
-                  <p className="text-xs font-medium text-red-400 bg-red-950/20 border border-red-900/30 px-4 py-2 rounded-full mt-4">
+                  <p className="text-xs font-medium text-red-400 bg-red-950/20 border border-red-900/30 px-4 py-2 rounded-full">
                     {error}
                   </p>
                 )}
@@ -1032,7 +1027,7 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
               </p>
 
               <button
-                onClick={() => router.push("https://bplen.com/home")}
+                onClick={() => router.push("https://www.bplen.com/")}
                 className="px-6 py-2 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 transition-all"
               >
                 Concluir agora
@@ -1079,7 +1074,7 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
               </p>
 
               <button
-                onClick={() => router.push("https://bplen.com/home")}
+                onClick={() => router.push("https://www.bplen.com/")}
                 className="px-6 py-2 rounded-xl text-xs font-semibold bg-[#ff2c8d] text-white hover:bg-[#ff006e] transition-all"
               >
                 Concluir agora
@@ -1133,9 +1128,9 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
                       if (specialComment.trim()) {
                         await submitInvitationSurveyAction(token, event.slug, { ...answers, comment: specialComment }, matricula);
                       }
-                      router.push("https://bplen.com/home");
+                      router.push("https://www.bplen.com/");
                     } catch {
-                      router.push("https://bplen.com/home");
+                      router.push("https://www.bplen.com/");
                     }
                   }}
                   disabled={isActionLoading}
