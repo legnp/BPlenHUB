@@ -38,6 +38,7 @@ export interface DeliveryStep {
   referenceId: string;
   title: string;
   description?: string;
+  order?: string | number;
 }
 
 export interface Product {

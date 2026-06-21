@@ -19,21 +19,24 @@ export const JOURNEY_STAGES: JourneyStep[] = [
         title: "Introdução", 
         type: "content", 
         referenceId: "welcome_video_01",
-        description: "Conheça a visão da BPlen" 
+        description: "Conheça a visão da BPlen",
+        order: "1"
       },
       { 
         id: "check_in_survey", 
         title: "Check-in", 
         type: "survey", 
         referenceId: "check_in",
-        description: "Demandas e estado atual da jornada" 
+        description: "Demandas e estado atual da jornada",
+        order: "2"
       },
       { 
         id: "sessao_onboarding", 
         title: "Sessão de Onboarding", 
         type: "meeting", 
         referenceId: "onboarding",
-        description: "Agende sua sessão individual de boas-vindas com nossos orientadores." 
+        description: "Agende sua sessão individual de boas-vindas com nossos orientadores.",
+        order: "3"
       }
     ],
   },

@@ -44,21 +44,24 @@
         "type": "content",
         "referenceId": "welcome_video_01",
         "title": "Introdução",
-        "description": "Conheça o BPlen HUB"
+        "description": "Conheça o BPlen HUB",
+        "order": "1"
       },
       {
         "id": "ss-survey-check_in",
         "type": "survey",
         "referenceId": "check_in",
         "title": "Check-in",
-        "description": "Pre-mapa do estado atual"
+        "description": "Pre-mapa do estado atual",
+        "order": "2"
       },
       {
         "id": "ss-meeting-onboarding",
         "type": "meeting",
         "referenceId": "onboarding",
         "title": "Sessão de Onboarding",
-        "description": "Boas-vindas e alinhamento de expectativas"
+        "description": "Boas-vindas e alinhamento de expectativas",
+        "order": "3"
       }
     ],
     "capabilities": {
@@ -162,42 +165,48 @@
         "type": "survey",
         "referenceId": "desmistificando_candidaturas",
         "title": "Desmistificando: Vagas publicadas e mercado oculto",
-        "description": "A realidade do mercado de trabalho"
+        "description": "A realidade do mercado de trabalho",
+        "order": "1"
       },
       {
         "id": "ss-survey-revisao_curriculo",
         "type": "survey",
         "referenceId": "revisao_curriculo",
         "title": "Revisão e elaboração de CV",
-        "description": "Revisão do perfil profissional"
+        "description": "Revisão do perfil profissional",
+        "order": "2"
       },
       {
         "id": "ss-survey-pendente",
         "type": "survey",
         "referenceId": "pendente",
         "title": "Elaboração de PDI",
-        "description": "Elaboração do Plano de Desenvolvimento Individual"
+        "description": "Elaboração do Plano de Desenvolvimento Individual",
+        "order": "3"
       },
       {
         "id": "ss-survey-pendente",
         "type": "survey",
         "referenceId": "pendente",
         "title": "Preparação para Entrevistas e Networking",
-        "description": "Preparação de apresentação e pitch em entrevistas"
+        "description": "Preparação de apresentação e pitch em entrevistas",
+        "order": "4"
       },
       {
         "id": "ss-survey-pre_analise_comportamental",
         "type": "survey",
         "referenceId": "pre_analise_comportamental",
         "title": "Feedback Tecnico",
-        "description": "Análise Comportamental Básica"
+        "description": "Análise Comportamental Básica",
+        "order": "5.1"
       },
       {
         "id": "ss-survey-orientacao-individual-posicionamento",
         "type": "survey",
         "referenceId": "orientacao-individual-posicionamento",
         "title": "Feedback Tecnico",
-        "description": "Sessão individual de feedback do PDI e perfil profissional"
+        "description": "Sessão individual de feedback do PDI e perfil profissional",
+        "order": "5.2"
       }
     ],
     "capabilities": {
@@ -314,35 +323,40 @@
         "type": "survey",
         "referenceId": "disc",
         "title": "DISC",
-        "description": "Avaliação de Perfil Comportamental"
+        "description": "Avaliação de Perfil Comportamental",
+        "order": "1"
       },
       {
         "id": "ss-survey-preferencias_reconhecimento",
         "type": "survey",
         "referenceId": "preferencias_reconhecimento",
         "title": "Preferências de Reconhecimento",
-        "description": "Mapa de preferências de reconhecimento interpessoal"
+        "description": "Mapa de preferências de reconhecimento interpessoal",
+        "order": "2"
       },
       {
         "id": "ss-survey-preferencias_aprendizado",
         "type": "survey",
         "referenceId": "preferencias_aprendizado",
         "title": "Preferências de Aprendizado",
-        "description": "Mapa de preferências de formas e habitos de aprendizado"
+        "description": "Mapa de preferências de formas e habitos de aprendizado",
+        "order": "3"
       },
       {
         "id": "ss-survey-gestao_tempo",
         "type": "survey",
         "referenceId": "gestao_tempo",
         "title": "Mapa de Gestão de Tempo",
-        "description": "Mapa de habitos de priorização de tarefas e tempo"
+        "description": "Mapa de habitos de priorização de tarefas e tempo",
+        "order": "4"
       },
       {
         "id": "ss-meeting-devolutiva-analise-comportamental",
         "type": "meeting",
         "referenceId": "devolutiva-analise-comportamental",
         "title": "Devolutiva de Análise",
-        "description": "Sessão individual de Devolutiva Comportamental"
+        "description": "Sessão individual de Devolutiva Comportamental",
+        "order": "5"
       }
     ],
     "capabilities": {
@@ -457,49 +471,56 @@
         "type": "survey",
         "referenceId": "survey_plano_acordos",
         "title": "Avisos e Acordos",
-        "description": "Avisos e cordos do processo"
+        "description": "Avisos e cordos do processo",
+        "order": "1"
       },
       {
         "id": "ss-survey-survey_plano_fase1",
         "type": "survey",
         "referenceId": "survey_plano_fase1",
         "title": "Definição de Objetivos",
-        "description": "Definição de objetivos de carreira profissional"
+        "description": "Definição de objetivos de carreira profissional",
+        "order": "2"
       },
       {
         "id": "ss-survey-survey_plano_fase2",
         "type": "survey",
         "referenceId": "survey_plano_fase2",
         "title": "Seleção de Recursos",
-        "description": "Seleção de recursos para utilização durante a jornada"
+        "description": "Seleção de recursos para utilização durante a jornada",
+        "order": "3"
       },
       {
         "id": "ss-survey-survey_plano_fase3",
         "type": "survey",
         "referenceId": "survey_plano_fase3",
         "title": "Plano de Ação",
-        "description": "Plano de ação para manter foco e ritmo"
+        "description": "Plano de ação para manter foco e ritmo",
+        "order": "4"
       },
       {
         "id": "ss-survey-survey_plano_fase4",
         "type": "survey",
         "referenceId": "survey_plano_fase4",
         "title": "Consolidação do Plano",
-        "description": "Consolidação do plano para ativação assertiva"
+        "description": "Consolidação do plano para ativação assertiva",
+        "order": "5"
       },
       {
         "id": "ss-survey-survey_agendamento_devolutiva",
         "type": "survey",
         "referenceId": "survey_agendamento_devolutiva",
         "title": "Devolutiva do Plano",
-        "description": "Organização de materiais para sessão de devolutiva do plano"
+        "description": "Organização de materiais para sessão de devolutiva do plano",
+        "order": "6.1"
       },
       {
         "id": "ss-meeting-devolutiva-plano-carreira",
         "type": "meeting",
         "referenceId": "devolutiva-plano-carreira",
         "title": "Devolutiva do Plano",
-        "description": "Sessão individual de devolutiva do plano"
+        "description": "Sessão individual de devolutiva do plano",
+        "order": "6.2"
       }
     ],
     "capabilities": {
@@ -620,14 +641,16 @@
         "type": "form",
         "referenceId": "gdc",
         "title": "Gestão de Carreira",
-        "description": "Formulário de acompanhamento GDC."
+        "description": "Formulário de acompanhamento GDC.",
+        "order": "1"
       },
       {
         "id": "ss-meeting-gdc-mentorias",
         "type": "meeting",
         "referenceId": "gdc-mentorias",
         "title": "Agendar Mentorias",
-        "description": "Agendamento de sessões periódicas de mentoria."
+        "description": "Agendamento de sessões periódicas de mentoria.",
+        "order": "2"
       }
     ],
     "capabilities": {
@@ -749,14 +772,16 @@
         "type": "form",
         "referenceId": "mentocoach",
         "title": "Acompanhamento MentoCoach",
-        "description": "Formulário de autoavaliação MentoCoach."
+        "description": "Formulário de autoavaliação MentoCoach.",
+        "order": "1"
       },
       {
         "id": "ss-meeting-mentocoach-sessoes",
         "type": "meeting",
         "referenceId": "mentocoach-sessoes",
         "title": "Agendar Sessões de Coaching",
-        "description": "Agendamento das sessões individuais de coaching de alta performance."
+        "description": "Agendamento das sessões individuais de coaching de alta performance.",
+        "order": "2"
       }
     ],
     "capabilities": {
@@ -814,7 +839,8 @@
         "type": "survey",
         "referenceId": "offboarding_survey",
         "title": "Avaliação Final",
-        "description": "Pesquisa de encerramento e consolidação de resultados."
+        "description": "Pesquisa de encerramento e consolidação de resultados.",
+        "order": "1"
       }
     ],
     "capabilities": {

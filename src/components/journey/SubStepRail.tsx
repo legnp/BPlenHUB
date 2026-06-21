@@ -24,15 +24,15 @@ export function SubStepRail({ id, style, substeps, currentSubStepId, completedSu
 
   // 🧬 Agrupamento de SubSteps por Ordem Majoritária (ex: 5.1, 5.2 -> Parada 5)
   const groupedSubSteps = substeps.reduce((acc, ss) => {
-    const majorOrder = ss.order?.split('.')[0] || "99";
+    const majorOrder = ss.order ? String(ss.order).split('.')[0] : "99";
     if (!acc[majorOrder]) acc[majorOrder] = [];
     acc[majorOrder].push(ss);
     return acc;
   }, {} as Record<string, SubStepConfig[]>);
 
   const majorOrders = Object.keys(groupedSubSteps).sort((a, b) => {
-    const numA = parseFloat(groupedSubSteps[a][0].order || a);
-    const numB = parseFloat(groupedSubSteps[b][0].order || b);
+    const numA = parseFloat(String(groupedSubSteps[a][0].order || a));
+    const numB = parseFloat(String(groupedSubSteps[b][0].order || b));
     return numA - numB;
   });
 

@@ -79,7 +79,8 @@ export async function getJourneyStagesAction(): Promise<JourneyStep[]> {
                 title: step.title,
                 type: step.type,
                 referenceId: step.referenceId,
-                description: step.description || "Atividade de desenvolvimento"
+                description: step.description || "Atividade de desenvolvimento",
+                order: step.order ? String(step.order) : ""
               });
             });
           } else {
@@ -250,7 +251,8 @@ export async function getStandaloneStageAction(slug: string): Promise<JourneySte
           title: step.title,
           type: step.type,
           referenceId: step.referenceId,
-          description: step.description || "Atividade de desenvolvimento"
+          description: step.description || "Atividade de desenvolvimento",
+          order: step.order ? String(step.order) : ""
         });
       });
     } else {
