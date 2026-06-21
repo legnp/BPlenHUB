@@ -12,13 +12,10 @@ import {
   PlayCircle, 
   Calendar as CalendarIcon, 
   ClipboardCheck, 
-  Sparkles,
-  Star,
-  Download,
-  Send,
-  Clock,
-  Brain
+  Brain,
+  LucideIcon
 } from "lucide-react";
+import * as LucideIcons from "lucide-react";
 import { ptBR } from "date-fns/locale";
 import { format, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -74,14 +71,22 @@ interface StepRendererProps {
   onComplete: () => void;
   context?: "primeiros_passos" | "member_journey";
   stageId?: string;
+  kicker?: string;
+  icon?: string;
 }
 
 /**
  * BPlen HUB — StepRenderer 🧬🛡️
  * Orchestrator that renders the appropriate content type for a journey substep.
  */
-export function StepRenderer({ substep, status, onComplete, context = "member_journey", stageId }: StepRendererProps) {
+export function StepRenderer({ substep, status, onComplete, context = "member_journey", stageId, kicker, icon }: StepRendererProps) {
   const { user, matricula, nickname } = useAuthContext();
+
+  const DynamicIcon = ({ name, size = 18, className }: { name?: string, size?: number, className?: string }) => {
+    const IconComponent = name ? (LucideIcons as any)[name] : null;
+    if (!IconComponent) return <LucideIcons.Sparkles size={size} className={className} />;
+    return <IconComponent size={size} className={className} />;
+  };
 
   // Selecionar o dicionário de textos baseado no contexto da página 🍱
   const nomen = context === "primeiros_passos" 
@@ -200,9 +205,9 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
                  <div className="space-y-4">
                     <div className="flex items-center gap-3">
                        <div className="w-8 h-8 bg-pink-500/10 rounded-xl flex items-center justify-center text-pink-500">
-                          <Sparkles size={18} />
+                          <DynamicIcon name={icon} />
                        </div>
-                       <span className="text-[10px] font-black uppercase tracking-[0.3em] text-pink-500/high">{nomen.badge_tour}</span>
+                       <span className="text-[10px] font-black uppercase tracking-[0.3em] text-pink-500/high">{kicker || nomen.badge_tour}</span>
                     </div>
                     <h2 className="text-3xl font-black tracking-tight">{nomen.instructions.welcome_title}</h2>
                     <p className="text-[12px] font-medium text-[var(--text-muted)] max-w-xl leading-relaxed">{nomen.instructions.welcome_desc}</p>
@@ -232,9 +237,9 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
              <div className="space-y-4">
                 <div className="flex items-center gap-3">
                    <div className="w-8 h-8 bg-blue-500/10 rounded-xl flex items-center justify-center text-blue-500">
-                      <PlayCircle size={18} />
+                      <DynamicIcon name={icon} />
                    </div>
-                   <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/high">{nomen.badge_content}</span>
+                   <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/high">{kicker || nomen.badge_content}</span>
                 </div>
                 <h2 className="text-3xl font-black tracking-tight">{substep.title}</h2>
                 <p className="text-[12px] font-medium text-[var(--text-muted)] max-w-xl leading-relaxed">{substep.description}</p>
@@ -370,20 +375,20 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
           <div className="flex-1 flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-6 duration-1000 pt-6">
              <div className="space-y-4">
                  <div className="flex items-center gap-3">
-                    <div className={cn(
-                       "w-8 h-8 rounded-xl flex items-center justify-center",
-                       stageId === "analise-comportamental" ? "bg-amber-500/10 text-amber-500" :
-                       isSurvey ? "bg-purple-500/10 text-purple-500" : "bg-emerald-500/10 text-emerald-500"
-                    )}>
-                       {stageId === "analise-comportamental" ? <Brain size={18} /> : isSurvey ? <ClipboardCheck size={18} /> : <FileText size={18} />}
-                    </div>
-                    <span className={cn(
-                       "text-[10px] font-black uppercase tracking-[0.3em]",
-                       stageId === "analise-comportamental" ? "text-amber-500" :
-                       isSurvey ? "text-purple-500" : "text-emerald-500"
-                    )}>
-                       {stageId === "analise-comportamental" ? "Análise Comportamental" : isSurvey ? nomen.badge_survey : nomen.badge_form}
-                    </span>
+                     <div className={cn(
+                        "w-8 h-8 rounded-xl flex items-center justify-center",
+                        stageId === "analise-comportamental" ? "bg-amber-500/10 text-amber-500" :
+                        isSurvey ? "bg-purple-500/10 text-purple-500" : "bg-emerald-500/10 text-emerald-500"
+                     )}>
+                        <DynamicIcon name={icon} />
+                     </div>
+                     <span className={cn(
+                        "text-[10px] font-black uppercase tracking-[0.3em]",
+                        stageId === "analise-comportamental" ? "text-amber-500" :
+                        isSurvey ? "text-purple-500" : "text-emerald-500"
+                     )}>
+                        {kicker || (stageId === "analise-comportamental" ? "Análise Comportamental" : isSurvey ? nomen.badge_survey : nomen.badge_form)}
+                     </span>
                  </div>
                  <h2 className="text-3xl font-black tracking-tight">{substep.title}</h2>
                  <p className="text-[12px] font-medium text-[var(--text-muted)] max-w-xl leading-relaxed">
@@ -442,10 +447,10 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
              <div className="space-y-4">
                 <div className="flex items-center gap-3">
                    <div className="w-8 h-8 bg-amber-500/10 rounded-xl flex items-center justify-center text-amber-500">
-                      <CalendarIcon size={18} />
+                      <DynamicIcon name={icon} />
                    </div>
                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-500">
-                      {isCompleted ? nomen.badge_meeting.completed : activeBooking ? nomen.badge_meeting.confirmed : nomen.badge_meeting.booking}
+                      {kicker || (isCompleted ? nomen.badge_meeting.completed : activeBooking ? nomen.badge_meeting.confirmed : nomen.badge_meeting.booking)}
                    </span>
                 </div>
                 <h2 className="text-3xl font-black tracking-tight">

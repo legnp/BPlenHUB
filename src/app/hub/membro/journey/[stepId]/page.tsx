@@ -153,6 +153,8 @@ export default function StepJourneyPage() {
             stageId={stepId}
             substep={currentSubStep}
             status={stepStatus}
+            kicker={stepConfig.kicker}
+            icon={stepConfig.icon}
             onComplete={async () => {
               // Mark current as complete
               await updateSubStep(stepId, currentSubStepId, true);
