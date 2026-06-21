@@ -154,7 +154,7 @@ export default async function SegmentedServicesPage({ params }: PageProps) {
                   <h3 className={`${LANDING_TOKENS.card.title} !text-lg xl:!text-[20px] !mb-2`}>
                     {product.title}
                   </h3>
-                  <p className={`${LANDING_TOKENS.card.description} mb-4 flex-grow line-clamp-2 text-xs`}>
+                  <p className={`${LANDING_TOKENS.card.description} mb-8 flex-grow line-clamp-2 text-xs`}>
                     {product.sheet.shortDescription || product.sheet.description}
                   </p>
 
@@ -174,7 +174,10 @@ export default async function SegmentedServicesPage({ params }: PageProps) {
                     {product.price > 0 ? (
                       <div>
                         <span className="text-xl font-black text-white">
-                          {product.maxInstallments || 12}x de {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.price / (product.maxInstallments || 12))}
+                          <span className="text-[11px] font-bold text-gray-500 uppercase tracking-tight mr-1">
+                            {product.maxInstallments || 12}x de
+                          </span>
+                          {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.price / (product.maxInstallments || 12))}
                         </span>
                         {product.pricePix && product.pricePix < product.price ? (
                           <span className="block text-[9px] font-black text-[#ff0080] uppercase tracking-wider mt-0.5 opacity-90">
