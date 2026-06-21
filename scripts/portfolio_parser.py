@@ -191,11 +191,7 @@ except KeyError:
         "BPL-004": 5, "BPL-005": 6, "BPL-006": 7
     }
 
-# Update services_data with dynamic orders
-for code, data in services_data.items():
-    if code in journey_orders:
-        data["order"] = journey_orders[code]
-        print(f"    * {code} order set to: {data['order']}")
+# (Order update moved after Step 6 to include internal services)
 
 
 # 4. PARSE CHECKPOINTS FROM EXCEL (READ ONLY)
@@ -275,6 +271,7 @@ for idx, code in enumerate(["BPL-001", "BPL-002", "BPL-003", "BPL-004", "BPL-005
             "kicker": kicker,
             "sheet": {
                 "description": long_desc,
+                "shortDescription": short_desc,
                 "coverImage": f"/services-img/{code}.png" if os.path.exists(os.path.join(os.getcwd(), "public", "services-img", f"{code}.png")) else f"/services-img/{code}.jpg" if os.path.exists(os.path.join(os.getcwd(), "public", "services-img", f"{code}.jpg")) else f"/images/products/{services_data[code]['slug']}.png",
                 "paymentConditions": f"Pagamento facilitado no cartão em até {services_data[code]['maxInstallments']}x ou PIX com desconto especial.",
                 "faq": faq_list,
@@ -308,6 +305,7 @@ for idx, code in enumerate(["BPL-PAC-JR", "BPL-PAC-PL", "BPL-PAC-SR", "BPL-PAC-L
             "kicker": kicker,
             "sheet": {
                 "description": slogan,
+                "shortDescription": slogan,
                 "coverImage": f"/services-img/{code}.png" if os.path.exists(os.path.join(os.getcwd(), "public", "services-img", f"{code}.png")) else f"/services-img/{code}.jpg" if os.path.exists(os.path.join(os.getcwd(), "public", "services-img", f"{code}.jpg")) else f"/images/products/{packages_data[code]['slug']}.png",
                 "paymentConditions": f"Parcele em até {packages_data[code]['maxInstallments']}x sem juros no cartão de crédito ou obtenha desconto exclusivo via PIX.",
                 "faq": [
@@ -345,7 +343,6 @@ internal_services = {
         "pricePix": 0.0,
         "maxInstallments": 12,
         "isStepJourney": True,
-        "order": 1,
         "grantedQuotas": {"onboarding": 1},
         "targetAudiences": ["people", "internal"],
         "status": "active",
@@ -381,7 +378,6 @@ internal_services = {
         "pricePix": 0.0,
         "maxInstallments": 12,
         "isStepJourney": True,
-        "order": 7,
         "grantedQuotas": {"offboarding": 1},
         "targetAudiences": ["people", "internal"],
         "status": "active",
@@ -408,6 +404,21 @@ internal_services = {
         }
     }
 }
+
+# Add internal services to services_data for unified processing
+services_data.update(internal_services)
+
+# Apply Dynamic Journey Orders to all services (including internal)
+print("\nStep 6.C: Applying dynamic Journey orders to all services...")
+for code, data in services_data.items():
+    if code in journey_orders:
+        data["order"] = journey_orders[code]
+        print(f"    * {code} order set to: {data['order']}")
+    else:
+        # Default fallback if not in Excel
+        if "order" not in data:
+            data["order"] = 99
+            print(f"    * {code} using fallback order: 99")
 
 
 # 6.B PARSE CAMPAIGNS AND COUPONS (campanhas_bplen.xlsx)

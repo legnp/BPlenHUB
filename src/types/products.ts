@@ -15,6 +15,7 @@ export interface ProductSheet {
     keywords: string[];
   };
   deliverables?: string[]; // Lista de entregáveis do serviço
+  shortDescription?: string; // Descrição curta para cards e prévias
 }
 
 export interface CapabilityConfig {

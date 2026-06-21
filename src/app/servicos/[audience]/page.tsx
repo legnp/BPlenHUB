@@ -155,7 +155,7 @@ export default async function SegmentedServicesPage({ params }: PageProps) {
                     {product.title}
                   </h3>
                   <p className={`${LANDING_TOKENS.card.description} mb-4 flex-grow line-clamp-2 text-xs`}>
-                    {product.sheet.description}
+                    {product.sheet.shortDescription || product.sheet.description}
                   </p>
 
                   <ul className="space-y-2 mb-6 border-t border-white/5 pt-4">
