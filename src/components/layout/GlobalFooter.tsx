@@ -115,9 +115,9 @@ export function GlobalFooter({ variant = "full", className }: GlobalFooterProps)
           </div>
 
           <div className="flex gap-8 text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60">
-            <Link href="#" className="hover:text-[var(--text-primary)] transition-colors">Privacidade</Link>
+            <Link href="/privacidade" className="hover:text-[var(--text-primary)] transition-colors">Privacidade</Link>
             <Link href="#" className="hover:text-[var(--text-primary)] transition-colors">Governança</Link>
-            <Link href="#" className="hover:text-[var(--text-primary)] transition-colors">Termos</Link>
+            <Link href="/termos" className="hover:text-[var(--text-primary)] transition-colors">Termos</Link>
           </div>
         </div>
 
