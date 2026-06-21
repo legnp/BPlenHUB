@@ -35,19 +35,19 @@ print("  BPlen HUB Portfolio Parser & Sync      ")
 print("=========================================\n")
 
 # 1. RESTORE EXCEL TO RECOVER FORMULA VALUES CACHE
-print("Step 1: Restoring template excel to recover cached formula values...")
-if os.path.exists(scratch_excel):
-    shutil.copy(scratch_excel, portfolio_path)
-    print("Template restored successfully.")
-else:
-    print(f"WARNING: Template not found at {scratch_excel}. Parsing existing file.")
+print("Step 1: Skipping template restoration to preserve user edits...")
+# if os.path.exists(scratch_excel):
+#     shutil.copy(scratch_excel, portfolio_path)
+#     print("Template restored successfully.")
+# else:
+#     print(f"WARNING: Template not found at {scratch_excel}. Parsing existing file.")
 
 # Ensure the new sheets exist in the restored file
-os.system(f'python "D:\\BPlen HUB\\v3\\scratch\\init_excel_sheets.py"')
+# os.system(f'python "D:\\BPlen HUB\\v3\\scratch\\init_excel_sheets.py"')
 
 # 2. READ COMMERCAL PRICES IN-MEMORY (DATA ONLY)
-print("\nStep 2: Extracting commercial pricing from template in data_only mode...")
-wb_data = openpyxl.load_workbook(scratch_excel, data_only=True)
+print("\nStep 2: Extracting commercial pricing from portfolio in data_only mode...")
+wb_data = openpyxl.load_workbook(portfolio_path, data_only=True)
 wb_config = openpyxl.load_workbook(portfolio_path, data_only=True) # To read Jornada and Checkpoints
 
 # Services Coordinates
@@ -136,11 +136,11 @@ for code, cfg in services_coords.items():
 pacotes_sheet = wb_data["Pacotes de Serviço"]
 packages_data = {}
 package_coords = {
-    "BPL-PAC-JR": {"name": "Pacote JUNIOR", "slug": "pacote-junior", "row": 8, "quotas": {"posicionamentoprofissional": 1}},
-    "BPL-PAC-PL": {"name": "Pacote PLENO", "slug": "pacote-pleno", "row": 9, "quotas": {"posicionamentoprofissional": 1, "analisecomportamental": 1, "devolutiva-analise-comportamental": 1}},
-    "BPL-PAC-SR": {"name": "Pacote SENIOR (Recomendado)", "slug": "pacote-senior", "row": 10, "quotas": {"posicionamentoprofissional": 1, "analisecomportamental": 1, "devolutiva-analise-comportamental": 1, "planodecarreira": 1, "consultoria-plano-carreira": 1}},
-    "BPL-PAC-LD": {"name": "Pacote LIDER", "slug": "pacote-lider", "row": 11, "quotas": {"posicionamentoprofissional": 1, "analisecomportamental": 1, "devolutiva-analise-comportamental": 1, "planodecarreira": 1, "consultoria-plano-carreira": 1, "gestaoedesenvolvimento": 1, "1-to-1": 10}},
-    "BPL-PAC-EB": {"name": "Pacote EMBAIXADOR BPLEN", "slug": "pacote-embaixador", "row": 12, "quotas": {"posicionamentoprofissional": 1, "analisecomportamental": 1, "devolutiva-analise-comportamental": 1, "planodecarreira": 1, "consultoria-plano-carreira": 1, "gestaoedesenvolvimento": 1, "mentocoach": 1, "1-to-1": 22}}
+    "BPL-PAC-JR": {"name": "Pacote JUNIOR", "slug": "pacote-junior", "row": 8, "max_inst_row": 30, "quotas": {"posicionamentoprofissional": 1}},
+    "BPL-PAC-PL": {"name": "Pacote PLENO", "slug": "pacote-pleno", "row": 9, "max_inst_row": 51, "quotas": {"posicionamentoprofissional": 1, "analisecomportamental": 1, "devolutiva-analise-comportamental": 1}},
+    "BPL-PAC-SR": {"name": "Pacote SENIOR (Recomendado)", "slug": "pacote-senior", "row": 10, "max_inst_row": 74, "quotas": {"posicionamentoprofissional": 1, "analisecomportamental": 1, "devolutiva-analise-comportamental": 1, "planodecarreira": 1, "consultoria-plano-carreira": 1}},
+    "BPL-PAC-LD": {"name": "Pacote LIDER", "slug": "pacote-lider", "row": 11, "max_inst_row": 99, "quotas": {"posicionamentoprofissional": 1, "analisecomportamental": 1, "devolutiva-analise-comportamental": 1, "planodecarreira": 1, "consultoria-plano-carreira": 1, "gestaoedesenvolvimento": 1, "1-to-1": 10}},
+    "BPL-PAC-EB": {"name": "Pacote EMBAIXADOR BPLEN", "slug": "pacote-embaixador", "row": 12, "max_inst_row": 124, "quotas": {"posicionamentoprofissional": 1, "analisecomportamental": 1, "devolutiva-analise-comportamental": 1, "planodecarreira": 1, "consultoria-plano-carreira": 1, "gestaoedesenvolvimento": 1, "mentocoach": 1, "1-to-1": 22}}
 }
 
 for code, cfg in package_coords.items():
@@ -148,8 +148,12 @@ for code, cfg in package_coords.items():
     price_card = pacotes_sheet.cell(row=r, column=6).value
     price_pix = pacotes_sheet.cell(row=r, column=7).value
     
+    # Dynamic installments from row
+    max_inst_val = pacotes_sheet.cell(row=cfg["max_inst_row"], column=3).value
+    
     price = round(float(price_card), 2) if price_card is not None else 0.0
     price_pix = round(float(price_pix), 2) if price_pix is not None else 0.0
+    max_installments = int(max_inst_val) if max_inst_val is not None else 12
     
     packages_data[code] = {
         "id": cfg["slug"],
@@ -158,13 +162,13 @@ for code, cfg in package_coords.items():
         "title": cfg["name"],
         "price": price,
         "pricePix": price_pix,
-        "maxInstallments": 12,
+        "maxInstallments": max_installments,
         "isStepJourney": False,
         "grantedQuotas": cfg["quotas"],
         "targetAudiences": ["people", "companies"],
         "status": "active"
     }
-    print(f" -> Parsed Package {code}: Card R$ {price:.2f} | PIX R$ {price_pix:.2f}")
+    print(f" -> Parsed Package {code}: Card R$ {price:.2f} | PIX R$ {price_pix:.2f} | {max_installments}x")
 
 wb_data.close()
 
