@@ -34,8 +34,8 @@ function parseInlineStyles(text: string): React.ReactNode {
       continue;
     }
 
-    // 2. Detecta links de agendamento
-    const scheduleRegex = /^(agend[ae]r?\s+uma\s+conversa(?:\s+com\s+a\s+equipe\s+BPlen|\s+com\s+a\s+BPlen|\s+para\s+esclarecer\s+dúvidas?|\s+para\s+saber\s+mais|\s+para\s+consultar[^.]*)?)/i;
+    // 2. Detecta links de agendamento (versão expandida)
+    const scheduleRegex = /^(agend[ae]r?\s+(?:uma\s+)?(?:conversa|horário|reunião|sessão|atendimento|consultoria)(?:\s+com\s+a\s+equipe\s+BPlen|\s+com\s+a\s+BPlen|\s+para\s+esclarecer\s+dúvidas?|\s+para\s+saber\s+mais|\s+para\s+consultar[^.]*)?|agendamento\s+disponível)/i;
     const scheduleMatch = remainingText.match(scheduleRegex);
     if (scheduleMatch) {
       tokens.push({
@@ -46,8 +46,8 @@ function parseInlineStyles(text: string): React.ReactNode {
       continue;
     }
 
-    // 3. Detecta hiperlinks gerais
-    const urlRegex = /^(https?:\/\/[^\s\)\],]+|www\.[^\s\)\],]+)/i;
+    // 3. Detecta hiperlinks gerais (mais robusto)
+    const urlRegex = /^(https?:\/\/[^\s\)\],;!]+|www\.[^\s\)\],;!]+)/i;
     const urlMatch = remainingText.match(urlRegex);
     if (urlMatch) {
       const rawUrl = urlMatch[1];
@@ -93,7 +93,7 @@ function parseInlineStyles(text: string): React.ReactNode {
         switch (token.type) {
           case "bold":
             return (
-              <strong key={idx} className="text-white font-black drop-shadow-sm">
+              <strong key={idx} className="text-white font-bold drop-shadow-sm">
                 {token.content}
               </strong>
             );
@@ -102,7 +102,7 @@ function parseInlineStyles(text: string): React.ReactNode {
               <Link
                 key={idx}
                 href="/agendar"
-                className="text-[#ff0080] hover:text-[#ff0080]/80 underline underline-offset-4 decoration-[#ff0080]/30 hover:decoration-[#ff0080] transition-all font-black"
+                className="text-[#ff0080] hover:text-[#ff0080]/80 underline underline-offset-4 decoration-[#ff0080]/30 hover:decoration-[#ff0080] transition-all font-bold"
               >
                 {token.content}
               </Link>
@@ -114,7 +114,7 @@ function parseInlineStyles(text: string): React.ReactNode {
                 href={token.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[#00f2fe] hover:text-[#00f2fe]/80 underline underline-offset-4 decoration-[#00f2fe]/30 hover:decoration-[#00f2fe] transition-all font-bold inline-flex items-center gap-1"
+                className="text-[#00f2fe] hover:text-[#00f2fe]/80 underline underline-offset-4 decoration-[#00f2fe]/30 hover:decoration-[#00f2fe] transition-all font-medium inline-flex items-center gap-1 break-all"
               >
                 {token.content}
               </a>
@@ -154,16 +154,16 @@ export function BPlenRichTextRenderer({
   const flushList = (keyPrefix: string) => {
     if (currentListItems.length > 0) {
       renderedElements.push(
-        <ul key={`${keyPrefix}-list`} className="space-y-3.5 my-6 pl-1 list-none">
+        <ul key={`${keyPrefix}-list`} className="space-y-3 my-5 pl-1 list-none">
           {currentListItems.map((item, itemIdx) => {
-            let itemClass = "text-sm md:text-base font-medium text-gray-300";
-            let bulletClass = "mt-2.5 w-1.5 h-1.5";
+            let itemClass = "text-sm md:text-base font-normal text-gray-300";
+            let bulletClass = "mt-2 w-1.5 h-1.5";
             if (isLarge) {
-              itemClass = "text-base md:text-lg font-bold text-gray-200";
-              bulletClass = "mt-3 w-2 h-2";
+              itemClass = "text-base md:text-lg font-medium text-gray-200";
+              bulletClass = "mt-2.5 w-2 h-2";
             } else if (isSmall) {
-              itemClass = "text-xs md:text-sm font-medium text-gray-400";
-              bulletClass = "mt-2 w-1.2 h-1.2";
+              itemClass = "text-xs md:text-sm font-normal text-gray-400";
+              bulletClass = "mt-1.5 w-1.2 h-1.2";
             }
 
             return (
@@ -222,11 +222,11 @@ export function BPlenRichTextRenderer({
         );
       } else {
         // Parágrafo padrão
-        let pClass = "text-sm md:text-base font-medium text-gray-300";
+        let pClass = "text-sm md:text-base font-normal text-gray-300";
         if (isLarge) {
-          pClass = "text-lg md:text-xl font-bold text-gray-200";
+          pClass = "text-lg md:text-xl font-medium text-gray-200";
         } else if (isSmall) {
-          pClass = "text-xs md:text-sm font-medium text-gray-400";
+          pClass = "text-xs md:text-sm font-normal text-gray-400";
         }
 
         renderedElements.push(
