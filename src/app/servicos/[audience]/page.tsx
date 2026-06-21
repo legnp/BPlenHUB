@@ -115,7 +115,7 @@ export default async function SegmentedServicesPage({ params }: PageProps) {
 
       {/* dynamic Products Grid */}
       <section className="pb-32 px-6">
-        <div className={LANDING_TOKENS.container}>
+        <div className="max-w-6xl xl:max-w-[1360px] mx-auto">
           
           <div className="mb-12 border-b border-white/10 pb-6">
             <h2 className="text-xl font-black uppercase tracking-widest">
@@ -129,11 +129,11 @@ export default async function SegmentedServicesPage({ params }: PageProps) {
                <p className="text-xs font-black uppercase tracking-widest">Nenhum serviço disponível neste segmento ainda</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
               {individualServices.map((product) => (
                 <div 
                   key={product.id} 
-                  className={`${LANDING_TOKENS.card.container} !p-6 md:!p-8 group flex flex-col h-full bg-gradient-to-b from-white/5 to-transparent hover:border-[var(--accent-primary)]/30 transition-all`}
+                  className={`${LANDING_TOKENS.card.container} !p-5 xl:!p-6 group flex flex-col h-full bg-gradient-to-b from-white/5 to-transparent hover:border-[var(--accent-primary)]/30 transition-all`}
                 >
                   <div className="relative aspect-video rounded-2xl overflow-hidden mb-5 border border-white/5 group-hover:border-white/10 shrink-0">
                      {product.sheet.coverImage ? (
@@ -151,26 +151,23 @@ export default async function SegmentedServicesPage({ params }: PageProps) {
                   </div>
                   
                   <span className={LANDING_TOKENS.card.kicker}>{product.kicker || "PRONTO PARA VOCÊ"}</span>
-                  <h3 className={`${LANDING_TOKENS.card.title} !mb-2`}>
+                  <h3 className={`${LANDING_TOKENS.card.title} !text-lg xl:!text-[20px] !mb-2`}>
                     {product.title}
                   </h3>
                   <p className={`${LANDING_TOKENS.card.description} mb-4 flex-grow line-clamp-2 text-xs`}>
                     {product.sheet.shortDescription || product.sheet.description}
                   </p>
 
-                  <ul className="space-y-2 mb-6 border-t border-white/5 pt-4">
-                    {(product.sheet.deliverables || []).slice(0, 3).map((item, idx) => (
-                      <li key={idx} className="flex items-center gap-3 text-[9px] uppercase font-bold tracking-tight text-gray-400">
-                        <CheckCircle2 size={12} className="text-[#ff0080]/60 shrink-0" />
-                        <span className="line-clamp-1">{item}</span>
-                      </li>
-                    ))}
-                    {(!product.sheet.deliverables || product.sheet.deliverables.length === 0) && (
-                      <li className="flex items-center gap-3 text-[9px] uppercase font-bold tracking-tight text-gray-500 italic opacity-50">
-                        Consulte os detalhes deste serviço
-                      </li>
-                    )}
-                  </ul>
+                  {product.sheet.deliverables && product.sheet.deliverables.length > 0 && (
+                    <ul className="space-y-2 mb-6 border-t border-white/5 pt-4">
+                      {product.sheet.deliverables.slice(0, 3).map((item, idx) => (
+                        <li key={idx} className="flex items-center gap-3 text-[9px] uppercase font-bold tracking-tight text-gray-400">
+                          <CheckCircle2 size={12} className="text-[#ff0080]/60 shrink-0" />
+                          <span className="line-clamp-1">{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
 
                   <div className="mb-6 h-[50px] flex flex-col justify-end">
                     <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Investimento</span>
@@ -198,7 +195,7 @@ export default async function SegmentedServicesPage({ params }: PageProps) {
                     href={`/servicos/${audience}/${product.slug}`}
                     className="w-full py-3 rounded-xl bg-[var(--accent-primary)] text-white font-black text-[10px] uppercase tracking-widest hover:scale-[1.02] shadow-xl group/btn transition-all flex items-center justify-center gap-2"
                   >
-                    CONTRATAR AGORA
+                    Saiba mais
                     <ChevronRight size={14} className="group-hover/btn:translate-x-1 duration-300" />
                   </Link>
                 </div>
