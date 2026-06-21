@@ -48,9 +48,12 @@ export default async function ProductDetailPage({ params }: PageProps) {
 
   const isPackage = product.serviceCode?.startsWith("BPL-PAC-") || false;
   
+  // Mapeamento de URL para ID de Banco (Resiliência de Público)
+  const dbAudience = audience === "pessoas" ? "people" : audience === "empresas" ? "companies" : "partners";
+
   let relatedServices: Product[] = [];
   if (isPackage) {
-    const allAudienceProducts = await getProductsByAudience(audience as 'people' | 'companies');
+    const allAudienceProducts = await getProductsByAudience(dbAudience as 'people' | 'companies' | 'partners');
     relatedServices = allAudienceProducts.filter(p => {
       if (p.serviceCode?.startsWith("BPL-PAC-") || p.serviceCode === "BPL-000" || p.serviceCode === "BPL-006") {
         return false;
