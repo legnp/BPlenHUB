@@ -1,0 +1,1013 @@
+[
+  {
+    "id": "onboarding",
+    "slug": "onboarding",
+    "serviceCode": "BPL-000",
+    "title": "Onboarding",
+    "kicker": "Onboarding",
+    "price": 0.0,
+    "pricePix": 0.0,
+    "maxInstallments": 12,
+    "isStepJourney": true,
+    "grantedQuotas": {
+      "onboarding": 1
+    },
+    "targetAudiences": [
+      "people",
+      "internal"
+    ],
+    "status": "active",
+    "sheet": {
+      "description": "Dê os seus primeiros passos no BPlen HUB e conheça todo o nosso ecossistema.",
+      "coverImage": "/images/products/onboarding.png",
+      "paymentConditions": "Serviço interno gratuito para membros.",
+      "faq": [
+        {
+          "question": "Como iniciar?",
+          "answer": "Basta assistir ao vídeo de introdução e realizar o seu check-in inicial."
+        }
+      ],
+      "termsAndConditions": "Serviço exclusivo de Onboarding do BPlen HUB.",
+      "seo": {
+        "title": "Onboarding | BPlen HUB",
+        "description": "Boas-vindas ao BPlen HUB.",
+        "keywords": [
+          "onboarding",
+          "bplen"
+        ]
+      }
+    },
+    "workflow": [],
+    "deliverySteps": [
+      {
+        "id": "ss-content-welcome_video_01",
+        "type": "content",
+        "referenceId": "welcome_video_01",
+        "title": "Introdução",
+        "description": "Conheça a visão da BPlen"
+      },
+      {
+        "id": "ss-survey-check_in",
+        "type": "survey",
+        "referenceId": "check_in",
+        "title": "Check-in",
+        "description": "Demandas e estado atual da jornada"
+      },
+      {
+        "id": "ss-meeting-onboarding",
+        "type": "meeting",
+        "referenceId": "onboarding",
+        "title": "Sessão de Onboarding",
+        "description": "Agende sua sessão de onboarding individual."
+      }
+    ],
+    "capabilities": {
+      "surveys": [
+        "check_in"
+      ],
+      "forms": [],
+      "allowedEventTypes": [
+        "onboarding"
+      ]
+    },
+    "order": 1
+  },
+  {
+    "id": "posicionamento-profissional",
+    "slug": "posicionamento-profissional",
+    "serviceCode": "BPL-001",
+    "title": "Posicionamento de Carreira",
+    "price": 930.9,
+    "pricePix": 895.43,
+    "maxInstallments": 3,
+    "isStepJourney": true,
+    "order": 2,
+    "grantedQuotas": {
+      "posicionamentoprofissional": 1
+    },
+    "targetAudiences": [
+      "people",
+      "companies"
+    ],
+    "status": "active",
+    "kicker": "Posicionamento",
+    "sheet": {
+      "description": "Acelere suas chances de contratação e transformação de carreira. O Posicionamento Estratégico BPlen não é apenas uma revisão estética de currículo e página profissional. \nÉ uma consultoria que te posiciona no mercado para te conectar com os desafios que mais podem alavancar a sua carreira. \nNós analisamos a sua história, suas competências e ambições, para alinhar o seu contexto com as demandas de mercado, e traduzir como você gera valor através do que você entrega.\nAlém disso te ajudamos a adaptar a sua proposta de valor e pitch para entrevistas, LinkedIn, currículo e outros meios para uma promoção de alto nível.",
+      "shortDescription": "Use o seu perfil profissional para atrair oportunidades de sucesso, destacando-se para os melhores headhunters e negócios do mercado.",
+      "coverImage": "/services-img/BPL-001.png",
+      "paymentConditions": "Pagamento facilitado no cartão em até 3x ou PIX com desconto especial.",
+      "faq": [
+        {
+          "question": "Por que contratar este serviço?",
+          "answer": "Porque nós não apenas formatamos textos e perfil estético. Nós redesenhamos seu posicionamento valorizando o seu histórico profissional, preparando seu pitch para oportunidades reais de gerar valor com a sua especialidade."
+        },
+        {
+          "question": "Preciso de algum conhecimento prévio?",
+          "answer": "Não, todas as ferramentas são aplicadas de forma simples e guiada pela BPlen."
+        }
+      ],
+      "termsAndConditions": "Ao contratar este serviço, você concorda com o plano de entrega e as diretrizes do BPlen HUB.",
+      "seo": {
+        "title": "Posicionamento de Carreira | BPlen HUB",
+        "description": "Use o seu perfil profissional para atrair oportunidades de sucesso, destacando-se para os melhores headhunters e negócios do mercado.",
+        "keywords": [
+          "posicionamento",
+          "bplen",
+          "carreira",
+          "profissional"
+        ]
+      }
+    },
+    "workflow": [
+      {
+        "id": "wf-bpl-001-1",
+        "title": "Ativação do BPlen HUB",
+        "type": "task",
+        "description": "Etapa recomendada de desenvolvimento"
+      },
+      {
+        "id": "wf-bpl-001-2",
+        "title": "Desmistificando: Vagas publicadas e mercado oculto",
+        "type": "task",
+        "description": "Etapa recomendada de desenvolvimento"
+      },
+      {
+        "id": "wf-bpl-001-3",
+        "title": "Revisão e elaboração de CV",
+        "type": "task",
+        "description": "Etapa recomendada de desenvolvimento"
+      },
+      {
+        "id": "wf-bpl-001-4",
+        "title": "Elaboração de PDI",
+        "type": "task",
+        "description": "Etapa recomendada de desenvolvimento"
+      },
+      {
+        "id": "wf-bpl-001-5",
+        "title": "Preparação para Entrevistas e Networking",
+        "type": "task",
+        "description": "Etapa recomendada de desenvolvimento"
+      },
+      {
+        "id": "wf-bpl-001-6",
+        "title": "Consultoria de Feedback Técnico.",
+        "type": "task",
+        "description": "Etapa recomendada de desenvolvimento"
+      }
+    ],
+    "deliverySteps": [
+      {
+        "id": "ss-form-perfil_profissional",
+        "type": "form",
+        "referenceId": "perfil_profissional",
+        "title": "Perfil Profissional",
+        "description": "Preenchimento do Perfil Profissional para estruturação do posicionamento."
+      },
+      {
+        "id": "ss-meeting-orientacao-individual-posicionamento",
+        "type": "meeting",
+        "referenceId": "orientacao-individual-posicionamento",
+        "title": "Agendar Orientação Individual",
+        "description": "Sessão individual com orientador especialista de 1h."
+      }
+    ],
+    "capabilities": {
+      "surveys": [],
+      "forms": [
+        "perfil_profissional"
+      ],
+      "allowedEventTypes": [
+        "orientacao-individual-posicionamento"
+      ]
+    }
+  },
+  {
+    "id": "analise-comportamental",
+    "slug": "analise-comportamental",
+    "serviceCode": "BPL-002",
+    "title": "Análise Comportamental",
+    "price": 1652.12,
+    "pricePix": 1589.18,
+    "maxInstallments": 5,
+    "isStepJourney": true,
+    "order": 3,
+    "grantedQuotas": {
+      "analisecomportamental": 1,
+      "devolutiva-analise-comportamental": 1
+    },
+    "targetAudiences": [
+      "people",
+      "companies"
+    ],
+    "status": "active",
+    "kicker": "Desenvolvimento",
+    "sheet": {
+      "description": "Aja com mais assertividade e gere resultados mais consistentes. A Análise Comportamental BPlen mapeia o seu perfil através de bases psicológicas em cruzamento com o seu repertório, contexto situacional e assessments como o DISC, amplamente reconhecidos pelo mercado.\nA análise comportamental te ajuda a: \n• Mapear suas habilidades nativas e tendências sabotadoras;\n• Adequar o uso das suas competências diante das circunstâncias; \n• Adaptar a sua comunicação para estilos diferentes de ouvintes;\n• Habilitar e adaptar suas competências de liderança situacional;\n• Estabelecer recursos de resiliência para lidar com demandas sob pressão. \n\nA devolutiva da análise é realizada através de consultoria individual juntamente com a entrega de dois relatórios em PDF: \n- Relatório DISC Integral;\n- Relatório Comportamental 360º BPlen, com insights e exercícios personalizados para você.",
+      "shortDescription": "Entenda o seu perfil comportamental para coordenar suas habilidades, forças e sabotadores para liderar seus relacionamentos e estilos de liderança.",
+      "coverImage": "/services-img/BPL-002.png",
+      "paymentConditions": "Pagamento facilitado no cartão em até 5x ou PIX com desconto especial.",
+      "faq": [
+        {
+          "question": "O que diferencia a análise comportamental BPlen?",
+          "answer": "Nós não entregamos um relatório frio gerado por sistema e nem feedbacks com base em opinião. Nós cruzamos suas tendências comportamentais com seus objetivos de carreira, histórico profissional, contexto situacional baseados rigorosamente em bibliografias psicológicas e organizacionais.\nO nosso propósito é te guiar e auxiliar para que você amplie suas competências de autoanalise e decida com autonomia a sua própria jornada de crescimento.\nConsulte aqui a nossas bases bibliográficas: https://www.bplen.com/conteudo/artigo/bases-bibliograficas-da-bplen"
+        },
+        {
+          "question": "Preciso de algum conhecimento prévio?",
+          "answer": "Não, todas as ferramentas são aplicadas de forma simples e guiada pela BPlen."
+        },
+        {
+          "question": "Este serviço substitui a psicoterapia ou acompanhamento clínico?",
+          "answer": "Não. A Análise Comportamental BPlen possui foco estritamente profissional, de desenvolvimento de carreira e competências. Ela não se trata de terapia, psicodiagnóstico ou tratamento clínico e, portanto, não substitui ou exclui a consulta com profissionais de saúde mental habilitados em casos de demandas de ordem psíquica, emocional ou clínica."
+        }
+      ],
+      "termsAndConditions": "Ao contratar este serviço, você concorda com o plano de entrega e as diretrizes do BPlen HUB.",
+      "seo": {
+        "title": "Análise Comportamental | BPlen HUB",
+        "description": "Entenda o seu perfil comportamental para coordenar suas habilidades, forças e sabotadores para liderar seus relacionamentos e estilos de liderança.",
+        "keywords": [
+          "desenvolvimento",
+          "bplen",
+          "carreira",
+          "profissional"
+        ]
+      }
+    },
+    "workflow": [
+      {
+        "id": "wf-bpl-002-1",
+        "title": "Ativação da Área Membro BPlen",
+        "type": "task",
+        "description": "Etapa recomendada de desenvolvimento"
+      },
+      {
+        "id": "wf-bpl-002-2",
+        "title": "Onboarding de Boas-vindas e alinhamentos de expectativas",
+        "type": "task",
+        "description": "Etapa recomendada de desenvolvimento"
+      },
+      {
+        "id": "wf-bpl-002-3",
+        "title": "Check-in: Pré-mapa do contexto situacional",
+        "type": "task",
+        "description": "Etapa recomendada de desenvolvimento"
+      },
+      {
+        "id": "wf-bpl-002-4",
+        "title": "Assessments Comportamentais",
+        "type": "task",
+        "description": "Etapa recomendada de desenvolvimento"
+      },
+      {
+        "id": "wf-bpl-002-5",
+        "title": "Consultoria de Devolutiva Comportamental",
+        "type": "task",
+        "description": "Etapa recomendada de desenvolvimento"
+      },
+      {
+        "id": "wf-bpl-002-6",
+        "title": "Liberação dos Relatórios Comportamentais",
+        "type": "task",
+        "description": "Etapa recomendada de desenvolvimento"
+      },
+      {
+        "id": "wf-bpl-002-7",
+        "title": "Ativação Painel de Perfil Comportamental.",
+        "type": "task",
+        "description": "Etapa recomendada de desenvolvimento"
+      }
+    ],
+    "deliverySteps": [
+      {
+        "id": "ss-survey-disc",
+        "type": "survey",
+        "referenceId": "disc",
+        "title": "Responder Questionário DISC",
+        "description": "Formulário psicométrico oficial."
+      },
+      {
+        "id": "ss-meeting-devolutiva-analise-comportamental",
+        "type": "meeting",
+        "referenceId": "devolutiva-analise-comportamental",
+        "title": "Agendar Devolutiva Individual",
+        "description": "Sessão com orientador especialista de 1h."
+      }
+    ],
+    "capabilities": {
+      "surveys": [
+        "disc"
+      ],
+      "forms": [],
+      "allowedEventTypes": [
+        "devolutiva-analise-comportamental"
+      ]
+    }
+  },
+  {
+    "id": "plano-de-carreira",
+    "slug": "plano-de-carreira",
+    "serviceCode": "BPL-003",
+    "title": "Plano de Carreira",
+    "price": 1910.67,
+    "pricePix": 1837.88,
+    "maxInstallments": 5,
+    "isStepJourney": true,
+    "order": 4,
+    "grantedQuotas": {
+      "planodecarreira": 1,
+      "consultoria-plano-carreira": 1
+    },
+    "targetAudiences": [
+      "people",
+      "companies"
+    ],
+    "status": "active",
+    "kicker": "Planejamento",
+    "sheet": {
+      "description": "Prepare a sua estratégia para manter o foco, energia e ritmo em direção aos seus objetivos profissionais.\nO Planejamento de Carreira BPlen te ajuda a estruturar um plano coerente, sustentável e personalizado ao seu propósito de carreira. \nNós cruzamos o seu perfil comportamental com a psicologia organizacional de sua área profissional foco, para identificar:\n• Fatores de compatibilidade;\n• Níveis de esforço exigido;\n• Estratégias de uso de recursos;\n• Estratégias de aplicação de competências;\n• Estratégias de resiliência comportamental;\n• Metas, prazos, mentores e trilha educacional.\n\nA devolutiva do plano é realizada através de consultoria individual juntamente com:\n- Plano de Carreira BPlen (em PDF), com insights e ações prática personalizados para você;\n- Liberação do módulo Gestão de Carreira para você gerenciar o progresso da sua jornada.",
+      "shortDescription": "Planeje a sua estratégia de desenvolvimento alinhado ao seu perfil comportamental para atingir com sucesso os seus objetivos profissionais de médio e longo prazo.",
+      "coverImage": "/services-img/BPL-003.png",
+      "paymentConditions": "Pagamento facilitado no cartão em até 5x ou PIX com desconto especial.",
+      "faq": [
+        {
+          "question": "O que diferencia o Plano de Carreira BPlen?",
+          "answer": "Nós não entregamos ferramentas soltas e não ditamos o que você deve fazer. Nós cruzamos suas tendências comportamentais com seus objetivos de carreira, histórico profissional, contexto situacional baseados rigorosamente em bibliografias psicológicas e organizacionais. \nO nosso propósito é te guiar e auxiliar para que você amplie suas competências de autoanalise e decida com autonomia a sua própria jornada de crescimento.\nConsulte aqui a nossas bases bibliográficas: https://www.bplen.com/conteudo/artigo/bases-bibliograficas-da-bplen"
+        },
+        {
+          "question": "Preciso de algum conhecimento prévio?",
+          "answer": "Não, todas as ferramentas são aplicadas de forma simples e guiada pela BPlen."
+        },
+        {
+          "question": "Posso adquirir o serviço sem ter realizado a Análise Comportamental BPlen?",
+          "answer": "Disponibilizamos 2 opções: 1ª) Ter realizado completamente a etapa de Análise Comportamental BPlen; 2ª) Aprovação no processo de Avaliação de Elegibilidade. Agende um horário conosco para mais detalhes do processo."
+        },
+        {
+          "question": "Este serviço substitui a psicoterapia ou acompanhamento clínico?",
+          "answer": "Não. O Plano de Carreira BPlen possui foco estritamente profissional, de desenvolvimento de carreira e competências. Ela não se trata de terapia, psicodiagnóstico ou tratamento clínico e, portanto, não substitui ou exclui a consulta com profissionais de saúde mental habilitados em casos de demandas de ordem psíquica, emocional ou clínica."
+        }
+      ],
+      "termsAndConditions": "Ao contratar este serviço, você concorda com o plano de entrega e as diretrizes do BPlen HUB.",
+      "seo": {
+        "title": "Plano de Carreira | BPlen HUB",
+        "description": "Planeje a sua estratégia de desenvolvimento alinhado ao seu perfil comportamental para atingir com sucesso os seus objetivos profissionais de médio e longo prazo.",
+        "keywords": [
+          "planejamento",
+          "bplen",
+          "carreira",
+          "profissional"
+        ]
+      }
+    },
+    "workflow": [
+      {
+        "id": "wf-bpl-003-1",
+        "title": "Ativação da Área Membro BPlen",
+        "type": "task",
+        "description": "Etapa recomendada de desenvolvimento"
+      },
+      {
+        "id": "wf-bpl-003-2",
+        "title": "Onboarding de Boas-vindas e alinhamentos de expectativas",
+        "type": "task",
+        "description": "Etapa recomendada de desenvolvimento"
+      },
+      {
+        "id": "wf-bpl-003-3",
+        "title": "Mapeamento, desenho e elaboração do Plano de Carreira",
+        "type": "task",
+        "description": "Etapa recomendada de desenvolvimento"
+      },
+      {
+        "id": "wf-bpl-003-4",
+        "title": "Consultoria de Devolutiva de Plano",
+        "type": "task",
+        "description": "Etapa recomendada de desenvolvimento"
+      },
+      {
+        "id": "wf-bpl-003-5",
+        "title": "Liberação do Plano de Carreira BPlen (em PDF)",
+        "type": "task",
+        "description": "Etapa recomendada de desenvolvimento"
+      },
+      {
+        "id": "wf-bpl-003-6",
+        "title": "Ativação do Módulo de Gestão de Carreira.",
+        "type": "task",
+        "description": "Etapa recomendada de desenvolvimento"
+      }
+    ],
+    "deliverySteps": [
+      {
+        "id": "ss-form-plano_carreira",
+        "type": "form",
+        "referenceId": "plano_carreira",
+        "title": "Plano de Carreira",
+        "description": "Preenchimento do formulário do Plano de Carreira."
+      },
+      {
+        "id": "ss-meeting-devolutiva-plano-carreira",
+        "type": "meeting",
+        "referenceId": "devolutiva-plano-carreira",
+        "title": "Agendar Devolutiva do Plano",
+        "description": "Sessão de entrega do Plano de Carreira."
+      }
+    ],
+    "capabilities": {
+      "surveys": [],
+      "forms": [
+        "plano_carreira"
+      ],
+      "allowedEventTypes": [
+        "devolutiva-plano-carreira"
+      ]
+    }
+  },
+  {
+    "id": "gestao-e-desenvolvimento",
+    "slug": "gestao-e-desenvolvimento",
+    "serviceCode": "BPL-004",
+    "title": "Gestão e Desenvolvimento de Carreira",
+    "price": 11511.12,
+    "pricePix": 11072.6,
+    "maxInstallments": 12,
+    "isStepJourney": true,
+    "order": 5,
+    "grantedQuotas": {
+      "gestaoedesenvolvimento": 1,
+      "1-to-1": 10
+    },
+    "targetAudiences": [
+      "people",
+      "companies"
+    ],
+    "status": "active",
+    "kicker": "Gestão e Desenvolvimento",
+    "sheet": {
+      "description": "Domine a sua estratégia de carreira. A Gestão e Desenvolvimento de Carreira da BPlen é o acompanhamento e melhoria contínua da sua vivência real no trabalho.\nDurante 3 a 5 meses em um método prático, não apenas iremos te assessorar, mas executar o seu plano junto com você. \nEm um ritmo de trabalho estruturado nos reuniremos a cada sprint (ciclo de execução), para desenvolver novas competências e habilidades na prática e, revisar e ajustar a sua rota de ação alinhada as demandas reais do seu trabalho com práticas situacionais criadas especialmente para o seu perfil comportamental e psicologia organizacional demandado.  \nAlgumas possibilidades de alavancas são:\n• Potencializar a sua liderança e gestão de pessoas;\n• Aumentar a sua relevância em projetos e negócios;\n• Gerar Networking de alto valor; \n• Estruturar planos de transição, sucessão e evolução de carreira;\n\nCada sprint da gestão e desenvolvimento de carreira é composta por:\n- Sessão de desenvolvimento¹ de competências e habilidades²;\n- Aplicação situacional das competências e habilidades no trabalho;\n- Assessoria BPlen para preservar foco e ritmo; \n- Sessão de revisão e ajuste de rota.\n\nE para te apoiar durante todo o processo, também são liberados os módulos\n- Gestão de Carreira para você gerenciar o progresso da sua jornada;\n- Networking BPlen para alavancar as oportunidades de negócios, parcerias e conexões.\n¹ As sessões de desenvolvimento de competências e habilidades deste anúncio se refere as sessões em grupo de até 10 participantes. Para verificar a disponibilidade de sessões individuais agende uma conversa com a equipe BPlen. \n² Algumas temáticas das sessões de desenvolvimento de competências e habilidades: Autoconhecimento; Gestão Comportamental e Emocional; Gestão de Tempo e Tarefas; Comunicação e Relacionamento Interpessoal; Técnicas de Negociação; Networking e Geração de Valor; Liderança e Autoliderança.",
+      "shortDescription": "Impulsione a sua estratégia de carreira melhorando a forma como você gera valor e aumentar a sua relevância no mercado.",
+      "coverImage": "/services-img/BPL-004.png",
+      "paymentConditions": "Pagamento facilitado no cartão em até 12x ou PIX com desconto especial.",
+      "faq": [
+        {
+          "question": "Por que iniciar um processo de Gestão e Desenvolvimento de Carreira com a BPlen?",
+          "answer": "Nós não entregamos ferramentas soltas, fórmulas mágicas e nem ditamos o que você deve fazer. Adaptamos nosso método para respeitar e atender o seu Plano de Carreira. \nAlém disso, durante toda a prestação de serviço, nós cruzamos suas tendências comportamentais com seus objetivos de carreira, histórico profissional, contexto situacional baseados rigorosamente em bibliografias psicológicas e organizacionais. \nO nosso propósito é te guiar e auxiliar para que você amplie suas competências de autoanalise e decida com autonomia a sua própria jornada de crescimento.\nConsulte aqui a nossas bases bibliográficas: https://www.bplen.com/conteudo/artigo/bases-bibliograficas-da-bplen"
+        },
+        {
+          "question": "Preciso de algum conhecimento prévio?",
+          "answer": "Não, todas as ferramentas são aplicadas de forma simples e guiada pela BPlen."
+        },
+        {
+          "question": "Preciso ter experiência profissional?",
+          "answer": "Recomendamos que tenha no mínimo 5 anos de atuação profissional ou participação ativa em projetos colaborativos. O método de Gestão e Desenvolvimento é desenvolvido juntamente com o seu repertório particular."
+        },
+        {
+          "question": "Posso adquirir o serviço sem ter realizado o Plano de Carreira BPlen?",
+          "answer": "Disponibilizamos 2 opções: 1ª) Ter realizado completamente a etapa de Plano de Carreira BPlen; 2ª) Aprovação no processo de Avaliação de Elegibilidade. Agende um horário conosco para mais detalhes do processo."
+        },
+        {
+          "question": "Este serviço substitui a psicoterapia ou acompanhamento clínico?",
+          "answer": "Não. A Gestão e Desenvolvimento de Carreira BPlen possui foco estritamente profissional, de desenvolvimento de carreira e competências. Ela não se trata de terapia, psicodiagnóstico ou tratamento clínico e, portanto, não substitui ou exclui a consulta com profissionais de saúde mental habilitados em casos de demandas de ordem psíquica, emocional ou clínica."
+        }
+      ],
+      "termsAndConditions": "Ao contratar este serviço, você concorda com o plano de entrega e as diretrizes do BPlen HUB.",
+      "seo": {
+        "title": "Gestão e Desenvolvimento de Carreira | BPlen HUB",
+        "description": "Impulsione a sua estratégia de carreira melhorando a forma como você gera valor e aumentar a sua relevância no mercado.",
+        "keywords": [
+          "gestão e desenvolvimento",
+          "bplen",
+          "carreira",
+          "profissional"
+        ]
+      }
+    },
+    "workflow": [
+      {
+        "id": "wf-bpl-004-1",
+        "title": "Ativação da Área Membro BPlen",
+        "type": "task",
+        "description": "Etapa recomendada de desenvolvimento"
+      },
+      {
+        "id": "wf-bpl-004-2",
+        "title": "Onboarding de Boas-vindas e alinhamentos de expectativas",
+        "type": "task",
+        "description": "Etapa recomendada de desenvolvimento"
+      },
+      {
+        "id": "wf-bpl-004-3",
+        "title": "Ativação do Módulo de Gestão de Carreira (GDC)",
+        "type": "task",
+        "description": "Etapa recomendada de desenvolvimento"
+      },
+      {
+        "id": "wf-bpl-004-4",
+        "title": "Inclusão do Plano de Carreira no módulo GDC",
+        "type": "task",
+        "description": "Etapa recomendada de desenvolvimento"
+      },
+      {
+        "id": "wf-bpl-004-5",
+        "title": "Início da assessoria BPlen:",
+        "type": "task",
+        "description": "Etapa recomendada de desenvolvimento"
+      },
+      {
+        "id": "wf-bpl-004-6",
+        "title": "Offboarding e Consolidação de Jornada",
+        "type": "task",
+        "description": "Etapa recomendada de desenvolvimento"
+      }
+    ],
+    "deliverySteps": [
+      {
+        "id": "ss-form-gdc",
+        "type": "form",
+        "referenceId": "gdc",
+        "title": "Gestão de Carreira",
+        "description": "Formulário de acompanhamento GDC."
+      },
+      {
+        "id": "ss-meeting-gdc-mentorias",
+        "type": "meeting",
+        "referenceId": "gdc-mentorias",
+        "title": "Agendar Mentorias",
+        "description": "Agendamento de sessões periódicas de mentoria."
+      }
+    ],
+    "capabilities": {
+      "surveys": [],
+      "forms": [
+        "gdc"
+      ],
+      "allowedEventTypes": [
+        "gdc-mentorias"
+      ]
+    }
+  },
+  {
+    "id": "mentocoach",
+    "slug": "mentocoach",
+    "serviceCode": "BPL-005",
+    "title": "MentoCoach",
+    "price": 8823.54,
+    "pricePix": 8487.4,
+    "maxInstallments": 12,
+    "isStepJourney": true,
+    "order": 6,
+    "grantedQuotas": {
+      "mentocoach": 1,
+      "1-to-1": 12
+    },
+    "targetAudiences": [
+      "people",
+      "companies"
+    ],
+    "status": "active",
+    "kicker": "Transformação",
+    "sheet": {
+      "description": "O Programa MentoCoach BPlen é focado em transformar seus comportamentos nativos em recursos para gerar oportunidades de desenvolvimento e crescimento de carreira.\nUtilizando técnicas e ferramentas avançadas de Mentoria e Coaching, aliados a bases psicológicas te ajudamos a identificar e regular impulsos emocionais, e construir e adaptar atitudes e comportamentos, para que você possa:\n• Se Autodesenvolver continuamente;\n• Tomar decisões sustentáveis;\n• Gerenciar conflitos próprios ou de um grupo;\n• Delegar com assertividade;\n• Motivar e engajar pessoas;\n• Acelerar e potencializar resultados;\n• Autoliderar seus objetivos e planos;\n• Aumentar influência interpessoal.\n \nRecomendado para profissionais que se sentem estagnados por:\n- Ter atingido todos os limites possíveis da carreira e não encontram mais horizonte de crescimento;\n- Dificuldade em decidir o que fazer e/ou por onde começar;\nO programa é conduzido através de sessões de Mentoria e Coaching, elaboradas de acordo com as suas demandas situacionais a cada ciclo.\nVocê receberá:\n- Relatório DISC Integral;\n- Relatório Comportamental 360º BPlen, com insights e exercícios personalizados para você;\n- Relatório MentoCoach BPlen;",
+      "shortDescription": "Encontre novas perspectivas estratégicas para o desenvolvimento e crescimento da sua carreira profissional.",
+      "coverImage": "/services-img/BPL-005.png",
+      "paymentConditions": "Pagamento facilitado no cartão em até 12x ou PIX com desconto especial.",
+      "faq": [
+        {
+          "question": "Por que iniciar o programa de MentoCoach com a BPlen?",
+          "answer": "Nós não entregamos ferramentas soltas, fórmulas mágicas e nem ditamos o que você deve fazer. Adaptamos nosso método para respeitar e atender sua ética individual. \nAlém disso, durante toda a prestação de serviço, nós cruzamos suas tendências comportamentais com seus objetivos de carreira, histórico profissional, contexto situacional baseados rigorosamente em bibliografias psicológicas e organizacionais. \nO nosso propósito é te guiar e auxiliar para que você amplie suas competências de autoanalise e decida com autonomia a sua própria jornada de crescimento.\nConsulte aqui a nossas bases bibliográficas: https://www.bplen.com/conteudo/artigo/bases-bibliograficas-da-bplen"
+        },
+        {
+          "question": "Qual a diferença entre Mentoria e Coaching? E como eu escolho o serviço certo para mim?",
+          "answer": "A diferença essencial entre ambos é a origem das referências situacionais. Enquanto a Mentoria te ajuda a construir o seu processo à partir das vivencias de outras pessoas, o Coaching constrói à partir das suas próprias experiências individuais. A BPlen recomenda optar pela Mentoria em casos de demandas cujas situações exigem resoluções mais específicas e técnicas como por exemplo manuseio de ferramentas, tecnologia e didáticas; E Coaching para situações mais complexas como por exemplo autoconhecimento, relacionamentos interpessoais e exposição pessoal."
+        },
+        {
+          "question": "Preciso de algum conhecimento prévio?",
+          "answer": "Não, todas as ferramentas são aplicadas de forma simples e guiada pela BPlen."
+        },
+        {
+          "question": "Preciso ter experiência profissional?",
+          "answer": "Não. O MentoCoach é indicado tanto para quem já tem sólida experiência profissional, quanto para quem ainda não decidiu qual profissão ou carreira seguir."
+        },
+        {
+          "question": "Este serviço substitui a psicoterapia ou acompanhamento clínico?",
+          "answer": "Não. A Gestão e Desenvolvimento de Carreira BPlen possui foco estritamente profissional, de desenvolvimento de carreira e competências. Ela não se trata de terapia, psicodiagnóstico ou tratamento clínico e, portanto, não substitui ou exclui a consulta com profissionais de saúde mental habilitados em casos de demandas de ordem psíquica, emocional ou clínica."
+        }
+      ],
+      "termsAndConditions": "Ao contratar este serviço, você concorda com o plano de entrega e as diretrizes do BPlen HUB.",
+      "seo": {
+        "title": "MentoCoach | BPlen HUB",
+        "description": "Encontre novas perspectivas estratégicas para o desenvolvimento e crescimento da sua carreira profissional.",
+        "keywords": [
+          "transformação",
+          "bplen",
+          "carreira",
+          "profissional"
+        ]
+      }
+    },
+    "workflow": [
+      {
+        "id": "wf-bpl-005-1",
+        "title": "Ativação da Área Membro BPlen",
+        "type": "task",
+        "description": "Etapa recomendada de desenvolvimento"
+      },
+      {
+        "id": "wf-bpl-005-2",
+        "title": "Onboarding de Boas-vindas e alinhamentos de expectativas",
+        "type": "task",
+        "description": "Etapa recomendada de desenvolvimento"
+      },
+      {
+        "id": "wf-bpl-005-3",
+        "title": "Análise Comportamental completa",
+        "type": "task",
+        "description": "Etapa recomendada de desenvolvimento"
+      },
+      {
+        "id": "wf-bpl-005-4",
+        "title": "Liberação do módulo MentoCoach",
+        "type": "task",
+        "description": "Etapa recomendada de desenvolvimento"
+      },
+      {
+        "id": "wf-bpl-005-5",
+        "title": "Início de Sessões Coaching ou Mentoria",
+        "type": "task",
+        "description": "Etapa recomendada de desenvolvimento"
+      },
+      {
+        "id": "wf-bpl-005-6",
+        "title": "Offboarding e Consolidação de Jornada",
+        "type": "task",
+        "description": "Etapa recomendada de desenvolvimento"
+      },
+      {
+        "id": "wf-bpl-005-7",
+        "title": "Relatório MentoCoach BPlen.",
+        "type": "task",
+        "description": "Etapa recomendada de desenvolvimento"
+      }
+    ],
+    "deliverySteps": [
+      {
+        "id": "ss-form-mentocoach",
+        "type": "form",
+        "referenceId": "mentocoach",
+        "title": "Acompanhamento MentoCoach",
+        "description": "Formulário de autoavaliação MentoCoach."
+      },
+      {
+        "id": "ss-meeting-mentocoach-sessoes",
+        "type": "meeting",
+        "referenceId": "mentocoach-sessoes",
+        "title": "Agendar Sessões de Coaching",
+        "description": "Agendamento das sessões individuais de coaching de alta performance."
+      }
+    ],
+    "capabilities": {
+      "surveys": [],
+      "forms": [
+        "mentocoach"
+      ],
+      "allowedEventTypes": [
+        "mentocoach-sessoes"
+      ]
+    }
+  },
+  {
+    "id": "offboarding",
+    "slug": "offboarding",
+    "serviceCode": "BPL-006",
+    "title": "Offboarding",
+    "kicker": "Encerramento",
+    "price": 0.0,
+    "pricePix": 0.0,
+    "maxInstallments": 12,
+    "isStepJourney": true,
+    "grantedQuotas": {
+      "offboarding": 1
+    },
+    "targetAudiences": [
+      "people",
+      "internal"
+    ],
+    "status": "active",
+    "sheet": {
+      "description": "Consolide seus aprendizados, metas e decole para os seus próximos desafios.",
+      "coverImage": "/images/products/offboarding.png",
+      "paymentConditions": "Serviço interno gratuito para membros em final de ciclo.",
+      "faq": [
+        {
+          "question": "Qual objetivo?",
+          "answer": "Avaliar o impacto da jornada BPlen e mapear os seus próximos passos autonômos de alta performance."
+        }
+      ],
+      "termsAndConditions": "Serviço exclusivo de encerramento do BPlen HUB.",
+      "seo": {
+        "title": "Offboarding | BPlen HUB",
+        "description": "Encerramento e consolidação.",
+        "keywords": [
+          "offboarding",
+          "bplen"
+        ]
+      }
+    },
+    "workflow": [],
+    "deliverySteps": [
+      {
+        "id": "ss-survey-offboarding_survey",
+        "type": "survey",
+        "referenceId": "offboarding_survey",
+        "title": "Avaliação Final",
+        "description": "Pesquisa de encerramento e consolidação de resultados."
+      }
+    ],
+    "capabilities": {
+      "surveys": [
+        "offboarding_survey"
+      ],
+      "forms": [],
+      "allowedEventTypes": []
+    },
+    "order": 7
+  },
+  {
+    "id": "pacote-junior",
+    "slug": "pacote-junior",
+    "serviceCode": "BPL-PAC-JR",
+    "title": "Pacote JUNIOR",
+    "price": 930.9,
+    "pricePix": 895.44,
+    "maxInstallments": 5,
+    "isStepJourney": false,
+    "grantedQuotas": {
+      "posicionamentoprofissional": 1
+    },
+    "targetAudiences": [
+      "people",
+      "companies"
+    ],
+    "status": "active",
+    "kicker": "Preparação",
+    "sheet": {
+      "description": "Inicie seu Posicionamento Profissional e prepare-se para o mercado.",
+      "shortDescription": "Inicie seu Posicionamento Profissional e prepare-se para o mercado.",
+      "coverImage": "/images/products/pacote-junior.png",
+      "paymentConditions": "Parcele em até 5x sem juros no cartão de crédito ou obtenha desconto exclusivo via PIX.",
+      "faq": [
+        {
+          "question": "O que está incluso neste pacote?",
+          "answer": "Este pacote engloba um conjunto estratégico de serviços unificados, eliminando custos redundantes: Inicie seu Posicionamento Profissional e prepare-se para o mercado."
+        },
+        {
+          "question": "Como funciona o agendamento?",
+          "answer": "Assim que a contratação for concluída, as sessões e relatórios correspondentes serão desbloqueados na sua Área de Membro para livre agendamento."
+        }
+      ],
+      "termsAndConditions": "Os pacotes estruturados oferecem licenças de uso combinadas e condições comerciais unificadas.",
+      "seo": {
+        "title": "Pacote JUNIOR | BPlen HUB",
+        "description": "Inicie seu Posicionamento Profissional e prepare-se para o mercado.",
+        "keywords": [
+          "pacote bplen",
+          "aceleração profissional",
+          "carreira executiva"
+        ]
+      }
+    },
+    "workflow": [],
+    "deliverySteps": [],
+    "capabilities": {
+      "surveys": [],
+      "forms": [],
+      "allowedEventTypes": []
+    }
+  },
+  {
+    "id": "pacote-pleno",
+    "slug": "pacote-pleno",
+    "serviceCode": "BPL-PAC-PL",
+    "title": "Pacote PLENO",
+    "price": 2434.58,
+    "pricePix": 2341.84,
+    "maxInstallments": 7,
+    "isStepJourney": false,
+    "grantedQuotas": {
+      "posicionamentoprofissional": 1,
+      "analisecomportamental": 1,
+      "devolutiva-analise-comportamental": 1
+    },
+    "targetAudiences": [
+      "people",
+      "companies"
+    ],
+    "status": "active",
+    "kicker": "Coordenação",
+    "sheet": {
+      "description": "Coordene suas habilidades para liderar seus relacionamentos e estilos de liderança e se posicionar com alto valor.",
+      "shortDescription": "Coordene suas habilidades para liderar seus relacionamentos e estilos de liderança e se posicionar com alto valor.",
+      "coverImage": "/images/products/pacote-pleno.png",
+      "paymentConditions": "Parcele em até 7x sem juros no cartão de crédito ou obtenha desconto exclusivo via PIX.",
+      "faq": [
+        {
+          "question": "O que está incluso neste pacote?",
+          "answer": "Este pacote engloba um conjunto estratégico de serviços unificados, eliminando custos redundantes: Coordene suas habilidades para liderar seus relacionamentos e estilos de liderança e se posicionar com alto valor."
+        },
+        {
+          "question": "Como funciona o agendamento?",
+          "answer": "Assim que a contratação for concluída, as sessões e relatórios correspondentes serão desbloqueados na sua Área de Membro para livre agendamento."
+        }
+      ],
+      "termsAndConditions": "Os pacotes estruturados oferecem licenças de uso combinadas e condições comerciais unificadas.",
+      "seo": {
+        "title": "Pacote PLENO | BPlen HUB",
+        "description": "Coordene suas habilidades para liderar seus relacionamentos e estilos de liderança e se posicionar com alto valor.",
+        "keywords": [
+          "pacote bplen",
+          "aceleração profissional",
+          "carreira executiva"
+        ]
+      }
+    },
+    "workflow": [],
+    "deliverySteps": [],
+    "capabilities": {
+      "surveys": [],
+      "forms": [],
+      "allowedEventTypes": []
+    }
+  },
+  {
+    "id": "pacote-senior",
+    "slug": "pacote-senior",
+    "serviceCode": "BPL-PAC-SR",
+    "title": "Pacote SENIOR (Recomendado)",
+    "price": 4081.15,
+    "pricePix": 3925.68,
+    "maxInstallments": 10,
+    "isStepJourney": false,
+    "grantedQuotas": {
+      "posicionamentoprofissional": 1,
+      "analisecomportamental": 1,
+      "devolutiva-analise-comportamental": 1,
+      "planodecarreira": 1,
+      "consultoria-plano-carreira": 1
+    },
+    "targetAudiences": [
+      "people",
+      "companies"
+    ],
+    "status": "active",
+    "kicker": "Planejamento",
+    "sheet": {
+      "description": "Planeje o sucesso da sua carreira: Análise Comportamental, Plano de Carreira e Posicionamento Profissional.",
+      "shortDescription": "Planeje o sucesso da sua carreira: Análise Comportamental, Plano de Carreira e Posicionamento Profissional.",
+      "coverImage": "/images/products/pacote-senior.png",
+      "paymentConditions": "Parcele em até 10x sem juros no cartão de crédito ou obtenha desconto exclusivo via PIX.",
+      "faq": [
+        {
+          "question": "O que está incluso neste pacote?",
+          "answer": "Este pacote engloba um conjunto estratégico de serviços unificados, eliminando custos redundantes: Planeje o sucesso da sua carreira: Análise Comportamental, Plano de Carreira e Posicionamento Profissional."
+        },
+        {
+          "question": "Como funciona o agendamento?",
+          "answer": "Assim que a contratação for concluída, as sessões e relatórios correspondentes serão desbloqueados na sua Área de Membro para livre agendamento."
+        }
+      ],
+      "termsAndConditions": "Os pacotes estruturados oferecem licenças de uso combinadas e condições comerciais unificadas.",
+      "seo": {
+        "title": "Pacote SENIOR (Recomendado) | BPlen HUB",
+        "description": "Planeje o sucesso da sua carreira: Análise Comportamental, Plano de Carreira e Posicionamento Profissional.",
+        "keywords": [
+          "pacote bplen",
+          "aceleração profissional",
+          "carreira executiva"
+        ]
+      }
+    },
+    "workflow": [],
+    "deliverySteps": [],
+    "capabilities": {
+      "surveys": [],
+      "forms": [],
+      "allowedEventTypes": []
+    }
+  },
+  {
+    "id": "pacote-lider",
+    "slug": "pacote-lider",
+    "serviceCode": "BPL-PAC-LD",
+    "title": "Pacote LIDER",
+    "price": 15328.16,
+    "pricePix": 14744.23,
+    "maxInstallments": 12,
+    "isStepJourney": false,
+    "grantedQuotas": {
+      "posicionamentoprofissional": 1,
+      "analisecomportamental": 1,
+      "devolutiva-analise-comportamental": 1,
+      "planodecarreira": 1,
+      "consultoria-plano-carreira": 1,
+      "gestaoedesenvolvimento": 1,
+      "1-to-1": 10
+    },
+    "targetAudiences": [
+      "people",
+      "companies"
+    ],
+    "status": "active",
+    "kicker": "Alta Performance",
+    "sheet": {
+      "description": "Performance profissional com foco em gerar alto valor e resultados sustentáveis para gestores e líderes de equipe e autônomos e empreendedores.",
+      "shortDescription": "Performance profissional com foco em gerar alto valor e resultados sustentáveis para gestores e líderes de equipe e autônomos e empreendedores.",
+      "coverImage": "/images/products/pacote-lider.png",
+      "paymentConditions": "Parcele em até 12x sem juros no cartão de crédito ou obtenha desconto exclusivo via PIX.",
+      "faq": [
+        {
+          "question": "O que está incluso neste pacote?",
+          "answer": "Este pacote engloba um conjunto estratégico de serviços unificados, eliminando custos redundantes: Performance profissional com foco em gerar alto valor e resultados sustentáveis para gestores e líderes de equipe e autônomos e empreendedores."
+        },
+        {
+          "question": "Como funciona o agendamento?",
+          "answer": "Assim que a contratação for concluída, as sessões e relatórios correspondentes serão desbloqueados na sua Área de Membro para livre agendamento."
+        }
+      ],
+      "termsAndConditions": "Os pacotes estruturados oferecem licenças de uso combinadas e condições comerciais unificadas.",
+      "seo": {
+        "title": "Pacote LIDER | BPlen HUB",
+        "description": "Performance profissional com foco em gerar alto valor e resultados sustentáveis para gestores e líderes de equipe e autônomos e empreendedores.",
+        "keywords": [
+          "pacote bplen",
+          "aceleração profissional",
+          "carreira executiva"
+        ]
+      }
+    },
+    "workflow": [],
+    "deliverySteps": [],
+    "capabilities": {
+      "surveys": [],
+      "forms": [],
+      "allowedEventTypes": []
+    }
+  },
+  {
+    "id": "pacote-embaixador",
+    "slug": "pacote-embaixador",
+    "serviceCode": "BPL-PAC-EB",
+    "title": "Pacote EMBAIXADOR BPLEN",
+    "price": 23765.12,
+    "pricePix": 22859.79,
+    "maxInstallments": 12,
+    "isStepJourney": false,
+    "grantedQuotas": {
+      "posicionamentoprofissional": 1,
+      "analisecomportamental": 1,
+      "devolutiva-analise-comportamental": 1,
+      "planodecarreira": 1,
+      "consultoria-plano-carreira": 1,
+      "gestaoedesenvolvimento": 1,
+      "mentocoach": 1,
+      "1-to-1": 22
+    },
+    "targetAudiences": [
+      "people",
+      "companies"
+    ],
+    "status": "active",
+    "kicker": "Performance Premium",
+    "sheet": {
+      "description": "A Performance Premium para profissionais que geram alto valor agregado.",
+      "shortDescription": "A Performance Premium para profissionais que geram alto valor agregado.",
+      "coverImage": "/images/products/pacote-embaixador.png",
+      "paymentConditions": "Parcele em até 12x sem juros no cartão de crédito ou obtenha desconto exclusivo via PIX.",
+      "faq": [
+        {
+          "question": "O que está incluso neste pacote?",
+          "answer": "Este pacote engloba um conjunto estratégico de serviços unificados, eliminando custos redundantes: A Performance Premium para profissionais que geram alto valor agregado."
+        },
+        {
+          "question": "Como funciona o agendamento?",
+          "answer": "Assim que a contratação for concluída, as sessões e relatórios correspondentes serão desbloqueados na sua Área de Membro para livre agendamento."
+        }
+      ],
+      "termsAndConditions": "Os pacotes estruturados oferecem licenças de uso combinadas e condições comerciais unificadas.",
+      "seo": {
+        "title": "Pacote EMBAIXADOR BPLEN | BPlen HUB",
+        "description": "A Performance Premium para profissionais que geram alto valor agregado.",
+        "keywords": [
+          "pacote bplen",
+          "aceleração profissional",
+          "carreira executiva"
+        ]
+      }
+    },
+    "workflow": [],
+    "deliverySteps": [],
+    "capabilities": {
+      "surveys": [],
+      "forms": [],
+      "allowedEventTypes": []
+    }
+  }
+]

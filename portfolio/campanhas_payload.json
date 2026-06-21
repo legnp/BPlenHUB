@@ -1,0 +1,17 @@
+[
+  {
+    "id": "NATAL10",
+    "code": "NATAL10",
+    "type": "percentage",
+    "value": 10.0,
+    "description": "Desconto de 10.0%",
+    "active": true,
+    "usageCount": 0,
+    "expiryDate": "2026-12-31",
+    "restrictedToProducts": [
+      "posicionamento-profissional",
+      "analise-comportamental",
+      "plano-carreira"
+    ]
+  }
+]
