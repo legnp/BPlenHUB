@@ -11,7 +11,7 @@ import { normalizeString } from "@/lib/utils";
 
 /**
  * BPlen HUB — Journey Server Actions 🧬
- * Última atualização: Sincronização de nomenclaturas de serviços (Sprint 6.4)
+ * Última atualização: Sincronização de nomenclaturas e limpeza de ordem da jornada (Sprint 6.4)
  * 
  * BPlen HUB — Grouped Journey Engine (Server Side) 🧬
  * Busca produtos marcados como jornada e os AGRUPA por 'order'.

@@ -126,9 +126,10 @@ export function useJourney(uid: string) {
     const stage = stages.find(s => s.id === stepId);
     const stepProgress = progress?.steps[stepId];
     
-    // Cálculo de % Real
-    const totalSubsteps = stage?.substeps.length || 0;
-    const completedCount = stepProgress?.completedSubSteps.length || 0;
+    // Cálculo de % Real (Rigoroso: apenas conta o que existe na definição atual da etapa) 🛡️
+    const currentSubstepIds = stage?.substeps.map(ss => ss.id) || [];
+    const validCompletedSubsteps = stepProgress?.completedSubSteps.filter(id => currentSubstepIds.includes(id)) || [];
+    const completedCount = validCompletedSubsteps.length;
     const percentage = totalSubsteps > 0 ? Math.round((completedCount / totalSubsteps) * 100) : 0;
 
     // Checagem de Acesso Granular Inteligente (Suporte a Pacotes de Eventos)
