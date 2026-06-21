@@ -208,12 +208,12 @@ try:
         if not service_code:
             continue
         service_code = str(service_code).strip()
-        checkpoint_id = str(cp_sheet.cell(row=r, column=2).value or "").strip()
-        order = cp_sheet.cell(row=r, column=3).value
-        title = str(cp_sheet.cell(row=r, column=4).value or "").strip()
-        type_val = str(cp_sheet.cell(row=r, column=5).value or "").strip()
-        ref_id = str(cp_sheet.cell(row=r, column=6).value or "").strip()
-        desc = str(cp_sheet.cell(row=r, column=7).value or "").strip()
+        checkpoint_id = str(cp_sheet.cell(row=r, column=3).value or "").strip()
+        order = cp_sheet.cell(row=r, column=4).value
+        title = str(cp_sheet.cell(row=r, column=5).value or "").strip()
+        type_val = str(cp_sheet.cell(row=r, column=6).value or "").strip()
+        ref_id = str(cp_sheet.cell(row=r, column=7).value or "").strip()
+        desc = str(cp_sheet.cell(row=r, column=8).value or "").strip()
         
         if service_code not in checkpoints_by_service:
             checkpoints_by_service[service_code] = []

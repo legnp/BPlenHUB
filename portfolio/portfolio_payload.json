@@ -40,25 +40,25 @@
     "workflow": [],
     "deliverySteps": [
       {
-        "id": "ss-Introdução-content",
-        "type": "Introdução",
-        "referenceId": "content",
-        "title": "1",
-        "description": "welcome_video_01"
+        "id": "ss-content-welcome_video_01",
+        "type": "content",
+        "referenceId": "welcome_video_01",
+        "title": "Introdução",
+        "description": "Conheça o BPlen HUB"
       },
       {
-        "id": "ss-Check-in-survey",
-        "type": "Check-in",
-        "referenceId": "survey",
-        "title": "2",
-        "description": "check_in"
+        "id": "ss-survey-check_in",
+        "type": "survey",
+        "referenceId": "check_in",
+        "title": "Check-in",
+        "description": "Pre-mapa do estado atual"
       },
       {
-        "id": "ss-Sessão de Onboarding-meeting",
-        "type": "Sessão de Onboarding",
-        "referenceId": "meeting",
-        "title": "3",
-        "description": "onboarding"
+        "id": "ss-meeting-onboarding",
+        "type": "meeting",
+        "referenceId": "onboarding",
+        "title": "Sessão de Onboarding",
+        "description": "Boas-vindas e alinhamento de expectativas"
       }
     ],
     "capabilities": {
@@ -158,50 +158,57 @@
     ],
     "deliverySteps": [
       {
-        "id": "ss-Desmistificando: Vagas publicadas e mercado oculto-survey",
-        "type": "Desmistificando: Vagas publicadas e mercado oculto",
-        "referenceId": "survey",
-        "title": "1",
-        "description": "desmistificando_candidaturas"
+        "id": "ss-survey-desmistificando_candidaturas",
+        "type": "survey",
+        "referenceId": "desmistificando_candidaturas",
+        "title": "Desmistificando: Vagas publicadas e mercado oculto",
+        "description": "A realidade do mercado de trabalho"
       },
       {
-        "id": "ss-Revisão e elaboração de CV-survey",
-        "type": "Revisão e elaboração de CV",
-        "referenceId": "survey",
-        "title": "2",
-        "description": "revisao_curriculo"
+        "id": "ss-survey-revisao_curriculo",
+        "type": "survey",
+        "referenceId": "revisao_curriculo",
+        "title": "Revisão e elaboração de CV",
+        "description": "Revisão do perfil profissional"
       },
       {
-        "id": "ss-Elaboração de PDI-survey",
-        "type": "Elaboração de PDI",
-        "referenceId": "survey",
-        "title": "3",
-        "description": "pendente"
+        "id": "ss-survey-pendente",
+        "type": "survey",
+        "referenceId": "pendente",
+        "title": "Elaboração de PDI",
+        "description": "Elaboração do Plano de Desenvolvimento Individual"
       },
       {
-        "id": "ss-Preparação para Entrevistas e Networking-survey",
-        "type": "Preparação para Entrevistas e Networking",
-        "referenceId": "survey",
-        "title": "4",
-        "description": "pendente"
+        "id": "ss-survey-pendente",
+        "type": "survey",
+        "referenceId": "pendente",
+        "title": "Preparação para Entrevistas e Networking",
+        "description": "Preparação de apresentação e pitch em entrevistas"
       },
       {
-        "id": "ss-Feedback Tecnico-survey",
-        "type": "Feedback Tecnico",
-        "referenceId": "survey",
-        "title": "5.1",
-        "description": "pre_analise_comportamental"
+        "id": "ss-survey-pre_analise_comportamental",
+        "type": "survey",
+        "referenceId": "pre_analise_comportamental",
+        "title": "Feedback Tecnico",
+        "description": "Análise Comportamental Básica"
       },
       {
-        "id": "ss-Feedback Tecnico-survey",
-        "type": "Feedback Tecnico",
-        "referenceId": "survey",
-        "title": "5.2",
-        "description": "orientacao-individual-posicionamento"
+        "id": "ss-survey-orientacao-individual-posicionamento",
+        "type": "survey",
+        "referenceId": "orientacao-individual-posicionamento",
+        "title": "Feedback Tecnico",
+        "description": "Sessão individual de feedback do PDI e perfil profissional"
       }
     ],
     "capabilities": {
-      "surveys": [],
+      "surveys": [
+        "desmistificando_candidaturas",
+        "revisao_curriculo",
+        "pendente",
+        "pendente",
+        "pre_analise_comportamental",
+        "orientacao-individual-posicionamento"
+      ],
       "forms": [],
       "allowedEventTypes": []
     }
@@ -303,45 +310,52 @@
     ],
     "deliverySteps": [
       {
-        "id": "ss-DISC-survey",
-        "type": "DISC",
-        "referenceId": "survey",
-        "title": "1",
-        "description": "disc"
+        "id": "ss-survey-disc",
+        "type": "survey",
+        "referenceId": "disc",
+        "title": "DISC",
+        "description": "Avaliação de Perfil Comportamental"
       },
       {
-        "id": "ss-Preferências de Reconhecimento-survey",
-        "type": "Preferências de Reconhecimento",
-        "referenceId": "survey",
-        "title": "2",
-        "description": "preferencias_reconhecimento"
+        "id": "ss-survey-preferencias_reconhecimento",
+        "type": "survey",
+        "referenceId": "preferencias_reconhecimento",
+        "title": "Preferências de Reconhecimento",
+        "description": "Mapa de preferências de reconhecimento interpessoal"
       },
       {
-        "id": "ss-Preferências de Aprendizado-survey",
-        "type": "Preferências de Aprendizado",
-        "referenceId": "survey",
-        "title": "3",
-        "description": "preferencias_aprendizado"
+        "id": "ss-survey-preferencias_aprendizado",
+        "type": "survey",
+        "referenceId": "preferencias_aprendizado",
+        "title": "Preferências de Aprendizado",
+        "description": "Mapa de preferências de formas e habitos de aprendizado"
       },
       {
-        "id": "ss-Mapa de Gestão de Tempo-survey",
-        "type": "Mapa de Gestão de Tempo",
-        "referenceId": "survey",
-        "title": "4",
-        "description": "gestao_tempo"
+        "id": "ss-survey-gestao_tempo",
+        "type": "survey",
+        "referenceId": "gestao_tempo",
+        "title": "Mapa de Gestão de Tempo",
+        "description": "Mapa de habitos de priorização de tarefas e tempo"
       },
       {
-        "id": "ss-Devolutiva de Análise-meeting",
-        "type": "Devolutiva de Análise",
-        "referenceId": "meeting",
-        "title": "5",
-        "description": "devolutiva-analise-comportamental"
+        "id": "ss-meeting-devolutiva-analise-comportamental",
+        "type": "meeting",
+        "referenceId": "devolutiva-analise-comportamental",
+        "title": "Devolutiva de Análise",
+        "description": "Sessão individual de Devolutiva Comportamental"
       }
     ],
     "capabilities": {
-      "surveys": [],
+      "surveys": [
+        "disc",
+        "preferencias_reconhecimento",
+        "preferencias_aprendizado",
+        "gestao_tempo"
+      ],
       "forms": [],
-      "allowedEventTypes": []
+      "allowedEventTypes": [
+        "devolutiva-analise-comportamental"
+      ]
     }
   },
   {
@@ -439,59 +453,68 @@
     ],
     "deliverySteps": [
       {
-        "id": "ss-Avisos e Acordos-survey",
-        "type": "Avisos e Acordos",
-        "referenceId": "survey",
-        "title": "1",
-        "description": "survey_plano_acordos"
+        "id": "ss-survey-survey_plano_acordos",
+        "type": "survey",
+        "referenceId": "survey_plano_acordos",
+        "title": "Avisos e Acordos",
+        "description": "Avisos e cordos do processo"
       },
       {
-        "id": "ss-Definição de Objetivos-survey",
-        "type": "Definição de Objetivos",
-        "referenceId": "survey",
-        "title": "2",
-        "description": "survey_plano_fase1"
+        "id": "ss-survey-survey_plano_fase1",
+        "type": "survey",
+        "referenceId": "survey_plano_fase1",
+        "title": "Definição de Objetivos",
+        "description": "Definição de objetivos de carreira profissional"
       },
       {
-        "id": "ss-Seleção de Recursos-survey",
-        "type": "Seleção de Recursos",
-        "referenceId": "survey",
-        "title": "3",
-        "description": "survey_plano_fase2"
+        "id": "ss-survey-survey_plano_fase2",
+        "type": "survey",
+        "referenceId": "survey_plano_fase2",
+        "title": "Seleção de Recursos",
+        "description": "Seleção de recursos para utilização durante a jornada"
       },
       {
-        "id": "ss-Plano de Ação-survey",
-        "type": "Plano de Ação",
-        "referenceId": "survey",
-        "title": "4",
-        "description": "survey_plano_fase3"
+        "id": "ss-survey-survey_plano_fase3",
+        "type": "survey",
+        "referenceId": "survey_plano_fase3",
+        "title": "Plano de Ação",
+        "description": "Plano de ação para manter foco e ritmo"
       },
       {
-        "id": "ss-Consolidação do Plano-survey",
-        "type": "Consolidação do Plano",
-        "referenceId": "survey",
-        "title": "5",
-        "description": "survey_plano_fase4"
+        "id": "ss-survey-survey_plano_fase4",
+        "type": "survey",
+        "referenceId": "survey_plano_fase4",
+        "title": "Consolidação do Plano",
+        "description": "Consolidação do plano para ativação assertiva"
       },
       {
-        "id": "ss-Devolutiva do Plano-survey",
-        "type": "Devolutiva do Plano",
-        "referenceId": "survey",
-        "title": "6.1",
-        "description": "survey_agendamento_devolutiva"
+        "id": "ss-survey-survey_agendamento_devolutiva",
+        "type": "survey",
+        "referenceId": "survey_agendamento_devolutiva",
+        "title": "Devolutiva do Plano",
+        "description": "Organização de materiais para sessão de devolutiva do plano"
       },
       {
-        "id": "ss-Devolutiva do Plano-meeting",
-        "type": "Devolutiva do Plano",
-        "referenceId": "meeting",
-        "title": "6.2",
-        "description": "devolutiva-plano-carreira"
+        "id": "ss-meeting-devolutiva-plano-carreira",
+        "type": "meeting",
+        "referenceId": "devolutiva-plano-carreira",
+        "title": "Devolutiva do Plano",
+        "description": "Sessão individual de devolutiva do plano"
       }
     ],
     "capabilities": {
-      "surveys": [],
+      "surveys": [
+        "survey_plano_acordos",
+        "survey_plano_fase1",
+        "survey_plano_fase2",
+        "survey_plano_fase3",
+        "survey_plano_fase4",
+        "survey_agendamento_devolutiva"
+      ],
       "forms": [],
-      "allowedEventTypes": []
+      "allowedEventTypes": [
+        "devolutiva-plano-carreira"
+      ]
     }
   },
   {
@@ -593,24 +616,28 @@
     ],
     "deliverySteps": [
       {
-        "id": "ss-Gestão de Carreira-form",
-        "type": "Gestão de Carreira",
-        "referenceId": "form",
-        "title": "1",
-        "description": "gdc"
+        "id": "ss-form-gdc",
+        "type": "form",
+        "referenceId": "gdc",
+        "title": "Gestão de Carreira",
+        "description": "Formulário de acompanhamento GDC."
       },
       {
-        "id": "ss-Agendar Mentorias-meeting",
-        "type": "Agendar Mentorias",
-        "referenceId": "meeting",
-        "title": "2",
-        "description": "gdc-mentorias"
+        "id": "ss-meeting-gdc-mentorias",
+        "type": "meeting",
+        "referenceId": "gdc-mentorias",
+        "title": "Agendar Mentorias",
+        "description": "Agendamento de sessões periódicas de mentoria."
       }
     ],
     "capabilities": {
       "surveys": [],
-      "forms": [],
-      "allowedEventTypes": []
+      "forms": [
+        "gdc"
+      ],
+      "allowedEventTypes": [
+        "gdc-mentorias"
+      ]
     }
   },
   {
@@ -718,24 +745,28 @@
     ],
     "deliverySteps": [
       {
-        "id": "ss-Acompanhamento MentoCoach-form",
-        "type": "Acompanhamento MentoCoach",
-        "referenceId": "form",
-        "title": "1",
-        "description": "mentocoach"
+        "id": "ss-form-mentocoach",
+        "type": "form",
+        "referenceId": "mentocoach",
+        "title": "Acompanhamento MentoCoach",
+        "description": "Formulário de autoavaliação MentoCoach."
       },
       {
-        "id": "ss-Agendar Sessões de Coaching-meeting",
-        "type": "Agendar Sessões de Coaching",
-        "referenceId": "meeting",
-        "title": "2",
-        "description": "mentocoach-sessoes"
+        "id": "ss-meeting-mentocoach-sessoes",
+        "type": "meeting",
+        "referenceId": "mentocoach-sessoes",
+        "title": "Agendar Sessões de Coaching",
+        "description": "Agendamento das sessões individuais de coaching de alta performance."
       }
     ],
     "capabilities": {
       "surveys": [],
-      "forms": [],
-      "allowedEventTypes": []
+      "forms": [
+        "mentocoach"
+      ],
+      "allowedEventTypes": [
+        "mentocoach-sessoes"
+      ]
     }
   },
   {
@@ -779,11 +810,11 @@
     "workflow": [],
     "deliverySteps": [
       {
-        "id": "ss-Avaliação Final-survey",
-        "type": "Avaliação Final",
-        "referenceId": "survey",
-        "title": "1",
-        "description": "offboarding_survey"
+        "id": "ss-survey-offboarding_survey",
+        "type": "survey",
+        "referenceId": "offboarding_survey",
+        "title": "Avaliação Final",
+        "description": "Pesquisa de encerramento e consolidação de resultados."
       }
     ],
     "capabilities": {
