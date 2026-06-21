@@ -25,7 +25,7 @@ interface PackageServicesAccordionProps {
  * 3. Workflow de Entrega
  */
 export default function PackageServicesAccordion({ services }: PackageServicesAccordionProps) {
-  const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   if (!services || services.length === 0) {
     return (
@@ -63,9 +63,6 @@ export default function PackageServicesAccordion({ services }: PackageServicesAc
                   <span className="px-2.5 py-0.5 bg-[#ff0080]/10 border border-[#ff0080]/20 rounded-full text-[#ff0080] text-[9px] font-black uppercase tracking-wider">
                     {service.kicker || "Serviço"}
                   </span>
-                  <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">
-                    {service.serviceCode}
-                  </span>
                 </div>
                 <h3 className="text-xl md:text-2xl font-black tracking-tight text-white">
                   {service.title}
@@ -99,7 +96,7 @@ export default function PackageServicesAccordion({ services }: PackageServicesAc
                       <Activity size={14} />
                       Workflow de Entrega
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4">
                       {service.workflow.map((step, sIdx) => (
                         <div 
                           key={step.id || sIdx} 
