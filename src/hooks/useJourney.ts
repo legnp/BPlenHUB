@@ -127,6 +127,7 @@ export function useJourney(uid: string) {
     const stepProgress = progress?.steps[stepId];
     
     // Cálculo de % Real (Rigoroso: apenas conta o que existe na definição atual da etapa) 🛡️
+    const totalSubsteps = stage?.substeps.length || 0;
     const currentSubstepIds = stage?.substeps.map(ss => ss.id) || [];
     const validCompletedSubsteps = stepProgress?.completedSubSteps.filter(id => currentSubstepIds.includes(id)) || [];
     const completedCount = validCompletedSubsteps.length;

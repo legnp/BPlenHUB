@@ -67,7 +67,7 @@ function AuthRequiredHandler() {
               // Aguarda um frame para garantir que os cookies foram escritos pelo navegador
               setTimeout(() => {
                 router.push(returnTo);
-                router.refresh(); // Força o Next.js a revalidar o middleware
+                router.refresh(); // Força o Next.js a revalidar o proxy
               }, 100);
             }
           } catch (err) {

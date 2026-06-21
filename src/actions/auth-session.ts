@@ -99,7 +99,7 @@ export async function clearSessionCookie() {
 
 /**
  * Verifica rapidamente se existe um cookie de sessão (sem validação criptográfica).
- * Usado pelo middleware para decisões de rota rápidas.
+ * Usado pelo proxy para decisões de rota rápidas.
  */
 export async function hasServerSession(): Promise<boolean> {
   const cookieStore = await cookies();

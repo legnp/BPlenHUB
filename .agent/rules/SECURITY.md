@@ -7,7 +7,7 @@ Este manual estabelece as leis de proteção contra falhas e vazamentos de dados
 - **Interrupção de Falhas**: Se uma chave for nula ou mal formatada, o sistema deve interromper a execução e reportar de forma clara.
 
 ## 🔐 Controle de Acesso e Identidade
-- **Middleware**: Proteção de rotas servidor (`/admin`, `/member`).
+- **Proxy**: Proteção de rotas servidor (`/admin`, `/member`).
 - **Permissões**: Hierarquia de usuários (Admin > Master > Member).
 - **Branding de E-mail**: O e-mail "Master" (proprietário da conta) NUNCA deve ser exposto na interface do front-end. Toda comunicação deve usar Aliases.
 
