@@ -13,6 +13,7 @@ import { UpsellServiceModal } from "./UpsellServiceModal";
 import { getProductBySlug } from "@/actions/products";
 import { StageTelemetry } from "@/hooks/useJourney";
 import { SequenceLockModal } from "./SequenceLockModal";
+import { BPlenRichTextRenderer } from "@/components/shared/BPlenRichTextRenderer";
 
 interface JourneyNavProps {
   stages: JourneyStep[];
@@ -410,32 +411,71 @@ export function JourneyNav({ stages, currentStepId, stepStatusMap, getStageTelem
                               </div>
                               <div>
                                  <h3 className="text-xl font-black tracking-tight text-[var(--text-primary)]">{stage.title}</h3>
-                                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)] mt-1">Visão Estratégica</p>
+                                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)] mt-1">
+                                    {stage.kicker || "Visão Estratégica"}
+                                 </p>
                               </div>
                            </div>
                            
-                           <div className="p-6 bg-[var(--input-bg)]/50 border border-[var(--border-primary)] rounded-[2rem]">
-                              <p className="text-sm leading-relaxed text-[var(--text-secondary)] font-medium">
-                                 {stage.description || "Faz parte do desenvolvimento contínuo da sua carreira na metodologia BPlen."}
-                              </p>
+                           <div className="p-6 bg-[var(--input-bg)]/50 border border-[var(--border-primary)] rounded-[2rem] max-h-[220px] overflow-y-auto custom-scrollbar">
+                              <BPlenRichTextRenderer 
+                                 text={stage.description || "Faz parte do desenvolvimento contínuo da sua carreira na metodologia BPlen."}
+                                 variant="small"
+                                 themeAdaptive={true}
+                              />
                            </div>
                            
-                           {stage.substeps && stage.substeps.length > 0 && (
-                              <div className="pt-2">
-                                 <h4 className="text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)] mb-4 flex items-center gap-2">
+                           {((stage.workflow && stage.workflow.length > 0) || (stage.substeps && stage.substeps.length > 0)) && (
+                              <div className="pt-2 space-y-4">
+                                 <h4 className="text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)] flex items-center gap-2">
                                     <LucideIcons.MapPin size={12} className="text-[var(--accent-start)]" />
-                                    Paradas da Etapa
+                                    Checkpoints
                                  </h4>
-                                 <ul className="space-y-3">
-                                    {stage.substeps.map(ss => (
-                                       <li key={ss.id} className="flex items-center gap-3 text-xs text-[var(--text-muted)] group hover:text-[var(--text-primary)] transition-colors">
-                                          <div className="w-6 h-6 rounded-lg bg-[var(--input-bg)] border border-[var(--border-primary)] flex items-center justify-center text-[9px] font-black">
-                                             <LucideIcons.CheckCircle2 size={10} className="text-[var(--text-muted)] group-hover:text-[var(--accent-start)] transition-colors" />
+                                 
+                                 {stage.workflow && stage.workflow.length > 0 ? (
+                                    <div className="space-y-3 max-h-[240px] overflow-y-auto custom-scrollbar pr-1">
+                                       {stage.workflow.map((step, idx) => (
+                                          <div 
+                                             key={step.id || idx} 
+                                             className="flex gap-4 p-4 rounded-2xl bg-[var(--input-bg)]/40 border border-[var(--border-primary)] hover:border-[var(--accent-start)]/20 transition-all group"
+                                          >
+                                             <div 
+                                                className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-black transition-all"
+                                                style={{ 
+                                                   backgroundColor: `${theme.color}15`, 
+                                                   color: theme.color,
+                                                   border: `1px solid ${theme.color}30`
+                                                }}
+                                             >
+                                                {idx + 1}
+                                             </div>
+                                             <div className="space-y-1 flex-1">
+                                                <h5 className="text-[10px] font-black uppercase tracking-wider text-[var(--text-primary)]">
+                                                   {step.title}
+                                                </h5>
+                                                {step.description && (
+                                                   <BPlenRichTextRenderer 
+                                                      text={step.description} 
+                                                      variant="small" 
+                                                      themeAdaptive={true} 
+                                                   />
+                                                )}
+                                             </div>
                                           </div>
-                                          <span className="font-medium text-[11px] uppercase tracking-widest">{ss.title}</span>
-                                       </li>
-                                    ))}
-                                 </ul>
+                                       ))}
+                                    </div>
+                                 ) : (
+                                    <ul className="space-y-3">
+                                       {stage.substeps.map(ss => (
+                                          <li key={ss.id} className="flex items-center gap-3 text-xs text-[var(--text-muted)] group hover:text-[var(--text-primary)] transition-colors">
+                                             <div className="w-6 h-6 rounded-lg bg-[var(--input-bg)] border border-[var(--border-primary)] flex items-center justify-center text-[9px] font-black">
+                                                <LucideIcons.CheckCircle2 size={10} className="text-[var(--text-muted)] group-hover:text-[var(--accent-start)] transition-colors" />
+                                             </div>
+                                             <span className="font-medium text-[11px] uppercase tracking-widest">{ss.title}</span>
+                                          </li>
+                                       ))}
+                                    </ul>
+                                 )}
                               </div>
                            )}
                         </div>

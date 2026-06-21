@@ -172,7 +172,9 @@ export async function getJourneyStagesAction(): Promise<JourneyStep[]> {
           subtitle: main.sheet?.description?.slice(0, 60) + "..." || "",
           icon: getIconName(order, main.slug), 
           description: main.sheet?.description || "",
-          substeps: finalSubsteps
+          substeps: finalSubsteps,
+          kicker: main.kicker,
+          workflow: main.workflow || []
         };
       })
       .sort((a, b) => a.order - b.order);
@@ -282,7 +284,9 @@ export async function getStandaloneStageAction(slug: string): Promise<JourneySte
       title: product.title,
       description: product.sheet?.description || "",
       icon: "Rocket", // Default para standalone
-      substeps: substeps
+      substeps: substeps,
+      kicker: product.kicker,
+      workflow: product.workflow || []
     };
   } catch (error) {
     console.error(`🚨 [JourneyAction] Erro ao buscar standalone stage (${slug}):`, error);

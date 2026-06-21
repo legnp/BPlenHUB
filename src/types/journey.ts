@@ -23,6 +23,8 @@ export interface SubStepConfig {
   allowReview?: boolean; // Se verdadeiro, exibe o botão de revisão após conclusão
 }
 
+import { WorkflowStep } from "./products";
+
 export interface JourneyStep {
   id: string;
   order: number;
@@ -36,6 +38,9 @@ export interface JourneyStep {
   isOptional?: boolean;
   unlockRequirement?: string; // ID of the previous step that must be completed
   isLocked?: boolean;
+
+  kicker?: string;
+  workflow?: WorkflowStep[];
 }
 
 export interface UserStepProgress {

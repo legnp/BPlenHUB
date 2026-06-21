@@ -14,7 +14,7 @@ interface InlineToken {
  * Tokeniza o texto de forma iterativa e segura para aplicar negritos (**text**),
  * autolinks de agendamento (agenda uma conversa) e links da web.
  */
-function parseInlineStyles(text: string): React.ReactNode {
+function parseInlineStyles(text: string, themeAdaptive: boolean = false): React.ReactNode {
   if (!text) return null;
 
   const tokens: InlineToken[] = [];
@@ -93,7 +93,7 @@ function parseInlineStyles(text: string): React.ReactNode {
         switch (token.type) {
           case "bold":
             return (
-              <strong key={idx} className="text-white font-bold drop-shadow-sm">
+              <strong key={idx} className={`${themeAdaptive ? "text-[var(--text-primary)]" : "text-white"} font-bold drop-shadow-sm`}>
                 {token.content}
               </strong>
             );
@@ -131,6 +131,7 @@ interface BPlenRichTextRendererProps {
   text: string;
   className?: string;
   variant?: "default" | "large" | "small";
+  themeAdaptive?: boolean;
 }
 
 /**
@@ -141,7 +142,8 @@ interface BPlenRichTextRendererProps {
 export function BPlenRichTextRenderer({ 
   text, 
   className = "", 
-  variant = "default" 
+  variant = "default",
+  themeAdaptive = false
 }: BPlenRichTextRendererProps) {
   if (!text) return null;
 
@@ -156,13 +158,20 @@ export function BPlenRichTextRenderer({
       renderedElements.push(
         <ul key={`${keyPrefix}-list`} className="space-y-3 my-5 pl-1 list-none">
           {currentListItems.map((item, itemIdx) => {
-            let itemClass = "text-sm md:text-base font-normal text-gray-300";
+            let itemClass = themeAdaptive 
+              ? "text-sm md:text-base font-normal text-[var(--text-secondary)]"
+              : "text-sm md:text-base font-normal text-gray-300";
             let bulletClass = "mt-2 w-1.5 h-1.5";
+            
             if (isLarge) {
-              itemClass = "text-[15px] font-medium text-gray-200";
+              itemClass = themeAdaptive
+                ? "text-[15px] font-medium text-[var(--text-secondary)]"
+                : "text-[15px] font-medium text-gray-200";
               bulletClass = "mt-2 w-1.5 h-1.5";
             } else if (isSmall) {
-              itemClass = "text-xs md:text-sm font-normal text-gray-400";
+              itemClass = themeAdaptive
+                ? "text-xs md:text-sm font-normal text-[var(--text-muted)]"
+                : "text-xs md:text-sm font-normal text-gray-400";
               bulletClass = "mt-1.5 w-1.2 h-1.2";
             }
 
@@ -173,7 +182,7 @@ export function BPlenRichTextRenderer({
               >
                 {/* Indicador customizado premium com brilho (neon pink) */}
                 <span className={`rounded-full bg-[#ff0080] shrink-0 shadow-[0_0_8px_rgba(255,0,128,0.7)] group-hover/item:scale-125 transition-transform ${bulletClass}`} />
-                <span className="flex-1">{parseInlineStyles(item)}</span>
+                <span className="flex-1">{parseInlineStyles(item, themeAdaptive)}</span>
               </li>
             );
           })}
@@ -217,16 +226,23 @@ export function BPlenRichTextRenderer({
             key={`sub-${idx}`} 
             className={`font-black uppercase block ${subClass}`}
           >
-            {parseInlineStyles(trimmedLine)}
+            {parseInlineStyles(trimmedLine, themeAdaptive)}
           </h4>
         );
       } else {
         // Parágrafo padrão
-        let pClass = "text-sm md:text-base font-normal text-gray-300";
+        let pClass = themeAdaptive
+          ? "text-sm md:text-base font-normal text-[var(--text-secondary)]"
+          : "text-sm md:text-base font-normal text-gray-300";
+          
         if (isLarge) {
-          pClass = "text-[15px] font-medium text-gray-200";
+          pClass = themeAdaptive
+            ? "text-[15px] font-medium text-[var(--text-secondary)]"
+            : "text-[15px] font-medium text-gray-200";
         } else if (isSmall) {
-          pClass = "text-xs md:text-sm font-normal text-gray-400";
+          pClass = themeAdaptive
+            ? "text-xs md:text-sm font-normal text-[var(--text-muted)]"
+            : "text-xs md:text-sm font-normal text-gray-400";
         }
 
         renderedElements.push(
@@ -234,7 +250,7 @@ export function BPlenRichTextRenderer({
             key={`p-${idx}`} 
             className={`leading-relaxed tracking-tight opacity-90 mb-5 ${pClass}`}
           >
-            {parseInlineStyles(trimmedLine)}
+            {parseInlineStyles(trimmedLine, themeAdaptive)}
           </p>
         );
       }
