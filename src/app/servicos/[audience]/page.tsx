@@ -70,14 +70,7 @@ export default async function SegmentedServicesPage({ params }: PageProps) {
 
   if (!config) notFound();
 
-  // Executa o seed sob demanda de forma resiliente para manter consistência do banco de dados 🧬
-  if (config.id === 'people') {
-    try {
-      await seedComparisonProductsAction();
-    } catch (err) {
-      console.error("Erro silenciado ao semear produtos PF:", err);
-    }
-  }
+  // O seed sob demanda foi desativado para garantir a soberania do Portfolio Command Center.
 
   const products = await getProductsByAudience(config.id);
 
@@ -114,7 +107,7 @@ export default async function SegmentedServicesPage({ params }: PageProps) {
           {/* Comparison Table Section for People (PF) */}
           {config.id === 'people' && (
             <div className="mb-16 animate-fade-in">
-              <ComparisonTable />
+              <ComparisonTable products={products} />
             </div>
           )}
 
@@ -172,11 +165,17 @@ export default async function SegmentedServicesPage({ params }: PageProps) {
                     {product.price > 0 ? (
                       <div>
                         <span className="text-xl font-black text-white">
-                          5x {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.price / 5)}
+                          {product.maxInstallments || 12}x de {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.price / (product.maxInstallments || 12))}
                         </span>
-                        <span className="block text-[9px] font-black text-[#ff0080] uppercase tracking-wider mt-0.5 opacity-90">
-                          5% de desconto à vista
-                        </span>
+                        {product.pricePix && product.pricePix < product.price ? (
+                          <span className="block text-[9px] font-black text-[#ff0080] uppercase tracking-wider mt-0.5 opacity-90">
+                            {Math.round((1 - product.pricePix / product.price) * 100)}% de desconto a vista no PIX
+                          </span>
+                        ) : (
+                          <span className="block text-[9px] font-black text-[#ff0080] uppercase tracking-wider mt-0.5 opacity-90">
+                            Preco especial a vista
+                          </span>
+                        )}
                       </div>
                     ) : (
                       <span className="text-xl font-black text-white">Sem Custo</span>

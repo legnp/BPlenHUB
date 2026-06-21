@@ -3,6 +3,7 @@
 import React from "react";
 import { ChevronRight, Check } from "lucide-react";
 import Link from "next/link";
+import { Product } from "@/types/products";
 
 interface Column {
   id: string;
@@ -13,12 +14,65 @@ interface Column {
   slug: string;
 }
 
-export function ComparisonTable() {
+interface ComparisonTableProps {
+  products?: Product[];
+}
+
+export function ComparisonTable({ products = [] }: ComparisonTableProps) {
+  const pacoteJunior = products.find(p => p.serviceCode === "BPL-PAC-JR" || p.slug === "pacote-junior");
+  const pacotePleno = products.find(p => p.serviceCode === "BPL-PAC-PL" || p.slug === "pacote-pleno");
+  const pacoteSenior = products.find(p => p.serviceCode === "BPL-PAC-SR" || p.slug === "pacote-senior");
+  const pacoteLider = products.find(p => p.serviceCode === "BPL-PAC-LD" || p.slug === "pacote-lider");
+
   const columns: Column[] = [
-    { id: "junior", name: "Junior", duration: "1 semana", priceInstallment: "Sem Custo", cashDiscount: "Autoaplicável", slug: "junior" },
-    { id: "pleno", name: "Pleno", duration: "2 semanas", priceInstallment: "5x R$ 165,34", cashDiscount: "5% de desc. à vista", slug: "pleno" },
-    { id: "senior", name: "Senior", duration: "1 mês", priceInstallment: "5x R$ 325,62", cashDiscount: "5% de desc. à vista", slug: "senior" },
-    { id: "lider", name: "Líder", duration: "4 meses", priceInstallment: "5x R$ 1.183,07", cashDiscount: "5% de desc. à vista", slug: "lider" }
+    { 
+      id: "junior", 
+      name: "Junior", 
+      duration: "1 semana", 
+      priceInstallment: pacoteJunior && pacoteJunior.price > 0
+        ? `${pacoteJunior.maxInstallments || 12}x de ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(pacoteJunior.price / (pacoteJunior.maxInstallments || 12))}`
+        : "Sem Custo", 
+      cashDiscount: pacoteJunior && pacoteJunior.pricePix && pacoteJunior.pricePix < pacoteJunior.price
+        ? `${Math.round((1 - pacoteJunior.pricePix / pacoteJunior.price) * 100)}% de desc. a vista`
+        : "Autoaplicavel", 
+      slug: pacoteJunior ? pacoteJunior.slug : "pacote-junior" 
+    },
+    { 
+      id: "pleno", 
+      name: "Pleno", 
+      duration: "2 semanas", 
+      priceInstallment: pacotePleno && pacotePleno.price > 0
+        ? `${pacotePleno.maxInstallments || 12}x de ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(pacotePleno.price / (pacotePleno.maxInstallments || 12))}`
+        : "Sem Custo", 
+      cashDiscount: pacotePleno && pacotePleno.pricePix && pacotePleno.pricePix < pacotePleno.price
+        ? `${Math.round((1 - pacotePleno.pricePix / pacotePleno.price) * 100)}% de desc. a vista`
+        : "5% de desc. a vista", 
+      slug: pacotePleno ? pacotePleno.slug : "pacote-pleno" 
+    },
+    { 
+      id: "senior", 
+      name: "Senior", 
+      duration: "1 mes", 
+      priceInstallment: pacoteSenior && pacoteSenior.price > 0
+        ? `${pacoteSenior.maxInstallments || 12}x de ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(pacoteSenior.price / (pacoteSenior.maxInstallments || 12))}`
+        : "Sem Custo", 
+      cashDiscount: pacoteSenior && pacoteSenior.pricePix && pacoteSenior.pricePix < pacoteSenior.price
+        ? `${Math.round((1 - pacoteSenior.pricePix / pacoteSenior.price) * 100)}% de desc. a vista`
+        : "5% de desc. a vista", 
+      slug: pacoteSenior ? pacoteSenior.slug : "pacote-senior" 
+    },
+    { 
+      id: "lider", 
+      name: "Líder", 
+      duration: "4 meses", 
+      priceInstallment: pacoteLider && pacoteLider.price > 0
+        ? `${pacoteLider.maxInstallments || 12}x de ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(pacoteLider.price / (pacoteLider.maxInstallments || 12))}`
+        : "Sem Custo", 
+      cashDiscount: pacoteLider && pacoteLider.pricePix && pacoteLider.pricePix < pacoteLider.price
+        ? `${Math.round((1 - pacoteLider.pricePix / pacoteLider.price) * 100)}% de desc. a vista`
+        : "5% de desc. a vista", 
+      slug: pacoteLider ? pacoteLider.slug : "pacote-lider" 
+    }
   ];
 
   const features = [
