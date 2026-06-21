@@ -230,31 +230,6 @@ export default async function ProductDetailPage({ params }: PageProps) {
         <div className={LANDING_TOKENS.container}>
            <div className="grid grid-cols-1 lg:grid-cols-2 gap-20">
               
-              {/* FAQ Side */}
-              <div className="space-y-12">
-                 <div className="space-y-4">
-                    <h2 className="text-3xl font-black tracking-tighter uppercase">Perguntas <span className="opacity-40">Frequentes</span></h2>
-                    <p className="text-gray-500 text-sm font-bold tracking-tight">Esclareça suas dúvidas sobre a entrega deste serviço.</p>
-                 </div>
-                 
-                 <div className="space-y-6">
-                    {product.sheet.faq.length > 0 ? (
-                       <div className="space-y-6">
-                          {product.sheet.faq.map((item, idx) => (
-                             <div key={idx} className="p-8 rounded-3xl bg-white/5 border border-white/10 space-y-3">
-                                <h4 className="text-sm font-black uppercase tracking-widest text-[#ff0080]/80">{item.question}</h4>
-                                 <BPlenRichTextRenderer text={item.answer} variant="small" />
-                             </div>
-                          ))}
-                       </div>
-                    ) : (
-                       <p className="text-xs text-gray-500 italic">FAQ em Desenvolvimento.</p>
-                    )}
-                    
-                    <FAQContactModal productName={product.title} productSlug={product.slug} />
-                 </div>
-              </div>
-
               {/* Terms / Workflow Side */}
               <div className="space-y-12">
                  <div className="space-y-4">
@@ -286,6 +261,31 @@ export default async function ProductDetailPage({ params }: PageProps) {
                        ))}
                     </div>
                  )}
+              </div>
+
+              {/* FAQ Side */}
+              <div className="space-y-12">
+                 <div className="space-y-4">
+                    <h2 className="text-3xl font-black tracking-tighter uppercase">Perguntas <span className="opacity-40">Frequentes</span></h2>
+                    <p className="text-gray-500 text-sm font-bold tracking-tight">Esclareça suas dúvidas sobre a entrega deste serviço.</p>
+                 </div>
+                 
+                 <div className="space-y-6">
+                    {product.sheet.faq.length > 0 ? (
+                       <div className="space-y-6">
+                          {product.sheet.faq.map((item, idx) => (
+                             <div key={idx} className="p-8 rounded-3xl bg-white/5 border border-white/10 space-y-3">
+                                <h4 className="text-sm font-black uppercase tracking-widest text-[#ff0080]/80">{item.question}</h4>
+                                 <BPlenRichTextRenderer text={item.answer} variant="small" />
+                             </div>
+                          ))}
+                       </div>
+                    ) : (
+                       <p className="text-xs text-gray-500 italic">FAQ em Desenvolvimento.</p>
+                    )}
+                    
+                    <FAQContactModal productName={product.title} productSlug={product.slug} />
+                 </div>
               </div>
 
            </div>

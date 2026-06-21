@@ -275,7 +275,7 @@ for idx, code in enumerate(["BPL-001", "BPL-002", "BPL-003", "BPL-004", "BPL-005
             "kicker": kicker,
             "sheet": {
                 "description": long_desc,
-                "coverImage": f"/images/products/{services_data[code]['slug']}.png",
+                "coverImage": f"/services-img/{code}.png" if os.path.exists(os.path.join(os.getcwd(), "public", "services-img", f"{code}.png")) else f"/services-img/{code}.jpg" if os.path.exists(os.path.join(os.getcwd(), "public", "services-img", f"{code}.jpg")) else f"/images/products/{services_data[code]['slug']}.png",
                 "paymentConditions": f"Pagamento facilitado no cartão em até {services_data[code]['maxInstallments']}x ou PIX com desconto especial.",
                 "faq": faq_list,
                 "termsAndConditions": "Ao contratar este serviço, você concorda com o plano de entrega e as diretrizes do BPlen HUB.",
@@ -307,11 +307,11 @@ for idx, code in enumerate(["BPL-PAC-JR", "BPL-PAC-PL", "BPL-PAC-SR", "BPL-PAC-L
         packages_data[code].update({
             "kicker": kicker,
             "sheet": {
-                "description": f"{tatic}\n\n{slogan}",
-                "coverImage": f"/images/products/{packages_data[code]['slug']}.png",
-                "paymentConditions": "Parcele em até 12x sem juros no cartão de crédito ou obtenha desconto exclusivo via PIX.",
+                "description": slogan,
+                "coverImage": f"/services-img/{code}.png" if os.path.exists(os.path.join(os.getcwd(), "public", "services-img", f"{code}.png")) else f"/services-img/{code}.jpg" if os.path.exists(os.path.join(os.getcwd(), "public", "services-img", f"{code}.jpg")) else f"/images/products/{packages_data[code]['slug']}.png",
+                "paymentConditions": f"Parcele em até {packages_data[code]['maxInstallments']}x sem juros no cartão de crédito ou obtenha desconto exclusivo via PIX.",
                 "faq": [
-                    {"question": "O que está incluso neste pacote?", "answer": f"Este pacote engloba um conjunto estratégico de serviços unificados, eliminando custos redundantes: {tatic}"},
+                    {"question": "O que está incluso neste pacote?", "answer": f"Este pacote engloba um conjunto estratégico de serviços unificados, eliminando custos redundantes: {slogan}"},
                     {"question": "Como funciona o agendamento?", "answer": "Assim que a contratação for concluída, as sessões e relatórios correspondentes serão desbloqueados na sua Área de Membro para livre agendamento."}
                 ],
                 "termsAndConditions": "Os pacotes estruturados oferecem licenças de uso combinadas e condições comerciais unificadas.",
