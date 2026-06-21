@@ -6,6 +6,7 @@ import {
   uploadAndDryRunAction, 
   syncPortfolioAction 
 } from "@/actions/products";
+import { syncPortfolioFromFilesAction } from "@/actions/portfolio-commands";
 import { Product } from "@/types/products";
 import { 
   Package, 
@@ -93,6 +94,7 @@ export default function PortfolioCommandCenter() {
   const [syncLoading, setSyncLoading] = useState(false);
   const [syncSuccessMessage, setSyncSuccessMessage] = useState<string | null>(null);
   const [backupCollectionName, setBackupCollectionName] = useState<string | null>(null);
+  const [gitSyncLoading, setGitSyncLoading] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -179,6 +181,29 @@ export default function PortfolioCommandCenter() {
     }
   };
 
+  const handleGitSync = async () => {
+    if (!confirm("Isso atualizará o banco de dados com os dados dos arquivos portfolio_payload.json e campanhas_payload.json presentes no repositório. Deseja continuar?")) return;
+    
+    setGitSyncLoading(true);
+    setSyncSuccessMessage(null);
+    setDryRunError(null);
+
+    try {
+      const result = await syncPortfolioFromFilesAction();
+      if (result.success) {
+        setSyncSuccessMessage(result.message || "Sincronização via repositório concluída.");
+        const updatedProducts = await getAdminProducts();
+        setProducts(updatedProducts);
+      } else {
+        setDryRunError(result.error || "Erro na sincronização via repositório.");
+      }
+    } catch (err: any) {
+      setDryRunError(err.message);
+    } finally {
+      setGitSyncLoading(false);
+    }
+  };
+
   const filteredProducts = products.filter(p => 
     p.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -208,11 +233,24 @@ export default function PortfolioCommandCenter() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-center gap-3">
           <div className="flex items-center gap-1.5 px-4 py-2 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-full text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
             <Activity className="w-3.5 h-3.5 text-emerald-500" />
             Ultima Sincronia: {loading ? "Carregando..." : products.length > 0 ? "Ativa" : "Sem dados"}
           </div>
+          
+          <button 
+            onClick={handleGitSync}
+            disabled={gitSyncLoading || loading}
+            className="flex items-center gap-2 px-4 py-2 bg-[var(--accent-start)]/10 hover:bg-[var(--accent-start)]/20 border border-[var(--accent-start)]/20 rounded-full text-[9px] font-black uppercase tracking-widest text-[var(--accent-start)] transition-all disabled:opacity-50"
+          >
+            {gitSyncLoading ? (
+              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <UploadCloud className="w-3.5 h-3.5" />
+            )}
+            Sincronizar via Repositório (Git)
+          </button>
         </div>
       </header>
 
