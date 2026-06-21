@@ -71,8 +71,10 @@ export default async function SegmentedServicesPage({ params }: PageProps) {
   if (!config) notFound();
 
   // O seed sob demanda foi desativado para garantir a soberania do Portfolio Command Center.
-
   const products = await getProductsByAudience(config.id);
+
+  // Filtra apenas serviços individuais para o Grid de cards (remove pacotes)
+  const individualServices = products.filter(p => !p.serviceCode?.startsWith("BPL-PAC-"));
 
   return (
     <main className="min-h-screen bg-black text-white relative isolate overflow-x-hidden theme-dark">
@@ -99,26 +101,36 @@ export default async function SegmentedServicesPage({ params }: PageProps) {
           </div>
         </div>
       </section>
+      
+      {/* Comparison Table Section for People (PF) */}
+      {config.id === 'people' && (
+        <section className="pb-20 px-6">
+          <div className={LANDING_TOKENS.container}>
+            <div className="animate-fade-in">
+              <ComparisonTable products={products} />
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* dynamic Products Grid */}
       <section className="pb-32 px-6">
         <div className={LANDING_TOKENS.container}>
           
-          {/* Comparison Table Section for People (PF) */}
-          {config.id === 'people' && (
-            <div className="mb-16 animate-fade-in">
-              <ComparisonTable products={products} />
-            </div>
-          )}
+          <div className="mb-12 border-b border-white/10 pb-6">
+            <h2 className="text-xl font-black uppercase tracking-widest">
+              Serviços <span className="opacity-40">Individuais</span>
+            </h2>
+          </div>
 
-          {products.length === 0 ? (
+          {individualServices.length === 0 ? (
             <div className="p-20 text-center border border-white/5 bg-white/5 rounded-[3rem] opacity-40">
                <Package size={48} className="mx-auto mb-4 opacity-20" />
                <p className="text-xs font-black uppercase tracking-widest">Nenhum serviço disponível neste segmento ainda</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {products.map((product) => (
+              {individualServices.map((product) => (
                 <div 
                   key={product.id} 
                   className={`${LANDING_TOKENS.card.container} !p-6 md:!p-8 group flex flex-col h-full bg-gradient-to-b from-white/5 to-transparent hover:border-[var(--accent-primary)]/30 transition-all`}
