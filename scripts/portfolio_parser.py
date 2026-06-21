@@ -153,7 +153,10 @@ for code, cfg in package_coords.items():
     
     price = round(float(price_card), 2) if price_card is not None else 0.0
     price_pix = round(float(price_pix), 2) if price_pix is not None else 0.0
-    max_installments = int(max_inst_val) if max_inst_val is not None else 12
+    try:
+        max_installments = int(max_inst_val) if max_inst_val is not None else 12
+    except (ValueError, TypeError):
+        max_installments = 12
     
     packages_data[code] = {
         "id": cfg["slug"],
@@ -337,7 +340,7 @@ internal_services = {
         "id": "onboarding",
         "slug": "onboarding",
         "serviceCode": "BPL-000",
-        "title": "Onboarding Estratégico",
+        "title": "Onboarding",
         "kicker": "Onboarding",
         "price": 0.0,
         "pricePix": 0.0,
@@ -355,7 +358,7 @@ internal_services = {
             ],
             "termsAndConditions": "Serviço exclusivo de Onboarding do BPlen HUB.",
             "seo": {
-                "title": "Onboarding Estratégico | BPlen HUB",
+                "title": "Onboarding | BPlen HUB",
                 "description": "Boas-vindas ao BPlen HUB.",
                 "keywords": ["onboarding", "bplen"]
             }
@@ -372,7 +375,7 @@ internal_services = {
         "id": "offboarding",
         "slug": "offboarding",
         "serviceCode": "BPL-006",
-        "title": "Offboarding e Consolidação",
+        "title": "Offboarding",
         "kicker": "Encerramento",
         "price": 0.0,
         "pricePix": 0.0,
@@ -390,7 +393,7 @@ internal_services = {
             ],
             "termsAndConditions": "Serviço exclusivo de encerramento do BPlen HUB.",
             "seo": {
-                "title": "Offboarding e Consolidação | BPlen HUB",
+                "title": "Offboarding | BPlen HUB",
                 "description": "Encerramento e consolidação.",
                 "keywords": ["offboarding", "bplen"]
             }
