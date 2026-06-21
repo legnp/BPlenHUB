@@ -159,8 +159,8 @@ export function BPlenRichTextRenderer({
             let itemClass = "text-sm md:text-base font-normal text-gray-300";
             let bulletClass = "mt-2 w-1.5 h-1.5";
             if (isLarge) {
-              itemClass = "text-base md:text-lg font-medium text-gray-200";
-              bulletClass = "mt-2.5 w-2 h-2";
+              itemClass = "text-[15px] font-medium text-gray-200";
+              bulletClass = "mt-2 w-1.5 h-1.5";
             } else if (isSmall) {
               itemClass = "text-xs md:text-sm font-normal text-gray-400";
               bulletClass = "mt-1.5 w-1.2 h-1.2";
@@ -224,7 +224,7 @@ export function BPlenRichTextRenderer({
         // Parágrafo padrão
         let pClass = "text-sm md:text-base font-normal text-gray-300";
         if (isLarge) {
-          pClass = "text-lg md:text-xl font-medium text-gray-200";
+          pClass = "text-[15px] font-medium text-gray-200";
         } else if (isSmall) {
           pClass = "text-xs md:text-sm font-normal text-gray-400";
         }

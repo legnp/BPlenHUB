@@ -102,7 +102,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
                         {audience.toUpperCase()}
                       </span>
                    </div>
-                   <h1 className="text-5xl md:text-7xl font-black tracking-tighter leading-tight">
+                   <h1 className="text-[60px] font-black tracking-tighter leading-[1.1]">
                      {product.title}
                    </h1>
                 </div>
