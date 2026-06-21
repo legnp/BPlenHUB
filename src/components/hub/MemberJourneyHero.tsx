@@ -8,6 +8,7 @@ import { useJourney } from "@/hooks/useJourney";
 import { JourneyNav } from "@/components/journey/JourneyNav";
 import Link from "next/link";
 
+import { usePathname } from "next/navigation";
 import { BPLEN_NOMENCLATURE } from "@/config/nomenclature";
 
 interface MemberJourneyHeroProps {
@@ -21,7 +22,7 @@ interface MemberJourneyHeroProps {
  * Utilizado na Home do HUB e na Área de Membro.
  */
 export function MemberJourneyHero({ showAction = false, variant = "default" }: MemberJourneyHeroProps) {
-  const { user } = useAuthContext();
+  const { user, isAdmin, services } = useAuthContext();
   
   // Journey Integration
   const { stages, progress, loading, getStageTelemetry } = useJourney(user?.uid || "guest");
@@ -48,6 +49,10 @@ export function MemberJourneyHero({ showAction = false, variant = "default" }: M
   // O JourneyNav interno lidará com o estado vazio se necessário.
   
   const isMinimal = variant === "minimal";
+  const pathname = usePathname();
+  const isHubHome = pathname === "/hub";
+  const isFullMember = isAdmin || services?.member_area_access === true;
+  const showPreview = isHubHome && !isFullMember;
 
   return (
     <section 
@@ -76,7 +81,15 @@ export function MemberJourneyHero({ showAction = false, variant = "default" }: M
                   <div className="space-y-4">
                      <div className="flex items-center gap-2.5 text-[var(--accent-start)]">
                         <Target size={18} className="animate-pulse" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.4em]">{BPLEN_NOMENCLATURE.member_area.hero_badge}</span>
+                        <span className="text-[10px] font-black uppercase tracking-[0.4em]">
+                          {showPreview ? (
+                            <>
+                              <span className="text-[var(--text-primary)]">Prévia</span> da {BPLEN_NOMENCLATURE.member_area.hero_badge}
+                            </>
+                          ) : (
+                            BPLEN_NOMENCLATURE.member_area.hero_badge
+                          )}
+                        </span>
                      </div>
                      <h2 className="text-2xl font-black text-[var(--text-primary)] tracking-tight italic">
                        {BPLEN_NOMENCLATURE.member_area.hero_title.split(" ").slice(0, -1).join(" ")} <span className="text-[var(--accent-start)] not-italic">{BPLEN_NOMENCLATURE.member_area.hero_title.split(" ").pop()}</span>
