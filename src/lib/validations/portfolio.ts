@@ -51,6 +51,9 @@ export const ProductSchema = z.object({
   price: z.number().nonnegative(),
   pricePix: z.number().nonnegative(),
   maxInstallments: z.number().int().min(1).max(12),
+  originalPrice: z.number().nonnegative().optional(),
+  originalPricePix: z.number().nonnegative().optional(),
+  promoLabel: z.string().optional(),
   isStepJourney: z.boolean(),
   order: z.number().optional(),
   sheet: ProductSheetSchema,
@@ -67,3 +70,19 @@ export const ProductSchema = z.object({
 });
 
 export const PortfolioPayloadSchema = z.array(ProductSchema);
+
+export const CouponSchema = z.object({
+  id: z.string().min(1),
+  code: z.string().min(1),
+  type: z.enum(["percentage", "fixed"]),
+  value: z.number().positive(),
+  description: z.string().optional(),
+  active: z.boolean(),
+  expiryDate: z.string().optional(),
+  usageLimit: z.number().int().positive().optional(),
+  usageCount: z.number().int().nonnegative().default(0),
+  restrictedToProducts: z.array(z.string()).optional(),
+  minPurchaseValue: z.number().nonnegative().optional(),
+});
+
+export const CouponsPayloadSchema = z.array(CouponSchema);

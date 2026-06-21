@@ -5,13 +5,13 @@ import { requireAdmin } from "@/lib/auth-guards";
 import { Product } from "@/types/products";
 import { safeSerialize } from "@/lib/utils/firestore";
 import { revalidatePath } from "next/cache";
-import { PRODUCTS_COLLECTION } from "@/config/collections";
+import { PRODUCTS_COLLECTION, COUPONS_COLLECTION } from "@/config/collections";
 import { Resend } from "resend";
 import { serverEnv } from "@/env";
 import { buildSoberanaEmail, EMAIL_STYLES } from "@/lib/emails/soberana-layout";
 import fs from "fs";
 import path from "path";
-import { PortfolioPayloadSchema } from "@/lib/validations/portfolio";
+import { PortfolioPayloadSchema, CouponsPayloadSchema } from "@/lib/validations/portfolio";
 
 
 /**
@@ -298,8 +298,35 @@ export async function syncPortfolioAction(idToken?: string) {
     }
     
     const payload = validationResult.data;
+
+    // 2.B Ler e validar o payload de campanhas/cupons se existir
+    const campanhasPath = path.join(process.cwd(), "portfolio", "campanhas_payload.json");
+    let couponsPayload: {
+      id: string;
+      code: string;
+      type: "percentage" | "fixed";
+      value: number;
+      description?: string;
+      active: boolean;
+      expiryDate?: string;
+      usageLimit?: number;
+      usageCount: number;
+      restrictedToProducts?: string[];
+      minPurchaseValue?: number;
+    }[] = [];
     
-    // 3. Backup diferencial preventivo das informações atuais
+    if (fs.existsSync(campanhasPath)) {
+      const rawCampanhas = fs.readFileSync(campanhasPath, "utf-8");
+      const parsedCampanhas = JSON.parse(rawCampanhas);
+      const camValidation = CouponsPayloadSchema.safeParse(parsedCampanhas);
+      if (!camValidation.success) {
+        console.error("[Portfolio Sync] Erro de validação Zod de campanhas:", camValidation.error.format());
+        throw new Error(`O payload de campanhas é inválido: ${JSON.stringify(camValidation.error.format())}`);
+      }
+      couponsPayload = camValidation.data;
+    }
+    
+    // 3. Backup diferencial preventivo das informações atuais de produtos
     const productsSnapshot = await db.collection(PRODUCTS_COLLECTION).get();
     let backupCollectionName = "";
     
@@ -318,8 +345,25 @@ export async function syncPortfolioAction(idToken?: string) {
     } else {
       console.log("[Portfolio Sync] Nenhuma coleção de produtos existente para fazer backup.");
     }
+
+    // 3.B Backup incremental de cupons se houver dados
+    const couponsSnapshot = await db.collection(COUPONS_COLLECTION).get();
+    let couponsBackupCol = "";
+    if (!couponsSnapshot.empty && couponsPayload.length > 0) {
+      const timestamp = new Date().toISOString().replace(/[-:T.]/g, '').slice(0, 14);
+      couponsBackupCol = `coupons_backup_${timestamp}`;
+      const cpBackupBatch = db.batch();
+      
+      couponsSnapshot.docs.forEach((doc) => {
+        const bDocRef = db.collection(couponsBackupCol).doc(doc.id);
+        cpBackupBatch.set(bDocRef, doc.data());
+      });
+      
+      await cpBackupBatch.commit();
+      console.log(`[Portfolio Sync] Backup de cupons concluído na coleção: ${couponsBackupCol}`);
+    }
     
-    // 4. Gravação em lote (Batch Write) para Sincronização
+    // 4. Gravação em lote (Batch Write) para Sincronização de Produtos e Cupons
     const syncBatch = db.batch();
     const payloadSlugs = new Set(payload.map(p => p.slug));
     
@@ -339,7 +383,7 @@ export async function syncPortfolioAction(idToken?: string) {
       syncBatch.set(docRef, productToSave);
     });
     
-    // Arquiva produtos obsoletos que não estão no payload (mantendo compatibilidade com histórico)
+    // Arquiva produtos obsoletos que não estão no payload
     let archivedCount = 0;
     productsSnapshot.docs.forEach((doc) => {
       if (!payloadSlugs.has(doc.id)) {
@@ -354,9 +398,44 @@ export async function syncPortfolioAction(idToken?: string) {
         }
       }
     });
+
+    // Sincronização dos Cupons
+    const couponsSlugs = new Set(couponsPayload.map(c => c.code));
+    couponsPayload.forEach((coupon) => {
+      const existingCp = couponsSnapshot.docs.find(d => d.id === coupon.code);
+      const createdAt = existingCp?.data()?.createdAt || new Date().toISOString();
+      const updatedAt = new Date().toISOString();
+      const usageCount = existingCp?.data()?.usageCount || 0;
+      
+      const couponToSave = {
+        ...coupon,
+        createdAt,
+        updatedAt,
+        usageCount,
+      };
+      
+      const docRef = db.collection(COUPONS_COLLECTION).doc(coupon.code);
+      syncBatch.set(docRef, couponToSave);
+    });
+
+    // Desativa cupons órfãos antigos
+    let deactivatedCouponsCount = 0;
+    couponsSnapshot.docs.forEach((doc) => {
+      if (!couponsSlugs.has(doc.id)) {
+        const docData = doc.data();
+        if (docData.active !== false) {
+          const docRef = db.collection(COUPONS_COLLECTION).doc(doc.id);
+          syncBatch.update(docRef, {
+            active: false,
+            updatedAt: new Date().toISOString()
+          });
+          deactivatedCouponsCount++;
+        }
+      }
+    });
     
     await syncBatch.commit();
-    console.log(`[Portfolio Sync] Sincronização concluída com sucesso. Ativos: ${payload.length}, Arquivados: ${archivedCount}`);
+    console.log(`[Portfolio Sync] Sincronização concluída. Ativos: ${payload.length}, Arquivados: ${archivedCount}, Cupons Sincronizados: ${couponsPayload.length}, Cupons Desativados: ${deactivatedCouponsCount}`);
     
     // 5. Revalidar rotas afetadas no Next.js
     revalidatePath("/admin/products");
@@ -366,8 +445,11 @@ export async function syncPortfolioAction(idToken?: string) {
       success: true,
       count: payload.length,
       archivedCount,
+      couponsCount: couponsPayload.length,
+      deactivatedCouponsCount,
       backedUpTo: backupCollectionName || null,
-      message: `Sincronização concluída com sucesso! ${payload.length} produtos sincronizados, ${archivedCount} arquivados.`
+      couponsBackedUpTo: couponsBackupCol || null,
+      message: `Sincronização concluída com sucesso! ${payload.length} produtos sincronizados, ${archivedCount} arquivados. ${couponsPayload.length} cupons sincronizados, ${deactivatedCouponsCount} desativados.`
     };
   } catch (error: unknown) {
     const err = error instanceof Error ? error : new Error(String(error));
@@ -375,6 +457,246 @@ export async function syncPortfolioAction(idToken?: string) {
     return {
       success: false,
       error: err.message || "Erro de sincronizacao desconhecido"
+    };
+  }
+}
+
+import { exec } from "child_process";
+import { promisify } from "util";
+import { z } from "zod";
+import { CouponSchema } from "@/lib/validations/portfolio";
+
+const execPromise = promisify(exec);
+
+/**
+ * Realiza o upload temporario e executa o Dry-Run (Sandbox de diferencas)
+ * para pre-visualizacao de alteracoes de portfolio e campanhas.
+ */
+export async function uploadAndDryRunAction(formData: FormData, idToken?: string) {
+  try {
+    await requireAdmin(idToken);
+    
+    const db = getAdminDb();
+    
+    // 1. Processar uploads se fornecidos
+    const portfolioFile = formData.get("portfolioFile") as File | null;
+    const anunciosFile = formData.get("anunciosFile") as File | null;
+    const campanhasFile = formData.get("campanhasFile") as File | null;
+    
+    const portfolioDir = path.join(process.cwd(), "portfolio");
+    if (!fs.existsSync(portfolioDir)) {
+      fs.mkdirSync(portfolioDir, { recursive: true });
+    }
+    
+    if (portfolioFile && portfolioFile.size > 0) {
+      const buffer = Buffer.from(await portfolioFile.arrayBuffer());
+      fs.writeFileSync(path.join(portfolioDir, "portfolio_bplen.xlsx"), buffer);
+    }
+    
+    if (anunciosFile && anunciosFile.size > 0) {
+      const buffer = Buffer.from(await anunciosFile.arrayBuffer());
+      fs.writeFileSync(path.join(portfolioDir, "anuncios_bplen.docx"), buffer);
+    }
+    
+    if (campanhasFile && campanhasFile.size > 0) {
+      const buffer = Buffer.from(await campanhasFile.arrayBuffer());
+      fs.writeFileSync(path.join(portfolioDir, "campanhas_bplen.xlsx"), buffer);
+    }
+    
+    // 2. Executar o script do parser Python de forma controlada
+    let runError: string | null = null;
+    try {
+      await execPromise("python scripts/portfolio_parser.py");
+    } catch (e: unknown) {
+      const err = e as Error;
+      console.error("[Portfolio Dry-Run] Erro ao executar parser Python:", err);
+      runError = err.message;
+    }
+    
+    if (runError) {
+      return {
+        success: false,
+        error: `Erro ao executar o parser Python: ${runError}`,
+        productsAdded: [],
+        productsModified: [],
+        productsArchived: [],
+        couponsAdded: [],
+        couponsModified: [],
+        couponsDeactivated: []
+      };
+    }
+    
+    // 3. Ler os payloads gerados localmente
+    const pPath = path.join(portfolioDir, "portfolio_payload.json");
+    const cPath = path.join(portfolioDir, "campanhas_payload.json");
+    
+    if (!fs.existsSync(pPath)) {
+      throw new Error("O arquivo portfolio_payload.json nao foi gerado pelo parser.");
+    }
+    
+    const rawP = fs.readFileSync(pPath, "utf-8");
+    const parsedP = JSON.parse(rawP);
+    const valP = PortfolioPayloadSchema.safeParse(parsedP);
+    if (!valP.success) {
+      throw new Error(`Dados do catalogo invalidos: ${JSON.stringify(valP.error.format())}`);
+    }
+    const newProducts = valP.data;
+    
+    let newCoupons: z.infer<typeof CouponsPayloadSchema> = [];
+    if (fs.existsSync(cPath)) {
+      const rawC = fs.readFileSync(cPath, "utf-8");
+      const parsedC = JSON.parse(rawC);
+      const valC = CouponsPayloadSchema.safeParse(parsedC);
+      if (!valC.success) {
+        throw new Error(`Dados de campanhas invalidos: ${JSON.stringify(valC.error.format())}`);
+      }
+      newCoupons = valC.data;
+    }
+    
+    // 4. Buscar estado atual no Firestore
+    const pSnapshot = await db.collection(PRODUCTS_COLLECTION).get();
+    const cSnapshot = await db.collection(COUPONS_COLLECTION).get();
+    
+    const dbProducts = pSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })) as Product[];
+    
+    const dbCoupons = cSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })) as z.infer<typeof CouponSchema>[];
+    
+    // 5. Comparar Produtos
+    const productsAdded: { slug: string; title: string; price: number }[] = [];
+    const productsModified: {
+      slug: string;
+      title: string;
+      changes: { field: string; old: string | number | undefined; new: string | number | undefined }[];
+    }[] = [];
+    const productsArchived: { slug: string; title: string }[] = [];
+    
+    const newSlugs = new Set(newProducts.map(p => p.slug));
+    
+    newProducts.forEach((newP) => {
+      const oldP = dbProducts.find(p => p.slug === newP.slug);
+      if (!oldP) {
+        productsAdded.push({
+          slug: newP.slug,
+          title: newP.title,
+          price: newP.price
+        });
+      } else {
+        const changes: { field: string; old: string | number | undefined; new: string | number | undefined }[] = [];
+        
+        if (oldP.title !== newP.title) {
+          changes.push({ field: "Titulo", old: oldP.title, new: newP.title });
+        }
+        if (oldP.price !== newP.price) {
+          changes.push({ field: "Preco Cartao", old: oldP.price, new: newP.price });
+        }
+        if (oldP.pricePix !== newP.pricePix) {
+          changes.push({ field: "Preco PIX", old: oldP.pricePix, new: newP.pricePix });
+        }
+        if (oldP.maxInstallments !== newP.maxInstallments) {
+          changes.push({ field: "Parcelas Maximas", old: oldP.maxInstallments, new: newP.maxInstallments });
+        }
+        if (oldP.status !== newP.status) {
+          changes.push({ field: "Status", old: oldP.status, new: newP.status });
+        }
+        
+        if (changes.length > 0) {
+          productsModified.push({
+            slug: newP.slug,
+            title: newP.title,
+            changes
+          });
+        }
+      }
+    });
+    
+    dbProducts.forEach((oldP) => {
+      if (!newSlugs.has(oldP.slug) && oldP.status !== "archived") {
+        productsArchived.push({
+          slug: oldP.slug,
+          title: oldP.title
+        });
+      }
+    });
+    
+    // 6. Comparar Cupons
+    const couponsAdded: { code: string; type: string; value: number }[] = [];
+    const couponsModified: {
+      code: string;
+      changes: { field: string; old: string | number | boolean | undefined; new: string | number | boolean | undefined }[];
+    }[] = [];
+    const couponsDeactivated: { code: string }[] = [];
+    
+    const newCouponCodes = new Set(newCoupons.map(c => c.code));
+    
+    newCoupons.forEach((newC) => {
+      const oldC = dbCoupons.find(c => c.code === newC.code);
+      if (!oldC) {
+        couponsAdded.push({
+          code: newC.code,
+          type: newC.type,
+          value: newC.value
+        });
+      } else {
+        const changes: { field: string; old: string | number | boolean | undefined; new: string | number | boolean | undefined }[] = [];
+        
+        if (oldC.type !== newC.type) {
+          changes.push({ field: "Tipo", old: oldC.type, new: newC.type });
+        }
+        if (oldC.value !== newC.value) {
+          changes.push({ field: "Valor", old: oldC.value, new: newC.value });
+        }
+        if (oldC.active !== newC.active) {
+          changes.push({ field: "Ativo", old: oldC.active, new: newC.active });
+        }
+        if (oldC.expiryDate !== newC.expiryDate) {
+          changes.push({ field: "Validade", old: oldC.expiryDate, new: newC.expiryDate });
+        }
+        
+        if (changes.length > 0) {
+          couponsModified.push({
+            code: newC.code,
+            changes
+          });
+        }
+      }
+    });
+    
+    dbCoupons.forEach((oldC) => {
+      if (!newCouponCodes.has(oldC.code) && oldC.active !== false) {
+        couponsDeactivated.push({
+          code: oldC.code
+        });
+      }
+    });
+    
+    return {
+      success: true,
+      productsAdded,
+      productsModified,
+      productsArchived,
+      couponsAdded,
+      couponsModified,
+      couponsDeactivated
+    };
+    
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    console.error("[Portfolio Dry-Run] Erro critico:", err);
+    return {
+      success: false,
+      error: err.message || "Erro desconhecido no Dry-Run",
+      productsAdded: [],
+      productsModified: [],
+      productsArchived: [],
+      couponsAdded: [],
+      couponsModified: [],
+      couponsDeactivated: []
     };
   }
 }

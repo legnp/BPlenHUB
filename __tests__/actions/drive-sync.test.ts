@@ -10,7 +10,19 @@ vi.mock('@/lib/google-auth', () => ({
 vi.mock('@/lib/drive-utils', () => ({
   ensureFolder: vi.fn().mockResolvedValue('folder-id'),
   createSpreadsheet: vi.fn().mockResolvedValue({ id: 'sheet-id' }),
+  getOrCreateSpreadsheet: vi.fn().mockResolvedValue({ id: 'sheet-id' }),
+  getStandardFolderWithHealing: vi.fn().mockResolvedValue('folder-id'),
   syncDataToSheet: vi.fn().mockResolvedValue({ success: true }),
+  DRIVE_FOLDERS: {
+    CADASTRO: '1.Cadastro',
+    SURVEYS: '2.Surveys',
+    FINANCEIRO: '3.Financeiro'
+  },
+  LEGACY_FOLDERS: {
+    CADASTRO: ['Cadastro'],
+    SURVEYS: ['Surveys'],
+    FINANCEIRO: ['Financeiro']
+  }
 }));
 
 describe('Drive Sync Helper 🛰️', () => {
@@ -36,7 +48,7 @@ describe('Drive Sync Helper 🛰️', () => {
       mockSheets,
       'sheet-id',
       ['Matricula', 'Status'],
-      ['BP-001-PF-260418', 'Done']
+      [['BP-001-PF-260418', 'Done']]
     );
   });
 });

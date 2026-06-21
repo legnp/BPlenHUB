@@ -113,7 +113,21 @@ export default async function ProductDetailPage({ params }: PageProps) {
                        {price > 0 ? (
                          <div className="space-y-6">
                             <div className="space-y-1">
-                               <p className="text-[10px] font-black uppercase tracking-wider text-[#ff0080]/90">A partir de</p>
+                               <div className="flex items-center justify-between">
+                                  <p className="text-[10px] font-black uppercase tracking-wider text-[#ff0080]/90">A partir de</p>
+                                  {product.promoLabel && (
+                                     <span className="px-2 py-0.5 bg-[#ff0080]/15 border border-[#ff0080]/30 rounded-full text-[#ff0080] text-[8px] font-black uppercase tracking-wider">
+                                        {product.promoLabel}
+                                     </span>
+                                  )}
+                               </div>
+                               
+                               {product.originalPrice && (
+                                  <div className="flex items-center gap-1.5 text-[10px] text-gray-500 font-bold line-through">
+                                     <span>De: {maxInstallments}x de R$ {((product.originalPrice) / maxInstallments).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                  </div>
+                               )}
+
                                <div className="flex items-baseline gap-2">
                                   <span className="text-sm font-bold opacity-50">{maxInstallments}x de</span>
                                   <span className="text-sm font-black opacity-40">R$</span>
@@ -122,16 +136,30 @@ export default async function ProductDetailPage({ params }: PageProps) {
                                   </span>
                                </div>
                                <p className="text-[10px] font-medium text-gray-500">
-                                  Total parcelado: R$ {price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                  {product.originalPrice ? (
+                                     <>
+                                        <span>Por apenas: R$ {price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                        <span className="text-[9px] text-gray-600 ml-1.5 line-through">(Original: R$ {product.originalPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</span>
+                                     </>
+                                  ) : (
+                                     `Total parcelado: R$ ${price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                  )}
                                </p>
                             </div>
 
                             <div className="p-5 rounded-3xl bg-white/5 border border-white/10 space-y-2">
                                <div className="flex justify-between items-baseline">
                                   <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">À vista no PIX</span>
-                                  <span className="text-lg font-black text-[#00f2fe]">
-                                     R$ {pricePix.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                  </span>
+                                  <div className="flex flex-col items-end">
+                                     {product.originalPricePix && (
+                                        <span className="text-[9px] text-gray-500 line-through font-bold">
+                                           R$ {product.originalPricePix.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        </span>
+                                     )}
+                                     <span className="text-lg font-black text-[#00f2fe]">
+                                        R$ {pricePix.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                     </span>
+                                  </div>
                                </div>
                                {economy > 0 && (
                                   <div className="flex items-center justify-between text-[10px] text-gray-400">

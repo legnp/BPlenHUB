@@ -49,6 +49,9 @@ export interface Product {
   price: number;
   pricePix?: number;
   maxInstallments?: number;
+  originalPrice?: number;
+  originalPricePix?: number;
+  promoLabel?: string;
   
   // Flag para Jornada do Membro
   isStepJourney: boolean;

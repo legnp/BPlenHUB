@@ -4,6 +4,7 @@ import json
 import os
 import shutil
 import re
+from datetime import datetime
 
 scratch_excel = r"D:\BPlen HUB\v3\scratch\servicos_bplen-v3.xlsx"
 portfolio_path = r"D:\BPlen HUB\v3\portfolio\portfolio_bplen.xlsx"
@@ -388,6 +389,138 @@ internal_services = {
         }
     }
 }
+
+
+# 6.B PARSE CAMPAIGNS AND COUPONS (campanhas_bplen.xlsx)
+print("\nStep 6.B: Parsing campaigns and coupons from campanhas_bplen.xlsx...")
+campanhas_path = r"D:\BPlen HUB\v3\portfolio\campanhas_bplen.xlsx"
+campanhas_payload_path = r"D:\BPlen HUB\v3\portfolio\campanhas_payload.json"
+
+code_to_slug = {
+    "BPL-000": "onboarding",
+    "BPL-001": "posicionamento-profissional",
+    "BPL-002": "analise-comportamental",
+    "BPL-003": "plano-carreira",
+    "BPL-004": "gestao-e-desenvolvimento",
+    "BPL-005": "mentocoach",
+    "BPL-006": "offboarding",
+    "BPL-PAC-JR": "pacote-junior",
+    "BPL-PAC-PL": "pacote-pleno",
+    "BPL-PAC-SR": "pacote-senior",
+    "BPL-PAC-LD": "pacote-lider",
+    "BPL-PAC-EB": "pacote-embaixador"
+}
+
+if os.path.exists(campanhas_path):
+    wb_cam = openpyxl.load_workbook(campanhas_path, data_only=True)
+    
+    # 1. Process active promotional offers
+    if "Ofertas" in wb_cam.sheetnames:
+        print(" -> Processing active promotional offers...")
+        ofertas_sheet = wb_cam["Ofertas"]
+        now_str = datetime.now().strftime("%Y-%m-%d")
+        
+        for r in range(2, ofertas_sheet.max_row + 1):
+            service_code = ofertas_sheet.cell(row=r, column=1).value
+            if not service_code:
+                continue
+            service_code = str(service_code).strip()
+            
+            promo_pix_val = ofertas_sheet.cell(row=r, column=2).value
+            promo_cartao_val = ofertas_sheet.cell(row=r, column=3).value
+            data_inicio = ofertas_sheet.cell(row=r, column=4).value
+            data_fim = ofertas_sheet.cell(row=r, column=5).value
+            slogan_oferta = ofertas_sheet.cell(row=r, column=6).value
+            
+            # Format dates to string
+            start_str = str(data_inicio).split()[0] if data_inicio else ""
+            end_str = str(data_fim).split()[0] if data_fim else ""
+            
+            # Check if campaign is active
+            is_active = True
+            if start_str and now_str < start_str:
+                is_active = False
+            if end_str and now_str > end_str:
+                is_active = False
+                
+            if is_active:
+                promo_pix = round(float(promo_pix_val), 2) if promo_pix_val is not None else 0.0
+                promo_cartao = round(float(promo_cartao_val), 2) if promo_cartao_val is not None else 0.0
+                slogan = str(slogan_oferta).strip() if slogan_oferta else ""
+                
+                # Apply promotion
+                product_target = None
+                if service_code in services_data:
+                    product_target = services_data[service_code]
+                elif service_code in packages_data:
+                    product_target = packages_data[service_code]
+                    
+                if product_target:
+                    product_target["originalPrice"] = product_target["price"]
+                    product_target["originalPricePix"] = product_target["pricePix"]
+                    product_target["price"] = promo_cartao
+                    product_target["pricePix"] = promo_pix
+                    if slogan:
+                        product_target["promoLabel"] = slogan
+                    print(f"    * Promotion Applied to {service_code}: Card R$ {promo_cartao:.2f} | PIX R$ {promo_pix:.2f} ({slogan})")
+                    
+    # 2. Process coupons
+    coupons_list = []
+    if "Cupons" in wb_cam.sheetnames:
+        print(" -> Processing coupons...")
+        cupons_sheet = wb_cam["Cupons"]
+        
+        for r in range(2, cupons_sheet.max_row + 1):
+            cupom_code = cupons_sheet.cell(row=r, column=1).value
+            if not cupom_code:
+                continue
+            cupom_code = str(cupom_code).strip()
+            
+            tipo = str(cupons_sheet.cell(row=r, column=2).value or "").strip()
+            valor_val = cupons_sheet.cell(row=r, column=3).value
+            status = str(cupons_sheet.cell(row=r, column=4).value or "").strip()
+            validade = cupons_sheet.cell(row=r, column=5).value
+            servicos_hab = str(cupons_sheet.cell(row=r, column=6).value or "").strip()
+            
+            # Map type and status
+            discount_type = "percentage" if tipo == "percentual" else "fixed"
+            active_bool = True if status == "ativo" else False
+            valor = float(valor_val) if valor_val is not None else 0.0
+            
+            validade_str = str(validade).split()[0] if validade else ""
+            
+            restricted_products = []
+            if servicos_hab and servicos_hab.lower() != "todos" and servicos_hab.lower() != "all":
+                for part in servicos_hab.split(","):
+                    clean_part = part.strip()
+                    if clean_part in code_to_slug:
+                        restricted_products.append(code_to_slug[clean_part])
+                        
+            coupon_item = {
+                "id": cupom_code.upper(),
+                "code": cupom_code.upper(),
+                "type": discount_type,
+                "value": valor,
+                "description": f"Desconto de {valor}%" if discount_type == "percentage" else f"Desconto de R$ {valor}",
+                "active": active_bool,
+                "usageCount": 0
+            }
+            
+            if validade_str:
+                coupon_item["expiryDate"] = validade_str
+            if restricted_products:
+                coupon_item["restrictedToProducts"] = restricted_products
+                
+            coupons_list.append(coupon_item)
+            print(f"    * Coupon Parsed: {coupon_item['code']} | Type: {discount_type} | Value: {valor} | Active: {active_bool}")
+            
+    # Write coupons payload
+    with open(campanhas_payload_path, "w", encoding="utf-8") as f_cam:
+        json.dump(coupons_list, f_cam, ensure_ascii=False, indent=2)
+    print(f" -> Compiled {len(coupons_list)} coupons to {campanhas_payload_path}")
+    wb_cam.close()
+else:
+    print(f"WARNING: campanhas_bplen.xlsx not found at {campanhas_path}. No campaigns processed.")
 
 
 # 7. EXPORT COMPILED CATALOGUE TO PAYLOAD JSON

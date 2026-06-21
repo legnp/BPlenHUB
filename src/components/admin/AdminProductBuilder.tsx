@@ -103,21 +103,14 @@ export function AdminProductBuilder({ initialProduct }: AdminProductBuilderProps
              onClick={() => router.back()}
              className="px-6 py-2.5 rounded-xl border border-[var(--border-primary)] text-[9px] font-black uppercase tracking-widest hover:bg-[var(--input-bg)] transition-all"
            >
-             Descartar
+             Voltar
            </button>
            <button 
-             onClick={handleSave}
-             disabled={isSaving || isSaved}
-             className={`px-8 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest hover:scale-[1.02] shadow-lg flex items-center gap-2 disabled:opacity-50 transition-all ${isSaved ? 'bg-green-500 text-white' : 'bg-[var(--text-primary)] text-[var(--bg-primary)]'}`}
+             disabled={true}
+             className="px-8 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest bg-red-500/10 text-red-400 border border-red-500/20 cursor-not-allowed opacity-50 flex items-center gap-2 transition-all"
            >
-             {isSaving ? (
-               <Plus className="animate-spin w-3 h-3" />
-             ) : isSaved ? (
-               <CheckCircle2 size={14} />
-             ) : (
-               <Save size={14} />
-             )}
-             {isSaved ? "Sucesso!" : "Salvar Alterações"}
+             <ShieldCheck size={14} />
+             Sincronia Obrigatoria
            </button>
         </div>
       </div>
@@ -133,6 +126,18 @@ export function AdminProductBuilder({ initialProduct }: AdminProductBuilderProps
 
       {/* Form Area */}
       <div className="flex-1 p-10 overflow-y-auto max-h-[600px] custom-scrollbar">
+        {/* Banner de Sincronia Soberana */}
+        <div className="mb-8 p-6 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-start gap-4 text-left">
+          <div className="p-3 bg-red-500/20 text-red-500 rounded-xl mt-1">
+            <ShieldCheck size={20} />
+          </div>
+          <div className="space-y-1">
+            <h4 className="text-xs font-black uppercase tracking-widest text-red-500">Controle de Portfolio Centralizado</h4>
+            <p className="text-[11px] text-[var(--text-muted)] leading-relaxed">
+              As edicoes diretas e manuais de produtos foram desativadas por motivos de governanca de dados. Todas as informacoes comerciais, copywriting, workflows e campanhas do BPlen HUB devem ser alteradas exclusivamente pelos arquivos locais (<code className="bg-red-500/10 px-1 py-0.5 rounded text-red-400 font-mono">portfolio_bplen.xlsx</code>, <code className="bg-red-500/10 px-1 py-0.5 rounded text-red-400 font-mono">anuncios_bplen.docx</code> e <code className="bg-red-500/10 px-1 py-0.5 rounded text-red-400 font-mono">campanhas_bplen.xlsx</code>) e sincronizadas no menu anterior. Isso evita divergencias de dados e quebras do sistema.
+            </p>
+          </div>
+        </div>
         <AnimatePresence mode="wait">
            {activeTab === 'identity' && (
               <motion.div key="identity" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}>
