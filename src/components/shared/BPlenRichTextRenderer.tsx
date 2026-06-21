@@ -34,13 +34,13 @@ function parseInlineStyles(text: string): React.ReactNode {
       continue;
     }
 
-    // 2. Detecta links de agendamento (versão expandida)
-    const scheduleRegex = /^(agend[ae]r?\s+(?:uma\s+)?(?:conversa|horário|reunião|sessão|atendimento|consultoria)(?:\s+com\s+a\s+equipe\s+BPlen|\s+com\s+a\s+BPlen|\s+para\s+esclarecer\s+dúvidas?|\s+para\s+saber\s+mais|\s+para\s+consultar[^.]*)?|agendamento\s+disponível)/i;
+    // 2. Detecta links de agendamento (versão expandida e robusta)
+    const scheduleRegex = /^(agend[ae]r?\s+(?:uma?\s+)?(?:conversa|horário|reunião|sessão|atendimento|consultoria|atendimento)(?:\s+conosco)?(?:\s+com\s+[^.]*|\s+para\s+[^.]*)?|agendamento\s+disponível)/i;
     const scheduleMatch = remainingText.match(scheduleRegex);
     if (scheduleMatch) {
       tokens.push({
         type: "schedule",
-        content: scheduleMatch[1]
+        content: scheduleMatch[0]
       });
       currentIndex += scheduleMatch[0].length;
       continue;
@@ -232,7 +232,7 @@ export function BPlenRichTextRenderer({
         renderedElements.push(
           <p 
             key={`p-${idx}`} 
-            className={`leading-relaxed tracking-tight opacity-90 mb-4 ${pClass}`}
+            className={`leading-relaxed tracking-tight opacity-90 mb-5 ${pClass}`}
           >
             {parseInlineStyles(trimmedLine)}
           </p>

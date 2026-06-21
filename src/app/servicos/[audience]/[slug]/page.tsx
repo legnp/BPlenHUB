@@ -16,7 +16,6 @@ import { SocialSidebar } from "@/components/layout/SocialSidebar";
 import { MatriculaGuard } from "@/components/checkout/MatriculaGuard";
 import { LANDING_TOKENS } from "@/constants/landing-tokens";
 import { notFound } from "next/navigation";
-import { HyperlinkAgendar } from "@/components/products/HyperlinkAgendar";
 import FAQContactModal from "@/components/products/FAQContactModal";
 import PackageServicesAccordion from "@/components/products/PackageServicesAccordion";
 import { BPlenRichTextRenderer } from "@/components/shared/BPlenRichTextRenderer";
@@ -197,9 +196,10 @@ export default async function ProductDetailPage({ params }: PageProps) {
                             </span>
                          </div>
                        )}
-                       <p className="text-[10px] font-bold text-gray-400 leading-relaxed italic opacity-60">
-                          <HyperlinkAgendar text={product.sheet.paymentConditions || "Agende uma conversa com a equipe BPlen para consultar as condições disponíveis."} />
-                       </p>
+                       <BPlenRichTextRenderer 
+                          text={product.sheet.paymentConditions || "Agende uma conversa com a equipe BPlen para consultar as condições disponíveis."} 
+                          variant="small"
+                       />
                     </div>
 
                    <MatriculaGuard productSlug={product.slug}>
@@ -240,9 +240,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
                           {product.sheet.faq.map((item, idx) => (
                              <div key={idx} className="p-8 rounded-3xl bg-white/5 border border-white/10 space-y-3">
                                 <h4 className="text-sm font-black uppercase tracking-widest text-[#ff0080]/80">{item.question}</h4>
-                                <p className="text-sm text-gray-400 leading-relaxed font-bold tracking-tight opacity-80">
-                                   <HyperlinkAgendar text={item.answer} />
-                                </p>
+                                 <BPlenRichTextRenderer text={item.answer} variant="small" />
                              </div>
                           ))}
                        </div>
@@ -276,9 +274,10 @@ export default async function ProductDetailPage({ params }: PageProps) {
                              </div>
                              <div className="space-y-1">
                                 <h5 className="text-[11px] font-black uppercase tracking-widest">{step.title}</h5>
-                                <p className="text-[10px] text-gray-500 font-bold tracking-tight">
-                                   <HyperlinkAgendar text={step.description || "Agende uma conversa com a equipe BPlen para saber mais."} />
-                                </p>
+                                 <BPlenRichTextRenderer 
+                                    text={step.description || "Agende uma conversa com a equipe BPlen para saber mais."} 
+                                    variant="small"
+                                 />
                              </div>
                           </div>
                        ))}
