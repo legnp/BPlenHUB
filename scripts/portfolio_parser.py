@@ -23,9 +23,13 @@ if os.path.exists(scratch_excel):
 else:
     print(f"WARNING: Template not found at {scratch_excel}. Parsing existing file.")
 
+# Ensure the new sheets exist in the restored file
+os.system(f'python "D:\\BPlen HUB\\v3\\scratch\\init_excel_sheets.py"')
+
 # 2. READ COMMERCAL PRICES IN-MEMORY (DATA ONLY)
-print("\nStep 2: Extracting commercial pricing in data_only mode...")
-wb_data = openpyxl.load_workbook(portfolio_path, data_only=True)
+print("\nStep 2: Extracting commercial pricing from template in data_only mode...")
+wb_data = openpyxl.load_workbook(scratch_excel, data_only=True)
+wb_config = openpyxl.load_workbook(portfolio_path, data_only=True) # To read Jornada and Checkpoints
 
 # Services Coordinates
 services_coords = {
@@ -146,75 +150,65 @@ for code, cfg in package_coords.items():
 wb_data.close()
 
 
-# 3. WRITE THE DYNAMIC CHECKPOINTS SHEET BACK TO EXCEL
-print("\nStep 3: Generating and saving dynamic Checkpoints sheet...")
-wb_write = openpyxl.load_workbook(portfolio_path)
-if "Checkpoints" in wb_write.sheetnames:
-    wb_write.remove(wb_write["Checkpoints"])
+# 3. READ JOURNEY CONFIGURATION (ORDER)
+print("\nStep 3: Reading Journey orders from 'Jornada' sheet...")
+try:
+    journey_sheet = wb_config["Jornada"]
+    journey_orders = {}
+    for r in range(2, journey_sheet.max_row + 1):
+        code = str(journey_sheet.cell(row=r, column=1).value or "").strip()
+        order = journey_sheet.cell(row=r, column=2).value
+        if code and order is not None:
+            journey_orders[code] = int(order)
+    print(f" -> Loaded orders for {len(journey_orders)} services.")
+except KeyError:
+    print("WARNING: 'Jornada' sheet not found. Using default orders.")
+    journey_orders = {
+        "BPL-000": 1, "BPL-001": 2, "BPL-002": 3, "BPL-003": 4, 
+        "BPL-004": 5, "BPL-005": 6, "BPL-006": 7
+    }
 
-ws_cp = wb_write.create_sheet("Checkpoints")
-ws_cp.append(["ServiceCode", "CheckpointId", "Order", "Title", "Type", "ReferenceId", "Description"])
-
-checkpoints_rows = [
-    ["BPL-000", "introducao", 1, "Introdução", "content", "welcome_video_01", "Conheça a visão da BPlen"],
-    ["BPL-000", "check_in_survey", 2, "Check-in", "survey", "check_in", "Demandas e estado atual da jornada"],
-    ["BPL-000", "sessao_onboarding", 3, "Sessão de Onboarding", "meeting", "onboarding", "Agende sua sessão de onboarding individual."],
-    
-    ["BPL-001", "perfil-profissional", 1, "Perfil Profissional", "form", "perfil_profissional", "Preenchimento do Perfil Profissional para estruturação do posicionamento."],
-    ["BPL-001", "agendar-orientacao", 2, "Agendar Orientação Individual", "meeting", "orientacao-individual-posicionamento", "Sessão individual com orientador especialista de 1h."],
-    
-    ["BPL-002", "realizar-disc", 1, "Responder Questionário DISC", "survey", "disc", "Formulário psicométrico oficial."],
-    ["BPL-002", "agendar-devolutiva", 2, "Agendar Devolutiva Individual", "meeting", "devolutiva-analise-comportamental", "Sessão com orientador especialista de 1h."],
-    
-    ["BPL-003", "plano-carreira-form", 1, "Plano de Carreira", "form", "plano_carreira", "Preenchimento do formulário do Plano de Carreira."],
-    ["BPL-003", "agendar-devolutiva-plano", 2, "Agendar Devolutiva do Plano", "meeting", "devolutiva-plano-carreira", "Sessão de entrega do Plano de Carreira."],
-    
-    ["BPL-004", "gdc-form", 1, "Gestão de Carreira", "form", "gdc", "Formulário de acompanhamento GDC."],
-    ["BPL-004", "agendar-mentorias", 2, "Agendar Mentorias", "meeting", "gdc-mentorias", "Agendamento de sessões periódicas de mentoria."],
-    
-    ["BPL-005", "mentocoach-form", 1, "Acompanhamento MentoCoach", "form", "mentocoach", "Formulário de autoavaliação MentoCoach."],
-    ["BPL-005", "agendar-sessoes", 2, "Agendar Sessões de Coaching", "meeting", "mentocoach-sessoes", "Agendamento das sessões individuais de coaching de alta performance."],
-    
-    ["BPL-006", "offboarding-survey", 1, "Avaliação Final", "survey", "offboarding_survey", "Pesquisa de encerramento e consolidação de resultados."]
-]
-
-for row in checkpoints_rows:
-    ws_cp.append(row)
-
-wb_write.save(portfolio_path)
-wb_write.close()
-print("Checkpoints sheet added successfully to portfolio_bplen.xlsx")
+# Update services_data with dynamic orders
+for code, data in services_data.items():
+    if code in journey_orders:
+        data["order"] = journey_orders[code]
+        print(f"    * {code} order set to: {data['order']}")
 
 
-# 4. PARSE CHECKPOINTS FROM EXCEL FOR THE JSON PAYLOAD
-print("\nStep 4: Reading checkpoints from sheet to load into payload...")
-wb_cp = openpyxl.load_workbook(portfolio_path, data_only=True)
-cp_sheet = wb_cp["Checkpoints"]
-checkpoints_by_service = {}
+# 4. PARSE CHECKPOINTS FROM EXCEL (READ ONLY)
+print("\nStep 4: Reading checkpoints from 'Checkpoints' sheet...")
+try:
+    cp_sheet = wb_config["Checkpoints"]
+    checkpoints_by_service = {}
 
-for r in range(2, cp_sheet.max_row + 1):
-    service_code = cp_sheet.cell(row=r, column=1).value
-    if not service_code:
-        continue
-    service_code = str(service_code).strip()
-    checkpoint_id = str(cp_sheet.cell(row=r, column=2).value or "").strip()
-    order = cp_sheet.cell(row=r, column=3).value
-    title = str(cp_sheet.cell(row=r, column=4).value or "").strip()
-    type_val = str(cp_sheet.cell(row=r, column=5).value or "").strip()
-    ref_id = str(cp_sheet.cell(row=r, column=6).value or "").strip()
-    desc = str(cp_sheet.cell(row=r, column=7).value or "").strip()
-    
-    if service_code not in checkpoints_by_service:
-        checkpoints_by_service[service_code] = []
+    for r in range(2, cp_sheet.max_row + 1):
+        service_code = cp_sheet.cell(row=r, column=1).value
+        if not service_code:
+            continue
+        service_code = str(service_code).strip()
+        checkpoint_id = str(cp_sheet.cell(row=r, column=2).value or "").strip()
+        order = cp_sheet.cell(row=r, column=3).value
+        title = str(cp_sheet.cell(row=r, column=4).value or "").strip()
+        type_val = str(cp_sheet.cell(row=r, column=5).value or "").strip()
+        ref_id = str(cp_sheet.cell(row=r, column=6).value or "").strip()
+        desc = str(cp_sheet.cell(row=r, column=7).value or "").strip()
         
-    checkpoints_by_service[service_code].append({
-        "id": f"ss-{type_val}-{ref_id}",
-        "type": type_val,
-        "referenceId": ref_id,
-        "title": title,
-        "description": desc or "Etapa recomendada de desenvolvimento"
-    })
-wb_cp.close()
+        if service_code not in checkpoints_by_service:
+            checkpoints_by_service[service_code] = []
+            
+        checkpoints_by_service[service_code].append({
+            "id": f"ss-{type_val}-{ref_id}",
+            "type": type_val,
+            "referenceId": ref_id,
+            "title": title,
+            "description": desc or "Etapa recomendada de desenvolvimento"
+        })
+    print(f" -> Loaded checkpoints for {len(checkpoints_by_service)} services.")
+except KeyError:
+    print("ERROR: 'Checkpoints' sheet not found. Delivery steps will be empty.")
+    checkpoints_by_service = {}
+
+wb_config.close()
 
 
 # 5. PARSE WORD ADVERTISEMENTS (COPYWRITING)
@@ -226,6 +220,7 @@ for idx, code in enumerate(["BPL-001", "BPL-002", "BPL-003", "BPL-004", "BPL-005
     table = doc.tables[idx]
     
     kicker = table.rows[1].cells[1].text.strip()
+    service_title = table.rows[2].cells[1].text.strip()
     short_desc = table.rows[3].cells[1].text.strip()
     long_desc = table.rows[4].cells[1].text.strip()
     faq_raw = table.rows[6].cells[1].text.strip()
@@ -253,6 +248,7 @@ for idx, code in enumerate(["BPL-001", "BPL-002", "BPL-003", "BPL-004", "BPL-005
         
     if code in services_data:
         services_data[code].update({
+            "title": service_title,
             "kicker": kicker,
             "sheet": {
                 "description": long_desc,
@@ -261,7 +257,7 @@ for idx, code in enumerate(["BPL-001", "BPL-002", "BPL-003", "BPL-004", "BPL-005
                 "faq": faq_list,
                 "termsAndConditions": "Ao contratar este serviço, você concorda com o plano de entrega e as diretrizes do BPlen HUB.",
                 "seo": {
-                    "title": f"{services_data[code]['title']} | BPlen HUB",
+                    "title": f"{service_title} | BPlen HUB",
                     "description": short_desc,
                     "keywords": [kicker.lower(), "bplen", "carreira", "profissional"]
                 }
@@ -274,7 +270,7 @@ for idx, code in enumerate(["BPL-001", "BPL-002", "BPL-003", "BPL-004", "BPL-005
                 "allowedEventTypes": [cp["referenceId"] for cp in checkpoints_by_service.get(code, []) if cp["type"] == "meeting"]
             }
         })
-        print(f" -> Integrated Copywriting for {code} ({kicker}) - FAQs: {len(faq_list)}, Workflow items: {len(workflow_list)}")
+        print(f" -> Integrated Copywriting for {code} ({service_title}) - FAQs: {len(faq_list)}, Workflow items: {len(workflow_list)}")
 
 # Packages Copywriting (Tables 5-9)
 for idx, code in enumerate(["BPL-PAC-JR", "BPL-PAC-PL", "BPL-PAC-SR", "BPL-PAC-LD", "BPL-PAC-EB"]):
