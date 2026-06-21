@@ -33,7 +33,7 @@ import {
   CheckCircle2,
   Circle
 } from "lucide-react";
-import { HomeFooter } from "@/components/home/HomeFooter";
+import { GlobalFooter } from "@/components/layout/GlobalFooter";
 import { useAuthContext } from "@/context/AuthContext";
 import { parseISO, isBefore, isAfter, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -534,7 +534,7 @@ export default function MemberDashboardView() {
         userName={user?.displayName ? user.displayName.split(" ")[0] : "Membro"}
       />
 
-      <HomeFooter />
+      <GlobalFooter variant="full" />
     </div>
   );
 }

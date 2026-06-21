@@ -34,7 +34,7 @@ import { MemberJourneyHero } from "@/components/hub/MemberJourneyHero";
 import { useAuthContext } from "@/context/AuthContext";
 import { useJourney } from "@/hooks/useJourney";
 import { cn } from "@/lib/utils";
-import * as LucideIcons from "lucide-react";
+import { GlobalFooter } from "@/components/layout/GlobalFooter";
 
 /**
  * HUB HOME VIEW — O Coração da Experiência Privada 🧬
@@ -264,41 +264,8 @@ export function HubHomeView() {
 
       </main>
 
-      {/* FOOTER DO HUB */}
-      <footer className="w-full py-16 px-6 bg-[var(--bg-primary)] border-t border-[var(--border-primary)]">
-         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-12">
-            <div className="space-y-4 text-center md:text-left">
-               <BPlenLogo variant="hub" size={24} />
-               <p className="max-w-xs text-[10px] text-[var(--text-secondary)] font-bold uppercase tracking-widest leading-loose">
-                  Sua plataforma de evolução profissional e estratégica corporativa.
-               </p>
-            </div>
-            
-            <div className="flex gap-12">
-               <div className="space-y-4">
-                  <h4 className="text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)]">Ecossistema</h4>
-                  <ul className="space-y-2">
-                     <li><Link href="/hub/primeiros_passos" className="text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all font-medium">Primeiros Passos</Link></li>
-                     <li><Link href="/servicos" className="text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all font-medium">Próximos Passos</Link></li>
-                  </ul>
-               </div>
-               <div className="space-y-4">
-                  <h4 className="text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)]">Suporte</h4>
-                  <ul className="space-y-2">
-                     <li><Link href="https://wa.me/5511945152088" target="_blank" className="text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all font-medium">WhatsApp</Link></li>
-                     <li><Link href="mailto:contato@bplen.com" className="text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all font-medium">Email</Link></li>
-                  </ul>
-               </div>
-            </div>
-         </div>
-         <div className="max-w-7xl mx-auto mt-20 pt-8 border-t border-[var(--border-primary)] flex flex-col md:flex-row justify-between items-center gap-4 text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60">
-            <span>© {new Date().getFullYear()} BPlen Consultoria. Todos os direitos reservados.</span>
-            <div className="flex gap-8">
-               <span>Privacidade</span>
-               <span>Governança</span>
-            </div>
-         </div>
-      </footer>
+      {/* FOOTER DO HUB — Padronizado */}
+      <GlobalFooter variant="full" />
 
     </div>
   );
