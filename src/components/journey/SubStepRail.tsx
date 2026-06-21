@@ -19,6 +19,9 @@ interface SubStepRailProps {
  * Linear rail for sub-stage progress.
  */
 export function SubStepRail({ id, style, substeps, currentSubStepId, completedSubStepIds, onSelectSubStep }: SubStepRailProps) {
+  const [sequenceLockModalOpen, setSequenceLockModalOpen] = useState(false);
+  const [prevSubStepTitle, setPrevSubStepTitle] = useState("");
+
   // 🧬 Agrupamento de SubSteps por Ordem Majoritária (ex: 5.1, 5.2 -> Parada 5)
   const groupedSubSteps = substeps.reduce((acc, ss) => {
     const majorOrder = ss.order?.split('.')[0] || "99";
