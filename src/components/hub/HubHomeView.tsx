@@ -35,6 +35,7 @@ import { useAuthContext } from "@/context/AuthContext";
 import { useJourney } from "@/hooks/useJourney";
 import { cn } from "@/lib/utils";
 import { GlobalFooter } from "@/components/layout/GlobalFooter";
+import * as LucideIcons from "lucide-react";
 
 /**
  * HUB HOME VIEW — O Coração da Experiência Privada 🧬
