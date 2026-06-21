@@ -20,6 +20,7 @@ export interface SubStepConfig {
   type: ContentType;
   referenceId: string; // The ID of the survey, form, or document being referenced
   description?: string;
+  order?: string; // Ordem do checkpoint (ex: 1, 2, 5.1, 5.2)
   allowReview?: boolean; // Se verdadeiro, exibe o botão de revisão após conclusão
 }
 

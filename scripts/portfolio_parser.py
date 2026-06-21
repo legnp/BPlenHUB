@@ -223,7 +223,8 @@ try:
             "type": type_val,
             "referenceId": ref_id,
             "title": title,
-            "description": desc or "Etapa recomendada de desenvolvimento"
+            "description": desc or "Etapa recomendada de desenvolvimento",
+            "order": str(order) if order is not None else ""
         })
     print(f" -> Loaded checkpoints for {len(checkpoints_by_service)} services.")
 except KeyError:
