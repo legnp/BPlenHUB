@@ -15,6 +15,7 @@ interface CheckoutFlowProps {
     price: number;
     slug: string;
     description: string;
+    maxInstallments?: number;
   };
 }
 
@@ -49,8 +50,8 @@ export function CheckoutFlow({ product }: CheckoutFlowProps) {
       } else {
         setError(result.error || "Falha ao iniciar checkout.");
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Erro desconhecido");
     } finally {
       setLoading(false);
     }
@@ -72,8 +73,8 @@ export function CheckoutFlow({ product }: CheckoutFlowProps) {
       } else {
          setError(result.error || "Falha ao ativar serviço.");
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Erro desconhecido");
     } finally {
       setLoading(false);
     }
@@ -257,6 +258,7 @@ export function CheckoutFlow({ product }: CheckoutFlowProps) {
                          preferenceId={preferenceId} 
                          orderId={orderId}
                          amount={product.price} 
+                         maxInstallments={product.maxInstallments}
                          idToken={idToken || undefined}
                          onSuccess={(paymentId) => {
                            if (orderId) {
@@ -270,7 +272,7 @@ export function CheckoutFlow({ product }: CheckoutFlowProps) {
                           onClick={() => setStep("registration")}
                           className="mt-8 text-[9px] font-black uppercase tracking-widest text-gray-500 hover:text-white block mx-auto"
                         >
-                            ← Editar Dados de Faturamento
+                            Editar Dados de Faturamento
                         </button>
                     </motion.div>
                  ) : null}

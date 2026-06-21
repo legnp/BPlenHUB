@@ -1,30 +1,80 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { initMercadoPago, Payment } from "@mercadopago/sdk-react";
+import React, { useEffect } from "react";
 import { loadMercadoPago } from "@mercadopago/sdk-js";
 import { clientEnv } from "@/env";
 import { useAuthContext } from "@/context/AuthContext";
-import { processPaymentAction } from "@/actions/mp-checkout";
+import { processPaymentAction, type MercadoPagoFormData } from "@/actions/mp-checkout";
 
 interface PaymentBrickProps {
   preferenceId: string;
   orderId: string;
   amount: number;
+  maxInstallments?: number;
   onReady?: () => void;
-  onError?: (error: any) => void;
+  onError?: (error: unknown) => void;
   onSuccess?: (paymentId?: string) => void;
   idToken?: string;
 }
 
+interface MercadoPagoBrickSettings {
+  initialization: {
+    amount: number;
+    preferenceId: string;
+  };
+  customization: {
+    paymentMethods: {
+      ticket: string;
+      bankTransfer: string;
+      creditCard: string;
+      maxInstallments: number;
+    };
+    visual: {
+      style: {
+        theme: string;
+        customVariables: {
+          baseColor: string;
+        };
+      };
+    };
+  };
+  callbacks: {
+    onReady: () => void;
+    onSubmit: (param: { formData: MercadoPagoFormData }) => Promise<void>;
+    onError: (error: unknown) => void;
+  };
+  mercadoPago: unknown;
+}
+
+interface WindowWithMercadoPago extends Window {
+  MercadoPago?: new (key: string, options?: { locale: string }) => {
+    bricks: () => {
+      create: (
+        type: string,
+        containerId: string,
+        settings: MercadoPagoBrickSettings
+      ) => Promise<{ unmount?: () => void }>;
+    };
+  };
+}
+
 /**
- * BPlen HUB — Payment Brick Wrapper (💳)
+ * BPlen HUB — Payment Brick Wrapper
  * Integra o Checkout Bricks do Mercado Pago com o design system do HUB.
  * Gerencia o ciclo de vida do pagamento e callbacks.
  */
-export function PaymentBrick({ preferenceId, orderId, amount, onReady, onError, onSuccess, idToken }: PaymentBrickProps) {
+export function PaymentBrick({
+  preferenceId,
+  orderId,
+  amount,
+  maxInstallments,
+  onReady,
+  onError,
+  onSuccess,
+  idToken,
+}: PaymentBrickProps) {
   const { user } = useAuthContext();
-  const brickController = React.useRef<any>(null);
+  const brickController = React.useRef<{ unmount?: () => void } | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -32,17 +82,17 @@ export function PaymentBrick({ preferenceId, orderId, amount, onReady, onError, 
     const renderBrick = async () => {
       try {
         await loadMercadoPago();
-        
-        // 🛡️ Inicialização Soberana (Puro JS)
-        if (!(window as any).MercadoPago) return;
 
-        const mp = new (window as any).MercadoPago(clientEnv.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY, {
+        const win = window as unknown as WindowWithMercadoPago;
+        if (!win.MercadoPago) return;
+
+        const mp = new win.MercadoPago(clientEnv.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY, {
           locale: "pt-BR",
         });
 
         const bricksBuilder = mp.bricks();
 
-        const settings = {
+        const settings: MercadoPagoBrickSettings = {
           initialization: {
             amount: Number(amount),
             preferenceId: preferenceId,
@@ -52,22 +102,22 @@ export function PaymentBrick({ preferenceId, orderId, amount, onReady, onError, 
               ticket: "all",
               bankTransfer: "all",
               creditCard: "all",
-              maxInstallments: 12,
+              maxInstallments: maxInstallments || 12,
             },
             visual: {
               style: {
                 theme: "flat",
                 customVariables: {
                   baseColor: "#667eea",
-                }
-              }
-            }
+                },
+              },
+            },
           },
           callbacks: {
             onReady: () => {
               if (onReady) onReady();
             },
-            onSubmit: ({ selectedPaymentMethod, formData }: any) => {
+            onSubmit: ({ formData }: { formData: MercadoPagoFormData }) => {
               return new Promise<void>(async (resolve, reject) => {
                 try {
                   const currentToken = idToken || (user ? await user.getIdToken() : undefined);
@@ -81,21 +131,21 @@ export function PaymentBrick({ preferenceId, orderId, amount, onReady, onError, 
                   } else {
                     reject(new Error(res.error));
                   }
-                } catch (err: any) {
-                  reject(err);
+                } catch (err: unknown) {
+                  reject(err instanceof Error ? err : new Error(String(err)));
                 }
               });
             },
-            onError: (error: any) => {
-              console.error("🚨 [Brick-Error]:", error);
+            onError: (error: unknown) => {
+              console.error("Payment Brick Error:", error);
               if (onError) onError(error);
             },
           },
-          mercadoPago: mp, // 🛡️ O elo final para matar o erro 'Together'
+          mercadoPago: mp,
         };
 
         if (isMounted) {
-          // Limpa qualquer instância anterior para evitar duplicidade
+          // Limpa qualquer instancia anterior para evitar duplicidade
           const container = document.getElementById("paymentCardBrick_container");
           if (container) container.innerHTML = "";
 
@@ -106,7 +156,7 @@ export function PaymentBrick({ preferenceId, orderId, amount, onReady, onError, 
           );
         }
       } catch (err) {
-        console.error("❌ [PaymentBrick] Falha Crítica:", err);
+        console.error("PaymentBrick critical failure:", err);
       }
     };
 
@@ -115,10 +165,11 @@ export function PaymentBrick({ preferenceId, orderId, amount, onReady, onError, 
     return () => {
       isMounted = false;
       if (brickController.current) {
-        // brickController.current.unmount(); // Alguns SDKs do MP não expõem unmount direto aqui
+        // brickController.current.unmount();
       }
     };
-  }, [preferenceId, orderId, amount]); // Re-renderiza se a preferência mudar
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [preferenceId, orderId, amount]); // Re-renderiza se a preferencia mudar
 
   return (
     <div className="w-full min-h-[400px] animate-in fade-in duration-700">

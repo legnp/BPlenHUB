@@ -44,6 +44,13 @@ export default async function ProductDetailPage({ params }: PageProps) {
 
   if (!product) notFound();
 
+  const price = product.price;
+  const maxInstallments = product.maxInstallments || 12;
+  const pricePix = product.pricePix || price;
+  const installmentValue = price / maxInstallments;
+  const economy = price - pricePix;
+  const discountPct = price > 0 ? (1 - pricePix / price) * 100 : 0;
+
   return (
     <main className="min-h-screen bg-black text-white relative isolate overflow-x-hidden theme-dark">
       
@@ -101,18 +108,52 @@ export default async function ProductDetailPage({ params }: PageProps) {
              {/* Sticky Pricing / CTA Side */}
              <div className="w-full lg:w-[400px] sticky top-32">
                 <div className="p-10 rounded-[3rem] bg-gradient-to-b from-white/10 to-transparent border border-white/20 shadow-2xl space-y-8 backdrop-blur-2xl">
-                   <div className="space-y-4">
-                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">Investimento</p>
-                      <div className="flex items-baseline gap-2">
-                         <span className="text-sm font-bold opacity-40">R$</span>
-                         <span className="text-6xl font-black tracking-tighter">
-                            {product.price > 0 ? product.price.toLocaleString('pt-BR') : "Sob consulta"}
-                         </span>
-                      </div>
-                      <p className="text-[10px] font-bold text-gray-400 leading-relaxed italic opacity-60">
-                         <HyperlinkAgendar text={product.sheet.paymentConditions || "Agende uma conversa com a equipe BPlen para consultar as condições disponíveis."} />
-                      </p>
-                   </div>
+                    <div className="space-y-4">
+                       <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">Investimento</p>
+                       {price > 0 ? (
+                         <div className="space-y-6">
+                            <div className="space-y-1">
+                               <p className="text-[10px] font-black uppercase tracking-wider text-[#ff0080]/90">A partir de</p>
+                               <div className="flex items-baseline gap-2">
+                                  <span className="text-sm font-bold opacity-50">{maxInstallments}x de</span>
+                                  <span className="text-sm font-black opacity-40">R$</span>
+                                  <span className="text-5xl font-black tracking-tighter text-white">
+                                     {installmentValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                  </span>
+                               </div>
+                               <p className="text-[10px] font-medium text-gray-500">
+                                  Total parcelado: R$ {price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                               </p>
+                            </div>
+
+                            <div className="p-5 rounded-3xl bg-white/5 border border-white/10 space-y-2">
+                               <div className="flex justify-between items-baseline">
+                                  <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">À vista no PIX</span>
+                                  <span className="text-lg font-black text-[#00f2fe]">
+                                     R$ {pricePix.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                  </span>
+                               </div>
+                               {economy > 0 && (
+                                  <div className="flex items-center justify-between text-[10px] text-gray-400">
+                                     <span>Economize R$ {economy.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                     <span className="px-2 py-0.5 bg-[#00f2fe]/10 border border-[#00f2fe]/20 rounded-full text-[#00f2fe] font-black">
+                                        {discountPct.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 })}% OFF
+                                     </span>
+                                  </div>
+                                )}
+                            </div>
+                         </div>
+                       ) : (
+                         <div className="flex items-baseline gap-2">
+                            <span className="text-4xl font-black tracking-tighter">
+                               Gratuito
+                            </span>
+                         </div>
+                       )}
+                       <p className="text-[10px] font-bold text-gray-400 leading-relaxed italic opacity-60">
+                          <HyperlinkAgendar text={product.sheet.paymentConditions || "Agende uma conversa com a equipe BPlen para consultar as condições disponíveis."} />
+                       </p>
+                    </div>
 
                    <MatriculaGuard productSlug={product.slug}>
                      Contratar Serviço
@@ -203,7 +244,13 @@ export default async function ProductDetailPage({ params }: PageProps) {
   );
 }
 
-function BenefitCard({ icon, title, text }: any) {
+interface BenefitCardProps {
+  icon: React.ReactNode;
+  title: string;
+  text: string;
+}
+
+function BenefitCard({ icon, title, text }: BenefitCardProps) {
   return (
     <div className="p-6 rounded-3xl bg-white/5 border border-white/10 flex items-center gap-5">
        <div className="p-3 bg-[#ff0080]/10 rounded-xl text-[#ff0080]">

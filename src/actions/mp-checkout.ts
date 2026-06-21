@@ -9,7 +9,7 @@ import { Preference, Payment as MPPayment } from "mercadopago";
 import { validateCouponAction } from "./coupons";
 import { clientEnv } from "@/env";
 
-type MercadoPagoFormData = {
+export type MercadoPagoFormData = {
   amount?: number | string;
   transaction_amount?: number | string;
   installments?: number | string;
@@ -203,7 +203,7 @@ export async function createPreferenceAction(
         },
         // Configuração Flexível de Parcelamento (Fallback para 12x se não especificado)
         payment_methods: {
-          installments: 12, // TODO: Tornar dinâmico via Firestore se necessário
+          installments: product.maxInstallments || 12,
           excluded_payment_types: [] // Pode-se excluir 'ticket' se não desejar boleto futuramente
         },
         notification_url: `${baseUrl}/api/webhooks/mercadopago`
@@ -263,7 +263,8 @@ export async function getCheckoutProductAction(slug: string, idToken?: string) {
         title: product.title,
         price: product.price,
         slug: product.slug,
-        description: product.sheet.description
+        description: product.sheet.description,
+        maxInstallments: product.maxInstallments
       } 
     };
   } catch (err: unknown) {
