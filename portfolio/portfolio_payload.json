@@ -70,7 +70,7 @@
         "onboarding"
       ]
     },
-    "order": 1
+    "order": 2
   },
   {
     "id": "posicionamento-profissional",
@@ -81,7 +81,7 @@
     "pricePix": 895.43,
     "maxInstallments": 3,
     "isStepJourney": true,
-    "order": 2,
+    "order": 1,
     "grantedQuotas": {
       "posicionamentoprofissional": 1
     },
@@ -738,7 +738,7 @@
     "title": "Pacote JUNIOR",
     "price": 930.9,
     "pricePix": 895.44,
-    "maxInstallments": 5,
+    "maxInstallments": 3,
     "isStepJourney": false,
     "grantedQuotas": {
       "posicionamentoprofissional": 1
@@ -753,7 +753,7 @@
       "description": "Inicie seu Posicionamento Profissional e prepare-se para o mercado.",
       "shortDescription": "Inicie seu Posicionamento Profissional e prepare-se para o mercado.",
       "coverImage": "/images/products/pacote-junior.png",
-      "paymentConditions": "Parcele em até 5x sem juros no cartão de crédito ou obtenha desconto exclusivo via PIX.",
+      "paymentConditions": "Parcele em até 3x sem juros no cartão de crédito ou obtenha desconto exclusivo via PIX.",
       "faq": [
         {
           "question": "O que está incluso neste pacote?",
@@ -790,7 +790,7 @@
     "title": "Pacote PLENO",
     "price": 2434.58,
     "pricePix": 2341.84,
-    "maxInstallments": 7,
+    "maxInstallments": 5,
     "isStepJourney": false,
     "grantedQuotas": {
       "posicionamentoprofissional": 1,
@@ -807,7 +807,7 @@
       "description": "Coordene suas habilidades para liderar seus relacionamentos e estilos de liderança e se posicionar com alto valor.",
       "shortDescription": "Coordene suas habilidades para liderar seus relacionamentos e estilos de liderança e se posicionar com alto valor.",
       "coverImage": "/images/products/pacote-pleno.png",
-      "paymentConditions": "Parcele em até 7x sem juros no cartão de crédito ou obtenha desconto exclusivo via PIX.",
+      "paymentConditions": "Parcele em até 5x sem juros no cartão de crédito ou obtenha desconto exclusivo via PIX.",
       "faq": [
         {
           "question": "O que está incluso neste pacote?",
