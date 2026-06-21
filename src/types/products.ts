@@ -33,7 +33,7 @@ export interface WorkflowStep {
 
 export interface DeliveryStep {
   id: string;
-  type: 'survey' | 'form' | 'meeting';
+  type: 'survey' | 'form' | 'meeting' | 'content';
   referenceId: string;
   title: string;
   description?: string;
@@ -47,6 +47,8 @@ export interface Product {
   kicker?: string; // Frase de destaque opcional
   targetAudiences: ('people' | 'companies' | 'partners' | 'internal')[];
   price: number;
+  pricePix?: number;
+  maxInstallments?: number;
   
   // Flag para Jornada do Membro
   isStepJourney: boolean;

@@ -71,3 +71,6 @@ next-env.d.ts
 /query-test.js
 /query-test.ts
 /scratch-test.js
+
+# BPlen HUB - Portfolio & Mass Import files
+/portfolio
