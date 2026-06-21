@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   description:
     "Ecossistema para criar, divulgar, vender, conduzir e entregar serviços de Desenvolvimento Humano.",
   icons: {
-    icon: "/logo_bplen/favicon.svg",
+    icon: "/logo_bplen/favicon.png",
   },
 };
 

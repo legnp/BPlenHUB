@@ -221,7 +221,7 @@ export default function QRCodesManagementPage() {
                     bgColor="#ffffff"
                     fgColor="#1d1d1f"
                     imageSettings={{
-                      src: "/logo_bplen/favicon.svg", // Logo Symbol SVG do BPlen (1:1)
+                      src: "/logo_bplen/favicon.png", // Logo Symbol PNG do BPlen (1:1)
                       x: undefined,
                       y: undefined,
                       height: 30,
