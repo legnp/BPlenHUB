@@ -6,6 +6,25 @@ import shutil
 import re
 from datetime import datetime
 
+def extract_cell_markdown(cell):
+    paragraphs_md = []
+    for p in cell.paragraphs:
+        p_text = ""
+        for r in p.runs:
+            text = r.text
+            # Detect bold run
+            is_bold = r.bold or (r.style and r.style.font and r.style.font.bold)
+            if is_bold and text.strip():
+                # Avoid wrapping empty spaces in asterisks
+                leading_spaces = len(text) - len(text.lstrip())
+                trailing_spaces = len(text) - len(text.rstrip())
+                mid_text = text.strip()
+                p_text += text[:leading_spaces] + f"**{mid_text}**" + (text[len(text)-trailing_spaces:] if trailing_spaces else "")
+            else:
+                p_text += text
+        paragraphs_md.append(p_text)
+    return "\n".join(paragraphs_md).strip()
+
 scratch_excel = r"D:\BPlen HUB\v3\scratch\servicos_bplen-v3.xlsx"
 portfolio_path = r"D:\BPlen HUB\v3\portfolio\portfolio_bplen.xlsx"
 docx_path = r"D:\BPlen HUB\v3\portfolio\anuncios_bplen.docx"
@@ -186,12 +205,12 @@ try:
         if not service_code:
             continue
         service_code = str(service_code).strip()
-        checkpoint_id = str(cp_sheet.cell(row=r, column=2).value or "").strip()
-        order = cp_sheet.cell(row=r, column=3).value
-        title = str(cp_sheet.cell(row=r, column=4).value or "").strip()
-        type_val = str(cp_sheet.cell(row=r, column=5).value or "").strip()
-        ref_id = str(cp_sheet.cell(row=r, column=6).value or "").strip()
-        desc = str(cp_sheet.cell(row=r, column=7).value or "").strip()
+        checkpoint_id = str(cp_sheet.cell(row=r, column=3).value or "").strip()
+        order = cp_sheet.cell(row=r, column=4).value
+        title = str(cp_sheet.cell(row=r, column=5).value or "").strip()
+        type_val = str(cp_sheet.cell(row=r, column=6).value or "").strip()
+        ref_id = str(cp_sheet.cell(row=r, column=7).value or "").strip()
+        desc = str(cp_sheet.cell(row=r, column=8).value or "").strip()
         
         if service_code not in checkpoints_by_service:
             checkpoints_by_service[service_code] = []
@@ -221,10 +240,10 @@ for idx, code in enumerate(["BPL-001", "BPL-002", "BPL-003", "BPL-004", "BPL-005
     
     kicker = table.rows[1].cells[1].text.strip()
     service_title = table.rows[2].cells[1].text.strip()
-    short_desc = table.rows[3].cells[1].text.strip()
-    long_desc = table.rows[4].cells[1].text.strip()
-    faq_raw = table.rows[6].cells[1].text.strip()
-    workflow_raw = table.rows[7].cells[1].text.strip()
+    short_desc = extract_cell_markdown(table.rows[3].cells[1])
+    long_desc = extract_cell_markdown(table.rows[4].cells[1])
+    faq_raw = extract_cell_markdown(table.rows[6].cells[1])
+    workflow_raw = extract_cell_markdown(table.rows[7].cells[1])
     
     # Parse FAQ array
     faq_list = []
@@ -276,15 +295,15 @@ for idx, code in enumerate(["BPL-001", "BPL-002", "BPL-003", "BPL-004", "BPL-005
 for idx, code in enumerate(["BPL-PAC-JR", "BPL-PAC-PL", "BPL-PAC-SR", "BPL-PAC-LD", "BPL-PAC-EB"]):
     table = doc.tables[idx + 5]
     
-    tatic = table.rows[0].cells[1].text.strip()
-    slogan = table.rows[1].cells[1].text.strip()
-    upsell = table.rows[3].cells[1].text.strip()
+    tatic = extract_cell_markdown(table.rows[0].cells[1])
+    slogan = extract_cell_markdown(table.rows[1].cells[1])
+    kicker = table.rows[2].cells[1].text.strip()
     
     if code in packages_data:
         packages_data[code].update({
-            "kicker": slogan,
+            "kicker": kicker,
             "sheet": {
-                "description": f"{tatic}\n\n{upsell}",
+                "description": f"{tatic}\n\n{slogan}",
                 "coverImage": f"/images/products/{packages_data[code]['slug']}.png",
                 "paymentConditions": "Parcele em até 12x sem juros no cartão de crédito ou obtenha desconto exclusivo via PIX.",
                 "faq": [
@@ -306,7 +325,7 @@ for idx, code in enumerate(["BPL-PAC-JR", "BPL-PAC-PL", "BPL-PAC-SR", "BPL-PAC-L
                 "allowedEventTypes": []
             }
         })
-        print(f" -> Integrated Copywriting for Package {code} ({slogan})")
+        print(f" -> Integrated Copywriting for Package {code} ({kicker})")
 
 
 # 6. DEFINE INTERNAL/UTILITY SERVICES (BPL-000 AND BPL-006)

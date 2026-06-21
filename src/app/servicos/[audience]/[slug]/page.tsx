@@ -1,6 +1,7 @@
 import React from "react";
 import { Metadata } from "next";
-import { getProductBySlug } from "@/actions/products";
+import { getProductBySlug, getProductsByAudience } from "@/actions/products";
+import { Product } from "@/types/products";
 import { 
   ArrowLeft,
   ShieldCheck,
@@ -17,6 +18,8 @@ import { LANDING_TOKENS } from "@/constants/landing-tokens";
 import { notFound } from "next/navigation";
 import { HyperlinkAgendar } from "@/components/products/HyperlinkAgendar";
 import FAQContactModal from "@/components/products/FAQContactModal";
+import PackageServicesAccordion from "@/components/products/PackageServicesAccordion";
+import { BPlenRichTextRenderer } from "@/components/shared/BPlenRichTextRenderer";
 
 interface PageProps {
   params: Promise<{
@@ -35,7 +38,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 /**
- * Product Detail Page — BPlen HUB 🧬
+ * Product Detail Page — BPlen HUB
  * Apresentação completa da ficha técnica do serviço e CTA de contratação.
  */
 export default async function ProductDetailPage({ params }: PageProps) {
@@ -43,6 +46,20 @@ export default async function ProductDetailPage({ params }: PageProps) {
   const product = await getProductBySlug(slug);
 
   if (!product) notFound();
+
+  const isPackage = product.serviceCode?.startsWith("BPL-PAC-") || false;
+  
+  let relatedServices: Product[] = [];
+  if (isPackage) {
+    const allAudienceProducts = await getProductsByAudience(audience as 'people' | 'companies');
+    relatedServices = allAudienceProducts.filter(p => {
+      if (p.serviceCode?.startsWith("BPL-PAC-") || p.serviceCode === "BPL-000" || p.serviceCode === "BPL-006") {
+        return false;
+      }
+      const serviceQuotaKeys = Object.keys(p.grantedQuotas || {});
+      return serviceQuotaKeys.some(key => product.grantedQuotas && key in product.grantedQuotas);
+    });
+  }
 
   const price = product.price;
   const maxInstallments = product.maxInstallments || 12;
@@ -94,9 +111,11 @@ export default async function ProductDetailPage({ params }: PageProps) {
                    <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
                       <ShieldCheck size={120} />
                    </div>
-                   <p className="text-lg md:text-xl text-gray-300 leading-relaxed font-bold tracking-tight opacity-90 relative z-10">
-                     {product.sheet.description}
-                   </p>
+                    <BPlenRichTextRenderer 
+                      text={product.sheet.description} 
+                      variant="large"
+                      className="relative z-10"
+                    />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -238,25 +257,33 @@ export default async function ProductDetailPage({ params }: PageProps) {
               {/* Terms / Workflow Side */}
               <div className="space-y-12">
                  <div className="space-y-4">
-                    <h2 className="text-3xl font-black tracking-tighter uppercase">Workflow de <span className="opacity-40">Entrega</span></h2>
-                    <p className="text-gray-500 text-sm font-bold tracking-tight">O que te entregamos durante a sua jornada conosco.</p>
+                    <h2 className="text-3xl font-black tracking-tighter uppercase">
+                       {isPackage ? "Serviços" : "Workflow de"} <span className="opacity-40">{isPackage ? "Inclusos" : "Entrega"}</span>
+                    </h2>
+                    <p className="text-gray-500 text-sm font-bold tracking-tight">
+                       {isPackage ? "Conheça os detalhes de cada um dos serviços integrados neste pacote." : "O que te entregamos durante a sua jornada conosco."}
+                    </p>
                  </div>
 
-                 <div className="space-y-4">
-                    {product.workflow.map((step, idx) => (
-                       <div key={step.id} className="flex items-center gap-6 p-6 rounded-2xl bg-white/5 border border-white/5 group hover:border-[#ff0080]/20 transition-all">
-                          <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-black group-hover:bg-[#ff0080] group-hover:text-white transition-all">
-                             {idx + 1}
+                 {isPackage ? (
+                    <PackageServicesAccordion services={relatedServices} />
+                 ) : (
+                    <div className="space-y-4">
+                       {product.workflow.map((step, idx) => (
+                          <div key={step.id} className="flex items-center gap-6 p-6 rounded-2xl bg-white/5 border border-white/5 group hover:border-[#ff0080]/20 transition-all">
+                             <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-black group-hover:bg-[#ff0080] group-hover:text-white transition-all">
+                                {idx + 1}
+                             </div>
+                             <div className="space-y-1">
+                                <h5 className="text-[11px] font-black uppercase tracking-widest">{step.title}</h5>
+                                <p className="text-[10px] text-gray-500 font-bold tracking-tight">
+                                   <HyperlinkAgendar text={step.description || "Agende uma conversa com a equipe BPlen para saber mais."} />
+                                </p>
+                             </div>
                           </div>
-                          <div className="space-y-1">
-                             <h5 className="text-[11px] font-black uppercase tracking-widest">{step.title}</h5>
-                             <p className="text-[10px] text-gray-500 font-bold tracking-tight">
-                                <HyperlinkAgendar text={step.description || "Agende uma conversa com a equipe BPlen para saber mais."} />
-                             </p>
-                          </div>
-                       </div>
-                    ))}
-                 </div>
+                       ))}
+                    </div>
+                 )}
               </div>
 
            </div>

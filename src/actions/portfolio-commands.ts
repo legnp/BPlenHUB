@@ -5,8 +5,6 @@ import { PRODUCTS_COLLECTION, COUPONS_COLLECTION } from "@/config/collections";
 import { revalidatePath } from "next/cache";
 import fs from "fs";
 import path from "path";
-import openpyxl from "xlsx"; // Usando xlsx para leitura em JS no servidor
-import docx from "docx"; // Para leitura de docx se necessário, ou processar o JSON pré-gerado
 
 /**
  * BPlen HUB — Portfolio Command Center 🚀
