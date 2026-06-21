@@ -129,7 +129,7 @@ export default async function SegmentedServicesPage({ params }: PageProps) {
                <p className="text-xs font-black uppercase tracking-widest">Nenhum serviço disponível neste segmento ainda</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
               {individualServices.map((product) => (
                 <div 
                   key={product.id} 
