@@ -945,6 +945,58 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
                 transition={{ duration: 0.4 }}
                 className="space-y-6"
               >
+                {currentStep.id === "step_q3_justificativa" && (() => {
+                  const combinedDataForTable = {
+                    ...userMetadata,
+                    ...responses,
+                  };
+                  const selectedCombustiveis = Array.isArray(combinedDataForTable.combustiveis_selecionados) 
+                    ? (combinedDataForTable.combustiveis_selecionados as string[]) 
+                    : [];
+                  const selectedBarreiras = Array.isArray(combinedDataForTable.barreiras_selecionadas) 
+                    ? (combinedDataForTable.barreiras_selecionadas as string[]) 
+                    : [];
+
+                  return (
+                    <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-4 max-w-[640px] animate-fade-in">
+                      <table className="w-full text-left border-collapse table-fixed">
+                        <thead>
+                          <tr className="border-b border-white/10">
+                            <th className="pb-3 text-[10px] font-black uppercase tracking-wider text-[var(--accent-start)] w-1/2">
+                              Combustíveis (Aceleradores)
+                            </th>
+                            <th className="pb-3 text-[10px] font-black uppercase tracking-wider text-[var(--accent-start)] w-1/2 pl-4">
+                              Barreiras (Freios)
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {Array.from({ length: Math.max(selectedCombustiveis.length, selectedBarreiras.length) }).map((_, idx) => (
+                            <tr key={idx} className="border-b border-white/5 last:border-0 hover:bg-white/5 transition-colors">
+                              <td className="py-2.5 pr-4 text-xs font-medium text-[var(--text-primary)] align-top break-words">
+                                {selectedCombustiveis[idx] ? (
+                                  <div className="flex items-start gap-2">
+                                    <span className="text-[var(--accent-start)] font-bold mt-0.5">•</span>
+                                    <span>{selectedCombustiveis[idx]}</span>
+                                  </div>
+                                ) : ""}
+                              </td>
+                              <td className="py-2.5 pl-4 text-xs font-medium text-[var(--text-primary)] align-top break-words">
+                                {selectedBarreiras[idx] ? (
+                                  <div className="flex items-start gap-2">
+                                    <span className="text-red-400 font-bold mt-0.5">•</span>
+                                    <span>{selectedBarreiras[idx]}</span>
+                                  </div>
+                                ) : ""}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  );
+                })()}
+
                 {preparedFields.map(field => (
                   <div key={field.id} className="animate-fade-in">
                     {renderField(field)}

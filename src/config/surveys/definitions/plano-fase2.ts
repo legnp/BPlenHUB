@@ -113,7 +113,7 @@ export const planoFase2Survey: SurveyConfig = {
     {
       id: "step_q3_justificativa",
       question: "3) Histórico dos combustíveis e barreiras",
-      description: "{{User_Nickname}}, qual o motivo de ter selecionado os combustíveis {{combustiveis_selecionados}} e as possíveis barreiras {{barreiras_selecionadas}}?\n\nQuais foram as situações mais marcantes na sua trajetória em que eles apareceram e o que aconteceu? Como você reagiu e quais foram os resultados gerados?",
+      description: "{{User_Nickname}}, qual o motivo de ter selecionado os combustíveis e barreiras?\n\nQuais foram as situações mais marcantes na sua trajetória em que eles apareceram e o que aconteceu? Como você reagiu e quais foram os resultados gerados?",
       nextLabel: "Avançar",
       fields: [
         {
