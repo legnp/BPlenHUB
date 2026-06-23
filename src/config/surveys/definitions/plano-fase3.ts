@@ -174,7 +174,7 @@ export const planoFase3Survey: SurveyConfig = {
     {
       id: "step_q4_contrato_parceria",
       question: "4) Contrato de parceria",
-      description: "Muito bem! Não basta apenas ter esses aliados por perto, é preciso autorizá-los a te ajudar.\n\nImagine que, no meio do caminho, o seu nível de estresse aumentou e você começou a se autossabotar, acionando exatamente aqueles \"freios\" que já mapeamos ({{Barreiras_Selecionadas}}).\n\nQuando e como a sua rede de parceria pode te alertar, te cobrar ou te resgatar sem que você reaja de forma defensiva? O que você permite que essas pessoas te digam nesse momento crítico?",
+      description: "Muito bem! Não basta apenas ter esses aliados por perto, é preciso autorizá-los a te ajudar.\n\nImagine que, no meio do caminho, o seu nível de estresse aumentou e você começou a se autossabotar, acionando exatamente aqueles freios que já mapeamos {{barreiras_selecionadas}}.\n\nQuando e como a sua rede de parceria pode te alertar, te cobrar ou te resgatar sem que você reaja de forma defensiva? O que você permite que essas pessoas te digam nesse momento crítico?",
       nextLabel: "Avançar",
       fields: [
         {

@@ -36,7 +36,7 @@ export function NarrativeReveal({
 
   // Normalização e Limpeza (Markdown -> Texto para contagem)
   const normalizedText = text.replaceAll("\\n", "\n");
-  const rawTextForCounting = normalizedText.replace(/\*\*/g, ""); // Remove estrelas da contagem real
+  const rawTextForCounting = normalizedText.replace(/\*\*/g, "").replace(/==/g, ""); // Remove marcadores da contagem real
 
   useEffect(() => {
     if (!active) return;
@@ -44,7 +44,6 @@ export function NarrativeReveal({
     // Resetar estado quando o texto mudar
     setVisibleChars(0);
     
-    const current = 0;
     const totalChars = rawTextForCounting.length;
 
     const startAnimation = () => {
@@ -75,16 +74,28 @@ export function NarrativeReveal({
 
   // Parser de Revelação: Renderiza a estrutura final e controla opacidade por spans
   const renderStructuredContent = () => {
-    // Regex para identificar **negrito**
-    const parts = normalizedText.split(/(\*\*.*?\*\*)/g);
+    // Regex para identificar **negrito** e ==destaque==
+    const parts = normalizedText.split(/(\*\*.*?\*\*|==.*?==)/g);
     let charPointer = 0;
 
     return parts.map((part, pIdx) => {
       const isBold = part.startsWith("**") && part.endsWith("**");
-      const content = isBold ? part.slice(2, -2) : part;
+      const isHighlight = part.startsWith("==") && part.endsWith("==");
+      
+      const content = isBold 
+        ? part.slice(2, -2) 
+        : isHighlight 
+          ? part.slice(2, -2) 
+          : part;
+
+      const spanClass = isBold 
+        ? "font-bold text-[var(--accent-start)]" 
+        : isHighlight 
+          ? "font-semibold text-[var(--accent-end)]" 
+          : "";
 
       return (
-        <span key={pIdx} className={isBold ? "font-bold text-[var(--accent-start)]" : ""}>
+        <span key={pIdx} className={spanClass}>
           {content.split("").map((char, cIdx) => {
             const isVisible = charPointer < visibleChars;
             charPointer++; // Incrementar apenas para caracteres visíveis na string final (sem estrelas)

@@ -104,7 +104,10 @@ export default function HubPage() {
             config={dynamicWelcomeConfig}
             userUid={user.uid}
             onComplete={(mat, responses) => {
-              if (responses?.wants_tour?.includes("Sim")) {
+              const wantsTour = responses?.wants_tour;
+              if (Array.isArray(wantsTour) && wantsTour.includes("Sim")) {
+                useTourStore.getState().startTour("onboarding_tour", hubOnboardingSteps);
+              } else if (typeof wantsTour === "string" && wantsTour.includes("Sim")) {
                 useTourStore.getState().startTour("onboarding_tour", hubOnboardingSteps);
               }
               setHasCompletedSurvey(true);

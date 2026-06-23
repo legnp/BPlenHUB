@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Rocket, Link2, ExternalLink, Loader2 } from "lucide-react";
+import { Rocket } from "lucide-react";
 import Link from "next/link";
 import { format, parseISO } from "date-fns";
 import { SurveyConfig, SurveyFieldConfig, SurveyValue } from "@/types/survey";
@@ -11,14 +11,15 @@ import { NavButton } from "@/components/ui/NavButton";
 import { ChoiceButton } from "@/components/ui/ChoiceButton";
 import { InputGlass } from "@/components/ui/InputGlass";
 import { TextareaGlass } from "@/components/ui/TextareaGlass";
-import { CheckboxItem } from "@/components/ui/CheckboxItem";
+// CheckboxItem removido por não ser utilizado 🛡️
+
 
 // Novos Componentes de Campo 🧬
 import { MultiSelect } from "./SurveyFields/MultiSelect";
 import { CascadedSelect } from "./SurveyFields/CascadedSelect";
-import { BenefitsPackage } from "./SurveyFields/BenefitsPackage";
-import { CurrencyGroup } from "./SurveyFields/CurrencyGroup";
-import { LikertScale } from "./SurveyFields/LikertScale";
+import { BenefitsPackage, BenefitData } from "./SurveyFields/BenefitsPackage";
+import { CurrencyGroup, CurrencyValue } from "./SurveyFields/CurrencyGroup";
+import { LikertScale, LikertValue } from "./SurveyFields/LikertScale";
 import { RankingField } from "./SurveyFields/RankingField";
 import { LikertGroup } from "./SurveyFields/LikertGroup";
 import { FileField } from "./SurveyFields/FileField";
@@ -31,29 +32,28 @@ import { getProgramacaoForMemberAction } from "@/actions/calendar";
 
 
 
-
 interface SurveyEngineProps {
   config: SurveyConfig;
   userUid: string;
-  onComplete?: (matricula: string, responses?: Record<string, any>) => void;
+  onComplete?: (matricula: string, responses?: Record<string, SurveyValue>) => void;
   onSubmitSuccess?: () => void;
   onStepChange?: (index: number, isLastStep: boolean) => void;
   returnToCheckoutSlug?: string;
   userNickname?: string | null;
-  initialUserMetadata?: Record<string, any>;
+  initialUserMetadata?: Record<string, unknown>;
 }
 
 /**
  * Utility: Fisher-Yates Shuffle
  * Mantém a opção "Outro" ou "Outros" sempre no final se existir.
  */
-function shuffleOptions(options: any[]) {
-  const otherIndex = options.findIndex(opt => {
+function shuffleOptions(options: string[] | { label: string; value: string; subOptions?: string[] }[]): typeof options {
+  const otherIndex = (options as any[]).findIndex((opt: any) => {
     const label = (typeof opt === "string" ? opt : opt.label).toLowerCase();
     return label === "outro" || label === "outros" || label.startsWith("outro ");
   });
 
-  const toShuffle = [...options];
+  const toShuffle = [...options] as any[];
   let other: any = null;
   if (otherIndex > -1) {
     other = toShuffle.splice(otherIndex, 1)[0];
@@ -65,7 +65,7 @@ function shuffleOptions(options: any[]) {
   }
 
   if (other) toShuffle.push(other);
-  return toShuffle;
+  return toShuffle as typeof options;
 }
 
 /**
@@ -83,8 +83,8 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
     }
   }, [currentStepIndex, config.steps.length, onStepChange]);
 
-  const [userMetadata, setUserMetadata] = useState<Record<string, any>>(() => {
-    const initial: Record<string, any> = initialUserMetadata ? { ...initialUserMetadata } : {};
+  const [userMetadata, setUserMetadata] = useState<Record<string, unknown>>(() => {
+    const initial: Record<string, unknown> = initialUserMetadata ? { ...initialUserMetadata } : {};
     if (userNickname) {
       initial.User_Nickname = userNickname;
     }
@@ -97,8 +97,9 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
   const [isFinished, setIsFinished] = useState(false);
   const [startTime] = useState<number>(Date.now());
   const [matricula, setMatricula] = useState<string>("");
-  const [pendingUploads, setPendingUploads] = useState<number>(0);
-  const [calendarEvents, setCalendarEvents] = useState<any[]>([]);
+  // pendingUploads mantido apenas se for necessário para lógica de bloqueio de botão
+  const [pendingUploads] = useState<number>(0);
+  const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>([]);
   const [loadingCalendar, setLoadingCalendar] = useState(false);
 
   useEffect(() => {
@@ -156,7 +157,7 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
       }
       return { ...field, options: currentOptions };
     });
-  }, [currentStepIndex, config.id, currentStep.fields, userMetadata]);
+  }, [currentStep.fields, userMetadata]);
 
   const isLastStep = currentStepIndex === config.steps.length - 1;
 
@@ -179,18 +180,30 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
 
     let interpolated = text;
 
-    // Normalizar chaves para busca case-insensitive e converter arrays para string .join(", ")
+    // Normalizar chaves para busca case-insensitive e formatar valores dinâmicos
     const normalizedData: Record<string, string> = {};
     Object.entries(combinedData).forEach(([key, value]) => {
       let valStr = "";
-      if (Array.isArray(value)) {
-        valStr = value.join(", ");
+      if (Array.isArray(value) && value.length > 0) {
+        // Se for uma lista de seleções, formatar com bullet points se tiver mais de um item
+        if (value.length > 1) {
+          valStr = "\n• " + value.join("\n• ");
+        } else {
+          valStr = String(value[0]);
+        }
       } else if (typeof value === "object" && value !== null) {
         valStr = JSON.stringify(value);
       } else if (value !== undefined && value !== null) {
         valStr = String(value);
       }
-      normalizedData[key.toLowerCase()] = valStr;
+
+      // Aplicar marcador de destaque automático para campos dinâmicos (exceto apelido e contexto longo de Maslow)
+      const lowKey = key.toLowerCase();
+      if (valStr && lowKey !== "user_nickname" && lowKey !== "maslow_contexto") {
+        normalizedData[lowKey] = `==${valStr}==`;
+      } else {
+        normalizedData[lowKey] = valStr;
+      }
     });
 
     // Encontrar todos os padrões {{Chave}} ou {Chave} no texto e substituir
@@ -212,7 +225,7 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
         // Fallbacks inteligentes para Maslow e referências de outras etapas
         let fallback = "";
         if (lowerKey === "user_nickname") {
-          fallback = combinedData["User_Nickname"] || (userMetadata?.name ? userMetadata.name.split(" ")[0] : "Membro");
+          fallback = (combinedData["User_Nickname"] as string) || (userMetadata?.name ? (userMetadata.name as string).split(" ")[0] : "Membro");
         } else if (lowerKey === "maslow_menor_pilar") {
           fallback = "Segurança/Estima";
         } else if (lowerKey === "maslow_maior_pilar") {
@@ -231,7 +244,7 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
     });
 
     // Fallback explícito para User_Nickname
-    const fallbackName = combinedData["User_Nickname"] || (userMetadata?.name ? userMetadata.name.split(" ")[0] : "Membro");
+    const fallbackName = (combinedData["User_Nickname"] as string) || (userMetadata?.name ? (userMetadata.name as string).split(" ")[0] : "Membro");
     interpolated = interpolated.replace(/\{\{User_Nickname\}\}/gi, fallbackName);
     interpolated = interpolated.replace(/\{User_Nickname\}/gi, fallbackName);
 
@@ -314,7 +327,7 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
       const payload = {
         ...responses,
         metadata: {
-          ...(responses.metadata as any || {}),
+          ...(responses.metadata as Record<string, unknown> || {}),
           startTime,
           endTime,
           durationSeconds
@@ -354,7 +367,7 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
     if (field.cols === 4) return "grid-cols-2 md:grid-cols-4";
 
     // 2. Regra Global Padrão (Smart Default) 💎
-    const options = (field.options as any[]) || [];
+    const options = (field.options as (string | { label: string; value: string })[]) || [];
     const isShortList = options.length <= 6;
     const allShortLabels = options.every(opt => {
         const label = typeof opt === "string" ? opt : opt?.label;
@@ -417,7 +430,7 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
               </label>
             )}
             <div className={`grid gap-3 ${getFieldGridCols(field)}`}>
-              {((field.options as any[]) || []).map((opt) => {
+              {((field.options as (string | { label: string; value: string })[]) || []).map((opt) => {
                 const label = typeof opt === "string" ? opt : opt.label;
                 const val = typeof opt === "string" ? opt : opt.value;
                 return (
@@ -488,8 +501,8 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
       case "cascaded":
         return (
           <CascadedSelect
-            options={field.options as any[]}
-            value={rawValue as any}
+            options={field.options as { label: string; value: string; subOptions?: string[] }[]}
+            value={rawValue as { primary: string; secondary: string }}
             onChange={(val) => updateResponse(field.id, val)}
             labels={{ primary: field.label || "Nicho", secondary: field.secondaryLabel || "Subdivisão" }}
           />
@@ -499,7 +512,7 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
         return (
           <BenefitsPackage
             options={field.options as string[]}
-            value={rawValue as any}
+            value={rawValue as Record<string, BenefitData>}
             onChange={(val) => updateResponse(field.id, val)}
           />
         );
@@ -508,16 +521,15 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
         return (
           <CurrencyGroup
             labels={field.options as string[]}
-            value={rawValue as any}
+            value={rawValue as Record<string, CurrencyValue>}
             onChange={(val) => updateResponse(field.id, val)}
           />
         );
-
       case "likert":
         return (
           <LikertScale
-            value={rawValue as any}
-            onChange={(val: any) => updateResponse(field.id, val)}
+            value={rawValue as LikertValue}
+            onChange={(val: LikertValue) => updateResponse(field.id, val)}
             options={field.options as string[]}
           />
         );
@@ -652,7 +664,7 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
             label={field.label}
             type={field.id.includes("portfolio") ? "Portfolio" : "CV"}
             matricula={matricula}
-            value={(rawValue as any) || null}
+            value={rawValue as { url: string; fileName: string } | null}
             maxSizeMB={field.id.includes("portfolio") ? 20 : 5}
             onChange={(val: { url: string; fileName: string } | null) => {
               updateResponse(field.id, val);
@@ -667,7 +679,7 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
             id={field.id}
             label={field.label}
             matricula={matricula}
-            value={(rawValue as any) || null}
+            value={rawValue as { url: string; fileName: string } | null}
             maxSizeMB={5}
             onChange={(val: { url: string; fileName: string } | null) => {
               updateResponse(field.id, val);
@@ -685,7 +697,7 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
         );
 
       case "portal_link":
-        const targetUrl = userMetadata.disc_link || "#";
+        const targetUrl = (userMetadata.disc_link as string) || "#";
         return (
           <div className="flex flex-col items-center justify-center py-10 gap-6 glass bg-white/5 rounded-[2rem] border-white/10">
              <div className="p-5 rounded-3xl bg-[var(--accent-start)]/10 text-[var(--accent-start)]">
@@ -802,9 +814,19 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
     }
   };
 
+  const isChoiceOther = (field: SurveyFieldConfig) => {
+      if (field.type !== "choice" && field.type !== "buttons" && field.type !== "multi_select") return false;
+      const val = responses[field.id];
+      if (Array.isArray(val)) {
+          return val.some(v => String(v).toLowerCase() === "outro" || String(v).toLowerCase() === "outros");
+      }
+      return String(val).toLowerCase() === "outro" || String(val).toLowerCase() === "outros" || String(val).toLowerCase() === "indicação";
+  };
+
   const canProgress = currentStep.fields.every(f => {
     if (!f.required) return true;
     const val = responses[f.id];
+    
     if (f.type === "multi_select" || f.isMultiple) {
       const arr = (val as string[]) || [];
       const min = f.validation?.minSelections || 1;

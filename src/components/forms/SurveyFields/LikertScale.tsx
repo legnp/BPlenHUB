@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { TextareaGlass } from "@/components/ui/TextareaGlass";
 import { Star } from "lucide-react";
 
-interface LikertValue {
+export interface LikertValue {
   score: string;
   feedback?: string;
   [key: string]: unknown;

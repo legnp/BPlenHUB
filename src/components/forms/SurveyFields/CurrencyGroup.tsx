@@ -4,7 +4,7 @@ import React from "react";
 import { InputGlass } from "@/components/ui/InputGlass";
 import { ChevronDown } from "lucide-react";
 
-interface CurrencyValue {
+export interface CurrencyValue {
   value: string;
   currency: string;
   declined?: boolean;

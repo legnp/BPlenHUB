@@ -7,7 +7,7 @@ import { SelectGlass } from "@/components/ui/SelectGlass";
 import { TextareaGlass } from "@/components/ui/TextareaGlass";
 import { ChoiceButton } from "@/components/ui/ChoiceButton";
 
-interface BenefitData {
+export interface BenefitData {
   enabled: boolean;
   value?: string;
   currency?: string;

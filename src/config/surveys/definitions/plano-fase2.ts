@@ -113,7 +113,7 @@ export const planoFase2Survey: SurveyConfig = {
     {
       id: "step_q3_justificativa",
       question: "3) Histórico dos combustíveis e barreiras",
-      description: "{{User_Nickname}}, qual o motivo de ter selecionado esses \"combustíveis\" e possíveis \"barreiras\"?\n\nQuais foram as situações mais marcantes na sua trajetória em que eles apareceram e o que aconteceu? Como você reagiu e quais foram os resultados gerados?",
+      description: "{{User_Nickname}}, qual o motivo de ter selecionado os combustíveis {{combustiveis_selecionados}} e as possíveis barreiras {{barreiras_selecionadas}}?\n\nQuais foram as situações mais marcantes na sua trajetória em que eles apareceram e o que aconteceu? Como você reagiu e quais foram os resultados gerados?",
       nextLabel: "Avançar",
       fields: [
         {
@@ -156,7 +156,7 @@ export const planoFase2Survey: SurveyConfig = {
     {
       id: "step_q4_reflexao",
       question: "O dia seguinte",
-      description: "Neste momento você está no escuro (ou mentalmente no escuro). Esse escuro representa que o seu plano de carreira deu totalmente errado. Você se esforçou, deu o seu melhor, mas as barreiras que mapeamos ({{Barreiras_Selecionadas}}) te venceram.\n\nQual é a pior coisa que poderia acontecer na sua vida profissional e financeira? Não ter o que comer? Não ter o que vestir? Perder o imóvel? O veículo? Ter má reputação no mercado? Ficar ultrapassado demais?\n\nE apesar dessa pior coisa ter acontecido, o que você poderia fazer no dia seguinte para sobreviver e recomeçar?",
+      description: "Neste momento você está no escuro (ou mentalmente no escuro). Esse escuro representa que o seu plano de carreira deu totalmente errado. Você se esforçou, deu o seu melhor, mas as barreiras que mapeamos {{barreiras_selecionadas}} te venceram.\n\nQual é a pior coisa que poderia acontecer na sua vida profissional e financeira? Não ter o que comer? Não ter o que vestir? Perder o imóvel? O veículo? Ter má reputação no mercado? Ficar ultrapassado demais?\n\nE apesar dessa pior coisa ter acontecido, o que você poderia fazer no dia seguinte para sobreviver e recomeçar?",
       nextLabel: "Avançar",
       fields: [
         {
@@ -171,7 +171,7 @@ export const planoFase2Survey: SurveyConfig = {
     {
       id: "step_q5_inegociaveis",
       question: "5) Os seus inegociáveis",
-      description: "{{User_Nickname}}, sabemos que imaginar o que de pior pode acontecer é uma tarefa difícil e pouco confortável, mas a tarefa foi cumprida. Parabéns!\n\nAssim como as situações desconfortáveis passam, a motivação e a inspiração também passam. O que permanece é a disciplina. Para garantir que os seus \"motores\" continuem funcionando e as \"barreiras\" não te paralisem, defina 3 regras inegociáveis que você cumprirá todos os dias, faça chuva ou faça sol (ou acabe a luz ou pegue fogo), para manter o foco e o ritmo rumo ao seu objetivo.\n\n(Exemplo: \"Falar não, mesmo que me doa\"; \"Não olhar o WhatsApp até as 10h\"; \"Fazer 2 contatos de prospecção por dia\"; \"Sair do trabalho exatamente às 18h\").",
+      description: "{{User_Nickname}}, sabemos que imaginar o que de pior pode acontecer é uma tarefa difícil e pouco confortável, mas a tarefa foi cumprida. Parabéns!\n\nAssim como as situações desconfortáveis passam, a motivação e a inspiração também passam. O que permanece é a disciplina. Para garantir que os seus motores {{combustiveis_selecionados}} continuem funcionando e as barreiras {{barreiras_selecionadas}} não te paralisem, defina 3 regras inegociáveis que você cumprirá todos os dias, faça chuva ou faça sol (ou acabe a luz ou pegue fogo), para manter o foco e o ritmo rumo ao seu objetivo.\n\n(Exemplo: \"Falar não, mesmo que me doa\"; \"Não olhar o WhatsApp até as 10h\"; \"Fazer 2 contatos de prospecção por dia\"; \"Sair do trabalho exatamente às 18h\").",
       fields: [
         {
           id: "regras_inegociaveis",
