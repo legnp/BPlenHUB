@@ -111,10 +111,10 @@ export function FileField({ id, label, type = "CV", matricula, value, onChange, 
 
           <div className="text-center space-y-1">
             <p className="text-sm font-bold tracking-tight">
-              {uploading ? "Transmitindo ao Drive..." : 
+              {uploading ? "Fazendo upload..." : 
                value ? value.fileName : 
                error ? "Erro no envio" :
-               `Enviar ${type}`}
+               "Fazer upload"}
             </p>
             
             <p className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-40">

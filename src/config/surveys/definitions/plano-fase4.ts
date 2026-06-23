@@ -20,7 +20,7 @@ export const planoFase4Survey: SurveyConfig = {
     {
       id: "step_intro_consolidacao",
       question: "Olá, {{User_Nickname}}! Te damos as boas-vindas ao último passo do desenho do seu Plano de Carreira!",
-      description: "[Concluído] Definição de Objetivo\n[Concluído] Seleção de Recursos\n[Concluído] Plano de Ação\n[Etapa Atual] Consolidação do Plano\n\nEssa etapa consiste em consolidar todos os checkpoints anteriores e firmar o seu compromisso com a execução do plano.\n\nReserve de 25 a 30 minutos em um ambiente tranquilo para prosseguir. Os dados preenchidos ficam salvos somente com a conclusão total. Caso precise fechar a página durante o processo, ele será reiniciado.",
+      description: "[done] Definição de Objetivo\n[done] Seleção de Recursos\n[done] Plano de Ação\n[current] Consolidação do Plano\n\nEssa etapa consiste em consolidar todos os checkpoints anteriores e firmar o seu compromisso com a execução do plano.\n\nReserve de 25 a 30 minutos em um ambiente tranquilo para prosseguir. Os dados preenchidos ficam salvos somente com a conclusão total. Caso precise fechar a página durante o processo, ele será reiniciado.",
       nextLabel: "Avançar",
       fields: [
         {

@@ -36,7 +36,11 @@ export function NarrativeReveal({
 
   // Normalização e Limpeza (Markdown -> Texto para contagem)
   const normalizedText = text.replaceAll("\\n", "\n");
-  const rawTextForCounting = normalizedText.replace(/\*\*/g, "").replace(/==/g, ""); // Remove marcadores da contagem real
+  const rawTextForCounting = normalizedText
+    .replace(/\*\*/g, "")
+    .replace(/==/g, "")
+    .replace(/\[done\]/g, " ")
+    .replace(/\[current\]/g, " "); // Remove marcadores da contagem real
 
   useEffect(() => {
     if (!active) return;
@@ -72,13 +76,49 @@ export function NarrativeReveal({
     };
   }, [normalizedText, rawTextForCounting.length, speed, delay, active]);
 
+  // Ícone inline: check de conclusão (verde esmeralda)
+  const DoneIcon = () => (
+    <span className="inline-flex items-center justify-center w-[18px] h-[18px] rounded-full bg-emerald-500/15 mr-1.5 align-middle">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="20 6 9 17 4 12" />
+      </svg>
+    </span>
+  );
+
+  // Ícone inline: etapa atual (dot azul pulsante suave)
+  const CurrentIcon = () => (
+    <span className="inline-flex items-center justify-center w-[18px] h-[18px] rounded-full bg-blue-500/15 mr-1.5 align-middle">
+      <span className="w-[8px] h-[8px] rounded-full bg-blue-500 animate-pulse" />
+    </span>
+  );
+
   // Parser de Revelação: Renderiza a estrutura final e controla opacidade por spans
   const renderStructuredContent = () => {
-    // Regex para identificar **negrito** e ==destaque==
-    const parts = normalizedText.split(/(\*\*.*?\*\*|==.*?==)/g);
+    // Regex para identificar **negrito**, ==destaque== e [done]/[current]
+    const parts = normalizedText.split(/(\*\*.*?\*\*|==.*?==|\[done\]|\[current\])/g);
     let charPointer = 0;
 
     return parts.map((part, pIdx) => {
+      // Renderizar ícones inline para marcadores de status
+      if (part === "[done]") {
+        charPointer++; // Conta como 1 char para animação
+        const isVisible = charPointer <= visibleChars;
+        return (
+          <span key={pIdx} className={`transition-opacity duration-300 ${isVisible ? "opacity-100" : "opacity-0"}`}>
+            <DoneIcon />
+          </span>
+        );
+      }
+      if (part === "[current]") {
+        charPointer++;
+        const isVisible = charPointer <= visibleChars;
+        return (
+          <span key={pIdx} className={`transition-opacity duration-300 ${isVisible ? "opacity-100" : "opacity-0"}`}>
+            <CurrentIcon />
+          </span>
+        );
+      }
+
       const isBold = part.startsWith("**") && part.endsWith("**");
       const isHighlight = part.startsWith("==") && part.endsWith("==");
       
@@ -98,13 +138,13 @@ export function NarrativeReveal({
         <span key={pIdx} className={spanClass}>
           {content.split("").map((char, cIdx) => {
             const isVisible = charPointer < visibleChars;
-            charPointer++; // Incrementar apenas para caracteres visíveis na string final (sem estrelas)
+            charPointer++;
             
             return (
               <span 
                 key={cIdx} 
                 className={`transition-opacity duration-200 ${isVisible ? "opacity-100" : "opacity-0"}`}
-                style={{ transitionDelay: `${(cIdx % 5) * 10}ms` }} // Micro-suavização sub-caractere
+                style={{ transitionDelay: `${(cIdx % 5) * 10}ms` }}
               >
                 {char}
               </span>
