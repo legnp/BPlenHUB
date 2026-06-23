@@ -59,8 +59,39 @@ export async function checkSurveyCompletedAction(matricula: string, surveyId: st
     const doc = await db.doc(`User/${matricula}/Surveys/${surveyId}`).get();
     return doc.exists && doc.data()?.status === "completed";
   } catch (error) {
-    console.error(`❌ Erro [checkSurveyCompletedAction] para ${surveyId}:`, error);
+    console.error("Erro [checkSurveyCompletedAction] para " + surveyId + ":", error);
     return false;
+  }
+}
+
+export async function getPreviousSurveysDataAction(matricula: string): Promise<Record<string, unknown>> {
+  try {
+    const db: admin.firestore.Firestore = getAdminDb();
+    const docRef1 = db.doc(`User/${matricula}/Surveys/survey_plano_fase1`);
+    const docRef2 = db.doc(`User/${matricula}/Surveys/survey_plano_fase2`);
+
+    const [snap1, snap2] = await Promise.all([docRef1.get(), docRef2.get()]);
+
+    const result: Record<string, unknown> = {};
+
+    if (snap1.exists) {
+      const data1 = snap1.data();
+      if (data1 && data1.data) {
+        Object.assign(result, data1.data);
+      }
+    }
+
+    if (snap2.exists) {
+      const data2 = snap2.data();
+      if (data2 && data2.data) {
+        Object.assign(result, data2.data);
+      }
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Erro [getPreviousSurveysDataAction]:", error);
+    return {};
   }
 }
 

@@ -113,6 +113,9 @@ export function DevolutivaComportamentalView({
   // Administrative Workflows states
   const [discLinkInput, setDiscLinkInput] = useState<string>("");
   const [savingDiscLink, setSavingDiscLink] = useState<boolean>(false);
+  const [maslowMenorInput, setMaslowMenorInput] = useState<string>("");
+  const [maslowMaiorInput, setMaslowMaiorInput] = useState<string>("");
+  const [savingMaslow, setSavingMaslow] = useState<boolean>(false);
   const [showDiscModal, setShowDiscModal] = useState<boolean>(false);
   const [releasingIds, setReleasingIds] = useState<Record<string, boolean>>({});
 
@@ -145,7 +148,7 @@ export function DevolutivaComportamentalView({
   const [careerTab, setCareerTab] = useState<"preview" | "ata" | "doc" | "feedback">("preview");
 
   // Customization states
-  const [customizationTab, setCustomizationTab] = useState<"disc" | "c3">("disc");
+  const [customizationTab, setCustomizationTab] = useState<"disc" | "c3" | "maslow">("disc");
   const [selectedCombustiveis, setSelectedCombustiveis] = useState<string[]>([]);
   const [selectedBarreiras, setSelectedBarreiras] = useState<string[]>([]);
   const [savingC3, setSavingC3] = useState<boolean>(false);
@@ -174,10 +177,15 @@ export function DevolutivaComportamentalView({
           if (res.success && res.data) {
             setUserData(res.data);
             setDiscLinkInput(res.data.profile.discLink || "");
+            setMaslowMenorInput(res.data.profile.maslow_menor_pilar || "");
+            setMaslowMaiorInput(res.data.profile.maslow_maior_pilar || "");
             setSelectedCombustiveis(res.data.profile.combustiveis_custom || []);
             setSelectedBarreiras(res.data.profile.barreiras_custom || []);
           } else {
             setUserData(null);
+            setDiscLinkInput("");
+            setMaslowMenorInput("");
+            setMaslowMaiorInput("");
             setSelectedCombustiveis([]);
             setSelectedBarreiras([]);
           }
@@ -186,6 +194,9 @@ export function DevolutivaComportamentalView({
         .finally(() => setLoadingData(false));
     } else {
       setUserData(null);
+      setDiscLinkInput("");
+      setMaslowMenorInput("");
+      setMaslowMaiorInput("");
       setSelectedCombustiveis([]);
       setSelectedBarreiras([]);
     }
@@ -380,7 +391,13 @@ export function DevolutivaComportamentalView({
     setSavingDiscLink(true);
     try {
       const res = await updateUserPermissions(selectedMatricula, {
-        metadata: { disc_link: discLinkInput }
+        metadata: { 
+          disc_link: discLinkInput,
+          maslow_menor_pilar: maslowMenorInput,
+          maslow_maior_pilar: maslowMaiorInput,
+          combustiveis_custom: userData?.profile?.combustiveis_custom || [],
+          barreiras_custom: userData?.profile?.barreiras_custom || []
+        }
       });
       if (res.success) {
         setUserData(prev => {
@@ -395,10 +412,46 @@ export function DevolutivaComportamentalView({
         });
         alert("Link do Portal DISC salvo com sucesso.");
       }
-    } catch (err: any) {
-      alert("Erro ao salvar link do portal: " + (err.message || "Erro desconhecido"));
+    } catch (err: unknown) {
+      const error = err as Error;
+      alert("Erro ao salvar link do portal: " + (error.message || "Erro desconhecido"));
     } finally {
       setSavingDiscLink(false);
+    }
+  };
+
+  const handleSaveMaslow = async () => {
+    if (!selectedMatricula) return;
+    setSavingMaslow(true);
+    try {
+      const res = await updateUserPermissions(selectedMatricula, {
+        metadata: {
+          disc_link: discLinkInput,
+          maslow_menor_pilar: maslowMenorInput,
+          maslow_maior_pilar: maslowMaiorInput,
+          combustiveis_custom: userData?.profile?.combustiveis_custom || [],
+          barreiras_custom: userData?.profile?.barreiras_custom || []
+        }
+      });
+      if (res.success) {
+        setUserData(prev => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            profile: {
+              ...prev.profile,
+              maslow_menor_pilar: maslowMenorInput,
+              maslow_maior_pilar: maslowMaiorInput
+            }
+          };
+        });
+        alert("Termômetro de Maslow salvo com sucesso.");
+      }
+    } catch (err: unknown) {
+      const error = err as Error;
+      alert("Erro ao salvar dados de Maslow: " + (error.message || "Erro desconhecido"));
+    } finally {
+      setSavingMaslow(false);
     }
   };
 
@@ -987,6 +1040,16 @@ export function DevolutivaComportamentalView({
                     Portal DISC Link
                   </button>
                   <button
+                    onClick={() => setCustomizationTab("maslow")}
+                    className={`flex-1 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all ${
+                      customizationTab === "maslow"
+                        ? "bg-[var(--accent-start)] text-white shadow-md shadow-[var(--accent-start)]/15"
+                        : "hover:bg-[var(--input-bg)]/30 text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                    }`}
+                  >
+                    Termômetro Maslow
+                  </button>
+                  <button
                     onClick={() => setCustomizationTab("c3")}
                     className={`flex-1 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all ${
                       customizationTab === "c3"
@@ -1029,6 +1092,47 @@ export function DevolutivaComportamentalView({
                     >
                       <Trophy size={14} className="group-hover:rotate-6 transition-transform" /> Lançar Análise DISC
                     </button>
+                  </div>
+                )}
+
+                {customizationTab === "maslow" && (
+                  <div className="space-y-5 text-left animate-fade-in-up">
+                    <div className="space-y-1">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)]">Termômetro de Maslow do Cliente</span>
+                      <p className="text-[8px] font-bold text-[var(--text-muted)] uppercase tracking-wider opacity-60">Preencha os pilares extremos mapeados na Devolutiva Comportamental</p>
+                    </div>
+
+                    <div className="space-y-4 bg-[var(--bg-primary)]/40 p-4 rounded-2xl border border-[var(--border-primary)]/60">
+                      <div className="space-y-2">
+                        <label className="text-[8px] font-black uppercase tracking-wider text-[var(--text-muted)]">Pilar Menos Favorecido (Menor Pilar)</label>
+                        <input 
+                          type="text" 
+                          placeholder="Ex: Seguranca, Estima, Relacionamento..."
+                          value={maslowMenorInput}
+                          onChange={(e) => setMaslowMenorInput(e.target.value)}
+                          className="w-full bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-xl px-4 py-2.5 text-[10px] text-[var(--text-primary)] focus:border-[var(--accent-start)]/50 outline-none transition-all placeholder:opacity-30"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-[8px] font-black uppercase tracking-wider text-[var(--text-muted)]">Pilar Mais Favorecido (Maior Pilar)</label>
+                        <input 
+                          type="text" 
+                          placeholder="Ex: Autorrealizacao, Fisiologia..."
+                          value={maslowMaiorInput}
+                          onChange={(e) => setMaslowMaiorInput(e.target.value)}
+                          className="w-full bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-xl px-4 py-2.5 text-[10px] text-[var(--text-primary)] focus:border-[var(--accent-start)]/50 outline-none transition-all placeholder:opacity-30"
+                        />
+                      </div>
+
+                      <button 
+                        onClick={handleSaveMaslow}
+                        disabled={savingMaslow}
+                        className="w-full py-3 bg-[var(--accent-start)] text-white rounded-xl text-[9px] font-bold uppercase tracking-widest hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 transition-all flex items-center justify-center gap-1.5 shadow-md shadow-[var(--accent-start)]/10"
+                      >
+                        {savingMaslow ? <Loader2 size={12} className="animate-spin" /> : <Settings size={12} />} Salvar Termômetro
+                      </button>
+                    </div>
                   </div>
                 )}
 

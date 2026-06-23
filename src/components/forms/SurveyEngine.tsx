@@ -25,6 +25,7 @@ import { FileField } from "./SurveyFields/FileField";
 import { EvidenceField } from "./SurveyFields/EvidenceField";
 import { NarrativeContent } from "./NarrativeContent";
 import { resolveUserIdentity, getUserMetadata } from "@/actions/survey-effects";
+import { getPreviousSurveysDataAction } from "@/actions/submit-survey";
 import Calendar, { CalendarEvent } from "@/components/ui/Calendar";
 import { getProgramacaoForMemberAction } from "@/actions/calendar";
 
@@ -106,7 +107,18 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
         const mat = await resolveUserIdentity(config.id, {}, userUid);
         setMatricula(mat);
         const meta = await getUserMetadata(userUid);
-        setUserMetadata(prev => ({ ...prev, ...meta }));
+        
+        let combinedMeta = { ...meta };
+        if (config.id && config.id.startsWith("survey_plano_fase")) {
+          try {
+            const previousData = await getPreviousSurveysDataAction(mat);
+            combinedMeta = { ...combinedMeta, ...previousData };
+          } catch (err) {
+            console.error("Erro ao carregar dados de pesquisas anteriores:", err);
+          }
+        }
+        
+        setUserMetadata(prev => ({ ...prev, ...combinedMeta }));
       }
     }
     loadMatricula();
@@ -150,11 +162,20 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
 
   // Lógica de Interpolação de Texto Reativa (Suporta {{nickname}} e {User-nickname}, arrays joined, fallbacks Maslow/carreira)
   const interpolate = (text: string) => {
-    const combinedData = {
+    const combinedData: Record<string, unknown> = {
       ...(config.templateData || {}),
       ...userMetadata,
       ...responses
     };
+
+    const menorPilar = combinedData["maslow_menor_pilar"] || combinedData["Maslow_Menor_Pilar"];
+    const maiorPilar = combinedData["maslow_maior_pilar"] || combinedData["Maslow_Maior_Pilar"];
+
+    if (menorPilar && maiorPilar) {
+      combinedData["maslow_contexto"] = `Na nossa reunião de Devolutiva de Análise Comportamental, nós mapeamos o seu Termômetro de Maslow, e você avaliou que o pilar de **${menorPilar}** é o menos favorecido hoje.\n\nComo esse objetivo de carreira profissional que você acabou de traçar se conecta com a sua autoanálise? O seu objetivo te ajuda a fortalecer e equilibrar as camadas da pirâmide ou te faz se ancorar apenas para o pilar mais favorecido de **${maiorPilar}**?`;
+    } else {
+      combinedData["maslow_contexto"] = "De acordo com o seu Termômetro de Maslow mapeado na nossa reunião de Devolutiva de Análise Comportamental, você acredita que o seu objetivo de carreira profissional está direcionado a fortalecer e equilibrar as camadas da sua pirâmide para torná-la mais firme e saudável?";
+    }
 
     let interpolated = text;
 
@@ -534,6 +555,18 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
               placeholder={field.placeholder || "Escreva aqui..."}
               value={String(rawValue || "")}
               onChange={(e) => updateResponse(field.id, e.target.value)}
+            />
+          </div>
+        );
+
+      case "image":
+        return (
+          <div className="flex justify-center py-4 animate-fade-in">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img 
+              src={field.imageUrl} 
+              alt={field.label || "Visualizacao"} 
+              className="max-h-[320px] object-contain rounded-2xl border border-white/10 shadow-xl bg-white/5 p-2"
             />
           </div>
         );

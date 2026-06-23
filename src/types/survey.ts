@@ -47,7 +47,7 @@ export interface SurveyStep {
 
 export interface SurveyFieldConfig {
   id: string;
-  type: "choice" | "text" | "textarea" | "scale" | "info" | "buttons" | "multi_select" | "cascaded" | "benefits" | "currency_group" | "likert" | "ranking" | "likert_group" | "file" | "evidence_upload" | "portal_link" | "date" | "slider" | "calendar_embed";
+  type: "choice" | "text" | "textarea" | "scale" | "info" | "buttons" | "multi_select" | "cascaded" | "benefits" | "currency_group" | "likert" | "ranking" | "likert_group" | "file" | "evidence_upload" | "portal_link" | "date" | "slider" | "calendar_embed" | "image";
   label?: string;
   placeholder?: string;
   options?: string[] | { label: string; value: string; subOptions?: string[] }[]; 
@@ -65,6 +65,7 @@ export interface SurveyFieldConfig {
   };
   cols?: 1 | 2 | 3 | 4;
   randomize?: boolean; // Se as opções devem ser exibidas em ordem aleatória
+  imageUrl?: string; // URL da imagem para o campo do tipo "image"
 }
 
 export interface SurveyStepConfig {

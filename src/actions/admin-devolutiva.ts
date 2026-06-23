@@ -38,6 +38,8 @@ export interface DevolutivaUserData {
     driveFolderUrl?: string;
     combustiveis_custom?: string[];
     barreiras_custom?: string[];
+    maslow_menor_pilar?: string;
+    maslow_maior_pilar?: string;
   };
   journey: {
     currentPhase: string;
@@ -136,6 +138,8 @@ export async function getDevolutivaUserData(
     const discLink = accessData.metadata?.disc_link || "";
     const combustiveis_custom = accessData.metadata?.combustiveis_custom || [];
     const barreiras_custom = accessData.metadata?.barreiras_custom || [];
+    const maslow_menor_pilar = accessData.metadata?.maslow_menor_pilar || "";
+    const maslow_maior_pilar = accessData.metadata?.maslow_maior_pilar || "";
 
     // 5. Carregar resultados de assessments
     const resultsSnap = await db.collection(`User/${matricula}/results`).get();
@@ -216,6 +220,8 @@ export async function getDevolutivaUserData(
         driveFolderUrl,
         combustiveis_custom,
         barreiras_custom,
+        maslow_menor_pilar,
+        maslow_maior_pilar,
       },
       journey: journeyData,
       results,

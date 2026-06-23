@@ -106,7 +106,17 @@ export async function getAdminUsersList(adminToken?: string): Promise<{ success:
  */
 export async function updateUserPermissions(
   targetMatricula: string, 
-  updates: { role?: UserRole; services?: UserServices; metadata?: { disc_link?: string } },
+  updates: { 
+    role?: UserRole; 
+    services?: UserServices; 
+    metadata?: { 
+      disc_link?: string;
+      maslow_menor_pilar?: string;
+      maslow_maior_pilar?: string;
+      combustiveis_custom?: string[];
+      barreiras_custom?: string[];
+    };
+  },
   adminToken?: string
 ) {
   try {

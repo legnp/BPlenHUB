@@ -78,9 +78,14 @@ export const planoFase1Survey: SurveyConfig = {
     {
       id: "step_q4_conexao_maslow",
       question: "4) Conexão com o seu Termômetro de Maslow",
-      description: "Na nossa reunião de Devolutiva de Análise Comportamental, nós mapeamos o seu Termômetro de Maslow, e você avaliou que o pilar de {{Maslow_Menor_Pilar}} é o menos favorecido hoje.\n\nComo esse objetivo de carreira profissional que você acabou de traçar se conecta com a sua autoanálise? O seu objetivo te ajuda a fortalecer e equilibrar as camadas da pirâmide ou te faz se ancorar apenas para o pilar mais favorecido de {{Maslow_Maior_Pilar}}?",
+      description: "{{Maslow_Contexto}}",
       nextLabel: "Avançar",
       fields: [
+        {
+          id: "maslow_pyramid_image",
+          type: "image",
+          imageUrl: "/images/maslow-pyramid.png"
+        },
         {
           id: "conexao_maslow",
           type: "textarea",
