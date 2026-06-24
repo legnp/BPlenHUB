@@ -998,11 +998,97 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
                   );
                 })()}
 
-                {preparedFields.map(field => (
-                  <div key={field.id} className="animate-fade-in">
-                    {renderField(field)}
-                  </div>
-                ))}
+                {(() => {
+                  if (currentStep.id === "step_q1_pequenas_metas" && preparedFields.length === 6) {
+                    return (
+                      <div className="space-y-6">
+                        <div className="space-y-4">
+                          {renderField(preparedFields[0])}
+                          {renderField(preparedFields[1])}
+                        </div>
+                        <hr className="border-t border-white/10 my-8" />
+                        <div className="space-y-4">
+                          {renderField(preparedFields[2])}
+                          {renderField(preparedFields[3])}
+                        </div>
+                        <hr className="border-t border-white/10 my-8" />
+                        <div className="space-y-4">
+                          {renderField(preparedFields[4])}
+                          {renderField(preparedFields[5])}
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  if (currentStep.id === "step_q2_checkpoints_90d" && preparedFields.length === 6) {
+                    return (
+                      <div className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                          {renderField(preparedFields[0])}
+                          {renderField(preparedFields[1])}
+                        </div>
+                        <hr className="border-t border-white/10 my-8" />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                          {renderField(preparedFields[2])}
+                          {renderField(preparedFields[3])}
+                        </div>
+                        <hr className="border-t border-white/10 my-8" />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                          {renderField(preparedFields[4])}
+                          {renderField(preparedFields[5])}
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  if (currentStep.id === "step_q3_aliados" && preparedFields.length === 6) {
+                    return (
+                      <div className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 items-start">
+                          <div className="md:col-span-2">{renderField(preparedFields[0])}</div>
+                          <div className="md:col-span-3">{renderField(preparedFields[1])}</div>
+                        </div>
+                        <hr className="border-t border-white/10 my-8" />
+                        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 items-start">
+                          <div className="md:col-span-2">{renderField(preparedFields[2])}</div>
+                          <div className="md:col-span-3">{renderField(preparedFields[3])}</div>
+                        </div>
+                        <hr className="border-t border-white/10 my-8" />
+                        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 items-start">
+                          <div className="md:col-span-2">{renderField(preparedFields[4])}</div>
+                          <div className="md:col-span-3">{renderField(preparedFields[5])}</div>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  if (currentStep.id === "step_q5_compromissos_autodesenvolvimento" && preparedFields.length === 6) {
+                    return (
+                      <div className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 items-start">
+                          <div className="md:col-span-2">{renderField(preparedFields[0])}</div>
+                          <div className="md:col-span-3">{renderField(preparedFields[1])}</div>
+                        </div>
+                        <hr className="border-t border-white/10 my-8" />
+                        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 items-start">
+                          <div className="md:col-span-2">{renderField(preparedFields[2])}</div>
+                          <div className="md:col-span-3">{renderField(preparedFields[3])}</div>
+                        </div>
+                        <hr className="border-t border-white/10 my-8" />
+                        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 items-start">
+                          <div className="md:col-span-2">{renderField(preparedFields[4])}</div>
+                          <div className="md:col-span-3">{renderField(preparedFields[5])}</div>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  return preparedFields.map(field => (
+                    <div key={field.id} className="animate-fade-in">
+                      {renderField(field)}
+                    </div>
+                  ));
+                })()}
 
                 <div className="pt-8">
                   {isLastStep ? (
