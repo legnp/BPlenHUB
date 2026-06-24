@@ -74,7 +74,7 @@ function shuffleOptions(options: string[] | { label: string; value: string; subO
  * Agora suporta NAVEGAÇÃO CONDICIONAL (Grafos).
  */
 export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onStepChange, returnToCheckoutSlug, userNickname, initialUserMetadata }: SurveyEngineProps) {
-  const [currentStepIndex, setCurrentStepIndex] = useState(() => {
+  const [currentStepIndex, setCurrentStepIndex] = useState<number>(() => {
     if (typeof window !== "undefined" && config.id === "survey_plano_fase4" && userUid) {
       const saved = localStorage.getItem(`survey_draft_${config.id}_${userUid}`);
       if (saved) {
