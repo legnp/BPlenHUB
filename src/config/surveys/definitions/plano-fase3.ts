@@ -22,7 +22,13 @@ export const planoFase3Survey: SurveyConfig = {
       question: "Olá, {{User_Nickname}}! A partir de agora, daremos início à estruturação prática e operacional do seu plano.",
       description: "Você já sabe onde quer chegar e quais recursos (e atritos) tem na bagagem. Agora, é hora de pavimentar a rota de curto, médio e longo prazo para que os seus objetivos se materializem em ações coordenadas e inegociáveis de autodesenvolvimento.",
       nextLabel: "Estou pronto, vamos traçar as ações",
-      fields: []
+      fields: [
+        {
+          id: "info_tempo_fase3",
+          type: "info",
+          label: "Atenção: Reserve de 25 a 30 minutos em um ambiente tranquilo para prosseguir. Os dados preenchidos ficam salvos somente com a conclusão total. Caso precise fechar a página durante o processo, ele será reiniciado."
+        }
+      ]
     },
     {
       id: "step_q1_pequenas_metas",
