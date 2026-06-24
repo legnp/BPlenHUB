@@ -999,6 +999,8 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
                 })()}
 
                 {(() => {
+                  const borderClass = "border-t border-[var(--border-primary)]/60 my-8";
+
                   if (currentStep.id === "step_q1_pequenas_metas" && preparedFields.length === 6) {
                     return (
                       <div className="space-y-6">
@@ -1006,12 +1008,12 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
                           {renderField(preparedFields[0])}
                           {renderField(preparedFields[1])}
                         </div>
-                        <hr className="border-t border-white/10 my-8" />
+                        <hr className={borderClass} />
                         <div className="space-y-4">
                           {renderField(preparedFields[2])}
                           {renderField(preparedFields[3])}
                         </div>
-                        <hr className="border-t border-white/10 my-8" />
+                        <hr className={borderClass} />
                         <div className="space-y-4">
                           {renderField(preparedFields[4])}
                           {renderField(preparedFields[5])}
@@ -1027,12 +1029,12 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
                           {renderField(preparedFields[0])}
                           {renderField(preparedFields[1])}
                         </div>
-                        <hr className="border-t border-white/10 my-8" />
+                        <hr className={borderClass} />
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                           {renderField(preparedFields[2])}
                           {renderField(preparedFields[3])}
                         </div>
-                        <hr className="border-t border-white/10 my-8" />
+                        <hr className={borderClass} />
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                           {renderField(preparedFields[4])}
                           {renderField(preparedFields[5])}
@@ -1041,23 +1043,59 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
                     );
                   }
 
+                  // Helper para renderizar par de campos alinhados horizontalmente (desktop)
+                  const renderPair = (f1: SurveyFieldConfig, f2: SurveyFieldConfig) => {
+                    return (
+                      <div className="space-y-2 md:space-y-0">
+                        {/* Linha de Labels (Desktop) */}
+                        <div className="hidden md:grid grid-cols-5 gap-x-6 mb-1.5">
+                          <div className="col-span-2">
+                            {f1.label && (
+                              <label className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-start)] ml-1">
+                                {f1.label}
+                              </label>
+                            )}
+                          </div>
+                          <div className="col-span-3">
+                            {f2.label && (
+                              <label className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-start)] ml-1">
+                                {f2.label}
+                              </label>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Linha de Inputs */}
+                        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 items-start">
+                          <div className="md:col-span-2">
+                            <div className="md:hidden">
+                              {renderField(f1)}
+                            </div>
+                            <div className="hidden md:block">
+                              {renderField({ ...f1, label: undefined })}
+                            </div>
+                          </div>
+                          <div className="md:col-span-3">
+                            <div className="md:hidden">
+                              {renderField(f2)}
+                            </div>
+                            <div className="hidden md:block">
+                              {renderField({ ...f2, label: undefined })}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  };
+
                   if (currentStep.id === "step_q3_aliados" && preparedFields.length === 6) {
                     return (
                       <div className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 items-start">
-                          <div className="md:col-span-2">{renderField(preparedFields[0])}</div>
-                          <div className="md:col-span-3">{renderField(preparedFields[1])}</div>
-                        </div>
-                        <hr className="border-t border-white/10 my-8" />
-                        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 items-start">
-                          <div className="md:col-span-2">{renderField(preparedFields[2])}</div>
-                          <div className="md:col-span-3">{renderField(preparedFields[3])}</div>
-                        </div>
-                        <hr className="border-t border-white/10 my-8" />
-                        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 items-start">
-                          <div className="md:col-span-2">{renderField(preparedFields[4])}</div>
-                          <div className="md:col-span-3">{renderField(preparedFields[5])}</div>
-                        </div>
+                        {renderPair(preparedFields[0], preparedFields[1])}
+                        <hr className={borderClass} />
+                        {renderPair(preparedFields[2], preparedFields[3])}
+                        <hr className={borderClass} />
+                        {renderPair(preparedFields[4], preparedFields[5])}
                       </div>
                     );
                   }
@@ -1065,20 +1103,11 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
                   if (currentStep.id === "step_q5_compromissos_autodesenvolvimento" && preparedFields.length === 6) {
                     return (
                       <div className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 items-start">
-                          <div className="md:col-span-2">{renderField(preparedFields[0])}</div>
-                          <div className="md:col-span-3">{renderField(preparedFields[1])}</div>
-                        </div>
-                        <hr className="border-t border-white/10 my-8" />
-                        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 items-start">
-                          <div className="md:col-span-2">{renderField(preparedFields[2])}</div>
-                          <div className="md:col-span-3">{renderField(preparedFields[3])}</div>
-                        </div>
-                        <hr className="border-t border-white/10 my-8" />
-                        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 items-start">
-                          <div className="md:col-span-2">{renderField(preparedFields[4])}</div>
-                          <div className="md:col-span-3">{renderField(preparedFields[5])}</div>
-                        </div>
+                        {renderPair(preparedFields[0], preparedFields[1])}
+                        <hr className={borderClass} />
+                        {renderPair(preparedFields[2], preparedFields[3])}
+                        <hr className={borderClass} />
+                        {renderPair(preparedFields[4], preparedFields[5])}
                       </div>
                     );
                   }

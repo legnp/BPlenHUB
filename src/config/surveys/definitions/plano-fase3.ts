@@ -194,7 +194,7 @@ export const planoFase3Survey: SurveyConfig = {
       fields: [
         {
           id: "compromisso_estudo_1a",
-          type: "text",
+          type: "textarea",
           label: "Compromisso 1",
           placeholder: "Descreva o que e quando fará...",
           required: true
@@ -208,7 +208,7 @@ export const planoFase3Survey: SurveyConfig = {
         },
         {
           id: "compromisso_estudo_2a",
-          type: "text",
+          type: "textarea",
           label: "Compromisso 2",
           placeholder: "Descreva o que e quando fará...",
           required: true
@@ -222,7 +222,7 @@ export const planoFase3Survey: SurveyConfig = {
         },
         {
           id: "compromisso_estudo_3a",
-          type: "text",
+          type: "textarea",
           label: "Compromisso 3",
           placeholder: "Descreva o que e quando fará...",
           required: true
