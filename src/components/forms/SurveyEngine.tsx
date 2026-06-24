@@ -185,11 +185,12 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
     Object.entries(combinedData).forEach(([key, value]) => {
       let valStr = "";
       if (Array.isArray(value) && value.length > 0) {
-        // Se for uma lista de seleções, formatar com bullet points se tiver mais de um item
-        if (value.length > 1) {
-          valStr = "\n• " + value.join("\n• ");
-        } else {
+        if (value.length === 1) {
           valStr = String(value[0]);
+        } else if (value.length === 2) {
+          valStr = `${value[0]} e ${value[1]}`;
+        } else {
+          valStr = `${value.slice(0, -1).join(", ")} e ${value[value.length - 1]}`;
         }
       } else if (typeof value === "object" && value !== null) {
         valStr = JSON.stringify(value);
