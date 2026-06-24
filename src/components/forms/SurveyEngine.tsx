@@ -806,11 +806,24 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
           </div>
         );
 
-      case "calendar_embed":
+      case "calendar_embed": {
+        // Filtrar eventos do calendário com base na palavra-chave de busca 🧬📅
+        let filteredEvents = calendarEvents;
+        const filterKeyword = field.filterSummary || 
+          (config.id === "survey_agendamento_devolutiva" ? "plano de carreira" : undefined);
+          
+        if (filterKeyword) {
+          const keywordNorm = filterKeyword.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+          filteredEvents = calendarEvents.filter(ev => {
+            const summaryNorm = (ev.summary || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+            return summaryNorm.includes(keywordNorm);
+          });
+        }
+
         return (
           <div className="space-y-4 pt-4">
             <Calendar
-              events={calendarEvents}
+              events={filteredEvents}
               isLoading={loadingCalendar}
               onBookingSuccess={(bookedEvent) => {
                 if (bookedEvent?.start) {
@@ -839,6 +852,7 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
             />
           </div>
         );
+      }
 
       default:
         return <p className="text-red-500">Tipo de campo não suportado: {field.type}</p>;

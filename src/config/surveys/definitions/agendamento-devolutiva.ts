@@ -41,7 +41,8 @@ export const agendamentoDevolutivaSurvey: SurveyConfig = {
         {
           id: "calendario_devolutiva",
           type: "calendar_embed",
-          required: true
+          required: true,
+          filterSummary: "plano de carreira"
         }
       ]
     },
