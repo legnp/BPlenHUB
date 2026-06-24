@@ -93,3 +93,48 @@ export async function handleCVReviewEffect(
     console.error(`❌ [Effects:CV Review] Erro na sincronização Drive:`, err);
   }
 }
+
+/**
+ * EFEITO: Desmistificando Candidaturas 🧬📋
+ */
+export async function handleDesmistificandoCandidaturasEffect(
+  responses: Record<string, SurveyValue>,
+  matricula: string
+) {
+  try {
+    const desafios = Array.isArray(responses.desafios) ? responses.desafios.join(", ") : String(responses.desafios || "N/A");
+    
+    await syncSurveyToUserDrive({
+      matricula,
+      surveyTitle: "Desmistificando Candidaturas",
+      headers: [
+        "Timestamp", 
+        "Matrícula", 
+        "Desafios", 
+        "Outro Desafio", 
+        "Detalhes Desafios",
+        "Termômetro de Fit",
+        "Justificativa Fit",
+        "Fonte Oportunidade",
+        "Outra Fonte",
+        "Canal Oportunidade",
+        "Próximo Passo"
+      ],
+      rowData: [
+        new Date().toLocaleString("pt-BR"),
+        matricula,
+        desafios,
+        String(responses.desafios_other || "N/A"),
+        String(responses.detalhes_desafios || "N/A"),
+        String(responses.fit_termometro || "N/A"),
+        String(responses.fit_justificativa || "N/A"),
+        String(responses.fonte_oportunidade || "N/A"),
+        String(responses.fonte_oportunidade_other || "N/A"),
+        String(responses.canal_oportunidade || "N/A"),
+        String(responses.proximo_passo || "N/A")
+      ]
+    });
+  } catch (err) {
+    console.error(`❌ [Effects:DesmistificandoCandidaturas] Erro na sincronização Drive:`, err);
+  }
+}

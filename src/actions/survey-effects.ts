@@ -10,7 +10,7 @@ import { handleGestaoTempoEffect } from "./effects/gestao-tempo";
 import { handlePreferenciasAprendizadoEffect } from "./effects/preferencias-aprendizado";
 import { handlePreferenciasReconhecimentoEffect } from "./effects/preferencias-reconhecimento";
 import { handlePreAnaliseComportamentalEffect } from "./effects/pre-analise-comportamental";
-import { handleCheckInEffect, handleContentFeedbackEffect, handleCVReviewEffect } from "./effects/misc-surveys";
+import { handleCheckInEffect, handleContentFeedbackEffect, handleCVReviewEffect, handleDesmistificandoCandidaturasEffect } from "./effects/misc-surveys";
 
 /**
  * BPlen HUB — Survey Effects Dispatcher (🧠)
@@ -137,7 +137,7 @@ export async function handleSurveySideEffects(surveyId: string, responses: Recor
         break;
 
       case "desmistificando_candidaturas":
-        await handleContentFeedbackEffect(responses, matricula, "Desmistificando Candidaturas");
+        await handleDesmistificandoCandidaturasEffect(responses, matricula);
         break;
 
       case "revisao_curriculo":
