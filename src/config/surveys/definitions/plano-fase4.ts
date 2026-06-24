@@ -40,7 +40,7 @@ export const planoFase4Survey: SurveyConfig = {
     {
       id: "step_q1_referencia",
       question: "Quem é sua referência?",
-      description: "{{User_Nickname}}, ninguém chega ao topo sem se inspirar em alguém.\n\nHoje, quem é a pessoa que você tem como sua maior referência ou liderança inspiradora para alcançar seu objetivo de carreira?\n(Pode ser mãe, pai, um tio, tia, figura pública, artista ou líder religioso).",
+      description: "{{User_Nickname}}, ninguém chega ao topo sem se inspirar em alguém.\n\nHoje, quem é a pessoa que você tem como sua maior referência ou liderança inspiradora para alcançar seu objetivo de carreira?\n(Pode ser mãe, pai, um tio, tia, figura pública, artista, líder religioso ou qualquer outra pessoa que te inspire).",
       nextLabel: "Avançar",
       fields: [
         {
