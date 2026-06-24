@@ -74,8 +74,34 @@ function shuffleOptions(options: string[] | { label: string; value: string; subO
  * Agora suporta NAVEGAÇÃO CONDICIONAL (Grafos).
  */
 export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onStepChange, returnToCheckoutSlug, userNickname, initialUserMetadata }: SurveyEngineProps) {
-  const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [responses, setResponses] = useState<Record<string, SurveyValue>>({});
+  const [currentStepIndex, setCurrentStepIndex] = useState(() => {
+    if (typeof window !== "undefined" && config.id === "survey_plano_fase4" && userUid) {
+      const saved = localStorage.getItem(`survey_draft_${config.id}_${userUid}`);
+      if (saved) {
+        try {
+          return JSON.parse(saved).stepIndex || 0;
+        } catch(e) {}
+      }
+    }
+    return 0;
+  });
+  const [responses, setResponses] = useState<Record<string, SurveyValue>>(() => {
+    if (typeof window !== "undefined" && config.id === "survey_plano_fase4" && userUid) {
+      const saved = localStorage.getItem(`survey_draft_${config.id}_${userUid}`);
+      if (saved) {
+        try {
+          return JSON.parse(saved).responses || {};
+        } catch(e) {}
+      }
+    }
+    return {};
+  });
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && config.id === "survey_plano_fase4" && userUid) {
+      localStorage.setItem(`survey_draft_${config.id}_${userUid}`, JSON.stringify({ responses, stepIndex: currentStepIndex }));
+    }
+  }, [responses, currentStepIndex, config.id, userUid]);
 
   useEffect(() => {
     if (onStepChange) {
@@ -338,6 +364,10 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
       const { submitSurvey } = await import("@/actions/submit-survey");
       const res = await submitSurvey(config, payload, userUid);
       
+      if (typeof window !== "undefined" && config.id === "survey_plano_fase4" && userUid) {
+        localStorage.removeItem(`survey_draft_${config.id}_${userUid}`);
+      }
+
       if (onSubmitSuccess) {
         onSubmitSuccess();
       }
@@ -999,7 +1029,7 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
                 })()}
 
                 {(() => {
-                  const borderClass = "border-t border-[var(--border-primary)]/60 my-8";
+                  const borderClass = "border-t-2 border-[var(--border-primary)]/80 dark:border-white/20 my-8 shadow-sm";
 
                   if (currentStep.id === "step_q1_pequenas_metas" && preparedFields.length === 6) {
                     return (
@@ -1066,20 +1096,20 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
                         </div>
 
                         {/* Linha de Inputs */}
-                        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 items-start">
-                          <div className="md:col-span-2">
-                            <div className="md:hidden">
+                        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 items-stretch">
+                          <div className="md:col-span-2 flex flex-col h-full">
+                            <div className="md:hidden flex-1">
                               {renderField(f1)}
                             </div>
-                            <div className="hidden md:block">
+                            <div className="hidden md:block flex-1 h-full [&>div]:h-full [&_textarea]:h-full">
                               {renderField({ ...f1, label: undefined })}
                             </div>
                           </div>
-                          <div className="md:col-span-3">
-                            <div className="md:hidden">
+                          <div className="md:col-span-3 flex flex-col h-full">
+                            <div className="md:hidden flex-1">
                               {renderField(f2)}
                             </div>
-                            <div className="hidden md:block">
+                            <div className="hidden md:block flex-1 h-full [&>div]:h-full [&_textarea]:h-full">
                               {renderField({ ...f2, label: undefined })}
                             </div>
                           </div>

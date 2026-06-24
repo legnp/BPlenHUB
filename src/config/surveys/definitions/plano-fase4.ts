@@ -60,7 +60,7 @@ export const planoFase4Survey: SurveyConfig = {
     },
     {
       id: "step_q2_referencia_o_que_inspira",
-      question: "O que te inspira? (Aproximando a Realidade)",
+      question: "O que te inspira?",
       description: "{{User_Nickname}}, por que a sua referência ({{Nome_Referencia}}) te inspira? Quais são as atitudes, ideias e ações que a tornam especial?\n\nO que você diria que há de semelhante entre vocês (como por exemplo traços físicos, histórias, comportamentos, área de atuação) e o que há de diferença?",
       nextLabel: "Avançar",
       fields: [
@@ -95,7 +95,7 @@ export const planoFase4Survey: SurveyConfig = {
     {
       id: "step_q4_carta_5anos_lacre",
       question: "Lacrar a carta",
-      description: "{{User_Nickname}}, muito bem! Com certeza você escreveu uma carta incrível.\n\nAbra o Kit BPlen. Dentro dele haverá um envelope e uma cera para lacre. Guarde a carta dentro do envelope e lacre com a cera.\n\nNa reunião de devolutiva você receberá mais instruções sobre o que fazer com a carta.",
+      description: "{{User_Nickname}}, muito bem! Com certeza você escreveu uma carta incrível.\n\nAbra o Kit BPlen. Dentro dele haverá um envelope e uma cera para lacre. Guarde a carta dentro do envelope e lacre com a cera.\n\nInstruções para lacrar:\n- Longe de papel, madeira, e materiais inflamáveis, acenda o pavio da cera;\n- Deixe acesa por 5 minutos;\n- Apague o fogo e imediatamente derrame a cera derretida no centro do fechamento do envelope;\n- Aguarde secar por aproximadamente 10 minutos e o seu envelope estará lacrado.\n\nNa reunião de devolutiva você receberá mais instruções sobre o que fazer com a carta.",
       nextLabel: "Avançar",
       fields: [
         {

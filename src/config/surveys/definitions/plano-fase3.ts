@@ -26,7 +26,7 @@ export const planoFase3Survey: SurveyConfig = {
         {
           id: "info_tempo_fase3",
           type: "info",
-          label: "Atenção: Reserve de 25 a 30 minutos em um ambiente tranquilo para prosseguir. Os dados preenchidos ficam salvos somente com a conclusão total. Caso precise fechar a página durante o processo, ele será reiniciado."
+          label: "Atenção: Reserve cerca de 30 minutos em um espaço reservado e sem distrações para prosseguir. Os dados preenchidos ficam salvos somente com a conclusão total. Caso precise fechar a página durante o processo, ele será reiniciado."
         }
       ]
     },
