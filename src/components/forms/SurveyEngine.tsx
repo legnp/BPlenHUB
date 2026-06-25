@@ -237,6 +237,7 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
         } catch(e) {}
       }
     }
+    return {};
   });
 
   const [emailErrors, setEmailErrors] = useState<Record<string, string | null>>({});
