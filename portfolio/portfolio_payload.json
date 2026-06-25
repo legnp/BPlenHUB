@@ -172,7 +172,7 @@
         "id": "ss-survey-survey_pdi_fase1",
         "type": "survey",
         "referenceId": "survey_pdi_fase1",
-        "title": "Definição de Objetivos",
+        "title": "Elaboração de PDI",
         "description": "Definição de objetivos de carreira profissional",
         "order": "2.1"
       },
@@ -180,7 +180,7 @@
         "id": "ss-survey-survey_pdi_fase2",
         "type": "survey",
         "referenceId": "survey_pdi_fase2",
-        "title": "Seleção de recursos e habilidades",
+        "title": "Elaboração de PDI",
         "description": "Analise de Potencial e Riscos",
         "order": "2.2"
       },
@@ -188,7 +188,7 @@
         "id": "ss-survey-survey_pdi_fase3",
         "type": "survey",
         "referenceId": "survey_pdi_fase3",
-        "title": "Definição de metas e ciclos",
+        "title": "Elaboração de PDI",
         "description": "Definição de metas e ciclos",
         "order": "2.3"
       },
@@ -196,7 +196,7 @@
         "id": "ss-survey-survey_pdi_fase4",
         "type": "survey",
         "referenceId": "survey_pdi_fase4",
-        "title": "Consolidação de PDI",
+        "title": "Elaboração de PDI",
         "description": "Consolidacao do PDI",
         "order": "2.4"
       },
