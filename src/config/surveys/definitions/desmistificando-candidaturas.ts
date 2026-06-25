@@ -120,12 +120,6 @@ export const desmistificandoCandidaturasSurvey: SurveyConfig = {
           ],
           required: true
         },
-        {
-          id: "canal_oportunidade_outros",
-          type: "text",
-          label: "Se selecionou 'Outros', especifique qual:",
-          required: false
-        }
       ]
     },
     {
