@@ -282,7 +282,7 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
       if (Array.isArray(value) && value.length > 0) {
         // Mapear valores para injetar o texto de "Outro" caso exista
         const mappedValue = value.map(v => {
-          if (typeof v === "string" && v.toLowerCase().includes("outro") && combinedData[`${key}_other`]) {
+          if (typeof v === "string" && v.toLowerCase().startsWith("outro") && combinedData[`${key}_other`]) {
             return combinedData[`${key}_other`];
           }
           return v;
@@ -298,7 +298,11 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
       } else if (typeof value === "object" && value !== null) {
         valStr = JSON.stringify(value);
       } else if (value !== undefined && value !== null) {
-        valStr = String(value);
+        if (typeof value === "string" && value.toLowerCase().startsWith("outro") && combinedData[`${key}_other`]) {
+          valStr = String(combinedData[`${key}_other`]);
+        } else {
+          valStr = String(value);
+        }
       }
 
       // Aplicar marcador de destaque automático para campos dinâmicos (exceto apelido e contexto longo de Maslow)
@@ -509,7 +513,7 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
         if (field.isMultiple) {
           const isOtherSelected = Array.isArray(rawValue) && rawValue.some(v => {
             const val = String(v).toLowerCase();
-            return val === "outro" || val === "outros";
+            return val.startsWith("outro");
           });
 
           return (
@@ -564,7 +568,7 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
             
             {/* Campo Condicional "Outro" / "Indicação" 🧬 */}
 
-            {(rawValue === "Outro" || rawValue === "Outros" || rawValue === "Indicação") && (
+            {(typeof rawValue === "string" && (rawValue.toLowerCase().startsWith("outro") || rawValue === "Indicação")) && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
@@ -583,7 +587,7 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
 
 
       case "dropdown": {
-        const isDropdownOtherSelected = typeof rawValue === "string" && (rawValue.toLowerCase().includes("outro") || rawValue === "Indicação");
+        const isDropdownOtherSelected = typeof rawValue === "string" && (rawValue.toLowerCase().startsWith("outro") || rawValue === "Indicação");
         return (
           <div className="space-y-4">
             {field.label && (
@@ -636,7 +640,7 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
       case "multi_select": {
         const isMultiOtherSelected = Array.isArray(rawValue) && rawValue.some(v => {
           const val = String(v).toLowerCase();
-          return val.includes("outro") || val === "outros";
+          return val.startsWith("outro");
         });
 
         return (
