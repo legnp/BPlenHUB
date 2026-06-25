@@ -582,6 +582,57 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
         );
 
 
+      case "dropdown": {
+        const isDropdownOtherSelected = typeof rawValue === "string" && (rawValue.toLowerCase().includes("outro") || rawValue === "Indicação");
+        return (
+          <div className="space-y-4">
+            {field.label && (
+              <label className="text-xs font-bold uppercase tracking-tight text-[var(--text-muted)] ml-1 block mb-1">
+                {field.label}
+              </label>
+            )}
+            <div className="relative">
+              <select
+                className="w-full bg-white/5 border border-[var(--border-primary)]/80 dark:border-white/20 rounded-2xl px-5 py-4 text-sm font-medium text-[var(--text-primary)] appearance-none outline-none focus:border-[var(--accent-start)] transition-all cursor-pointer shadow-sm hover:bg-white/10"
+                value={String(rawValue || "")}
+                onChange={(e) => updateResponse(field.id, e.target.value)}
+              >
+                <option value="" disabled className="text-gray-500 bg-[#f8fafc] dark:bg-[#0f172a]">Selecione uma opção...</option>
+                {((field.options as (string | { label: string; value: string })[]) || []).map((opt) => {
+                  const label = typeof opt === "string" ? opt : opt.label;
+                  const val = typeof opt === "string" ? opt : opt.value;
+                  return (
+                    <option key={val} value={val} className="text-[#334155] dark:text-[#f8fafc] bg-[#f8fafc] dark:bg-[#0f172a]">
+                      {label}
+                    </option>
+                  );
+                })}
+              </select>
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-50">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 9l6 6 6-6"/>
+                </svg>
+              </div>
+            </div>
+
+            {isDropdownOtherSelected && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                className="pt-2"
+              >
+                <InputGlass
+                  placeholder="Por favor, especifique..."
+                  value={String(responses[`${field.id}_other`] || "")}
+                  onChange={(e) => updateResponse(`${field.id}_other`, e.target.value)}
+                  autoFocus
+                />
+              </motion.div>
+            )}
+          </div>
+        );
+      }
+
       case "multi_select": {
         const isMultiOtherSelected = Array.isArray(rawValue) && rawValue.some(v => {
           const val = String(v).toLowerCase();

@@ -34,7 +34,7 @@ export const pdiFase2Survey: SurveyConfig = {
       fields: [
         {
           id: "combustivel_1",
-          type: "choice",
+          type: "dropdown",
           label: "Combustível 1",
           options: [...PDI_COMBUSTIVEIS, "Outro, qual?"],
           required: true,
@@ -42,7 +42,7 @@ export const pdiFase2Survey: SurveyConfig = {
         },
         {
           id: "combustivel_2",
-          type: "choice",
+          type: "dropdown",
           label: "Combustível 2",
           options: [...PDI_COMBUSTIVEIS, "Outro, qual?"],
           required: true,
@@ -52,7 +52,7 @@ export const pdiFase2Survey: SurveyConfig = {
         },
         {
           id: "freio_1",
-          type: "choice",
+          type: "dropdown",
           label: "Freio 1",
           options: [...PDI_FREIOS, "Outro, qual?"],
           required: true,
@@ -61,7 +61,7 @@ export const pdiFase2Survey: SurveyConfig = {
         },
         {
           id: "freio_2",
-          type: "choice",
+          type: "dropdown",
           label: "Freio 2",
           options: [...PDI_FREIOS, "Outro, qual?"],
           required: true,

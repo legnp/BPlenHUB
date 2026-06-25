@@ -47,7 +47,7 @@ export interface SurveyStep {
 
 export interface SurveyFieldConfig {
   id: string;
-  type: "choice" | "text" | "textarea" | "scale" | "info" | "buttons" | "multi_select" | "cascaded" | "benefits" | "currency_group" | "likert" | "ranking" | "likert_group" | "file" | "evidence_upload" | "portal_link" | "date" | "slider" | "calendar_embed" | "image" | "dynamic_list";
+  type: "choice" | "dropdown" | "text" | "textarea" | "scale" | "info" | "buttons" | "multi_select" | "cascaded" | "benefits" | "currency_group" | "likert" | "ranking" | "likert_group" | "file" | "evidence_upload" | "portal_link" | "date" | "slider" | "calendar_embed" | "image" | "dynamic_list";
   subFields?: SurveyFieldConfig[]; // Utilizado pelo tipo dynamic_list para renderizar as linhas de loop
   label?: string;
   placeholder?: string;

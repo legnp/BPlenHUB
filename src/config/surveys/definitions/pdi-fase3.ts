@@ -40,14 +40,14 @@ export const pdiFase3Survey: SurveyConfig = {
       fields: [
         {
           id: "tempo_revisao",
-          type: "choice",
+          type: "dropdown",
           label: "Tempo de revisão",
           options: ["10 minutos", "15 minutos", "20 minutos", "25 minutos", "30 minutos"],
           required: true
         },
         {
           id: "frequencia_revisao",
-          type: "choice",
+          type: "dropdown",
           label: "Frequência da revisão",
           options: ["A cada 3 dias", "A cada 7 dias", "A cada 10 dias", "A cada 15 dias"],
           required: true
