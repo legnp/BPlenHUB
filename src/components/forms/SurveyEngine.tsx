@@ -24,6 +24,7 @@ import { RankingField } from "./SurveyFields/RankingField";
 import { LikertGroup } from "./SurveyFields/LikertGroup";
 import { FileField } from "./SurveyFields/FileField";
 import { EvidenceField } from "./SurveyFields/EvidenceField";
+import { DynamicList } from "./SurveyFields/DynamicList";
 import { NarrativeContent } from "./NarrativeContent";
 import { resolveUserIdentity, getUserMetadata } from "@/actions/survey-effects";
 import { getPreviousSurveysDataAction } from "@/actions/submit-survey";
@@ -422,6 +423,15 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
       if (onSubmitSuccess) {
         onSubmitSuccess();
       }
+
+      if (config.id === "master_cv") {
+        try {
+          const { generateMasterCvDocx } = await import("@/lib/docx-generator");
+          await generateMasterCvDocx(responses, userNickname || "Profissional");
+        } catch (e) {
+          console.error("Erro ao gerar docx:", e);
+        }
+      }
       
       if (config.completionMessage) {
         setIsFinished(true);
@@ -631,8 +641,14 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
           />
         );
 
-
-      
+      case "dynamic_list":
+        return (
+          <DynamicList
+            field={field}
+            value={(rawValue as Record<string, string>[]) || []}
+            onChange={(val: Record<string, string>[]) => updateResponse(field.id, val)}
+          />
+        );
       case "ranking":
         return (
           <RankingField

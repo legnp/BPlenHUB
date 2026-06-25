@@ -201,11 +201,11 @@
         "order": "2.4"
       },
       {
-        "id": "ss-survey-revisao_curriculo",
-        "type": "survey",
-        "referenceId": "revisao_curriculo",
-        "title": "Revisão e elaboração de CV",
-        "description": "Revisão do perfil profissional",
+        "id": "ss-survey-master_cv",
+        "type": "SURVEY",
+        "referenceId": "master_cv",
+        "title": "Master CV",
+        "description": "Banco de dados do seu perfil profissional e revisão de currículo",
         "order": "3"
       },
       {
@@ -236,11 +236,11 @@
     "capabilities": {
       "surveys": [
         "desmistificando_candidaturas",
-        "revisao_curriculo",
         "survey_pdi_fase1",
         "survey_pdi_fase2",
         "survey_pdi_fase3",
         "survey_pdi_fase4",
+        "master_cv",
         "pendente",
         "pre_analise_comportamental",
         "orientacao-individual-posicionamento"
