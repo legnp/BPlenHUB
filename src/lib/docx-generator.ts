@@ -10,7 +10,14 @@ export async function generateMasterCvDocx(responses: Record<string, SurveyValue
   
   // Helpers para extração
   const getStr = (id: string) => (responses[id] ? String(responses[id]) : "");
-  const getArr = (id: string) => (Array.isArray(responses[id]) ? (responses[id] as any[]) : []);
+  const getArr = (id: string) => {
+    const val = responses[id];
+    if (Array.isArray(val)) return val as any[];
+    if (typeof val === "string") {
+      return val.split(",").map(s => s.trim()).filter(Boolean);
+    }
+    return [];
+  };
 
   const experiencias = getArr("experiencias");
   const formacoes = getArr("formacoes");

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Rocket } from "lucide-react";
+import { Rocket, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { format, parseISO } from "date-fns";
 import { SurveyConfig, SurveyFieldConfig, SurveyValue } from "@/types/survey";
@@ -31,7 +31,98 @@ import { getPreviousSurveysDataAction } from "@/actions/submit-survey";
 import Calendar, { CalendarEvent } from "@/components/ui/Calendar";
 import { getProgramacaoForMemberAction } from "@/actions/calendar";
 
+const POPULAR_DOMAINS = [
+  "gmail.com", "hotmail.com", "hotmail.com.br", "outlook.com", "outlook.com.br",
+  "yahoo.com", "yahoo.com.br", "icloud.com", "bplen.com",
+  "bol.com.br", "uol.com.br", "terra.com.br", "me.com", "protonmail.com", "zoho.com",
+  "aol.com", "live.com", "msn.com", "globo.com", "ig.com.br"
+];
 
+const getLevenshteinDistance = (a: string, b: string) => {
+  const matrix = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+  for (let j = 1; j <= b.length; j++) matrix[0][j] = j;
+
+  for (let i = 1; i <= a.length; i++) {
+    for (let j = 1; j <= b.length; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      matrix[i][j] = Math.min(
+        matrix[i - 1][j] + 1,
+        matrix[i][j - 1] + 1,
+        matrix[i - 1][j - 1] + cost
+      );
+    }
+  }
+  return matrix[a.length][b.length];
+};
+
+const isValidEmail = (email: string) => {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+};
+
+const COUNTRY_CODES = [
+  // Top 3 Prioritarios
+  { code: "+55", label: "BR +55", iso: "BR" },
+  { code: "+1", label: "US +1", iso: "US" },
+  { code: "+351", label: "PT +351", iso: "PT" },
+  
+  // Americas (Sul, Central, Norte e Caribe)
+  { code: "+54", label: "AR +54", iso: "AR" },
+  { code: "+56", label: "CL +56", iso: "CL" },
+  { code: "+57", label: "CO +57", iso: "CO" },
+  { code: "+52", label: "MX +52", iso: "MX" },
+  { code: "+598", label: "UY +598", iso: "UY" },
+  { code: "+591", label: "BO +591", iso: "BO" },
+  { code: "+593", label: "EC +593", iso: "EC" },
+  { code: "+51", label: "PE +51", iso: "PE" },
+  { code: "+595", label: "PY +595", iso: "PY" },
+  { code: "+58", label: "VE +58", iso: "VE" },
+  { code: "+507", label: "PA +507", iso: "PA" },
+  { code: "+506", label: "CR +506", iso: "CR" },
+  { code: "+502", label: "GT +502", iso: "GT" },
+  { code: "+503", label: "SV +503", iso: "SV" },
+  { code: "+504", label: "HN +504", iso: "HN" },
+  { code: "+505", label: "NI +505", iso: "NI" },
+  { code: "+501", label: "BZ +501", iso: "BZ" },
+  { code: "+53", label: "CU +53", iso: "CU" },
+  { code: "+509", label: "HT +509", iso: "HT" },
+
+  // Europa
+  { code: "+34", label: "ES +34", iso: "ES" },
+  { code: "+44", label: "GB +44", iso: "GB" },
+  { code: "+33", label: "FR +33", iso: "FR" },
+  { code: "+49", label: "DE +49", iso: "DE" },
+  { code: "+39", label: "IT +39", iso: "IT" },
+  { code: "+41", label: "CH +41", iso: "CH" },
+  { code: "+353", label: "IE +353", iso: "IE" },
+  { code: "+31", label: "NL +31", iso: "NL" },
+  { code: "+32", label: "BE +32", iso: "BE" },
+  { code: "+43", label: "AT +43", iso: "AT" },
+  { code: "+48", label: "PL +48", iso: "PL" },
+  { code: "+46", label: "SE +46", iso: "SE" },
+  { code: "+47", label: "NO +47", iso: "NO" },
+  { code: "+45", label: "DK +45", iso: "DK" },
+
+  // Asia e Oceania
+  { code: "+81", label: "JP +81", iso: "JP" },
+  { code: "+86", label: "CN +86", iso: "CN" },
+  { code: "+82", label: "KR +82", iso: "KR" },
+  { code: "+91", label: "IN +91", iso: "IN" },
+  { code: "+65", label: "SG +65", iso: "SG" },
+  { code: "+61", label: "AU +61", iso: "AU" },
+  { code: "+64", label: "NZ +64", iso: "NZ" },
+
+  // Oriente Medio
+  { code: "+971", label: "AE +971", iso: "AE" },
+  { code: "+966", label: "SA +966", iso: "SA" },
+  { code: "+972", label: "IL +972", iso: "IL" },
+  { code: "+974", label: "QA +974", iso: "QA" },
+
+  // Africa (Lusofonos e Principais)
+  { code: "+244", label: "AO +244", iso: "AO" },
+  { code: "+258", label: "MZ +258", iso: "MZ" },
+  { code: "+238", label: "CV +238", iso: "CV" },
+  { code: "+27", label: "ZA +27", iso: "ZA" }
+];
 
 interface SurveyEngineProps {
   config: SurveyConfig;
@@ -146,8 +237,52 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
         } catch(e) {}
       }
     }
-    return {};
   });
+
+  const [emailErrors, setEmailErrors] = useState<Record<string, string | null>>({});
+  const [showPhoneWarning, setShowPhoneWarning] = useState(false);
+
+  const updatePhone = (fieldId: string, part: "ddi" | "ddd" | "number", value: string) => {
+    setResponses(prev => {
+      const currentDDI = part === "ddi" ? value : (String(prev[`${fieldId}_ddi`] || "+55"));
+      const currentDDD = part === "ddd" ? value : (String(prev[`${fieldId}_ddd`] || ""));
+      const currentNumber = part === "number" ? value : (String(prev[`${fieldId}_number`] || ""));
+      
+      const combined = `${currentDDI} ${currentDDD} ${currentNumber}`.trim().replace(/\s+/g, ' ');
+      
+      return {
+        ...prev,
+        [`${fieldId}_ddi`]: currentDDI,
+        [`${fieldId}_ddd`]: currentDDD,
+        [`${fieldId}_number`]: currentNumber,
+        [fieldId]: combined
+      };
+    });
+    handleInteraction();
+  };
+
+  useEffect(() => {
+    if (responses.telefone && !responses.telefone_ddi) {
+      const telStr = String(responses.telefone).trim();
+      const parts = telStr.split(" ");
+      let ddi = "+55";
+      let ddd = "";
+      let num = "";
+      if (parts[0] && parts[0].startsWith("+")) {
+        ddi = parts[0];
+        ddd = parts[1] || "";
+        num = parts.slice(2).join(" ");
+      } else {
+        num = telStr;
+      }
+      setResponses(prev => ({
+        ...prev,
+        telefone_ddi: ddi,
+        telefone_ddd: ddd,
+        telefone_number: num
+      }));
+    }
+  }, [responses]);
 
   useEffect(() => {
     if (typeof window !== "undefined" && config.id === "survey_plano_fase4" && userUid) {
@@ -739,6 +874,151 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
         );
 
       case "text":
+        if (field.id === "email_profissional" || (field.type as string) === "email") {
+          const emailError = emailErrors[field.id];
+          return (
+            <div className="space-y-2 pt-2 relative">
+              {field.label && (
+                <label className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-start)] ml-1">
+                  {field.label} {field.required && <span className="text-red-500 ml-0.5">*</span>}
+                </label>
+              )}
+              <InputGlass
+                autoFocus={field.autoFocus}
+                placeholder={field.placeholder || "nome.sobrenome@email.com"}
+                type="email"
+                value={String(rawValue || "")}
+                onChange={(e) => {
+                  const val = e.target.value.toLowerCase();
+                  updateResponse(field.id, val);
+
+                  const isInvalid = val.length > 3 && !isValidEmail(val);
+                  const parts = val.split("@");
+                  if (parts.length !== 2) {
+                    setEmailErrors(prev => ({ ...prev, [field.id]: isInvalid ? "Por favor, insira um e-mail válido" : null }));
+                    return;
+                  }
+
+                  const domain = parts[1];
+                  if (POPULAR_DOMAINS.includes(domain)) {
+                    setEmailErrors(prev => ({ ...prev, [field.id]: null }));
+                    return;
+                  }
+
+                  if (isInvalid) {
+                    setEmailErrors(prev => ({ ...prev, [field.id]: "Por favor, insira um e-mail válido" }));
+                  } else if (domain && domain.length > 2) {
+                    let bestMatch = null;
+                    let minDistance = 3;
+
+                    for (const d of POPULAR_DOMAINS) {
+                      const distance = getLevenshteinDistance(domain, d);
+                      if (distance < minDistance) {
+                        minDistance = distance;
+                        bestMatch = d;
+                      }
+                    }
+
+                    if (bestMatch && bestMatch !== domain) {
+                      setEmailErrors(prev => ({ ...prev, [field.id]: `Ops! Você quis dizer @${bestMatch}?` }));
+                    } else {
+                      setEmailErrors(prev => ({ ...prev, [field.id]: null }));
+                    }
+                  } else {
+                    setEmailErrors(prev => ({ ...prev, [field.id]: null }));
+                  }
+                }}
+              />
+              {emailError && (
+                <p className="text-[9px] font-bold text-[var(--accent-start)] flex items-center gap-1 mt-1.5 ml-1 animate-pulse">
+                  <AlertCircle className="w-3 h-3" />
+                  {emailError}
+                </p>
+              )}
+            </div>
+          );
+        }
+
+        if (field.id === "telefone" || (field.type as string) === "phone") {
+          const currentDDI = String(responses[`${field.id}_ddi`] || "+55");
+          const currentDDD = String(responses[`${field.id}_ddd`] || "");
+          const currentNumber = String(responses[`${field.id}_number`] || "");
+
+          return (
+            <div className="space-y-2 pt-2 relative">
+              {field.label && (
+                <label className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-start)] ml-1 block mb-1">
+                  {field.label} {field.required && <span className="text-red-500 ml-0.5">*</span>}
+                </label>
+              )}
+              <div className="flex gap-2">
+                {/* Seletor de Pais (DDI) */}
+                <select
+                  className="w-32 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-2xl text-[11px] text-[var(--text-primary)] px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-[var(--accent-start)] appearance-none cursor-pointer"
+                  value={currentDDI}
+                  onChange={(e) => {
+                    const nextDDI = e.target.value;
+                    updatePhone(field.id, "ddi", nextDDI);
+                    if (nextDDI !== "+55") {
+                      updatePhone(field.id, "ddd", "");
+                    }
+                  }}
+                >
+                  {COUNTRY_CODES.map((country) => (
+                    <option key={`${country.iso}-${country.code}`} value={country.code} className="bg-[var(--bg-primary)]">
+                      {country.label}
+                    </option>
+                  ))}
+                </select>
+
+                {/* DDD Condicional */}
+                {currentDDI === "+55" ? (
+                  <select
+                    className="w-24 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-2xl text-[11px] text-[var(--text-primary)] px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-[var(--accent-start)] appearance-none cursor-pointer"
+                    value={currentDDD}
+                    onChange={(e) => updatePhone(field.id, "ddd", e.target.value)}
+                  >
+                    <option value="" disabled className="bg-[var(--bg-primary)]">DDD</option>
+                    {[11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 24, 27, 28, 31, 32, 33, 34, 35, 37, 38, 41, 42, 43, 44, 45, 46, 47, 48, 49, 51, 53, 54, 55, 61, 62, 63, 64, 65, 66, 67, 68, 69, 71, 73, 74, 75, 77, 79, 81, 82, 83, 84, 85, 86, 87, 88, 89, 91, 92, 93, 94, 95, 96, 97, 98, 99].map(ddd => (
+                      <option key={ddd} value={String(ddd)} className="bg-[var(--bg-primary)]">{ddd}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    placeholder="Cod."
+                    maxLength={4}
+                    value={currentDDD}
+                    className="w-20 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-[14px] text-sm text-[var(--text-primary)] px-4 py-2.5 text-center focus:outline-none focus:ring-1 focus:ring-[var(--accent-start)] placeholder:text-[var(--input-placeholder)]"
+                    onChange={(e) => updatePhone(field.id, "ddd", e.target.value.replace(/\D/g, ""))}
+                  />
+                )}
+
+                {/* Numero Blindado */}
+                <input
+                  placeholder="Numero"
+                  className="flex-1 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-[14px] text-sm text-[var(--text-primary)] px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-[var(--accent-start)] placeholder:text-[var(--input-placeholder)]"
+                  value={currentNumber}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (/[^0-9]/.test(val)) {
+                      setShowPhoneWarning(true);
+                    } else {
+                      setShowPhoneWarning(false);
+                    }
+                    updatePhone(field.id, "number", val.replace(/\D/g, ""));
+                  }}
+                />
+              </div>
+              {showPhoneWarning && (
+                <p className="text-[9px] font-bold text-[var(--accent-start)] flex items-center gap-1 mt-1.5 ml-1 animate-pulse">
+                  <AlertCircle className="w-3 h-3" />
+                  O campo aceita somente números
+                </p>
+              )}
+            </div>
+          );
+        }
+
         return (
           <div className="space-y-2 pt-2">
             {field.label && (
@@ -1021,6 +1301,17 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
   const canProgress = currentStep.fields.every(f => {
     if (!f.required) return true;
     const val = responses[f.id];
+
+    if (f.id === "email_profissional" || (f.type as string) === "email") {
+      return val !== undefined && val !== null && isValidEmail(String(val));
+    }
+
+    if (f.id === "telefone" || (f.type as string) === "phone") {
+      const ddi = responses[`${f.id}_ddi`] || "+55";
+      const ddd = responses[`${f.id}_ddd`] || "";
+      const num = responses[`${f.id}_number`] || "";
+      return !!num && (ddi !== "+55" || !!ddd);
+    }
     
     if (f.type === "multi_select" || f.isMultiple) {
       const arr = (val as string[]) || [];

@@ -20,7 +20,7 @@ export const masterCvSurvey: SurveyConfig = {
     {
       id: "tela2_explicacao",
       question: "O seu Banco de Dados Profissional",
-      description: "{{User_Nickname}}, iniciaremos o processo criando o seu Master CV.\n\nEste será o seu banco de dados de perfil profissional. Ele te possibilitará compilar toda sua trajetória para facilitar a adaptação da sua apresentação profissional em qualquer demanda ou situação.\n\nPreencha cada campo with o máximo de detalhes possível. Ao final você receberá o seu Master CV em word, que você não enviará para ninguém.\n\nEle será exclusivo para a sua organização e auxílio para continuar avançando no processo e adaptação do seu LinkedIn, CV e demais meios e plataformas.",
+      description: "{{User_Nickname}}, iniciaremos o processo criando o seu Master CV.\n\nEste será o seu banco de dados de perfil profissional. Ele te possibilitará compilar toda sua trajetória para facilitar a adaptação da sua apresentação profissional em qualquer demanda ou situação.\n\nPreencha cada campo com o máximo de detalhes possível. Ao final você receberá o seu Master CV em word, que você não enviará para ninguém.\n\nEle será exclusivo para a sua organização e auxílio para continuar avançando no processo e adaptação do seu LinkedIn, CV e demais meios e plataformas.",
       nextLabel: "Iniciar meu Master CV",
       fields: []
     },
@@ -77,14 +77,14 @@ export const masterCvSurvey: SurveyConfig = {
       fields: [
         {
           id: "hard_skills",
-          type: "multi_select",
+          type: "textarea",
           label: "Hard Skills e Ferramentas",
           placeholder: "Quais softwares e ferramentas você domina? (ex: Excel, Power BI, Salesforce). Sempre que possível, escreva a sigla e o nome por extenso.",
           required: true
         },
         {
           id: "metodologias",
-          type: "multi_select",
+          type: "textarea",
           label: "Metodologias e Jargões do seu Setor",
           placeholder: "Ex: Metodologia Ágil, Scrum, Lean Six Sigma, B2B, B2C. Da mesma forma, sempre que possível, escreva a sigla e o nome por extenso.",
           required: true
