@@ -161,13 +161,13 @@ export const desmistificandoCandidaturasSurvey: SurveyConfig = {
     {
       id: "step_encerramento",
       question: "Nosso alinhamento está feito. Agora, vamos à prática?",
-      description: "Suas respostas mostraram exatamente onde o seu perfil está no mercado hoje. Você já entendeu que o mercado oculto exige relacionamentos, e que o mercado digital exige que você saiba falar a língua dos robôs (ATS).\n\nNão adianta ter uma história profissional incrível se o seu currículo atual estiver \"escondendo\" o seu potential ou sendo bloqueado pelas plataformas.\n\nChegou a hora de transformar o seu posicionamento em uma ferramenta adequada para atrair as melhores oportunidades.\n\n**Seu próximo Checkpoint no BPlen HUB foi liberado:** Módulo de Revisão e Elaboração de CV. Lá, vamos estruturar o seu novo currículo juntos, linha por linha.\n\nBora abrir as portas do mercado oculto e deixar seu perfil pronto para os robôs e para os headhunters?",
+      description: "Suas respostas mostraram exatamente onde o seu perfil está no mercado hoje. Você já entendeu que o mercado oculto exige relacionamentos, e que o mercado digital exige que você saiba falar a língua dos robôs (ATS).\n\nNão adianta ter uma história profissional incrível se o seu currículo atual estiver \"escondendo\" o seu potential ou sendo bloqueado pelas plataformas.\n\nChegou a hora de transformar o seu posicionamento em uma ferramenta adequada para atrair as melhores oportunidades.\n\n**Seu próximo Checkpoint na BPlen HUB foi liberado:** Elaboração de PDI. Lá, vamos estruturar o seu Plano de Desenvolvimento Individual para fortalecer o seu posicionamento profissional.\n\nBora abrir as portas do mercado oculto e deixar seu perfil pronto para os robôs e para os headhunters?",
       fields: [
         {
           id: "proximo_passo",
           type: "choice",
           options: [
-            "Sim, quero destravar meu novo currículo agora!",
+            "Sim, quero destravar meu posicionamento agora!",
             "Quero ver as orientações do próximo módulo."
           ],
           required: true
