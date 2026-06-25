@@ -240,10 +240,10 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
         const excludedVal = responses[field.excludeIfSelectedIn];
         if (excludedVal) {
           const excludedArr = Array.isArray(excludedVal) ? excludedVal : [excludedVal];
-          currentOptions = currentOptions.filter(opt => {
+          currentOptions = (currentOptions.filter(opt => {
             const val = typeof opt === "string" ? opt : opt.value;
             return !excludedArr.includes(val);
-          });
+          }) as any);
         }
       }
 
