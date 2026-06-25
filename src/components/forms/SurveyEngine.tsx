@@ -44,6 +44,57 @@ interface SurveyEngineProps {
 }
 
 /**
+ * Image Field with Modal (Zoom) Support
+ */
+const ImageFieldWithModal = ({ field }: { field: SurveyFieldConfig }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <>
+      <div 
+        className="flex justify-center py-4 animate-fade-in cursor-pointer" 
+        onClick={() => setIsOpen(true)}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img 
+          src={field.imageUrl} 
+          alt={field.label || "Visualizacao"} 
+          className="max-h-[620px] object-contain rounded-2xl border border-white/10 shadow-xl bg-white/5 p-2 transition-transform hover:scale-[1.02]"
+        />
+      </div>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+            onClick={() => setIsOpen(false)}
+          >
+            <button 
+              className="absolute top-6 right-6 text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors z-50"
+              onClick={() => setIsOpen(false)}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            <motion.img 
+              initial={{ scale: 0.95 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.95 }}
+              src={field.imageUrl} 
+              alt={field.label || "Visualizacao"} 
+              className="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl relative z-40"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  );
+};
+
+/**
  * Utility: Fisher-Yates Shuffle
  * Mantém a opção "Outro" ou "Outros" sempre no final se existir.
  */
@@ -609,16 +660,7 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
         );
 
       case "image":
-        return (
-          <div className="flex justify-center py-4 animate-fade-in">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img 
-              src={field.imageUrl} 
-              alt={field.label || "Visualizacao"} 
-              className="max-h-[320px] object-contain rounded-2xl border border-white/10 shadow-xl bg-white/5 p-2"
-            />
-          </div>
-        );
+        return <ImageFieldWithModal key={field.id} field={field} />;
 
       case "textarea":
         return (
