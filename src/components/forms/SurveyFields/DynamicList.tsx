@@ -3,8 +3,8 @@
 import React, { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { SurveyFieldConfig } from "@/types/survey";
-import { InputGlass } from "../ui/InputGlass";
-import { TextareaGlass } from "../ui/TextareaGlass";
+import { InputGlass } from "@/components/ui/InputGlass";
+import { TextareaGlass } from "@/components/ui/TextareaGlass";
 
 interface DynamicListProps {
   field: SurveyFieldConfig;
