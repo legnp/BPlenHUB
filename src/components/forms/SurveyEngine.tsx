@@ -222,7 +222,13 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
 
   // Preparação de campos (Randomização & Interceptação de C3 Customizado) 🧬
   const preparedFields = useMemo(() => {
-    return currentStep.fields.map(field => {
+    return currentStep.fields
+      .filter(field => {
+        if (!field.dependsOn) return true;
+        const depValue = responses[field.dependsOn];
+        return depValue !== undefined && depValue !== "" && (Array.isArray(depValue) ? depValue.length > 0 : true);
+      })
+      .map(field => {
       let currentOptions = field.options;
       if (field.id === "combustiveis_selecionados" && userMetadata?.combustiveis_custom && Array.isArray(userMetadata.combustiveis_custom) && userMetadata.combustiveis_custom.length > 0) {
         currentOptions = userMetadata.combustiveis_custom;
@@ -230,12 +236,23 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
         currentOptions = userMetadata.barreiras_custom;
       }
 
+      if (field.excludeIfSelectedIn && currentOptions && Array.isArray(currentOptions)) {
+        const excludedVal = responses[field.excludeIfSelectedIn];
+        if (excludedVal) {
+          const excludedArr = Array.isArray(excludedVal) ? excludedVal : [excludedVal];
+          currentOptions = currentOptions.filter(opt => {
+            const val = typeof opt === "string" ? opt : opt.value;
+            return !excludedArr.includes(val);
+          });
+        }
+      }
+
       if (field.randomize && currentOptions && Array.isArray(currentOptions)) {
-        return { ...field, options: shuffleOptions(currentOptions) };
+        return { ...field, options: shuffleOptions(currentOptions as string[] | {label:string, value:string}[]) };
       }
       return { ...field, options: currentOptions };
     });
-  }, [currentStep.fields, userMetadata]);
+  }, [currentStep.fields, userMetadata, responses]);
 
   const isLastStep = currentStepIndex === config.steps.length - 1;
 
@@ -1244,6 +1261,26 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
                         {renderPair(preparedFields[2], preparedFields[3])}
                         <hr className={borderClass} />
                         {renderPair(preparedFields[4], preparedFields[5])}
+                      </div>
+                    );
+                  }
+
+                  if (currentStep.layout === "split-columns") {
+                    const leftFields = preparedFields.filter(f => f.column === "left" || !f.column);
+                    const rightFields = preparedFields.filter(f => f.column === "right");
+                    
+                    return (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-fade-in">
+                        <div className="space-y-6">
+                          {leftFields.map(field => (
+                            <div key={field.id}>{renderField(field)}</div>
+                          ))}
+                        </div>
+                        <div className="space-y-6">
+                          {rightFields.map(field => (
+                            <div key={field.id}>{renderField(field)}</div>
+                          ))}
+                        </div>
                       </div>
                     );
                   }

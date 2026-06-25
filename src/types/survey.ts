@@ -69,6 +69,9 @@ export interface SurveyFieldConfig {
   imageUrl?: string; // URL da imagem para o campo do tipo "image"
   filterSummary?: string; // Filtro opcional de summary de compromissos para calendar_embed
   scaleLabels?: string[]; // Legendas customizadas para campos do tipo scale (escala de 1 a 5)
+  excludeIfSelectedIn?: string; // ID de outro campo do qual este deve excluir opções selecionadas
+  dependsOn?: string; // ID de outro campo que deve estar preenchido para este aparecer
+  column?: "left" | "right"; // Em layout split-columns, define em qual coluna o campo fica
 }
 
 export interface SurveyStepConfig {
@@ -77,6 +80,7 @@ export interface SurveyStepConfig {
   description?: string;
   nextStepId?: string; // Força salto direto para um ID específico
   nextLabel?: string; // Rótulo customizado para o botão de avançar (ex: "De acordo", "Iniciar")
+  layout?: "default" | "split-columns";
   fields: SurveyFieldConfig[];
 }
 

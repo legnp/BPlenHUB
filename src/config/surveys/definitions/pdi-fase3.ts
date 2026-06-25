@@ -20,67 +20,60 @@ export const pdiFase3Survey: SurveyConfig = {
     {
       id: "step_intro_fase3",
       question: "Definição de metas e ciclos",
-      description: "Na fase anterior falamos de consistência diária (as regras inegociáveis). Nesta etapa, vamos definir metas de curto prazo e ciclos de revisão para garantir que o seu plano não seja apenas um documento guardado na gaveta.",
-      nextLabel: "Avançar",
-      fields: []
-    },
-    {
-      id: "step_q1_mini_meta",
-      question: "Defina a sua Primeira Mini Meta",
-      description: "O que você fará nos próximos 7 dias que te deixará mais próximo(a) do seu objetivo final? (Dica: pense em algo palpável, como \"atualizar o meu currículo e enviar para 5 empresas\", \"fazer a inscrição no curso XYZ\", \"conversar com 3 pessoas da área\").",
+      description: "Pensar no objetivo a longo prazo pode gerar procrastinação e/ou ansiedade.\nDecidir agir no que pode ser feito hoje, com o que já se tem agora, gera a química cerebral necessária para manter o movimento contínuo.",
       nextLabel: "Avançar",
       fields: [
         {
           id: "mini_meta_7_dias",
           type: "text",
-          label: "Mini Meta de 7 dias",
-          placeholder: "Ex: Atualizar meu currículo e enviar para 5 empresas",
+          label: "Escreva qual é a ação mais simples, prática e totalmente ao seu alcance que você vai executar dentro dos próximos 7 dias para dar o primeiro passo real rumo ao seu objetivo central?",
+          placeholder: "Ex: Na quarta-feira, às 14h, enviarei meu currículo otimizado para 5 vagas",
           required: true
         }
       ]
     },
     {
-      id: "step_q2_ciclo_revisao",
-      question: "Ciclo de Revisão",
-      description: "Qual o melhor dia e horário para você reservar 30 minutos, toda semana, para revisar as suas mini metas e definir as próximas? (Exemplo: \"Todo domingo, às 10h da manhã\", \"Toda sexta-feira, logo após o expediente\").",
+      id: "step_q1_b_ciclos",
+      question: "Organizando ciclos",
+      description: "{{User_Nickname}}, essa é só a primeira meta de muitas. No PDF do seu PDI, você terá mais oportunidades de estabelecer mais metas até alcançar seus objetivos.\n\nE para isso: defina uma única parada de 10 a 30 minutos, a cada 3, 7, 10 ou 15 dias para revisar as metas e estabelecer novas metas.",
       nextLabel: "Avançar",
       fields: [
         {
-          id: "ciclo_revisao",
-          type: "text",
-          label: "Dia e horário para revisão semanal",
-          placeholder: "Ex: Todo domingo, às 10h da manhã",
+          id: "tempo_revisao",
+          type: "choice",
+          label: "Tempo de revisão",
+          options: ["10 minutos", "15 minutos", "20 minutos", "25 minutos", "30 minutos"],
+          required: true
+        },
+        {
+          id: "frequencia_revisao",
+          type: "choice",
+          label: "Frequência da revisão",
+          options: ["A cada 3 dias", "A cada 7 dias", "A cada 10 dias", "A cada 15 dias"],
           required: true
         }
       ]
     },
     {
       id: "step_q3_rede_apoio",
-      question: "Quem fará parte da sua Rede de Apoio?",
-      description: "Em uma jornada desafiadora, compartilhar os seus objetivos com pessoas de confiança pode fazer toda a diferença. Liste abaixo o nome de até 3 pessoas que você sabe que poderá contar caso pense em desistir ou precise de um incentivo. (Exemplo: \"Minha mãe\", \"Meu amigo Roberto da faculdade\").",
+      question: "Rede de apoio",
+      description: "O trabalho individual tem limites e o isolamento pode gerar esgotamento. Por isso, para um PDI ter sucesso é importante contar com o apoio de alguém para dividir a carga.",
       nextLabel: "Avançar",
       fields: [
         {
-          id: "rede_apoio",
+          id: "nome_rede_apoio",
           type: "text",
-          label: "Sua Rede de Apoio (Até 3 pessoas)",
-          placeholder: "Ex: Minha mãe, Meu amigo Roberto",
+          label: "Escolha uma pessoa de sua extrema confiança (um mentor, colega de trabalho, sócio, amigo pessoal, ou quem você preferir), a quem você possa compartilhar o seu objetivo de carreira e pedir para que te apoie durante a jornada. Qual é o nome dessa pessoa?",
+          placeholder: "Nome da pessoa",
           required: true
-        }
-      ]
-    },
-    {
-      id: "step_q4_mensagem_blindagem",
-      question: "Mensagem de Blindagem",
-      description: "O que você precisa ler ou lembrar nos momentos mais difíceis para não desistir? Escreva uma frase, um lema ou um conselho que a sua Rede de Apoio te daria, e que servirá como um lembrete para você não desviar do foco. (Exemplo: \"Você já superou coisas mais difíceis\", \"Lembre-se do motivo pelo qual você começou\", \"O esforço de hoje é o resultado de amanhã\").",
-      nextLabel: "Avançar",
-      fields: [
+        },
         {
           id: "mensagem_blindagem",
-          type: "text",
-          label: "Mensagem de Blindagem",
-          placeholder: "Ex: O esforço de hoje é o resultado de amanhã",
-          required: true
+          type: "textarea",
+          label: "Quando o seu estresse aumentar e seus freios começarem a te autossabotar, o que você autoriza essa pessoa te dizer ou fazer para te impulsionar, sem que você reaja na defensiva?",
+          placeholder: "Eu autorizo que ela...",
+          required: true,
+          dependsOn: "nome_rede_apoio"
         }
       ]
     }

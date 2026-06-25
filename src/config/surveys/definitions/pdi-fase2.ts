@@ -26,69 +26,56 @@ export const pdiFase2Survey: SurveyConfig = {
       fields: []
     },
     {
-      id: "step_q1_combustiveis",
-      question: 'Quais "combustíveis" você utilizará?',
-      description: "Da lista abaixo, selecione os **2** aspectos que você acredita que serão os seus maiores ACELERADORES para te sustentar, motivar e manter engajado e focado durante a sua jornada, principalmente diante de situações desafiadoras.",
+      id: "step_q1_combustiveis_freios",
+      question: "Seleção de combustíveis e freios",
+      description: "Da lista abaixo, selecione os **2** aspectos que você acredita que serão os seus maiores ACELERADORES e os **2** que serão seus maiores FREIOS.",
       nextLabel: "Avançar",
+      layout: "split-columns", // Sinalizador para o SurveyEngine renderizar em 2 colunas (Esq: Combustíveis / Dir: Freios)
       fields: [
         {
-          id: "combustiveis_selecionados",
-          type: "multi_select",
-          isMultiple: true,
-          validation: {
-            minSelections: 2,
-            maxSelections: 2
-          },
-          options: [...PDI_COMBUSTIVEIS, "Outro, qual?"],
-          required: true
-        },
-      ]
-    },
-    {
-      id: "step_q2_barreiras",
-      question: 'Quais atitudes podem gerar ou intensificar "barreiras"?',
-      description: "Em toda jornada há incongruências (atritos, conflitos, hesitações, dúvidas, confusão). Elas são como freios para nossa proteção, mas quando acionadas bruscamente ou com muita frequência, o carro não anda ou pode causar um acidente.\n\nDa lista abaixo, selecione os **2** aspectos que você acredita que têm o maior potencial para FREAR, atrapalhar ou te fazer desistir no meio do caminho.",
-      nextLabel: "Avançar",
-      fields: [
-        {
-          id: "barreiras_selecionadas",
-          type: "multi_select",
-          isMultiple: true,
-          validation: {
-            minSelections: 2,
-            maxSelections: 2
-          },
-          options: [...PDI_FREIOS, "Outro, qual?"],
-          required: true
-        },
-      ]
-    },
-    {
-      id: "step_q3_escuridao",
-      question: "A Escuridão (O Pior Cenário)",
-      description: "Para este próximo exercício, precisamos de uma experiência sensorial. Desligue a luz do ambiente em que você está neste exato momento.",
-      fields: [
-        {
-          id: "status_luz",
+          id: "combustivel_1",
           type: "choice",
-          options: [
-            { label: "Luz Desligada", value: "Luz Desligada" },
-            { label: "Não é possível desligar agora", value: "Não é possível desligar agora" }
-          ],
-          logic: {
-            "Luz Desligada": "step_q4_reflexao",
-            "Não é possível desligar agora": "step_q4_nao_possivel"
-          },
-          required: true
+          label: "Combustível 1",
+          options: [...PDI_COMBUSTIVEIS, "Outro, qual?"],
+          required: true,
+          column: "left"
+        },
+        {
+          id: "combustivel_2",
+          type: "choice",
+          label: "Combustível 2",
+          options: [...PDI_COMBUSTIVEIS, "Outro, qual?"],
+          required: true,
+          excludeIfSelectedIn: "combustivel_1",
+          dependsOn: "combustivel_1",
+          column: "left"
+        },
+        {
+          id: "freio_1",
+          type: "choice",
+          label: "Freio 1",
+          options: [...PDI_FREIOS, "Outro, qual?"],
+          required: true,
+          dependsOn: "combustivel_2",
+          column: "right"
+        },
+        {
+          id: "freio_2",
+          type: "choice",
+          label: "Freio 2",
+          options: [...PDI_FREIOS, "Outro, qual?"],
+          required: true,
+          excludeIfSelectedIn: "freio_1",
+          dependsOn: "freio_1",
+          column: "right"
         }
       ]
     },
     {
-      id: "step_q4_nao_possivel",
-      question: "Não se preocupe.",
-      description: "Como não é possível alterar a iluminação do seu ambiente agora, apenas feche os olhos por alguns instantes, observe se ainda está claro ou ficou totalmente escuro, e foque totalmente na analogia a seguir.",
-      nextStepId: "step_q4_reflexao",
-      nextLabel: "Avançar",
+      id: "step_q3_escuridao",
+      question: "Estratégias de contingências",
+      description: "O cérebro gera respostas físicas reais para cenários imaginários de estresse.\nAo imaginar e escrever o pior cenário possível, você tira o poder do medo, mostrando para a sua mente que, mesmo na pior das hipóteses, você sobreviveria e recomeçaria.\n\nPara isso:\nApague a luz do ambiente onde você está...\nMas se não puder, apenas feche os olhos por 5 expirações e observe o escuro.",
+      nextLabel: "Pronto, percebi e senti o escuro!",
       fields: []
     },
     {

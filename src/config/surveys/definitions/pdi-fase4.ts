@@ -5,7 +5,7 @@ export const pdiFase4Survey: SurveyConfig = {
   kind: "survey",
   title: "Consolidação de PDI",
   description: "Consolidação e carta de compromisso",
-  submitLabel: "Finalizar e Acessar meu PDI",
+  submitLabel: "Encerrar",
   analytics: {
     surveyId: "survey_pdi_fase4",
     domain: "SURVEY",
@@ -20,21 +20,14 @@ export const pdiFase4Survey: SurveyConfig = {
     {
       id: "step_intro_fase4",
       question: "Consolidação de PDI",
-      description: "Você chegou na última etapa! Tudo o que você mapeou e construiu até aqui forma a base sólida do seu Plano de Desenvolvimento Individual.\n\nMas antes de finalizar, temos um último (e muito importante) desafio para você.",
-      nextLabel: "Avançar",
+      description: "{{User_Nickname}}, seu plano está quase pronto para a prática!\n\nPara selarmos o seu PDI com sucesso, vamos a mais um exercício para potencializar o alcance dos seus resultados. \n\nAntes de iniciar: separe um papel em branco e caneta.\nReserve de 20 a 30 minutos em um ambiente tranquilo para prosseguir.",
+      nextLabel: "Estou pronto, prosseguir",
       fields: []
     },
     {
       id: "step_carta_futuro",
-      question: "O exercício da Carta ao Futuro",
-      description: "Pegue uma folha de papel em branco e uma caneta (sim, precisa ser à próprio punho!).\n\nEscreva uma carta para você mesmo(a) no futuro. Data de hoje até daqui a 6 meses.\nComece a carta com: \"Querido(a) [Seu Nome], nestes últimos 6 meses, minha jornada foi...\"\n\nE então, escreva com orgulho o que você quer ter alcançado, os medos que você superou e como se sente por ter seguido firme no seu plano e cumprido com as suas regras inegociáveis.\nEscreva no passado, como se tudo já tivesse dado certo. E assine no final.",
-      nextLabel: "Avançar",
-      fields: []
-    },
-    {
-      id: "step_upload_carta",
-      question: "Envie a sua carta",
-      description: "Tire uma foto legível da sua carta e faça o upload abaixo. Nós guardaremos ela a sete chaves. Daqui a 6 meses, nós te entregaremos essa carta para você ler e celebrar a sua jornada.",
+      question: "A Carta ao Futuro",
+      description: "{{User_Nickname}}, imagine que já se passaram 6 meses desde a data de hoje. Você vivenciou o seu plano, cumpriu as metas necessárias, superou as barreiras, alcançou o seu objetivo. \n\nNos próximos 10 minutos, você é o seu Eu de 6 meses a frente, e quer contar para o seu eu de hoje como foi viver o seu PDI nesse período.\n\nEscreva uma carta contando a história, o passo a passo, as conquistas e barreiras superadas. Como foi o dia e momento em que alcançou o seu objetivo. O que você mais gostou e o que você mais agradece.\nComece a carta com: *\"Querido(a) [Seu Nome], nestes últimos 6 meses, minha jornada foi...\"*\n\nA carta deverá ser escrita a próprio punho com papel e caneta.\nApós concluir:\n- Tire uma foto e faça o upload da carta aqui;\n- Guarde essa carta em um canto especial (ou entregue ao seu parceiro de apoio) para você abri-la a daqui exatos 6 meses.",
       nextLabel: "Avançar",
       fields: [
         {
@@ -47,8 +40,8 @@ export const pdiFase4Survey: SurveyConfig = {
     },
     {
       id: "step_fechamento_pdi",
-      question: "Parabéns, {{User_Nickname}}!",
-      description: "O seu Plano de Desenvolvimento Individual está concluído.\n\nVocê acaba de dar o passo mais importante em direção à sua nova realidade profissional. Lembre-se: o PDI é um mapa vivo. Visite-o semanalmente nos dias e horários que você definiu.\n\nO documento consolidado do seu PDI (em formato PDF) já está disponível na sua jornada! Lá estarão registradas todas as suas metas, combustíveis, regras inegociáveis e a sua data de abertura da carta.\n\nDesejamos foco, disciplina e muito sucesso na sua trajetória!",
+      question: "{{User_Nickname}}, sabemos que não é fácil chegar até aqui...",
+      description: "...por isso te parabenizamos pela coragem e determinação!\n\nCom a sua entrega e dedicação, o seu Plano de Desenvolvimento Individual não é mais uma abstração e você possui um plano claro.\n✔ Sabe exatamente o que fará se tudo der errado;\n✔ Possui três regras diárias para não depender de motivação;\n✔ Definiu o seu primeiro movimento prático para os próximos 7 dias.\n\nO desconforto da execução passa rápido, mas os resultados do planejamento consistente constroem uma carreira sólida e com propósito.\n\nFeche este guia e execute a sua primeira pequena meta de hoje!",
       fields: []
     }
   ]
