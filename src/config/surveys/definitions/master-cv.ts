@@ -15,14 +15,14 @@ export const masterCvSurvey: SurveyConfig = {
       question: "Preparação",
       description: "{{User_Nickname}}, te damos as boas vindas ao início da elaboração e revisão do seu perfil profissional!\n\n**Atenção:** Reserve de 20 a 30 minutos em um ambiente tranquilo para prosseguir. Os dados preenchidos ficam salvos somente com a conclusão total. Caso precise fechar a página durante o processo, ele será reiniciado.",
       nextLabel: "Ok, estou pronto para passar para a próxima tela",
-      fields: [{ id: "intro_info", type: "info" }]
+      fields: []
     },
     {
       id: "tela2_explicacao",
       question: "O seu Banco de Dados Profissional",
-      description: "{{User_Nickname}}, iniciaremos o processo criando o seu Master CV.\n\nEste será o seu banco de dados de perfil profissional. Ele te possibilitará compilar toda sua trajetória para facilitar a adaptação da sua apresentação profissional em qualquer demanda ou situação.\n\nPreencha cada campo com o máximo de detalhes possível. Ao final você receberá o seu Master CV em word, que você não enviará para ninguém.\n\nEle será exclusivo para a sua organização e auxílio para continuar avançando no processo e adaptação do seu LinkedIn, CV e demais meios e plataformas.",
+      description: "{{User_Nickname}}, iniciaremos o processo criando o seu Master CV.\n\nEste será o seu banco de dados de perfil profissional. Ele te possibilitará compilar toda sua trajetória para facilitar a adaptação da sua apresentação profissional em qualquer demanda ou situação.\n\nPreencha cada campo with o máximo de detalhes possível. Ao final você receberá o seu Master CV em word, que você não enviará para ninguém.\n\nEle será exclusivo para a sua organização e auxílio para continuar avançando no processo e adaptação do seu LinkedIn, CV e demais meios e plataformas.",
       nextLabel: "Iniciar meu Master CV",
-      fields: [{ id: "explicacao_info", type: "info" }]
+      fields: []
     },
     {
       id: "tela3_identificacao",
@@ -171,7 +171,7 @@ export const masterCvSurvey: SurveyConfig = {
       question: "Tudo pronto!",
       description: "{{User_Nickname}}, o seu Master CV está criado.\n\nClique no botão abaixo para gerar o documento e fazer download. Ele será baixado como um arquivo Word (.docx) estruturado em uma coluna única, perfeito para extrair as partes importantes para candidaturas futuras e amigável para os robôs ATS.",
       nextLabel: "Quero meu Master CV", // Não exibe nativamente um campo export DOCX, mas usaremos onComplete
-      fields: [{ id: "conclusao_info", type: "info" }]
+      fields: []
     }
   ],
   analytics: {

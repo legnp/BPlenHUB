@@ -15,7 +15,7 @@ export const revisaoCurriculoSurvey: SurveyConfig = {
       question: "Revisão de Currículo",
       description: "{{User_Nickname}}, para iniciar a revisão do seu currículo, siga as seguintes orientações:\n\na) Serão apresentadas perguntas específicas sobre o seu currículo;\nb) Você avaliará o quanto o seu currículo está alinhado com o ideal e implantará uma melhoria prática.",
       nextLabel: "Vamos iniciar",
-      fields: [{ id: "intro_info", type: "info" }]
+      fields: []
     },
     {
       id: "check_resumo",
