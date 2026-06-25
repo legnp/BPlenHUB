@@ -172,7 +172,7 @@
         "id": "ss-survey-survey_pdi_fase1",
         "type": "survey",
         "referenceId": "survey_pdi_fase1",
-        "title": "Elaboração de PDI",
+        "title": "Definição de Objetivos",
         "description": "Definição de objetivos de carreira profissional",
         "order": "2.1"
       },
@@ -180,7 +180,7 @@
         "id": "ss-survey-survey_pdi_fase2",
         "type": "survey",
         "referenceId": "survey_pdi_fase2",
-        "title": "Elaboração de PDI",
+        "title": "Seleção de recursos e habilidades",
         "description": "Analise de Potencial e Riscos",
         "order": "2.2"
       },
@@ -188,7 +188,7 @@
         "id": "ss-survey-survey_pdi_fase3",
         "type": "survey",
         "referenceId": "survey_pdi_fase3",
-        "title": "Elaboração de PDI",
+        "title": "Definição de metas e ciclos",
         "description": "Definição de metas e ciclos",
         "order": "2.3"
       },
@@ -196,16 +196,16 @@
         "id": "ss-survey-survey_pdi_fase4",
         "type": "survey",
         "referenceId": "survey_pdi_fase4",
-        "title": "Elaboração de PDI",
-        "description": "Consolidacao do PDI",
+        "title": "Consolidação de PDI",
+        "description": "Consolidação do PDI",
         "order": "2.4"
       },
       {
         "id": "ss-survey-master_cv",
-        "type": "SURVEY",
+        "type": "survey",
         "referenceId": "master_cv",
-        "title": "Master CV",
-        "description": "Banco de dados do seu perfil profissional e revisão de currículo",
+        "title": "Revisão e elaboração de CV",
+        "description": "Central de do histórico profissional",
         "order": "3"
       },
       {
@@ -221,7 +221,7 @@
         "type": "survey",
         "referenceId": "pre_analise_comportamental",
         "title": "Feedback Tecnico",
-        "description": "Análise Comportamental Básica",
+        "description": "Analise Comportamental Basica",
         "order": "5.1"
       },
       {
@@ -229,7 +229,7 @@
         "type": "survey",
         "referenceId": "orientacao-individual-posicionamento",
         "title": "Feedback Tecnico",
-        "description": "Sessão individual de feedback do PDI e perfil profissional",
+        "description": "Sessao individual de feedback do PDI e perfil profissional",
         "order": "5.2"
       }
     ],
