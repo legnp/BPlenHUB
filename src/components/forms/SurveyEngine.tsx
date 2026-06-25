@@ -645,7 +645,7 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
         return (
           <DynamicList
             field={field}
-            value={(rawValue as Record<string, string>[]) || []}
+            value={(rawValue as unknown as Record<string, string>[]) || []}
             onChange={(val: Record<string, string>[]) => updateResponse(field.id, val)}
           />
         );
