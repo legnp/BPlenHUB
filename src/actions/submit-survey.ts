@@ -95,3 +95,44 @@ export async function getPreviousSurveysDataAction(matricula: string): Promise<R
   }
 }
 
+/**
+ * Recupera de forma consolidada no servidor as respostas das 4 fases do PDI (Fases 1 a 4)
+ */
+export async function getPdiSurveysDataAction(matricula: string): Promise<Record<string, any>> {
+  try {
+    const db: admin.firestore.Firestore = getAdminDb();
+    const docRef1 = db.doc(`User/${matricula}/Surveys/survey_pdi_fase1`);
+    const docRef2 = db.doc(`User/${matricula}/Surveys/survey_pdi_fase2`);
+    const docRef3 = db.doc(`User/${matricula}/Surveys/survey_pdi_fase3`);
+    const docRef4 = db.doc(`User/${matricula}/Surveys/survey_pdi_fase4`);
+
+    const [snap1, snap2, snap3, snap4] = await Promise.all([
+      docRef1.get(),
+      docRef2.get(),
+      docRef3.get(),
+      docRef4.get()
+    ]);
+
+    const result: Record<string, any> = {};
+
+    if (snap1.exists && snap1.data()?.data) {
+      Object.assign(result, snap1.data()?.data);
+    }
+    if (snap2.exists && snap2.data()?.data) {
+      Object.assign(result, snap2.data()?.data);
+    }
+    if (snap3.exists && snap3.data()?.data) {
+      Object.assign(result, snap3.data()?.data);
+    }
+    if (snap4.exists && snap4.data()?.data) {
+      Object.assign(result, snap4.data()?.data);
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Erro [getPdiSurveysDataAction]:", error);
+    return {};
+  }
+}
+
+

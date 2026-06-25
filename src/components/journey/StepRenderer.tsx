@@ -162,6 +162,29 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
   const [isSurveySubmittedLocal, setIsSurveySubmittedLocal] = React.useState(false);
   const [isSurveyCompletedInDb, setIsSurveyCompletedInDb] = React.useState(false);
   const [checkingSurvey, setCheckingSurvey] = React.useState(false);
+  const [isDownloadingPdi, setIsDownloadingPdi] = React.useState(false);
+
+  const handleDownloadPdi = async () => {
+    if (!matricula) return;
+    setIsDownloadingPdi(true);
+    try {
+      const { getPdiSurveysDataAction } = await import("@/actions/submit-survey");
+      const responses = await getPdiSurveysDataAction(matricula);
+      
+      if (!responses || Object.keys(responses).length === 0) {
+        alert("Não foi possível carregar as respostas do seu PDI. Certifique-se de que respondeu às fases anteriores.");
+        return;
+      }
+      
+      const { generatePdiDocx } = await import("@/lib/docx-generator");
+      await generatePdiDocx(responses, nickname || "Membro");
+    } catch (err) {
+      console.error("Erro ao baixar PDI:", err);
+      alert("Houve um erro ao gerar o documento do seu PDI. Tente novamente.");
+    } finally {
+      setIsDownloadingPdi(false);
+    }
+  };
 
   React.useEffect(() => {
     setIsSurveyActive(false);
@@ -195,6 +218,7 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
   }, [substep.referenceId, onComplete]);
 
   const renderContent = () => {
+    const isPdiSurvey = substep.referenceId ? substep.referenceId.startsWith("survey_pdi_") : false;
     switch (substep.type) {
       case "content":
         const isGuidedTour = substep.referenceId === "welcome_video_01";
@@ -353,6 +377,20 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
                        <p className="text-[11px] font-medium text-[var(--text-muted)] leading-relaxed whitespace-pre-line">
                           {surveyConfig.completionMessage || "Sua participação foi registrada. Clique no botão abaixo para concluir."}
                        </p>
+                     {substep.referenceId === "survey_pdi_fase4" && (
+                        <button
+                           onClick={handleDownloadPdi}
+                           disabled={isDownloadingPdi}
+                           className="group relative flex items-center gap-3 px-8 py-3.5 bg-[var(--accent-start)] hover:bg-[var(--accent-end)] text-white rounded-full text-[10px] font-black uppercase tracking-wider transition-all shadow-lg hover:scale-105 active:scale-95 disabled:opacity-50 cursor-pointer"
+                        >
+                           {isDownloadingPdi ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                           ) : (
+                              <FileText size={14} />
+                           )}
+                           <span>{isDownloadingPdi ? "Gerando PDI..." : "Baixar PDI (.docx)"}</span>
+                        </button>
+                     )}
                     </div>
 
                     <ConfettiCheckbox 
@@ -406,7 +444,7 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
                          </span>
                       </div>
  
-                      {substep.allowReview && (
+                      {substep.allowReview && !isPdiSurvey && (
                          <button 
                             onClick={() => {
                                setIsSurveyActive(true);
@@ -417,6 +455,21 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
                             {nomen.actions.review}
                          </button>
                       )}
+
+                      {substep.referenceId === "survey_pdi_fase4" && (
+                          <button
+                             onClick={handleDownloadPdi}
+                             disabled={isDownloadingPdi}
+                             className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-start)] hover:text-[var(--accent-end)] transition-colors flex items-center gap-2 disabled:opacity-50 group cursor-pointer"
+                          >
+                             {isDownloadingPdi ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin text-[var(--accent-start)]" />
+                             ) : (
+                                <FileText size={14} className="text-[var(--accent-start)]" />
+                             )}
+                             <span>{isDownloadingPdi ? "Gerando PDI..." : "Baixar PDI (.docx)"}</span>
+                          </button>
+                       )}
                     </div>
                  ) : (
                     <button 
