@@ -60,10 +60,17 @@ export const desmistificandoCandidaturasSurvey: SurveyConfig = {
         {
           id: "fit_termometro",
           type: "scale",
-          label: "De 1 a 5, o quanto você sente que o seu perfil atual tem \"fit\" (alinhamento de valores e estilo) com a empresa onde você trabalha ou deseja trabalhar? (1 - Totalmente desalinhado a 5 - Totalmente alinhado)",
+          label: "De 1 a 5, o quanto você sente que o seu perfil atual tem \"fit\" (alinhamento de valores e estilo) com a empresa onde você trabalha ou deseja trabalhar?",
           min: 1,
           max: 5,
-          required: true
+          required: true,
+          scaleLabels: [
+            "Não está nada alinhado",
+            "Quase nada alinhado",
+            "Às vezes parece que tem \"fit\"",
+            "Quase sempre sinto que está alinhado",
+            "Meu perfil está totalmente alinhado"
+          ]
         },
         {
           id: "fit_justificativa",

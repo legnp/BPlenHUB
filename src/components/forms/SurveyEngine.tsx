@@ -496,7 +496,7 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
         );
 
 
-      case "multi_select":
+      case "multi_select": {
         const isMultiOtherSelected = Array.isArray(rawValue) && rawValue.some(v => {
           const val = String(v).toLowerCase();
           return val === "outro" || val === "outros";
@@ -504,6 +504,11 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
 
         return (
           <div className="space-y-4">
+            {field.label && (
+              <label className="text-xs font-bold uppercase tracking-tight text-[var(--text-muted)] ml-1 block mb-2">
+                {field.label}
+              </label>
+            )}
             <MultiSelect
               options={field.options as string[]}
               selected={(rawValue as string[]) || []}
@@ -528,6 +533,7 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
             )}
           </div>
         );
+      }
 
       case "cascaded":
         return (
@@ -649,44 +655,50 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
         );
 
 
-      case "scale":
+      case "scale": {
         const scaleOptions = (field.options as string[]) || ["1", "2", "3", "4", "5"];
+        const defaultLabels = ["Nunca", "Raramente", "Às vezes", "Quase sempre", "Sempre"];
+        const labelsToUse = field.scaleLabels || defaultLabels;
+
         return (
           <div className="space-y-8 pt-4">
+            {field.label && (
+              <label className="text-xs font-bold uppercase tracking-tight text-[var(--text-muted)] ml-1 block mb-4">
+                {field.label}
+              </label>
+            )}
             <div className="flex justify-between items-center gap-2 px-2 max-w-[500px] mx-auto">
               {scaleOptions.map((opt) => (
                 <button
-                  key={opt}
-                  onClick={() => updateResponse(field.id, opt)}
-                  className={`
-                    w-9 h-9 rounded-full border transition-all flex items-center justify-center font-semibold text-xs
-                    ${rawValue === opt 
-                      ? "bg-[var(--accent-start)] border-[var(--accent-start)] text-white shadow-lg shadow-[var(--accent-start)]/20 scale-110" 
-                      : "bg-white/5 border-white/10 text-[var(--text-muted)] hover:border-[var(--accent-start)]/40 hover:bg-white/10"}
-                  `}
+                   key={opt}
+                   onClick={() => updateResponse(field.id, opt)}
+                   className={`
+                     w-9 h-9 rounded-full border transition-all flex items-center justify-center font-semibold text-xs
+                     ${rawValue === opt 
+                       ? "bg-[var(--accent-start)] border-[var(--accent-start)] text-white shadow-lg shadow-[var(--accent-start)]/20 scale-110" 
+                       : "bg-white/5 border-white/10 text-[var(--text-muted)] hover:border-[var(--accent-start)]/40 hover:bg-white/10"}
+                   `}
                 >
                   {opt}
                 </button>
               ))}
             </div>
 
-            {/* Legenda Fixa e Delicada 🕊️ */}
+            {/* Legenda Dinâmica ou Fixa 🕊️ */}
             <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 px-4">
-               {[
-                 { v: "1", l: "Nunca" },
-                 { v: "2", l: "Raramente" },
-                 { v: "3", l: "Às vezes" },
-                 { v: "4", l: "Quase sempre" },
-                 { v: "5", l: "Sempre" }
-               ].map(item => (
-                 <div key={item.v} className="flex items-center gap-1.5 opacity-40 group-hover:opacity-100 transition-opacity">
-                    <span className="text-[9px] font-black w-3.5 h-3.5 flex items-center justify-center rounded-full bg-white/10 text-[var(--text-muted)]">{item.v}</span>
-                    <span className="text-[10px] uppercase tracking-widest font-medium text-[var(--text-muted)]">{item.l}</span>
-                 </div>
-               ))}
+               {labelsToUse.map((label, idx) => {
+                 const val = String(idx + 1);
+                 return (
+                   <div key={val} className="flex items-center gap-1.5 opacity-40 group-hover:opacity-100 transition-opacity">
+                     <span className="text-[9px] font-black w-3.5 h-3.5 flex items-center justify-center rounded-full bg-white/10 text-[var(--text-muted)]">{val}</span>
+                     <span className="text-[10px] uppercase tracking-widest font-medium text-[var(--text-muted)]">{label}</span>
+                   </div>
+                 );
+               })}
             </div>
           </div>
         );
+      }
 
       case "file":
         return (

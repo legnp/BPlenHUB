@@ -67,6 +67,7 @@ export interface SurveyFieldConfig {
   randomize?: boolean; // Se as opções devem ser exibidas em ordem aleatória
   imageUrl?: string; // URL da imagem para o campo do tipo "image"
   filterSummary?: string; // Filtro opcional de summary de compromissos para calendar_embed
+  scaleLabels?: string[]; // Legendas customizadas para campos do tipo scale (escala de 1 a 5)
 }
 
 export interface SurveyStepConfig {
