@@ -3,7 +3,7 @@ import { SurveyConfig } from "@/types/survey";
 export const pdiFase1Survey: SurveyConfig = {
   id: "survey_pdi_fase1",
   kind: "survey",
-  title: "PDI - Fase 1: Definição de Objetivos",
+  title: "Definição de Objetivos",
   description: "Definição de objetivos de carreira profissional",
   submitLabel: "Salvar e Avançar",
   analytics: {
@@ -39,7 +39,7 @@ export const pdiFase1Survey: SurveyConfig = {
     },
     {
       id: "step_objetivo_pdi",
-      question: "PDI - Fase 1: Definição de Objetivos",
+      question: "Definição de Objetivos",
       description: "Vamos começar pelo fim! Onde é que você quer chegar? \nSeja específico! E não tenha medo de ser ambicioso.",
       nextLabel: "Avançar",
       fields: [

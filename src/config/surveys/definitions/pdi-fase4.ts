@@ -3,7 +3,7 @@ import { SurveyConfig } from "@/types/survey";
 export const pdiFase4Survey: SurveyConfig = {
   id: "survey_pdi_fase4",
   kind: "survey",
-  title: "PDI - Fase 4: Consolidação de PDI",
+  title: "Consolidação de PDI",
   description: "Consolidação e carta de compromisso",
   submitLabel: "Finalizar e Acessar meu PDI",
   analytics: {
@@ -19,7 +19,7 @@ export const pdiFase4Survey: SurveyConfig = {
   steps: [
     {
       id: "step_intro_fase4",
-      question: "PDI - Fase 4: Consolidação de PDI",
+      question: "Consolidação de PDI",
       description: "Você chegou na última etapa! Tudo o que você mapeou e construiu até aqui forma a base sólida do seu Plano de Desenvolvimento Individual.\n\nMas antes de finalizar, temos um último (e muito importante) desafio para você.",
       nextLabel: "Avançar",
       fields: []

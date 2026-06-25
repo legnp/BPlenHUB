@@ -263,12 +263,20 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
     Object.entries(combinedData).forEach(([key, value]) => {
       let valStr = "";
       if (Array.isArray(value) && value.length > 0) {
-        if (value.length === 1) {
-          valStr = String(value[0]);
-        } else if (value.length === 2) {
-          valStr = `${value[0]} e ${value[1]}`;
+        // Mapear valores para injetar o texto de "Outro" caso exista
+        const mappedValue = value.map(v => {
+          if (typeof v === "string" && v.toLowerCase().includes("outro") && combinedData[`${key}_other`]) {
+            return combinedData[`${key}_other`];
+          }
+          return v;
+        });
+        
+        if (mappedValue.length === 1) {
+          valStr = String(mappedValue[0]);
+        } else if (mappedValue.length === 2) {
+          valStr = `${mappedValue[0]} e ${mappedValue[1]}`;
         } else {
-          valStr = `${value.slice(0, -1).join(", ")} e ${value[value.length - 1]}`;
+          valStr = `${mappedValue.slice(0, -1).join(", ")} e ${mappedValue[mappedValue.length - 1]}`;
         }
       } else if (typeof value === "object" && value !== null) {
         valStr = JSON.stringify(value);
@@ -560,7 +568,7 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
       case "multi_select": {
         const isMultiOtherSelected = Array.isArray(rawValue) && rawValue.some(v => {
           const val = String(v).toLowerCase();
-          return val === "outro" || val === "outros";
+          return val.includes("outro") || val === "outros";
         });
 
         return (
@@ -933,9 +941,9 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
       if (field.type !== "choice" && field.type !== "buttons" && field.type !== "multi_select") return false;
       const val = responses[field.id];
       if (Array.isArray(val)) {
-          return val.some(v => String(v).toLowerCase() === "outro" || String(v).toLowerCase() === "outros");
+          return val.some(v => String(v).toLowerCase().includes("outro") || String(v).toLowerCase() === "outros");
       }
-      return String(val).toLowerCase() === "outro" || String(val).toLowerCase() === "outros" || String(val).toLowerCase() === "indicação";
+      return String(val).toLowerCase().includes("outro") || String(val).toLowerCase() === "outros" || String(val).toLowerCase() === "indicação";
   };
 
   const canProgress = currentStep.fields.every(f => {
