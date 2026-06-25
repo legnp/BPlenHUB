@@ -169,20 +169,12 @@
         "order": "1"
       },
       {
-        "id": "ss-survey-revisao_curriculo",
-        "type": "survey",
-        "referenceId": "revisao_curriculo",
-        "title": "Revisão e elaboração de CV",
-        "description": "Revisão do perfil profissional",
-        "order": "2"
-      },
-      {
         "id": "ss-survey-survey_pdi_fase1",
         "type": "survey",
         "referenceId": "survey_pdi_fase1",
         "title": "PDI - Fase 1: Definição de Objetivos",
         "description": "Definição de objetivos de carreira profissional",
-        "order": "3.1"
+        "order": "2.1"
       },
       {
         "id": "ss-survey-survey_pdi_fase2",
@@ -190,7 +182,7 @@
         "referenceId": "survey_pdi_fase2",
         "title": "PDI - Fase 2: Seleção de recursos e habilidades",
         "description": "Análise de Potencial e Riscos",
-        "order": "3.2"
+        "order": "2.2"
       },
       {
         "id": "ss-survey-survey_pdi_fase3",
@@ -198,7 +190,7 @@
         "referenceId": "survey_pdi_fase3",
         "title": "PDI - Fase 3: Definição de metas e ciclos",
         "description": "Definição de metas de curto prazo e ciclos",
-        "order": "3.3"
+        "order": "2.3"
       },
       {
         "id": "ss-survey-survey_pdi_fase4",
@@ -206,7 +198,15 @@
         "referenceId": "survey_pdi_fase4",
         "title": "PDI - Fase 4: Consolidação de PDI",
         "description": "Consolidação e carta de compromisso",
-        "order": "3.4"
+        "order": "2.4"
+      },
+      {
+        "id": "ss-survey-revisao_curriculo",
+        "type": "survey",
+        "referenceId": "revisao_curriculo",
+        "title": "Revisão e elaboração de CV",
+        "description": "Revisão do perfil profissional",
+        "order": "3"
       },
       {
         "id": "ss-survey-pendente",
