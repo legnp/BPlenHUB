@@ -105,7 +105,7 @@ export default function HubPage() {
             userUid={user.uid}
             onComplete={(mat, responses) => {
               const wantsTour = responses?.wants_tour;
-              if (Array.isArray(wantsTour) && wantsTour.includes("Sim")) {
+              if (Array.isArray(wantsTour) && (wantsTour as string[]).includes("Sim")) {
                 useTourStore.getState().startTour("onboarding_tour", hubOnboardingSteps);
               } else if (typeof wantsTour === "string" && wantsTour.includes("Sim")) {
                 useTourStore.getState().startTour("onboarding_tour", hubOnboardingSteps);
