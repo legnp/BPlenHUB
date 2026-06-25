@@ -1,4 +1,5 @@
 import { SurveyConfig } from "@/types/survey";
+import { PDI_COMBUSTIVEIS, PDI_FREIOS } from "./pdi-constants";
 
 export const planoFase2Survey: SurveyConfig = {
   id: "survey_plano_fase2",
@@ -44,28 +45,7 @@ export const planoFase2Survey: SurveyConfig = {
             minSelections: 3,
             maxSelections: 3
           },
-          options: [
-            "Capacidade de comunicação e persuasão",
-            "Alto nível de organização e planejamento",
-            "Energia e rapidez na execução de tarefas",
-            "Habilidade analítica e leitura de dados",
-            "Facilidade em criar conexões e networking",
-            "Conhecimento técnico e especialização",
-            "Reservas financeiras atuais",
-            "Flexibilidade de tempo na agenda atual",
-            "Gestão emocional para lidar com crises",
-            "Capacidade de adaptação rápida a mudanças",
-            "Foco em resultados e alcance de metas",
-            "Habilidade de mediar conflitos e apaziguar",
-            "Criatividade e facilidade para gerar novas ideias",
-            "Disciplina para manter rotinas consistentes",
-            "Empatia e facilidade em entender o outro",
-            "Rede de apoio familiar ou pessoal estruturada",
-            "Coragem para assumir riscos calculados",
-            "Pensamento estratégico e visão de longo prazo",
-            "Autodidatismo e facilidade para aprender rápido",
-            "Alta tolerância à frustração e resiliência"
-          ],
+          options: PDI_COMBUSTIVEIS,
           required: true
         }
       ]
@@ -84,28 +64,7 @@ export const planoFase2Survey: SurveyConfig = {
             minSelections: 3,
             maxSelections: 3
           },
-          options: [
-            "Dificuldade em dizer 'não' e impor limites",
-            "Excesso de perfeccionismo (demorar para entregar)",
-            "Falta de recursos financeiros no curto prazo",
-            "Medo da exposição ou do julgamento alheio",
-            "Desorganização e perda de tempo com circunstâncias",
-            "Impaciência e necessidade de resultados imediatos",
-            "Dificuldade em focar em uma única tarefa",
-            "Falta de uma rede de apoio ou parceiros estratégicos",
-            "Procrastinação de tarefas difíceis ou chatas",
-            "Resistência ou medo de mudanças repentinas",
-            "Dificuldade em delegar e centralização excessiva",
-            "Síndrome do impostor e autocrítica severa",
-            "Dificuldade em lidar com críticas e feedbacks negativos",
-            "Baixa tolerância à frustração diante de erros",
-            "Sobrecarga por assumir responsabilidades de terceiros",
-            "Necessidade excessiva de agradar ou ser aceito",
-            "Insegurança para tomar decisões sem consultar outros",
-            "Comunicação ríspida ou agressiva sob pressão",
-            "Apego excessivo a métodos antigos (falta de inovação)",
-            "Fuga de conversas difíceis ou conflitos"
-          ],
+          options: PDI_FREIOS,
           required: true
         }
       ]

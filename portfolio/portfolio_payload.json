@@ -177,12 +177,36 @@
         "order": "2"
       },
       {
-        "id": "ss-survey-pendente",
+        "id": "ss-survey-survey_pdi_fase1",
         "type": "survey",
-        "referenceId": "pendente",
-        "title": "Elaboração de PDI",
-        "description": "Elaboração do Plano de Desenvolvimento Individual",
-        "order": "3"
+        "referenceId": "survey_pdi_fase1",
+        "title": "PDI - Fase 1: Definição de Objetivos",
+        "description": "Definição de objetivos de carreira profissional",
+        "order": "3.1"
+      },
+      {
+        "id": "ss-survey-survey_pdi_fase2",
+        "type": "survey",
+        "referenceId": "survey_pdi_fase2",
+        "title": "PDI - Fase 2: Seleção de recursos e habilidades",
+        "description": "Análise de Potencial e Riscos",
+        "order": "3.2"
+      },
+      {
+        "id": "ss-survey-survey_pdi_fase3",
+        "type": "survey",
+        "referenceId": "survey_pdi_fase3",
+        "title": "PDI - Fase 3: Definição de metas e ciclos",
+        "description": "Definição de metas de curto prazo e ciclos",
+        "order": "3.3"
+      },
+      {
+        "id": "ss-survey-survey_pdi_fase4",
+        "type": "survey",
+        "referenceId": "survey_pdi_fase4",
+        "title": "PDI - Fase 4: Consolidação de PDI",
+        "description": "Consolidação e carta de compromisso",
+        "order": "3.4"
       },
       {
         "id": "ss-survey-pendente",
@@ -213,7 +237,10 @@
       "surveys": [
         "desmistificando_candidaturas",
         "revisao_curriculo",
-        "pendente",
+        "survey_pdi_fase1",
+        "survey_pdi_fase2",
+        "survey_pdi_fase3",
+        "survey_pdi_fase4",
         "pendente",
         "pre_analise_comportamental",
         "orientacao-individual-posicionamento"

@@ -17,6 +17,12 @@ import { planoFase3Survey } from "./definitions/plano-fase3";
 import { planoFase4Survey } from "./definitions/plano-fase4";
 import { agendamentoDevolutivaSurvey } from "./definitions/agendamento-devolutiva";
 
+// PDI Surveys
+import { pdiFase1Survey } from "./definitions/pdi-fase1";
+import { pdiFase2Survey } from "./definitions/pdi-fase2";
+import { pdiFase3Survey } from "./definitions/pdi-fase3";
+import { pdiFase4Survey } from "./definitions/pdi-fase4";
+
 /**
  * BPlen HUB — Survey Registry (🗂️)
  * Centraliza todas as definições de pesquisa do projeto
@@ -40,7 +46,13 @@ export const surveys = {
   "survey_plano_fase2": planoFase2Survey,
   "survey_plano_fase3": planoFase3Survey,
   "survey_plano_fase4": planoFase4Survey,
-  "survey_agendamento_devolutiva": agendamentoDevolutivaSurvey
+  "survey_agendamento_devolutiva": agendamentoDevolutivaSurvey,
+
+  // PDI (Posicionamento)
+  "survey_pdi_fase1": pdiFase1Survey,
+  "survey_pdi_fase2": pdiFase2Survey,
+  "survey_pdi_fase3": pdiFase3Survey,
+  "survey_pdi_fase4": pdiFase4Survey
 };
 
 export const SURVEY_REGISTRY = Object.values(surveys);
