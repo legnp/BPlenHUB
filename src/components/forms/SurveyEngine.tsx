@@ -1099,6 +1099,20 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
                     );
                   }
 
+                  if (currentStep.id === "step_base_iceberg" && preparedFields.length === 3) {
+                    return (
+                      <div className="space-y-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                          <div>{renderField(preparedFields[0])}</div>
+                          <div>{renderField(preparedFields[1])}</div>
+                        </div>
+                        <div className="pt-4 border-t border-[var(--border-primary)]/80 dark:border-white/20">
+                          {renderField(preparedFields[2])}
+                        </div>
+                      </div>
+                    );
+                  }
+
                   // Helper para renderizar par de campos alinhados horizontalmente (desktop)
                   const renderPair = (f1: SurveyFieldConfig, f2: SurveyFieldConfig) => {
                     return (

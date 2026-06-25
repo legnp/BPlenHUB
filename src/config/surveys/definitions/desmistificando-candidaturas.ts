@@ -132,7 +132,31 @@ export const desmistificandoCandidaturasSurvey: SurveyConfig = {
       id: "step_base_iceberg",
       question: "A base do iceberg",
       description: "Como você percebeu, ajustar um currículo ou clicar em \"candidatar-se\" é apenas a superfície.\n\nO verdadeiro sucesso e a sustentabilidade da sua carreira estão na base do iceberg: no seu autoconhecimento, na sua estratégia de posicionamento, na sua capacidade de gerar valor e na escolha de um objetivo intencional.\n\nQuem foca apenas na ponta do iceberg vive frustrado com os robôs de RH.\nQuem reconstrói a base assume o controle da própria trajetória.",
-      fields: []
+      fields: [
+        {
+          id: "exploracao_iceberg",
+          type: "choice",
+          label: "Se houvesse uma parte do iceberg da sua carreira que você ainda não explorou, qual seria?",
+          options: [
+            "Topo: Em busca por oportunidades, posicionamento e reconhecimento.",
+            "Meio: Adquirir novas habilidades e comportamentos para transformar e elevar a carreira.",
+            "Fundo: Planejamento a longo prazo, para sustentar uma carreira sólida com autoridade.",
+            "Base: Autoconhecimento profundo para dominar as estratégias da minha carreira."
+          ],
+          required: true
+        },
+        {
+          id: "imagem_iceberg",
+          type: "image",
+          imageUrl: "/images/iceberg.png"
+        },
+        {
+          id: "impacto_exploracao",
+          type: "textarea",
+          label: "O que poderia mudar na sua carreira profissional se você explorasse essa parte do iceberg?",
+          required: true
+        }
+      ]
     },
     {
       id: "step_encerramento",
