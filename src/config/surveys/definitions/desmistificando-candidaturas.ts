@@ -115,9 +115,16 @@ export const desmistificandoCandidaturasSurvey: SurveyConfig = {
             "O feed e conexões diretas do LinkedIn",
             "Contatos diretos via Networking (WhatsApp, e-mail, reuniões)",
             "Agências de recrutamento e Headhunters",
-            "Candidaturas presenciais ou envio direto impresso"
+            "Candidaturas presenciais ou envio direto impresso",
+            "Outros"
           ],
           required: true
+        },
+        {
+          id: "canal_oportunidade_outros",
+          type: "text",
+          label: "Se selecionou 'Outros', especifique qual:",
+          required: false
         }
       ]
     },
