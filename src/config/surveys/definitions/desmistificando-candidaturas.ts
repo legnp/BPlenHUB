@@ -148,7 +148,7 @@ export const desmistificandoCandidaturasSurvey: SurveyConfig = {
         {
           id: "imagem_iceberg",
           type: "image",
-          imageUrl: "/images/iceberg.png"
+          imageUrl: "/images/iceberg-carreira-profissional.png"
         },
         {
           id: "impacto_exploracao",
