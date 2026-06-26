@@ -36,7 +36,7 @@ import { CvResumoCopier } from "./SurveyFields/CvResumoCopier";
 import { CvKeywordsCopier } from "./SurveyFields/CvKeywordsCopier";
 import { CvFocadoExporter } from "./SurveyFields/CvFocadoExporter";
 import { CvPhotoGuide } from "./SurveyFields/CvPhotoGuide";
-import { NarrativeContent } from "./NarrativeContent";
+import { NarrativeContent, NarrativeBlock } from "./NarrativeContent";
 import { resolveUserIdentity, getUserMetadata } from "@/actions/survey-effects";
 import { getPreviousSurveysDataAction } from "@/actions/submit-survey";
 import Calendar, { CalendarEvent } from "@/components/ui/Calendar";
@@ -335,7 +335,7 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
         const meta = await getUserMetadata(userUid);
         
         let combinedMeta = { ...meta };
-        if (config.id && (config.id.startsWith("survey_plano_fase") || config.id === "cv_focado")) {
+        if (config.id && (config.id.startsWith("survey_plano_fase") || config.id === "cv_focado" || config.id === "perfil_profissional_publico")) {
           try {
             const previousData = await getPreviousSurveysDataAction(mat);
             combinedMeta = { ...combinedMeta, ...previousData };
@@ -437,23 +437,70 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
       if (normalizedData[lowerKey] !== undefined && normalizedData[lowerKey] !== "") {
         interpolated = interpolated.replace(original, normalizedData[lowerKey]);
       } else {
-        let fallback = "";
-        if (lowerKey === "user_nickname") {
-          fallback = (combinedData["User_Nickname"] as string) || (userMetadata?.name ? (userMetadata.name as string).split(" ")[0] : "Membro");
-        } else if (lowerKey === "maslow_menor_pilar") {
-          fallback = "Segurança/Estima";
-        } else if (lowerKey === "maslow_maior_pilar") {
-          fallback = "Autorrealização";
-        } else if (lowerKey === "objetivo_principal_fase1" || lowerKey === "objetivo_principal") {
-          fallback = "seu objetivo de carreira";
-        } else if (lowerKey === "barreiras_selecionadas") {
-          fallback = "suas barreiras mapeadas";
-        } else if (lowerKey === "combustiveis_selecionados") {
-          fallback = "seus combustíveis de aceleração";
-        } else {
-          fallback = `[${keyName}]`;
+        let resolvedVal: any = undefined;
+        if (keyName.includes(".")) {
+          const parts = keyName.split(".");
+          let current: any = combinedData;
+          for (const part of parts) {
+            if (current === null || current === undefined) {
+              resolvedVal = undefined;
+              break;
+            }
+            if (typeof current === "object") {
+              const foundKey = Object.keys(current).find(k => k.toLowerCase() === part.toLowerCase());
+              if (foundKey !== undefined) {
+                current = current[foundKey];
+                resolvedVal = current;
+              } else {
+                resolvedVal = undefined;
+                break;
+              }
+            } else {
+              resolvedVal = undefined;
+              break;
+            }
+          }
         }
-        interpolated = interpolated.replace(original, fallback);
+
+        if (resolvedVal !== undefined && resolvedVal !== null) {
+          let valStr = "";
+          if (Array.isArray(resolvedVal) && resolvedVal.length > 0) {
+            const mappedValue = resolvedVal.map(v => v);
+            if (mappedValue.length === 1) {
+              valStr = String(mappedValue[0]);
+            } else if (mappedValue.length === 2) {
+              valStr = `${mappedValue[0]} e ${mappedValue[1]}`;
+            } else {
+              valStr = `${mappedValue.slice(0, -1).join(", ")} e ${mappedValue[mappedValue.length - 1]}`;
+            }
+          } else {
+            valStr = String(resolvedVal);
+          }
+          
+          if (valStr && lowerKey !== "user_nickname" && lowerKey !== "maslow_contexto") {
+            interpolated = interpolated.replace(original, `==${valStr}==`);
+          } else {
+            interpolated = interpolated.replace(original, valStr);
+          }
+        } else {
+          let fallback = "";
+          if (lowerKey === "user_nickname") {
+            fallback = (combinedData["User_Nickname"] as string) || (userMetadata?.name ? (userMetadata.name as string).split(" ")[0] : "Membro");
+          } else if (lowerKey === "maslow_menor_pilar") {
+            fallback = "Segurança/Estima";
+          } else if (lowerKey === "maslow_maior_pilar") {
+            fallback = "Autorrealização";
+          } else if (lowerKey === "objetivo_principal_fase1" || lowerKey === "objetivo_principal") {
+            fallback = "seu objetivo de carreira";
+          } else if (lowerKey === "barreiras_selecionadas") {
+            fallback = "suas barreiras mapeadas";
+          } else if (lowerKey === "combustiveis_selecionados") {
+            fallback = "seus combustíveis de aceleração";
+          } else {
+            fallback = `[${keyName}]`;
+          }
+          interpolated = interpolated.replace(original, fallback);
+        }
       }
     });
 
@@ -1307,11 +1354,10 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
         );
 
       case "info":
+        const infoText = field.description || field.label || "";
         return (
           <div className="p-5 bg-[var(--input-bg)]/40 border border-[var(--border-primary)] rounded-2xl">
-            <p className="text-sm text-[var(--text-muted)] leading-relaxed whitespace-pre-line">
-              {field.description || field.label}
-            </p>
+            <NarrativeBlock text={interpolate(infoText)} />
           </div>
         );
 
