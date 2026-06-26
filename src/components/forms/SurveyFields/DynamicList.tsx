@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { SurveyFieldConfig } from "@/types/survey";
 import { InputGlass } from "@/components/ui/InputGlass";
@@ -8,8 +8,8 @@ import { TextareaGlass } from "@/components/ui/TextareaGlass";
 
 interface DynamicListProps {
   field: SurveyFieldConfig;
-  value: Record<string, string>[];
-  onChange: (value: Record<string, string>[]) => void;
+  value: Record<string, any>[];
+  onChange: (value: Record<string, any>[]) => void;
 }
 
 export function DynamicList({ field, value = [], onChange }: DynamicListProps) {
@@ -25,7 +25,7 @@ export function DynamicList({ field, value = [], onChange }: DynamicListProps) {
     onChange(newItems);
   };
 
-  const handleChange = (index: number, subFieldId: string, subValue: string) => {
+  const handleChange = (index: number, subFieldId: string, subValue: any) => {
     const newItems = [...items];
     if (!newItems[index]) newItems[index] = {};
     newItems[index][subFieldId] = subValue;
@@ -65,7 +65,7 @@ export function DynamicList({ field, value = [], onChange }: DynamicListProps) {
                     )}
                     <TextareaGlass
                       placeholder={subField.placeholder}
-                      value={val}
+                      value={val as string}
                       onChange={(e) => handleChange(index, subField.id, e.target.value)}
                       className="min-h-[80px]"
                     />
@@ -83,7 +83,7 @@ export function DynamicList({ field, value = [], onChange }: DynamicListProps) {
                     )}
                     <select
                       className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[var(--accent-start)] transition-colors appearance-none"
-                      value={val}
+                      value={val as string}
                       onChange={(e) => handleChange(index, subField.id, e.target.value)}
                     >
                       <option value="" disabled className="text-black">
@@ -103,6 +103,23 @@ export function DynamicList({ field, value = [], onChange }: DynamicListProps) {
                 );
               }
 
+              if (subField.type === "dynamic_list") {
+                return (
+                  <div key={subField.id} className="col-span-1 md:col-span-2 space-y-1">
+                    {subField.label && (
+                      <label className="text-[10px] font-black uppercase tracking-widest text-white/70 ml-1 block mb-1">
+                        {subField.label}
+                      </label>
+                    )}
+                    <DynamicList
+                      field={subField}
+                      value={(val || []) as Record<string, any>[]}
+                      onChange={(newVal) => handleChange(index, subField.id, newVal)}
+                    />
+                  </div>
+                );
+              }
+
               // Padrão: text, date, etc.
               return (
                 <div key={subField.id} className="space-y-1">
@@ -114,7 +131,7 @@ export function DynamicList({ field, value = [], onChange }: DynamicListProps) {
                   <InputGlass
                     type={subField.type === "date" ? "date" : "text"}
                     placeholder={subField.placeholder}
-                    value={val}
+                    value={val as string}
                     onChange={(e) => handleChange(index, subField.id, e.target.value)}
                   />
                 </div>

@@ -793,6 +793,7 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
               minSelections={field.validation?.minSelections}
               maxSelections={field.validation?.maxSelections}
               cols={field.cols}
+              placeholder={field.placeholder}
             />
             {isMultiOtherSelected && (
               <motion.div
@@ -861,8 +862,8 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
         return (
           <DynamicList
             field={field}
-            value={(rawValue as unknown as Record<string, string>[]) || []}
-            onChange={(val: Record<string, string>[]) => updateResponse(field.id, val)}
+            value={(rawValue as any[]) || []}
+            onChange={(val: any[]) => updateResponse(field.id, val)}
           />
         );
       case "ranking":
