@@ -35,7 +35,7 @@ export function DynamicList({ field, value = [], onChange }: DynamicListProps) {
   return (
     <div className="space-y-6 animate-fade-in w-full">
       {items.map((item, index) => (
-        <div key={index} className="relative bg-white/5 border border-white/10 p-6 rounded-2xl shadow-xl space-y-4">
+        <div key={index} className="relative bg-[var(--input-bg)] border border-[var(--input-border)] p-6 rounded-2xl shadow-xl space-y-4">
           
           <div className="flex justify-between items-center mb-2">
             <h4 className="text-xs font-black uppercase tracking-widest text-[var(--accent-start)]">
@@ -59,7 +59,7 @@ export function DynamicList({ field, value = [], onChange }: DynamicListProps) {
                 return (
                   <div key={subField.id} className="col-span-1 md:col-span-2 space-y-1">
                     {subField.label && (
-                      <label className="text-[10px] font-black uppercase tracking-widest text-white/70 ml-1">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)]/75 ml-1">
                         {subField.label}
                       </label>
                     )}
@@ -77,23 +77,23 @@ export function DynamicList({ field, value = [], onChange }: DynamicListProps) {
                 return (
                   <div key={subField.id} className="space-y-1">
                     {subField.label && (
-                      <label className="text-[10px] font-black uppercase tracking-widest text-white/70 ml-1">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)]/75 ml-1">
                         {subField.label}
                       </label>
                     )}
                     <select
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[var(--accent-start)] transition-colors appearance-none"
+                      className="w-full bg-[var(--input-bg)] border border-[var(--input-border)] rounded-xl px-4 py-3 text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-start)] transition-colors appearance-none cursor-pointer"
                       value={val as string}
                       onChange={(e) => handleChange(index, subField.id, e.target.value)}
                     >
-                      <option value="" disabled className="text-black">
+                      <option value="" disabled className="bg-[var(--bg-primary)] text-[var(--text-primary)]">
                         Selecione...
                       </option>
                       {subField.options?.map((opt, i) => {
                         const optLabel = typeof opt === "string" ? opt : opt.label;
                         const optValue = typeof opt === "string" ? opt : opt.value;
                         return (
-                          <option key={i} value={optValue} className="text-black">
+                          <option key={i} value={optValue} className="bg-[var(--bg-primary)] text-[var(--text-primary)]">
                             {optLabel}
                           </option>
                         );
@@ -107,7 +107,7 @@ export function DynamicList({ field, value = [], onChange }: DynamicListProps) {
                 return (
                   <div key={subField.id} className="col-span-1 md:col-span-2 space-y-1">
                     {subField.label && (
-                      <label className="text-[10px] font-black uppercase tracking-widest text-white/70 ml-1 block mb-1">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)]/75 ml-1 block mb-1">
                         {subField.label}
                       </label>
                     )}
@@ -124,7 +124,7 @@ export function DynamicList({ field, value = [], onChange }: DynamicListProps) {
               return (
                 <div key={subField.id} className="space-y-1">
                   {subField.label && (
-                    <label className="text-[10px] font-black uppercase tracking-widest text-white/70 ml-1">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)]/75 ml-1">
                       {subField.label}
                     </label>
                   )}
@@ -145,7 +145,7 @@ export function DynamicList({ field, value = [], onChange }: DynamicListProps) {
         <button
           type="button"
           onClick={handleAdd}
-          className="flex items-center gap-2 px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 transition-all text-sm font-semibold text-white group"
+          className="flex items-center gap-2 px-6 py-3 rounded-full bg-[var(--accent-start)]/10 hover:bg-[var(--accent-start)]/20 border border-[var(--accent-start)]/20 transition-all text-sm font-semibold text-[var(--accent-start)] group"
         >
           <Plus className="w-4 h-4 group-hover:scale-110 transition-transform" />
           {field.secondaryLabel || "Adicionar Novo"}
