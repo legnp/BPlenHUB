@@ -24,7 +24,7 @@ export function CvResumoCopier({ cvFocadoData }: CvResumoCopierProps) {
 
   return (
     <div className="w-full animate-fade-in space-y-4">
-      <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-md relative overflow-hidden">
+      <div className="bg-[var(--input-bg)]/80 border border-[var(--border-primary)] rounded-2xl p-6 backdrop-blur-md relative overflow-hidden shadow-sm">
         <div className="absolute top-0 right-0 w-32 h-32 bg-white/[0.02] rounded-full blur-2xl pointer-events-none" />
 
         <div className="flex justify-between items-center mb-4">
@@ -35,12 +35,12 @@ export function CvResumoCopier({ cvFocadoData }: CvResumoCopierProps) {
           <button
             type="button"
             onClick={handleCopy}
-            className="flex-shrink-0 p-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[var(--text-primary)] transition-all active:scale-95 flex items-center justify-center gap-1.5 text-xs font-semibold"
+            className="flex-shrink-0 p-2 rounded-lg bg-[var(--input-bg)] hover:bg-[var(--accent-soft)] border border-[var(--input-border)] text-[var(--text-primary)] transition-all active:scale-95 flex items-center justify-center gap-1.5 text-xs font-semibold"
           >
             {copied ? (
               <>
-                <Check className="w-4 h-4 text-green-400 animate-scale-up" />
-                <span className="text-green-400">Copiado!</span>
+                <Check className="w-4 h-4 text-green-500 animate-scale-up" />
+                <span className="text-green-500">Copiado!</span>
               </>
             ) : (
               <>
@@ -51,7 +51,7 @@ export function CvResumoCopier({ cvFocadoData }: CvResumoCopierProps) {
           </button>
         </div>
 
-        <div className="bg-white/5 border border-white/5 rounded-xl p-4 min-h-[100px] leading-relaxed text-sm text-[var(--text-primary)] whitespace-pre-wrap select-all">
+        <div className="bg-white/40 border border-[var(--input-border)]/50 rounded-xl p-4 min-h-[100px] leading-relaxed text-sm text-[var(--text-primary)] whitespace-pre-wrap select-all">
           {resumo}
         </div>
       </div>

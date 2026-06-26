@@ -29,7 +29,7 @@ export function CvKeywordsCopier({ masterCvData }: CvKeywordsCopierProps) {
 
   return (
     <div className="w-full animate-fade-in space-y-4">
-      <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-md relative overflow-hidden">
+      <div className="bg-[var(--input-bg)]/80 border border-[var(--border-primary)] rounded-2xl p-6 backdrop-blur-md relative overflow-hidden shadow-sm">
         <div className="absolute top-0 right-0 w-32 h-32 bg-white/[0.02] rounded-full blur-2xl pointer-events-none" />
 
         <div className="flex justify-between items-center mb-4">
@@ -41,12 +41,12 @@ export function CvKeywordsCopier({ masterCvData }: CvKeywordsCopierProps) {
             <button
               type="button"
               onClick={handleCopy}
-              className="flex-shrink-0 p-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[var(--text-primary)] transition-all active:scale-95 flex items-center justify-center gap-1.5 text-xs font-semibold"
+              className="flex-shrink-0 p-2 rounded-lg bg-[var(--input-bg)] hover:bg-[var(--accent-soft)] border border-[var(--input-border)] text-[var(--text-primary)] transition-all active:scale-95 flex items-center justify-center gap-1.5 text-xs font-semibold"
             >
               {copied ? (
                 <>
-                  <Check className="w-4 h-4 text-green-400 animate-scale-up" />
-                  <span className="text-green-400">Copiado!</span>
+                  <Check className="w-4 h-4 text-green-500 animate-scale-up" />
+                  <span className="text-green-500">Copiado!</span>
                 </>
               ) : (
                 <>
@@ -60,18 +60,18 @@ export function CvKeywordsCopier({ masterCvData }: CvKeywordsCopierProps) {
 
         {allKeywords.length > 0 ? (
           <div className="space-y-3">
-            <div className="flex flex-wrap gap-2 p-3 bg-white/5 border border-white/5 rounded-xl">
+            <div className="flex flex-wrap gap-2 p-3 bg-white/40 border border-[var(--input-border)]/30 rounded-xl">
               {allKeywords.map((kw, idx) => (
                 <span
                   key={`${kw}-${idx}`}
-                  className="text-xs px-2.5 py-1 bg-white/5 border border-white/10 rounded-md text-[var(--text-primary)] font-medium"
+                  className="text-xs px-2.5 py-1 bg-[var(--accent-soft)] border border-[var(--accent-start)]/20 rounded-md text-[var(--accent-start)] font-medium"
                 >
                   {kw}
                 </span>
               ))}
             </div>
             
-            <div className="bg-white/5 border border-white/5 rounded-xl p-3 text-xs text-[var(--text-muted)] leading-relaxed select-all">
+            <div className="bg-white/40 border border-[var(--input-border)]/30 rounded-xl p-3 text-xs text-[var(--text-muted)] leading-relaxed select-all">
               <strong>Formato para copiar e colar:</strong> {keywordsString}
             </div>
           </div>

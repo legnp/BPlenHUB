@@ -469,8 +469,11 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
     return currentStep.fields
       .filter(field => {
         if (!field.dependsOn) return true;
-        const depValue = responses[field.dependsOn];
-        return depValue !== undefined && depValue !== "" && depValue !== false && (Array.isArray(depValue) ? depValue.length > 0 : true);
+        const deps = field.dependsOn.split(",");
+        return deps.every(depId => {
+          const depValue = responses[depId.trim()];
+          return depValue !== undefined && depValue !== "" && depValue !== false && (Array.isArray(depValue) ? depValue.length > 0 : true);
+        });
       })
       .map(field => {
         let currentOptions = field.options;
@@ -955,15 +958,15 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
               onClick={() => updateResponse(field.id, !isChecked)}
               className={`w-full flex items-center gap-4 p-5 rounded-2xl border text-left transition-all duration-300 backdrop-blur-md ${
                 isChecked
-                  ? "bg-[var(--accent-start)]/10 border-[var(--accent-start)] shadow-lg shadow-accent-start/5"
-                  : "bg-white/5 border-white/10 hover:bg-white/10"
+                  ? "bg-[var(--accent-soft)] border-[var(--accent-start)] shadow-lg shadow-accent-start/5"
+                  : "bg-[var(--input-bg)] border-[var(--input-border)] hover:bg-white/40"
               }`}
             >
               <div
                 className={`w-6 h-6 rounded-lg border flex items-center justify-center transition-all ${
                   isChecked
                     ? "bg-[var(--accent-start)] border-[var(--accent-start)] text-white"
-                    : "border-white/20 text-transparent"
+                    : "border-[var(--input-border)] bg-white/40 text-transparent"
                 }`}
               >
                 <Check className="w-4 h-4" />
@@ -1305,9 +1308,9 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
 
       case "info":
         return (
-          <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
-            <p className="text-sm text-[var(--text-muted)] leading-relaxed italic">
-              {field.label || "Informação adicional importante."}
+          <div className="p-5 bg-[var(--input-bg)]/40 border border-[var(--border-primary)] rounded-2xl">
+            <p className="text-sm text-[var(--text-muted)] leading-relaxed whitespace-pre-line">
+              {field.description || field.label}
             </p>
           </div>
         );

@@ -28,7 +28,12 @@ const CBO_DATABASE: CboItem[] = [
   { pt: "Gerente de Projetos", en: "Project Manager / Scrum Master", cbo: "1423-35" }
 ];
 
-export function CboSearchDropdown() {
+interface CboSearchDropdownProps {
+  label?: string;
+  description?: string;
+}
+
+export function CboSearchDropdown({ label, description }: CboSearchDropdownProps) {
   const [search, setSearch] = useState("");
 
   const filtered = CBO_DATABASE.filter(
@@ -40,11 +45,24 @@ export function CboSearchDropdown() {
 
   return (
     <div className="w-full animate-fade-in space-y-4">
-      <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-md">
-        <div className="flex justify-between items-center mb-4">
-          <label className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-start)] ml-1">
-            Consulta de Equivalencia CBO (Catho / ATS Nacionais)
+      {label && (
+        <div className="space-y-1.5 px-1">
+          <label className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-start)] block">
+            {label}
           </label>
+          {description && (
+            <p className="text-xs text-[var(--text-muted)] leading-relaxed whitespace-pre-line">
+              {description}
+            </p>
+          )}
+        </div>
+      )}
+
+      <div className="bg-[var(--input-bg)]/80 border border-[var(--border-primary)] rounded-2xl p-6 backdrop-blur-md shadow-sm">
+        <div className="flex justify-between items-center mb-4">
+          <span className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-start)] ml-1">
+            Consulta de Equivalencia CBO (Catho / ATS Nacionais)
+          </span>
           <a
             href="https://cbo.mte.gov.br/cbosite/pages/home.jsf"
             target="_blank"
@@ -63,17 +81,17 @@ export function CboSearchDropdown() {
             placeholder="Pesquise por cargo em ingles, portugues ou codigo CBO..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-xl pl-11 pr-5 py-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)]/60 focus:outline-none focus:border-[var(--accent-start)] transition-all"
+            className="w-full bg-white/40 border border-[var(--input-border)] rounded-xl pl-11 pr-5 py-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)]/60 focus:outline-none focus:border-[var(--accent-start)] transition-all"
           />
         </div>
 
-        <div className="max-h-[220px] overflow-y-auto border border-white/5 rounded-xl division-y divide-white/5">
+        <div className="max-h-[220px] overflow-y-auto border border-[var(--border-primary)] rounded-xl divide-y divide-[var(--border-primary)]">
           {filtered.length > 0 ? (
             <div className="grid gap-1 p-1">
               {filtered.map((item) => (
                 <div
                   key={item.cbo}
-                  className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-3 rounded-lg hover:bg-white/5 transition-all gap-2"
+                  className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-3 rounded-lg hover:bg-[var(--accent-soft)]/40 transition-all gap-2"
                 >
                   <div>
                     <p className="text-xs font-semibold text-[var(--text-primary)] leading-tight">
@@ -83,7 +101,7 @@ export function CboSearchDropdown() {
                       Equivalente: {item.en}
                     </p>
                   </div>
-                  <span className="text-[10px] font-bold px-2 py-1 bg-white/5 border border-white/10 rounded-md text-[var(--accent-start)]">
+                  <span className="text-[10px] font-bold px-2 py-1 bg-[var(--accent-soft)] border border-[var(--accent-start)]/20 rounded-md text-[var(--accent-start)]">
                     CBO {item.cbo}
                   </span>
                 </div>

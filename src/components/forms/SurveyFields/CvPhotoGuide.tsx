@@ -3,7 +3,12 @@
 import React from "react";
 import Image from "next/image";
 
-export function CvPhotoGuide() {
+interface CvPhotoGuideProps {
+  label?: string;
+  description?: string;
+}
+
+export function CvPhotoGuide({ label, description }: CvPhotoGuideProps) {
   const images = [
     { src: "/images/profile_example_1.jpg", label: "Fundo neutro, boa iluminacao e expressao natural" },
     { src: "/images/profile_example_2.jpg", label: "Roupas corporativas condizentes com seu mercado target" },
@@ -12,8 +17,21 @@ export function CvPhotoGuide() {
   ];
 
   return (
-    <div className="w-full animate-fade-in space-y-6">
-      <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-md">
+    <div className="w-full animate-fade-in space-y-4">
+      {label && (
+        <div className="space-y-1.5 px-1">
+          <label className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-start)] block">
+            {label}
+          </label>
+          {description && (
+            <p className="text-xs text-[var(--text-muted)] leading-relaxed whitespace-pre-line">
+              {description}
+            </p>
+          )}
+        </div>
+      )}
+
+      <div className="bg-[var(--input-bg)]/80 border border-[var(--border-primary)] rounded-2xl p-6 backdrop-blur-md shadow-sm">
         <label className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-start)] ml-1 block mb-4">
           Exemplos de Inspiracao para Foto de Perfil
         </label>
@@ -22,7 +40,7 @@ export function CvPhotoGuide() {
           {images.map((img, idx) => (
             <div
               key={idx}
-              className="group bg-white/5 border border-white/5 rounded-xl overflow-hidden hover:border-[var(--accent-start)]/50 transition-all duration-300"
+              className="group bg-white/40 border border-[var(--border-primary)] rounded-xl overflow-hidden hover:border-[var(--accent-start)]/50 transition-all duration-300 shadow-sm"
             >
               <div className="relative aspect-square w-full bg-neutral-900 overflow-hidden">
                 <Image
@@ -35,7 +53,7 @@ export function CvPhotoGuide() {
                 />
               </div>
               <div className="p-3">
-                <p className="text-[10px] text-[var(--text-muted)] leading-normal text-center min-h-[30px] flex items-center justify-center">
+                <p className="text-[10px] text-[var(--text-muted)] leading-normal text-center min-h-[30px] flex items-center justify-center font-medium">
                   {img.label}
                 </p>
               </div>

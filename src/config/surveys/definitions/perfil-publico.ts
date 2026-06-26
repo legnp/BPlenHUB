@@ -221,14 +221,14 @@ export const perfilProfissionalPublicoSurvey: SurveyConfig = {
           type: "info",
           description: "Passo 3: Portais de Formulário (Catho, Vagas.com)\n\nA regra aqui é preencher os formulários deles copiando e colando seus bullet points do CV Focado.\n\nAtenção: Se atente a campos de localização e pretensão salarial, pois eles são filtros eliminatórios automáticos.",
           required: false,
-          dependsOn: "upload_check2"
+          dependsOn: "upload_check2,upload_check3"
         },
         {
           id: "upload_check4",
           type: "checkbox",
           label: "Entendi as regras de preenchimento manual e filtros eliminatórios!",
           required: true,
-          dependsOn: "upload_check2"
+          dependsOn: "upload_check2,upload_check3"
         }
       ]
     },

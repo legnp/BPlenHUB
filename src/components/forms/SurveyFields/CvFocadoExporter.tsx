@@ -44,11 +44,11 @@ export function CvFocadoExporter({
 
   return (
     <div className="w-full animate-fade-in space-y-4">
-      <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-md relative overflow-hidden">
+      <div className="bg-[var(--input-bg)]/80 border border-[var(--border-primary)] rounded-2xl p-6 backdrop-blur-md relative overflow-hidden shadow-sm">
         <div className="absolute top-0 right-0 w-32 h-32 bg-white/[0.02] rounded-full blur-2xl pointer-events-none" />
 
         <div className="flex items-start gap-4">
-          <div className="p-3 bg-white/5 border border-white/10 rounded-xl text-[var(--accent-start)]">
+          <div className="p-3 bg-[var(--accent-soft)] border border-[var(--accent-start)]/20 rounded-xl text-[var(--accent-start)]">
             <FileText className="w-6 h-6" />
           </div>
           
@@ -66,7 +66,7 @@ export function CvFocadoExporter({
           </div>
         </div>
 
-        <div className="mt-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-white/5 border border-white/5 p-4 rounded-xl">
+        <div className="mt-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-white/40 border border-[var(--input-border)]/50 p-4 rounded-xl">
           <div className="text-xs text-[var(--text-muted)] flex items-start gap-1.5 max-w-[280px]">
             <HelpCircle className="w-4 h-4 text-[var(--accent-start)] flex-shrink-0 mt-0.5" />
             <span>
