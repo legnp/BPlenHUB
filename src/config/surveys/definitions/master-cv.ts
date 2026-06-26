@@ -84,7 +84,8 @@ export const masterCvSurvey: SurveyConfig = {
           description: "Quais softwares e ferramentas você domina? (ex: Excel, Power BI, Salesforce). Sempre que possível, escreva a sigla e o nome por extenso, como \"AWS (Amazon Web Services)\", para garantir que os algoritmos ATS te encontrem independente de como o recrutador digitar.",
           required: true,
           validation: { maxSelections: 10 },
-          cols: 2
+          cols: 2,
+          column: "left"
         },
         {
           id: "metodologias",
@@ -94,7 +95,8 @@ export const masterCvSurvey: SurveyConfig = {
           description: "Ex: Metodologia Ágil, Scrum, Lean Six Sigma, B2B, B2C. Da mesma forma, sempre que possível, escreva a sigla e o nome por extenso.",
           required: true,
           validation: { maxSelections: 10 },
-          cols: 2
+          cols: 2,
+          column: "right"
         }
       ]
     },
