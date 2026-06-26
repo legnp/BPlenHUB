@@ -23,6 +23,7 @@ import { pdiFase1Survey } from "./definitions/pdi-fase1";
 import { pdiFase2Survey } from "./definitions/pdi-fase2";
 import { pdiFase3Survey } from "./definitions/pdi-fase3";
 import { pdiFase4Survey } from "./definitions/pdi-fase4";
+import { cvFocadoSurvey } from "./definitions/cv-focado";
 
 /**
  * BPlen HUB — Survey Registry (🗂️)
@@ -41,6 +42,7 @@ export const surveys = {
   "desmistificando_candidaturas": desmistificandoCandidaturasSurvey,
   "revisao_curriculo": revisaoCurriculoSurvey,
   "master_cv": masterCvSurvey,
+  "cv_focado": cvFocadoSurvey,
 
   // Career Planning Surveys
   "survey_plano_acordos": planoAcordosSurvey,

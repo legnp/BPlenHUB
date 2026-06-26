@@ -500,3 +500,292 @@ export async function generatePdiDocx(responses: Record<string, SurveyValue>, us
   const blob = await Packer.toBlob(doc);
   saveAs(blob, `PDI_${userName.replace(/\s+/g, '_')}.docx`);
 }
+
+/**
+ * Utilitário para gerar e exportar o CV Focado em formato Word (.docx).
+ * Respeita estritamente os filtros de visibilidade selecionados na survey cv_focado.
+ */
+export async function generateCvFocadoDocx(responses: Record<string, SurveyValue>, userName: string) {
+  const getStr = (id: string) => (responses[id] ? String(responses[id]) : "");
+  
+  // 1. Extrair e filtrar Contatos
+  const contatoRaw = responses["contato_filtrado"] as any || {};
+  const contactParts: string[] = [];
+  
+  if (contatoRaw.nome_completo?.visible && contatoRaw.nome_completo?.value) {
+    contactParts.push(contatoRaw.nome_completo.value);
+  }
+  if (contatoRaw.localizacao?.visible && contatoRaw.localizacao?.value) {
+    contactParts.push(contatoRaw.localizacao.value);
+  }
+  if (contatoRaw.telefone?.visible && contatoRaw.telefone?.value) {
+    contactParts.push(contatoRaw.telefone.value);
+  }
+  if (contatoRaw.email_profissional?.visible && contatoRaw.email_profissional?.value) {
+    contactParts.push(contatoRaw.email_profissional.value);
+  }
+  if (contatoRaw.linkedin?.visible && contatoRaw.linkedin?.value) {
+    contactParts.push(contatoRaw.linkedin.value);
+  }
+
+  // 2. Extrair Resumo
+  const resumoText = getStr("resumo_focado");
+
+  // 3. Extrair e filtrar Experiências
+  const experienciasRaw = responses["experiencias_filtradas"] as any[] || [];
+  const experiencias = experienciasRaw.filter(exp => exp && exp.visible);
+
+  // 4. Extrair e filtrar Educação
+  const educacaoRaw = responses["educacao_projetos_filtrados"] as any || {};
+  const formacoes = (educacaoRaw.formacoes || []).filter((f: any) => f && f.visible);
+  const certificacoes = (educacaoRaw.certificacoes_projetos || []).filter((c: any) => c && c.visible);
+
+  // 5. Construir o documento Word
+  const paragraphs: Paragraph[] = [];
+
+  // Cabeçalho / Nome e Contatos
+  const headerName = contatoRaw.nome_completo?.value || userName || "Profissional";
+  paragraphs.push(
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      children: [
+        new TextRun({
+          text: headerName.toUpperCase(),
+          bold: true,
+          size: 32, // 16pt
+        }),
+      ],
+      spacing: { after: 120 },
+    })
+  );
+
+  const contactLine = contactParts.filter(p => p !== headerName).join("  |  ");
+  if (contactLine) {
+    paragraphs.push(
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        children: [
+          new TextRun({
+            text: contactLine,
+            size: 20, // 10pt
+            color: "555555",
+          }),
+        ],
+        spacing: { after: 360 },
+      })
+    );
+  }
+
+  // Seção: Resumo Profissional
+  if (resumoText) {
+    paragraphs.push(
+      new Paragraph({
+        text: "RESUMO PROFISSIONAL",
+        heading: HeadingLevel.HEADING_2,
+        spacing: { before: 240, after: 120 },
+      })
+    );
+    paragraphs.push(
+      new Paragraph({
+        children: [new TextRun(resumoText)],
+        spacing: { after: 240 },
+      })
+    );
+  }
+
+  // Seção: Experiência Profissional
+  if (experiencias.length > 0) {
+    paragraphs.push(
+      new Paragraph({
+        text: "EXPERIÊNCIA PROFISSIONAL",
+        heading: HeadingLevel.HEADING_2,
+        spacing: { before: 240, after: 120 },
+      })
+    );
+
+    experiencias.forEach((exp) => {
+      paragraphs.push(
+        new Paragraph({
+          heading: HeadingLevel.HEADING_3,
+          children: [
+            new TextRun({ text: exp.cargo || "", bold: true }),
+            new TextRun({ text: ` — ${exp.empresa || ""}`, bold: false }),
+          ],
+          spacing: { before: 180, after: 60 },
+        })
+      );
+
+      if (exp.periodo) {
+        paragraphs.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `Período: ${exp.periodo}`,
+                italics: true,
+                size: 18, // 9pt
+                color: "666666",
+              }),
+            ],
+            spacing: { after: 120 },
+          })
+        );
+      }
+
+      if (exp.contexto) {
+        paragraphs.push(
+          new Paragraph({
+            children: [
+              new TextRun({ text: "Contexto: ", bold: true }),
+              new TextRun(exp.contexto),
+            ],
+            spacing: { after: 120 },
+          })
+        );
+      }
+
+      // Conquistas filtradas
+      const conquistasVisiveis = (exp.conquistas || []).filter((c: any) => c && c.visible);
+      if (conquistasVisiveis.length > 0) {
+        conquistasVisiveis.forEach((ac: any) => {
+          paragraphs.push(
+            new Paragraph({
+              children: [
+                new TextRun({ text: "•  ", bold: true }),
+                new TextRun(ac.conquista),
+              ],
+              spacing: { before: 40, after: 40 },
+            })
+          );
+        });
+      }
+    });
+  }
+
+  // Seção: Formação Acadêmica
+  if (formacoes.length > 0) {
+    paragraphs.push(
+      new Paragraph({
+        text: "FORMAÇÃO ACADÊMICA",
+        heading: HeadingLevel.HEADING_2,
+        spacing: { before: 240, after: 120 },
+      })
+    );
+
+    formacoes.forEach((form: any) => {
+      paragraphs.push(
+        new Paragraph({
+          heading: HeadingLevel.HEADING_3,
+          children: [
+            new TextRun({ text: `${form.grau || ""} em ${form.curso || ""}`, bold: true }),
+          ],
+          spacing: { before: 120, after: 60 },
+        })
+      );
+      
+      const eduInfo = [form.instituicao, form.ano_conclusao ? `Conclusão: ${form.ano_conclusao}` : ""].filter(Boolean).join("  |  ");
+      paragraphs.push(
+        new Paragraph({
+          text: eduInfo,
+          spacing: { after: 120 },
+        })
+      );
+
+      if (form.destaques) {
+        paragraphs.push(
+          new Paragraph({
+            children: [
+              new TextRun({ text: "Destaques: ", bold: true }),
+              new TextRun(form.destaques),
+            ],
+            spacing: { after: 120 },
+          })
+        );
+      }
+    });
+  }
+
+  // Seção: Certificações & Cursos Extras
+  if (certificacoes.length > 0) {
+    paragraphs.push(
+      new Paragraph({
+        text: "CERTIFICAÇÕES E CURSOS EXTRAS",
+        heading: HeadingLevel.HEADING_2,
+        spacing: { before: 240, after: 120 },
+      })
+    );
+
+    certificacoes.forEach((cert: any) => {
+      paragraphs.push(
+        new Paragraph({
+          heading: HeadingLevel.HEADING_3,
+          children: [
+            new TextRun({ text: cert.nome || "", bold: true }),
+            new TextRun({ text: ` — ${cert.instituicao || ""}`, bold: false }),
+          ],
+          spacing: { before: 120, after: 60 },
+        })
+      );
+
+      if (cert.data) {
+        paragraphs.push(
+          new Paragraph({
+            text: `Conclusão: ${cert.data}`,
+            spacing: { after: 120 },
+          })
+        );
+      }
+    });
+  }
+
+  // Rodapé decorativo discreto
+  paragraphs.push(new Paragraph({ text: "", spacing: { before: 600 } }));
+  paragraphs.push(
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      children: [
+        new TextRun({ text: "Gerado via BPlen HUB", size: 16, color: "999999" }),
+      ],
+    })
+  );
+
+  const doc = new Document({
+    creator: "BPlen HUB",
+    title: `CV Focado - ${userName}`,
+    description: "Currículo Focado Gerado no BPlen HUB",
+    styles: {
+      default: {
+        document: {
+          run: {
+            font: "Arial",
+            size: 22, // 11pt
+            color: "000000",
+          },
+          paragraph: {
+            spacing: {
+              line: 276, // 1.15 line spacing
+              before: 120,
+              after: 120,
+            },
+          },
+        },
+        heading2: {
+          run: { size: 28, bold: true, color: "000000" },
+          paragraph: { spacing: { before: 360, after: 180 } },
+        },
+        heading3: {
+          run: { size: 24, bold: true, color: "000000" },
+          paragraph: { spacing: { before: 240, after: 120 } },
+        },
+      },
+    },
+    sections: [
+      {
+        properties: {},
+        children: paragraphs,
+      },
+    ],
+  });
+
+  const blob = await Packer.toBlob(doc);
+  saveAs(blob, `CV_Focado_${userName.replace(/\s+/g, '_')}.docx`);
+}

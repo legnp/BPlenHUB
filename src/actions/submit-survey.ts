@@ -69,8 +69,15 @@ export async function getPreviousSurveysDataAction(matricula: string): Promise<R
     const db: admin.firestore.Firestore = getAdminDb();
     const docRef1 = db.doc(`User/${matricula}/Surveys/survey_plano_fase1`);
     const docRef2 = db.doc(`User/${matricula}/Surveys/survey_plano_fase2`);
+    const docRefPdi = db.doc(`User/${matricula}/Surveys/survey_pdi_fase1`);
+    const docRefMaster = db.doc(`User/${matricula}/Surveys/master_cv`);
 
-    const [snap1, snap2] = await Promise.all([docRef1.get(), docRef2.get()]);
+    const [snap1, snap2, snapPdi, snapMaster] = await Promise.all([
+      docRef1.get(),
+      docRef2.get(),
+      docRefPdi.get(),
+      docRefMaster.get()
+    ]);
 
     const result: Record<string, unknown> = {};
 
@@ -85,6 +92,21 @@ export async function getPreviousSurveysDataAction(matricula: string): Promise<R
       const data2 = snap2.data();
       if (data2 && data2.data) {
         Object.assign(result, data2.data);
+      }
+    }
+
+    if (snapPdi.exists) {
+      const dataPdi = snapPdi.data();
+      if (dataPdi && dataPdi.data) {
+        // Mapeamos objetivo_frase para ser visível como chave direta e também com fallbacks
+        Object.assign(result, dataPdi.data);
+      }
+    }
+
+    if (snapMaster.exists) {
+      const dataMaster = snapMaster.data();
+      if (dataMaster && dataMaster.data) {
+        result["master_cv"] = dataMaster.data;
       }
     }
 

@@ -25,6 +25,11 @@ import { LikertGroup } from "./SurveyFields/LikertGroup";
 import { FileField } from "./SurveyFields/FileField";
 import { EvidenceField } from "./SurveyFields/EvidenceField";
 import { DynamicList } from "./SurveyFields/DynamicList";
+import { CvContactFilter } from "./SurveyFields/CvContactFilter";
+import { CvResumoEditor } from "./SurveyFields/CvResumoEditor";
+import { CvExperienceFilter } from "./SurveyFields/CvExperienceFilter";
+import { CvEducationFilter } from "./SurveyFields/CvEducationFilter";
+import { CvConclusaoInfo } from "./SurveyFields/CvConclusaoInfo";
 import { NarrativeContent } from "./NarrativeContent";
 import { resolveUserIdentity, getUserMetadata } from "@/actions/survey-effects";
 import { getPreviousSurveysDataAction } from "@/actions/submit-survey";
@@ -324,7 +329,7 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
         const meta = await getUserMetadata(userUid);
         
         let combinedMeta = { ...meta };
-        if (config.id && config.id.startsWith("survey_plano_fase")) {
+        if (config.id && (config.id.startsWith("survey_plano_fase") || config.id === "cv_focado")) {
           try {
             const previousData = await getPreviousSurveysDataAction(mat);
             combinedMeta = { ...combinedMeta, ...previousData };
@@ -593,6 +598,15 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
         try {
           const { generateMasterCvDocx } = await import("@/lib/docx-generator");
           await generateMasterCvDocx(responses, userNickname || "Profissional");
+        } catch (e) {
+          console.error("Erro ao gerar docx:", e);
+        }
+      }
+
+      if (config.id === "cv_focado") {
+        try {
+          const { generateCvFocadoDocx } = await import("@/lib/docx-generator");
+          await generateCvFocadoDocx(responses, userNickname || "Profissional");
         } catch (e) {
           console.error("Erro ao gerar docx:", e);
         }
@@ -871,6 +885,56 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
             onChange={(val: any[]) => updateResponse(field.id, val)}
           />
         );
+
+      case "cv_contact_filter":
+        return (
+          <CvContactFilter
+            value={rawValue}
+            masterCvData={userMetadata?.master_cv}
+            onChange={(val: any) => updateResponse(field.id, val)}
+          />
+        );
+
+      case "cv_resumo_editor":
+        return (
+          <CvResumoEditor
+            value={rawValue}
+            masterCvData={userMetadata?.master_cv}
+            onChange={(val: any) => updateResponse(field.id, val)}
+          />
+        );
+
+      case "cv_experience_filter":
+        return (
+          <CvExperienceFilter
+            value={rawValue}
+            masterCvData={userMetadata?.master_cv}
+            targetPositionDescription={responses["descricao_vaga"] as string}
+            targetPositionName={responses["pdi_posicao_target"] as string}
+            targetEmpresaName={responses["pdi_empresa_target"] as string}
+            senioridadePretendida={responses["senioridade_pretendida"] as string}
+            onChange={(val: any) => updateResponse(field.id, val)}
+          />
+        );
+
+      case "cv_education_filter":
+        return (
+          <CvEducationFilter
+            value={rawValue}
+            masterCvData={userMetadata?.master_cv}
+            targetPositionName={responses["pdi_posicao_target"] as string}
+            targetEmpresaName={responses["pdi_empresa_target"] as string}
+            onChange={(val: any) => updateResponse(field.id, val)}
+          />
+        );
+
+      case "cv_conclusao_info":
+        return (
+          <CvConclusaoInfo
+            senioridadePretendida={responses["senioridade_pretendida"] as string}
+          />
+        );
+
       case "ranking":
         return (
           <RankingField
