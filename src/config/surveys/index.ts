@@ -24,6 +24,7 @@ import { pdiFase2Survey } from "./definitions/pdi-fase2";
 import { pdiFase3Survey } from "./definitions/pdi-fase3";
 import { pdiFase4Survey } from "./definitions/pdi-fase4";
 import { cvFocadoSurvey } from "./definitions/cv-focado";
+import { perfilProfissionalPublicoSurvey } from "./definitions/perfil-publico";
 
 /**
  * BPlen HUB — Survey Registry (🗂️)
@@ -43,6 +44,7 @@ export const surveys = {
   "revisao_curriculo": revisaoCurriculoSurvey,
   "master_cv": masterCvSurvey,
   "cv_focado": cvFocadoSurvey,
+  "perfil_profissional_publico": perfilProfissionalPublicoSurvey,
 
   // Career Planning Surveys
   "survey_plano_acordos": planoAcordosSurvey,

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Rocket, AlertCircle } from "lucide-react";
+import { Rocket, AlertCircle, Check } from "lucide-react";
 import Link from "next/link";
 import { format, parseISO } from "date-fns";
 import { SurveyConfig, SurveyFieldConfig, SurveyValue } from "@/types/survey";
@@ -30,6 +30,12 @@ import { CvResumoEditor } from "./SurveyFields/CvResumoEditor";
 import { CvExperienceFilter } from "./SurveyFields/CvExperienceFilter";
 import { CvEducationFilter } from "./SurveyFields/CvEducationFilter";
 import { CvConclusaoInfo } from "./SurveyFields/CvConclusaoInfo";
+import { CvHeadlineCopier } from "./SurveyFields/CvHeadlineCopier";
+import { CboSearchDropdown } from "./SurveyFields/CboSearchDropdown";
+import { CvResumoCopier } from "./SurveyFields/CvResumoCopier";
+import { CvKeywordsCopier } from "./SurveyFields/CvKeywordsCopier";
+import { CvFocadoExporter } from "./SurveyFields/CvFocadoExporter";
+import { CvPhotoGuide } from "./SurveyFields/CvPhotoGuide";
 import { NarrativeContent } from "./NarrativeContent";
 import { resolveUserIdentity, getUserMetadata } from "@/actions/survey-effects";
 import { getPreviousSurveysDataAction } from "@/actions/submit-survey";
@@ -464,7 +470,7 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
       .filter(field => {
         if (!field.dependsOn) return true;
         const depValue = responses[field.dependsOn];
-        return depValue !== undefined && depValue !== "" && (Array.isArray(depValue) ? depValue.length > 0 : true);
+        return depValue !== undefined && depValue !== "" && depValue !== false && (Array.isArray(depValue) ? depValue.length > 0 : true);
       })
       .map(field => {
         let currentOptions = field.options;
@@ -938,6 +944,79 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
           <CvConclusaoInfo
             senioridadePretendida={responses["senioridade_pretendida"] as string}
           />
+        );
+
+      case "checkbox": {
+        const isChecked = !!rawValue;
+        return (
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={() => updateResponse(field.id, !isChecked)}
+              className={`w-full flex items-center gap-4 p-5 rounded-2xl border text-left transition-all duration-300 backdrop-blur-md ${
+                isChecked
+                  ? "bg-[var(--accent-start)]/10 border-[var(--accent-start)] shadow-lg shadow-accent-start/5"
+                  : "bg-white/5 border-white/10 hover:bg-white/10"
+              }`}
+            >
+              <div
+                className={`w-6 h-6 rounded-lg border flex items-center justify-center transition-all ${
+                  isChecked
+                    ? "bg-[var(--accent-start)] border-[var(--accent-start)] text-white"
+                    : "border-white/20 text-transparent"
+                }`}
+              >
+                <Check className="w-4 h-4" />
+              </div>
+              <span className="text-sm font-medium text-[var(--text-primary)] leading-normal">
+                {field.label}
+              </span>
+            </button>
+          </div>
+        );
+      }
+
+      case "cv_headline_copier":
+        return (
+          <CvHeadlineCopier
+            cvFocadoData={userMetadata?.cv_focado}
+            masterCvData={userMetadata?.master_cv}
+          />
+        );
+
+      case "cbo_search_dropdown":
+        return (
+          <CboSearchDropdown />
+        );
+
+      case "cv_resumo_copier":
+        return (
+          <CvResumoCopier
+            cvFocadoData={userMetadata?.cv_focado}
+          />
+        );
+
+      case "cv_keywords_copier":
+        return (
+          <CvKeywordsCopier
+            masterCvData={userMetadata?.master_cv}
+          />
+        );
+
+      case "cv_focado_exporter":
+        return (
+          <CvFocadoExporter
+            cvFocadoData={userMetadata?.cv_focado}
+            userNickname={userNickname || "Profissional"}
+            options={field.options as string[]}
+            label={field.label}
+            description={field.description}
+          />
+        );
+
+      case "cv_photo_guide":
+        return (
+          <CvPhotoGuide />
         );
 
       case "ranking":
@@ -1422,6 +1501,9 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
     }
     if (f.type === "slider") {
       return true; // Unblocked by default since it has initial value 50
+    }
+    if (f.type === "checkbox") {
+      return val === true || val === "true";
     }
     if (f.type === "calendar_embed") {
       return val === "agendado"; // Valid once an appointment is made

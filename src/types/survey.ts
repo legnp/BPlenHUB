@@ -47,7 +47,7 @@ export interface SurveyStep {
 
 export interface SurveyFieldConfig {
   id: string;
-  type: "choice" | "dropdown" | "text" | "textarea" | "scale" | "info" | "buttons" | "multi_select" | "cascaded" | "benefits" | "currency_group" | "likert" | "ranking" | "likert_group" | "file" | "evidence_upload" | "portal_link" | "date" | "slider" | "calendar_embed" | "image" | "dynamic_list" | "cv_contact_filter" | "cv_resumo_editor" | "cv_experience_filter" | "cv_education_filter" | "cv_conclusao_info";
+  type: "choice" | "dropdown" | "text" | "textarea" | "scale" | "info" | "buttons" | "multi_select" | "cascaded" | "benefits" | "currency_group" | "likert" | "ranking" | "likert_group" | "file" | "evidence_upload" | "portal_link" | "date" | "slider" | "calendar_embed" | "image" | "dynamic_list" | "cv_contact_filter" | "cv_resumo_editor" | "cv_experience_filter" | "cv_education_filter" | "cv_conclusao_info" | "checkbox" | "cv_headline_copier" | "cbo_search_dropdown" | "cv_resumo_copier" | "cv_keywords_copier" | "cv_focado_exporter" | "cv_photo_guide";
   subFields?: SurveyFieldConfig[]; // Utilizado pelo tipo dynamic_list para renderizar as linhas de loop
   label?: string;
   placeholder?: string;
