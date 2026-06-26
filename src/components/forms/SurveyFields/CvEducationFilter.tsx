@@ -90,22 +90,97 @@ export function CvEducationFilter({
     onChange(updated);
   };
 
-  return (
-    <div className="space-y-8 w-full animate-fade-in">
-      {/* Seção Formações Acadêmicas */}
-      {state.formacoes.length > 0 && (
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 px-1">
-            <GraduationCap className="w-5 h-5 text-[var(--accent-start)]" />
-            <h3 className="text-sm font-black uppercase tracking-widest text-[var(--text-primary)]">
-              Formação Acadêmica
-            </h3>
-          </div>
+  const isProjectItem = (cert: CertificacaoFiltrada) => {
+    const name = String(cert.nome || "").toLowerCase();
+    const obj = String(cert.objetivo || "").toLowerCase();
+    
+    const projectKeywords = [
+      "projeto", "project", "voluntari", "voluntary", 
+      "freelance", "freelancer", "freela", 
+      "desenvolvimento de", "criação de", "implementação de",
+      "github", "portfolio", "portfólio", "website", "site",
+      "trabalho acadêmico", "tcc", "artigo", "paper"
+    ];
+    
+    return projectKeywords.some(kw => name.includes(kw) || obj.includes(kw));
+  };
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  const projects = state.certificacoes_projetos
+    .map((cert, idx) => ({ cert, originalIdx: idx }))
+    .filter(item => isProjectItem(item.cert));
+
+  const certs = state.certificacoes_projetos
+    .map((cert, idx) => ({ cert, originalIdx: idx }))
+    .filter(item => !isProjectItem(item.cert));
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full animate-fade-in">
+      {/* Coluna Esquerda: Itens de Projeto */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2 px-1">
+          <Award className="w-5 h-5 text-[var(--accent-start)]" />
+          <h3 className="text-sm font-black uppercase tracking-widest text-[var(--text-primary)]">
+            Projetos
+          </h3>
+        </div>
+
+        {projects.length > 0 ? (
+          <div className="grid grid-cols-1 gap-4">
+            {projects.map(({ cert, originalIdx }) => (
+              <div
+                key={originalIdx}
+                className={`border rounded-2xl p-5 backdrop-blur-md transition-all flex justify-between gap-4 items-start ${
+                  cert.visible
+                    ? "bg-white/5 border-white/10 shadow-lg"
+                    : "bg-white/[0.02] border-white/5 opacity-55"
+                }`}
+              >
+                <div className="space-y-1.5">
+                  <span className="text-[9px] font-black uppercase tracking-widest text-[var(--accent-start)] block">
+                    Conclusão: {cert.data || "N/D"}
+                  </span>
+                  <h4 className="text-sm font-bold leading-snug text-[var(--text-primary)]">
+                    {cert.nome}
+                  </h4>
+                  <p className="text-xs text-[var(--text-muted)] font-medium">
+                    {cert.instituicao}
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => toggleCertificacao(originalIdx)}
+                  className="focus:outline-none shrink-0"
+                >
+                  {cert.visible ? (
+                    <ToggleRight className="w-8 h-8 text-[var(--accent-start)]" />
+                  ) : (
+                    <ToggleLeft className="w-8 h-8 text-[var(--text-muted)]" />
+                  )}
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-xs text-[var(--text-muted)] italic px-1">Nenhum projeto cadastrado.</p>
+        )}
+      </div>
+
+      {/* Coluna Direita: Cursos & Certificações */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2 px-1">
+          <GraduationCap className="w-5 h-5 text-[var(--accent-start)]" />
+          <h3 className="text-sm font-black uppercase tracking-widest text-[var(--text-primary)]">
+            Cursos & Certificações
+          </h3>
+        </div>
+
+        {(state.formacoes.length > 0 || certs.length > 0) ? (
+          <div className="grid grid-cols-1 gap-4">
+            {/* Formações Acadêmicas */}
             {state.formacoes.map((form, idx) => (
               <div
-                key={idx}
+                key={`form-${idx}`}
                 className={`border rounded-2xl p-5 backdrop-blur-md transition-all flex justify-between gap-4 items-start ${
                   form.visible
                     ? "bg-white/5 border-white/10 shadow-lg"
@@ -142,24 +217,11 @@ export function CvEducationFilter({
                 </button>
               </div>
             ))}
-          </div>
-        </div>
-      )}
 
-      {/* Seção Certificações e Projetos Extras */}
-      {state.certificacoes_projetos.length > 0 && (
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 px-1">
-            <Award className="w-5 h-5 text-[var(--accent-start)]" />
-            <h3 className="text-sm font-black uppercase tracking-widest text-[var(--text-primary)]">
-              Certificações & Projetos
-            </h3>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {state.certificacoes_projetos.map((cert, idx) => (
+            {/* Certificações Extras */}
+            {certs.map(({ cert, originalIdx }) => (
               <div
-                key={idx}
+                key={`cert-${originalIdx}`}
                 className={`border rounded-2xl p-5 backdrop-blur-md transition-all flex justify-between gap-4 items-start ${
                   cert.visible
                     ? "bg-white/5 border-white/10 shadow-lg"
@@ -180,7 +242,7 @@ export function CvEducationFilter({
 
                 <button
                   type="button"
-                  onClick={() => toggleCertificacao(idx)}
+                  onClick={() => toggleCertificacao(originalIdx)}
                   className="focus:outline-none shrink-0"
                 >
                   {cert.visible ? (
@@ -192,8 +254,10 @@ export function CvEducationFilter({
               </div>
             ))}
           </div>
-        </div>
-      )}
+        ) : (
+          <p className="text-xs text-[var(--text-muted)] italic px-1">Nenhum curso ou certificação cadastrado.</p>
+        )}
+      </div>
     </div>
   );
 }

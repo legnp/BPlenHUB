@@ -524,8 +524,11 @@ export async function generateCvFocadoDocx(responses: Record<string, SurveyValue
   if (contatoRaw.email_profissional?.visible && contatoRaw.email_profissional?.value) {
     contactParts.push(contatoRaw.email_profissional.value);
   }
-  if (contatoRaw.linkedin?.visible && contatoRaw.linkedin?.value) {
+  if (contatoRaw.linkedin?.visible && contatoRaw.linkedin?.value && contatoRaw.linkedin.value !== "nd") {
     contactParts.push(contatoRaw.linkedin.value);
+  }
+  if (contatoRaw.portfolio?.visible && contatoRaw.portfolio?.value && contatoRaw.portfolio.value !== "nd") {
+    contactParts.push(contatoRaw.portfolio.value);
   }
 
   // 2. Extrair Resumo

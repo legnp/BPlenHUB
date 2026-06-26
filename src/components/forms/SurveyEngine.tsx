@@ -361,42 +361,6 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
 
   const currentStep = config.steps[currentStepIndex];
 
-  // Preparação de campos (Randomização & Interceptação de C3 Customizado) 🧬
-  const preparedFields = useMemo(() => {
-    return currentStep.fields
-      .filter(field => {
-        if (!field.dependsOn) return true;
-        const depValue = responses[field.dependsOn];
-        return depValue !== undefined && depValue !== "" && (Array.isArray(depValue) ? depValue.length > 0 : true);
-      })
-      .map(field => {
-      let currentOptions = field.options;
-      if (field.id === "combustiveis_selecionados" && userMetadata?.combustiveis_custom && Array.isArray(userMetadata.combustiveis_custom) && userMetadata.combustiveis_custom.length > 0) {
-        currentOptions = userMetadata.combustiveis_custom;
-      } else if (field.id === "barreiras_selecionadas" && userMetadata?.barreiras_custom && Array.isArray(userMetadata.barreiras_custom) && userMetadata.barreiras_custom.length > 0) {
-        currentOptions = userMetadata.barreiras_custom;
-      }
-
-      if (field.excludeIfSelectedIn && currentOptions && Array.isArray(currentOptions)) {
-        const excludedVal = responses[field.excludeIfSelectedIn];
-        if (excludedVal) {
-          const excludedArr = Array.isArray(excludedVal) ? excludedVal : [excludedVal];
-          currentOptions = (currentOptions.filter(opt => {
-            const val = typeof opt === "string" ? opt : opt.value;
-            return !excludedArr.includes(val);
-          }) as any);
-        }
-      }
-
-      if (field.randomize && currentOptions && Array.isArray(currentOptions)) {
-        return { ...field, options: shuffleOptions(currentOptions as string[] | {label:string, value:string}[]) };
-      }
-      return { ...field, options: currentOptions };
-    });
-  }, [currentStep.fields, userMetadata, responses]);
-
-  const isLastStep = currentStepIndex === config.steps.length - 1;
-
   // Lógica de Interpolação de Texto Reativa (Suporta {{nickname}} e {User-nickname}, arrays joined, fallbacks Maslow/carreira)
   const interpolate = (text: string) => {
     const combinedData: Record<string, unknown> = {
@@ -416,12 +380,10 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
 
     let interpolated = text;
 
-    // Normalizar chaves para busca case-insensitive e formatar valores dinâmicos
     const normalizedData: Record<string, string> = {};
     Object.entries(combinedData).forEach(([key, value]) => {
       let valStr = "";
       if (Array.isArray(value) && value.length > 0) {
-        // Mapear valores para injetar o texto de "Outro" caso exista
         const mappedValue = value.map(v => {
           if (typeof v === "string" && v.toLowerCase().startsWith("outro") && combinedData[`${key}_other`]) {
             return combinedData[`${key}_other`];
@@ -446,7 +408,6 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
         }
       }
 
-      // Aplicar marcador de destaque automático para campos dinâmicos (exceto apelido e contexto longo de Maslow)
       const lowKey = key.toLowerCase();
       if (valStr && lowKey !== "user_nickname" && lowKey !== "maslow_contexto") {
         normalizedData[lowKey] = `==${valStr}==`;
@@ -455,7 +416,6 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
       }
     });
 
-    // Encontrar todos os padrões {{Chave}} ou {Chave} no texto e substituir
     const regex = /\{\{([^}]+)\}\}|\{([^}]+)\}/g;
     let match;
     const matchesToReplace: Array<{ original: string; keyName: string }> = [];
@@ -471,7 +431,6 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
       if (normalizedData[lowerKey] !== undefined && normalizedData[lowerKey] !== "") {
         interpolated = interpolated.replace(original, normalizedData[lowerKey]);
       } else {
-        // Fallbacks inteligentes para Maslow e referências de outras etapas
         let fallback = "";
         if (lowerKey === "user_nickname") {
           fallback = (combinedData["User_Nickname"] as string) || (userMetadata?.name ? (userMetadata.name as string).split(" ")[0] : "Membro");
@@ -492,13 +451,59 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
       }
     });
 
-    // Fallback explícito para User_Nickname
     const fallbackName = (combinedData["User_Nickname"] as string) || (userMetadata?.name ? (userMetadata.name as string).split(" ")[0] : "Membro");
     interpolated = interpolated.replace(/\{\{User_Nickname\}\}/gi, fallbackName);
     interpolated = interpolated.replace(/\{User_Nickname\}/gi, fallbackName);
 
     return interpolated;
   };
+
+  // Preparação de campos (Randomização & Interceptação de C3 Customizado) 🧬
+  const preparedFields = useMemo(() => {
+    return currentStep.fields
+      .filter(field => {
+        if (!field.dependsOn) return true;
+        const depValue = responses[field.dependsOn];
+        return depValue !== undefined && depValue !== "" && (Array.isArray(depValue) ? depValue.length > 0 : true);
+      })
+      .map(field => {
+        let currentOptions = field.options;
+        if (field.id === "combustiveis_selecionados" && userMetadata?.combustiveis_custom && Array.isArray(userMetadata.combustiveis_custom) && userMetadata.combustiveis_custom.length > 0) {
+          currentOptions = userMetadata.combustiveis_custom;
+        } else if (field.id === "barreiras_selecionadas" && userMetadata?.barreiras_custom && Array.isArray(userMetadata.barreiras_custom) && userMetadata.barreiras_custom.length > 0) {
+          currentOptions = userMetadata.barreiras_custom;
+        }
+
+        if (field.excludeIfSelectedIn && currentOptions && Array.isArray(currentOptions)) {
+          const excludedVal = responses[field.excludeIfSelectedIn];
+          if (excludedVal) {
+            const excludedArr = Array.isArray(excludedVal) ? excludedVal : [excludedVal];
+            currentOptions = (currentOptions.filter(opt => {
+              const val = typeof opt === "string" ? opt : opt.value;
+              return !excludedArr.includes(val);
+            }) as any);
+          }
+        }
+
+        const interpolatedLabel = field.label ? interpolate(field.label) : undefined;
+        const interpolatedDesc = field.description ? interpolate(field.description) : undefined;
+        const interpolatedPlaceholder = field.placeholder ? interpolate(field.placeholder) : undefined;
+
+        const baseField = {
+          ...field,
+          label: interpolatedLabel,
+          description: interpolatedDesc,
+          placeholder: interpolatedPlaceholder
+        };
+
+        if (field.randomize && currentOptions && Array.isArray(currentOptions)) {
+          return { ...baseField, options: shuffleOptions(currentOptions as string[] | {label:string, value:string}[]) };
+        }
+        return { ...baseField, options: currentOptions };
+      });
+  }, [currentStep.fields, userMetadata, responses]);
+
+  const isLastStep = currentStepIndex === config.steps.length - 1;
 
   const currentQuestion = interpolate(currentStep.question);
   const currentDescription = currentStep.description ? interpolate(currentStep.description) : "";

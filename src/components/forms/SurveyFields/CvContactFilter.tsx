@@ -19,6 +19,7 @@ const FIELD_LABELS: Record<string, string> = {
   email_profissional: "E-mail Profissional",
   telefone: "Telefone de Contato",
   linkedin: "Perfil do LinkedIn",
+  portfolio: "Portfólio / Página Web",
   localizacao: "Localização"
 };
 
@@ -33,6 +34,7 @@ export function CvContactFilter({ value, masterCvData, onChange }: CvContactFilt
       email_profissional: { value: master.email_profissional || "", visible: true },
       telefone: { value: master.telefone || "", visible: true },
       linkedin: { value: master.linkedin || "", visible: true },
+      portfolio: { value: master.portfolio || "nd", visible: true },
       localizacao: { value: master.localizacao || "", visible: true }
     };
   });
@@ -56,6 +58,7 @@ export function CvContactFilter({ value, masterCvData, onChange }: CvContactFilt
         email_profissional: { value: masterCvData.email_profissional || "", visible: true },
         telefone: { value: masterCvData.telefone || "", visible: true },
         linkedin: { value: masterCvData.linkedin || "", visible: true },
+        portfolio: { value: masterCvData.portfolio || "nd", visible: true },
         localizacao: { value: masterCvData.localizacao || "", visible: true }
       };
       setData(initial);
