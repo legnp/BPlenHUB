@@ -80,7 +80,8 @@ export const masterCvSurvey: SurveyConfig = {
           id: "hard_skills",
           type: "multi_select",
           label: "Hard Skills e Ferramentas",
-          placeholder: "Quais softwares e ferramentas você domina? (ex: Excel, Power BI, Salesforce). Sempre que possível, escreva a sigla e o nome por extenso, como \"AWS (Amazon Web Services)\", para garantir que os algoritmos ATS te encontrem independente de como o recrutador digitar.",
+          placeholder: "Adicione softwares, linguagens e ferramentas...",
+          description: "Quais softwares e ferramentas você domina? (ex: Excel, Power BI, Salesforce). Sempre que possível, escreva a sigla e o nome por extenso, como \"AWS (Amazon Web Services)\", para garantir que os algoritmos ATS te encontrem independente de como o recrutador digitar.",
           required: true,
           validation: { maxSelections: 10 },
           cols: 2
@@ -89,7 +90,8 @@ export const masterCvSurvey: SurveyConfig = {
           id: "metodologias",
           type: "multi_select",
           label: "Metodologias e Jargões do seu Setor",
-          placeholder: "Ex: Metodologia Ágil, Scrum, Lean Six Sigma, B2B, B2C. Da mesma forma, sempre que possível, escreva a sigla e o nome por extenso.",
+          placeholder: "Adicione metodologias, frameworks e jargões...",
+          description: "Ex: Metodologia Ágil, Scrum, Lean Six Sigma, B2B, B2C. Da mesma forma, sempre que possível, escreva a sigla e o nome por extenso.",
           required: true,
           validation: { maxSelections: 10 },
           cols: 2

@@ -51,6 +51,7 @@ export interface SurveyFieldConfig {
   subFields?: SurveyFieldConfig[]; // Utilizado pelo tipo dynamic_list para renderizar as linhas de loop
   label?: string;
   placeholder?: string;
+  description?: string;
   options?: string[] | { label: string; value: string; subOptions?: string[] }[]; 
   required?: boolean;
   autoFocus?: boolean;

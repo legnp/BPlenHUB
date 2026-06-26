@@ -782,9 +782,14 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
         return (
           <div className="space-y-4">
             {field.label && (
-              <label className="text-xs font-bold uppercase tracking-tight text-[var(--text-muted)] ml-1 block mb-2">
+              <label className="text-xs font-bold uppercase tracking-tight text-[var(--text-muted)] ml-1 block mb-1">
                 {field.label}
               </label>
+            )}
+            {field.description && (
+              <p className="text-xs text-[var(--text-muted)]/75 ml-1 block leading-relaxed max-w-2xl mb-2">
+                {field.description}
+              </p>
             )}
             <MultiSelect
               options={field.options as string[]}
