@@ -123,14 +123,39 @@ export const masterCvSurvey: SurveyConfig = {
           type: "dynamic_list",
           secondaryLabel: "Adicionar Nova Experiência",
           subFields: [
-            { id: "cargo", type: "text", label: "Qual era o seu Cargo? (ex: Gerente de Projetos)", required: true },
-            { id: "empresa", type: "text", label: "Em qual Empresa?", required: true },
-            { id: "periodo", type: "text", label: "Qual o Período? (Mês/Ano de Início até Mês/Ano de Término ou \"Atual\"). Use o formato com dois dígitos para o mês e quatro para o ano (ex: 03/2022 a 05/2023) para que os sistemas leiam corretamente a sua linha do tempo.", placeholder: "03/2022 a 05/2023", required: true },
-            { id: "contexto", type: "textarea", label: "Contexto da Posição. Em 3 linhas, qual era o tamanho da empresa, da sua equipe ou do orçamento que você geria? Dica extra: Qual cenário exato você herdou ao assumir esta cadeira? Você entrou para fazer uma \"Reestruturação/Turnaround\" (apagar incêndios e cortar custos), para \"Sustentar o Sucesso\" de uma área que já ia bem, ou para estruturar uma \"Startup/Nova Função\" do zero?", required: true },
+            { 
+              id: "cargo", 
+              type: "text", 
+              label: "Qual era o seu Cargo?", 
+              placeholder: "Ex: Gerente de Projetos, Analista de RH...", 
+              required: true 
+            },
+            { 
+              id: "empresa", 
+              type: "text", 
+              label: "Em qual Empresa?", 
+              placeholder: "Nome da empresa...", 
+              required: true 
+            },
+            { 
+              id: "periodo", 
+              type: "text", 
+              label: "Qual o Período?", 
+              description: "Informe o mês e o ano com dois e quatro dígitos respectivamente (ex: 03/2022). Se este for o seu emprego atual, marque a caixa correspondente.", 
+              required: true 
+            },
+            { 
+              id: "contexto", 
+              type: "textarea", 
+              label: "Contexto da Posição", 
+              description: "Em até 3 linhas, qual era o tamanho da empresa, da sua equipe ou do orçamento que você geria?\n\nDica extra: Qual cenário exato você herdou ao assumir esta cadeira? Você entrou para fazer uma \"Reestruturação/Turnaround\" (apagar incêndios e cortar custos), para \"Sustentar o Sucesso\" de uma área que já ia bem, ou para estruturar uma \"Startup/Nova Função\" do zero?", 
+              required: true 
+            },
             { 
               id: "conquistas", 
               type: "dynamic_list", 
-              label: "Quais foram suas conquistas? Adicione uma conquista por vez. Não liste tarefas cotidianas, liste resultados quantificáveis. Dica Extra: Elabore cada uma das conquistas, utilizando o framework a seguir: 1) O que foi feito? (Ex: Implementação, redução, transformação); 2) Quais foram os resultados? (O que mudou após o que foi feito?); 3) Escopo (Essa mudança afetou somente a área, a empresa, o mercado a performance da equipe?); 4) Qual era a sua unica principal função nessa conquista? (Ex: Criar processo x, mediar reuniões, estruturar relatório); 5) Como você executou essa função? (Quais ferramentas, métodos, habilidades, conhecimentos você aplicou?). Exemplo: \"1) Redução de x% no 2) tempo do 3) processo X, 4) liderando a 5) implementação do software X\" -> \"Redução de x% no tempo do processo X, liderando a implementação do software X\"",
+              label: "Quais foram suas conquistas?", 
+              description: "Adicione uma conquista por vez. Não liste tarefas cotidianas, liste resultados quantificáveis.\n\nDica Extra — Framework de Conquistas:\n1) O que foi feito? (Ex: Implementação, redução, transformação)\n2) Quais foram os resultados? (O que mudou após o que foi feito?)\n3) Escopo (Essa mudança afetou somente a área, a empresa, o mercado ou a performance da equipe?)\n4) Qual era a sua única principal função nessa conquista? (Ex: Criar processo x, mediar reuniões, estruturar relatório)\n5) Como você executou essa função? (Quais ferramentas, métodos, habilidades, conhecimentos você aplicou?)\n\nExemplo: \"Redução de X% no tempo do processo X, liderando a implementação do software X.\"",
               secondaryLabel: "Adicionar Conquista",
               subFields: [
                 { id: "conquista", type: "text", label: "Descreva a conquista", required: true }
@@ -174,14 +199,39 @@ export const masterCvSurvey: SurveyConfig = {
           type: "dynamic_list",
           secondaryLabel: "Adicionar Projeto/Certificação",
           subFields: [
-            { id: "nome", type: "text", label: "Nome (do projeto/certificação)", required: true },
-            { id: "instituicao", type: "text", label: "Instituição Emissora ou Local", required: true },
-            { id: "data", type: "text", label: "Data de Conclusão (MM/AAAA)", required: true },
-            { id: "objetivo", type: "textarea", label: "Descreva o objetivo geral (do projeto certificado) e se estava relacionado com alguma função ou lugar onde trabalhou.", required: true },
+            { 
+              id: "nome", 
+              type: "text", 
+              label: "Nome do Projeto ou Certificação", 
+              placeholder: "Ex: Certificação Scrum Master, Voluntariado...", 
+              required: true 
+            },
+            { 
+              id: "instituicao", 
+              type: "text", 
+              label: "Instituição Emissora ou Local", 
+              placeholder: "Nome da instituição...", 
+              required: true 
+            },
+            { 
+              id: "data", 
+              type: "text", 
+              label: "Data de Conclusão (MM/AAAA)", 
+              placeholder: "Ex: 12/2025", 
+              required: true 
+            },
+            { 
+              id: "objetivo", 
+              type: "textarea", 
+              label: "Objetivo do Projeto ou Certificação", 
+              description: "Descreva o objetivo geral e se estava relacionado com alguma função ou lugar onde trabalhou.", 
+              required: true 
+            },
             { 
               id: "conquistas", 
               type: "dynamic_list", 
-              label: "Quais foram suas conquistas? Adicione uma conquista por vez. Não liste tarefas, liste resultados quantificáveis. Lembre-se do exemplo de como contar suas conquistas: \"1) Redução de x% no 2) tempo do 3) processo X, 4) liderando a 5) implementação do software X\" -> \"Redução de x% no tempo do processo X, liderando a implementação do software X\"",
+              label: "Quais foram suas conquistas?", 
+              description: "Adicione uma conquista por vez. Não liste tarefas cotidianas, liste resultados quantificáveis.\n\nDica Extra — Framework de Conquistas:\n1) O que foi feito? (Ex: Implementação, redução, transformação)\n2) Quais foram os resultados? (O que mudou após o que foi feito?)\n3) Escopo (Essa mudança afetou somente a área, a empresa, o mercado ou a performance da equipe?)\n4) Qual era a sua única principal função nessa conquista? (Ex: Criar processo x, mediar reuniões, estruturar relatório)\n5) Como você executou essa função? (Quais ferramentas, métodos, habilidades, conhecimentos você aplicou?)\n\nExemplo: \"Redução de X% no tempo do processo X, liderando a implementação do software X.\"",
               secondaryLabel: "Adicionar Conquista",
               subFields: [
                 { id: "conquista", type: "text", label: "Descreva a conquista", required: true }
