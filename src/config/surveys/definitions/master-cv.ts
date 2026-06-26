@@ -27,7 +27,7 @@ export const masterCvSurvey: SurveyConfig = {
     {
       id: "tela3_identificacao",
       question: "Identificação: Quem é você?",
-      description: "Para CVs Não solicitamos foto, idade, estado civil ou CPF. Nos mercados do Brasil e do Chile (assim como em multinacionais), esses dados são considerados obsoletos e abrem margem para vieses e discriminação.",
+      description: "Para CVs não solicitamos foto, idade, estado civil ou CPF. Nos mercados do Brasil e do Chile (assim como em multinacionais), esses dados são considerados obsoletos e abrem margem para vieses e discriminação.",
       fields: [
         {
           id: "nome_completo",
@@ -74,27 +74,32 @@ export const masterCvSurvey: SurveyConfig = {
     {
       id: "tela4_palavras_chave",
       question: "Palavras-Chave: Facilite recrutadores e robôs te localizarem.",
+      layout: "split-columns",
       fields: [
         {
           id: "hard_skills",
-          type: "textarea",
+          type: "multi_select",
           label: "Hard Skills e Ferramentas",
-          placeholder: "Quais softwares e ferramentas você domina? (ex: Excel, Power BI, Salesforce). Sempre que possível, escreva a sigla e o nome por extenso.",
-          required: true
+          placeholder: "Quais softwares e ferramentas você domina? (ex: Excel, Power BI, Salesforce). Sempre que possível, escreva a sigla e o nome por extenso, como \"AWS (Amazon Web Services)\", para garantir que os algoritmos ATS te encontrem independente de como o recrutador digitar.",
+          required: true,
+          validation: { maxSelections: 10 },
+          cols: 2
         },
         {
           id: "metodologias",
-          type: "textarea",
+          type: "multi_select",
           label: "Metodologias e Jargões do seu Setor",
           placeholder: "Ex: Metodologia Ágil, Scrum, Lean Six Sigma, B2B, B2C. Da mesma forma, sempre que possível, escreva a sigla e o nome por extenso.",
-          required: true
+          required: true,
+          validation: { maxSelections: 10 },
+          cols: 2
         }
       ]
     },
     {
       id: "tela5_resumo",
       question: "Resumo Profissional: Qual é a história da sua trajetória profissional?",
-      description: "Escreva de 3 a 5 parágrafos. Conte sua história de forma coesa, destacando seu posicionamento, metodologias que domina e resultados que já alcançou.\n\n**Dicas:**\n• Conte sua história com começo, meio, fim e próximos passos;\n• Qual foi o maior desafio ou crise que pediram para você resolver em sua carreira? (Desafio-Ação-Resultado);\n• Como seus pares ou líderes descreveriam o seu \"superpoder\" ou principal diferencial técnico no dia a dia?;\n• Qual o contraste entre \"como a área era antes de você\" e \"como ela ficou depois\"?;\n• Se você tivesse que definir o impacto final do seu trabalho no negócio, qual seria?",
+      description: "Escreva de 3 a 5 parágrafos. Conte sua história de forma coesa, destacando seu posicionamento, metodologias que domina e resultados que já alcançou.\n\n**Dicas:**\n• Conte sua história com começo, meio, fim e próximos passos (para os próximos passos, você pode basear-se em seu PDI: qual é seu objetivo de carreira?);\n• Qual foi o maior desafio ou crise que pediram para você resolver em sua carreira? (Descreva: Desafio-Ação-Resultado);\n• Como seus pares ou líderes descreveriam o seu \"superpoder\" ou principal diferencial técnico no dia a dia?;\n• Qual o contraste entre \"como a área era antes de você\" e \"como ela ficou depois\"?;\n• Se você tivesse que definir o impacto final do seu trabalho no negócio (lucro, redução de atrito, ganho de eficiência, transformação cultural), qual seria?",
       fields: [
         {
           id: "resumo_profissional",
@@ -107,18 +112,26 @@ export const masterCvSurvey: SurveyConfig = {
     {
       id: "tela6_historico",
       question: "Histórico Profissional: Quais são os fatos e dados da sua trajetória profissional?",
-      description: "Adicione as suas experiências. Lembre-se de não listar tarefas cotidianas, liste resultados quantificáveis. Para elaborar conquistas, use o framework:\n\n1) O que foi feito? + 2) Quais foram os resultados? + 3) Escopo + 4) Qual era a sua principal função? + 5) Como você executou essa função?\n\nExemplo: \"Redução de x% no tempo do processo X, liderando a implementação do software X\"",
+      description: "A seguir adicione o histórico da sua experiência profissional. Leia atentamente as instruções para cada campo, e cuide da ortografia.",
       fields: [
         {
           id: "experiencias",
           type: "dynamic_list",
           secondaryLabel: "Adicionar Nova Experiência",
           subFields: [
-            { id: "cargo", type: "text", label: "Qual era o seu Cargo?", required: true },
+            { id: "cargo", type: "text", label: "Qual era o seu Cargo? (ex: Gerente de Projetos)", required: true },
             { id: "empresa", type: "text", label: "Em qual Empresa?", required: true },
-            { id: "periodo", type: "text", label: "Período (MM/AAAA a MM/AAAA ou Atual)", placeholder: "03/2022 a 05/2023", required: true },
-            { id: "contexto", type: "textarea", label: "Contexto da Posição (Tamanho da empresa, equipe, cenário herdado)", required: true },
-            { id: "conquistas", type: "textarea", label: "Conquistas (Liste usando o framework sugerido)", required: true }
+            { id: "periodo", type: "text", label: "Qual o Período? (Mês/Ano de Início até Mês/Ano de Término ou \"Atual\"). Use o formato com dois dígitos para o mês e quatro para o ano (ex: 03/2022 a 05/2023) para que os sistemas leiam corretamente a sua linha do tempo.", placeholder: "03/2022 a 05/2023", required: true },
+            { id: "contexto", type: "textarea", label: "Contexto da Posição. Em 3 linhas, qual era o tamanho da empresa, da sua equipe ou do orçamento que você geria? Dica extra: Qual cenário exato você herdou ao assumir esta cadeira? Você entrou para fazer uma \"Reestruturação/Turnaround\" (apagar incêndios e cortar custos), para \"Sustentar o Sucesso\" de uma área que já ia bem, ou para estruturar uma \"Startup/Nova Função\" do zero?", required: true },
+            { 
+              id: "conquistas", 
+              type: "dynamic_list", 
+              label: "Quais foram suas conquistas? Adicione uma conquista por vez. Não liste tarefas cotidianas, liste resultados quantificáveis. Dica Extra: Elabore cada uma das conquistas, utilizando o framework a seguir: 1) O que foi feito? (Ex: Implementação, redução, transformação); 2) Quais foram os resultados? (O que mudou após o que foi feito?); 3) Escopo (Essa mudança afetou somente a área, a empresa, o mercado a performance da equipe?); 4) Qual era a sua unica principal função nessa conquista? (Ex: Criar processo x, mediar reuniões, estruturar relatório); 5) Como você executou essa função? (Quais ferramentas, métodos, habilidades, conhecimentos você aplicou?). Exemplo: \"1) Redução de x% no 2) tempo do 3) processo X, 4) liderando a 5) implementação do software X\" -> \"Redução de x% no tempo do processo X, liderando a implementação do software X\"",
+              secondaryLabel: "Adicionar Conquista",
+              subFields: [
+                { id: "conquista", type: "text", label: "Descreva a conquista", required: true }
+              ]
+            }
           ]
         }
       ]
@@ -134,7 +147,7 @@ export const masterCvSurvey: SurveyConfig = {
           subFields: [
             { 
               id: "grau", 
-              type: "choice", 
+              type: "dropdown", 
               label: "Grau de Formação", 
               options: ["Técnico", "Tecnólogo", "Bacharelado", "Licenciatura", "Especialização/Pós-graduação", "MBA", "Mestrado", "Doutorado", "Pós-doutorado"],
               required: true 
@@ -142,7 +155,7 @@ export const masterCvSurvey: SurveyConfig = {
             { id: "curso", type: "text", label: "Nome do Curso", required: true },
             { id: "instituicao", type: "text", label: "Instituição de Ensino", required: true },
             { id: "ano_conclusao", type: "text", label: "Ano de Conclusão (ou Previsão - MM/AAAA)", required: true },
-            { id: "destaques", type: "textarea", label: "Destaques e Projetos (Opcional)", required: false }
+            { id: "destaques", type: "textarea", label: "Em caso de conquistas, destaques, projetos, descreva-os:", required: false }
           ]
         }
       ]
@@ -160,8 +173,16 @@ export const masterCvSurvey: SurveyConfig = {
             { id: "nome", type: "text", label: "Nome (do projeto/certificação)", required: true },
             { id: "instituicao", type: "text", label: "Instituição Emissora ou Local", required: true },
             { id: "data", type: "text", label: "Data de Conclusão (MM/AAAA)", required: true },
-            { id: "objetivo", type: "textarea", label: "Objetivo Geral", required: true },
-            { id: "conquistas", type: "textarea", label: "Conquistas e Resultados Quantificáveis", required: false }
+            { id: "objetivo", type: "textarea", label: "Descreva o objetivo geral (do projeto certificado) e se estava relacionado com alguma função ou lugar onde trabalhou.", required: true },
+            { 
+              id: "conquistas", 
+              type: "dynamic_list", 
+              label: "Quais foram suas conquistas? Adicione uma conquista por vez. Não liste tarefas, liste resultados quantificáveis. Lembre-se do exemplo de como contar suas conquistas: \"1) Redução de x% no 2) tempo do 3) processo X, 4) liderando a 5) implementação do software X\" -> \"Redução de x% no tempo do processo X, liderando a implementação do software X\"",
+              secondaryLabel: "Adicionar Conquista",
+              subFields: [
+                { id: "conquista", type: "text", label: "Descreva a conquista", required: true }
+              ]
+            }
           ]
         }
       ]
@@ -169,7 +190,7 @@ export const masterCvSurvey: SurveyConfig = {
     {
       id: "tela9_conclusao",
       question: "Tudo pronto!",
-      description: "{{User_Nickname}}, o seu Master CV está criado.\n\nClique no botão abaixo para gerar o documento e fazer download. Ele será baixado como um arquivo Word (.docx) estruturado em uma coluna única, perfeito para extrair as partes importantes para candidaturas futuras e amigável para os robôs ATS.",
+      description: "{{User_Nickname}}, o seu Master CV está criado.\n\nClique no botão abaixo para gerar o documento e fazer dowload. \nEle será baixado como um arquivo Word (.docx) estruturado em uma coluna única, com fontes tradicionais (como Calibri ou Arial entre 10pt e 12pt) e margens padronizadas.\nEsse formato \"limpo\" foi feito de propósito: ele evita que tabelas, colunas duplas ou caixas de texto quebrem a leitura dos robôs quando você for extrair as partes importantes para candidaturas futuras.",
       nextLabel: "Quero meu Master CV", // Não exibe nativamente um campo export DOCX, mas usaremos onComplete
       fields: []
     }
