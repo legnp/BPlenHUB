@@ -206,7 +206,23 @@
         "referenceId": "master_cv",
         "title": "Revisão e elaboração de CV",
         "description": "Central de do histórico profissional",
-        "order": "3"
+        "order": "3.1"
+      },
+      {
+        "id": "ss-survey-cv_focado",
+        "type": "survey",
+        "referenceId": "cv_focado",
+        "title": "Revisão e elaboração de CV",
+        "description": "Adaptação do CV com foco no objetivo pretendido",
+        "order": "3.2"
+      },
+      {
+        "id": "ss-survey-perfil_profissional_publico",
+        "type": "survey",
+        "referenceId": "perfil_profissional_publico",
+        "title": "Revisão e elaboração de CV",
+        "description": "Aplicação do CV nos perfis profissionais online",
+        "order": "3.3"
       },
       {
         "id": "ss-survey-pendente",
@@ -241,6 +257,8 @@
         "survey_pdi_fase3",
         "survey_pdi_fase4",
         "master_cv",
+        "cv_focado",
+        "perfil_profissional_publico",
         "pendente",
         "pre_analise_comportamental",
         "orientacao-individual-posicionamento"

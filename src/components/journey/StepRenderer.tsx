@@ -163,6 +163,8 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
   const [isSurveyCompletedInDb, setIsSurveyCompletedInDb] = React.useState(false);
   const [checkingSurvey, setCheckingSurvey] = React.useState(false);
   const [isDownloadingPdi, setIsDownloadingPdi] = React.useState(false);
+  const [isDownloadingMasterCv, setIsDownloadingMasterCv] = React.useState(false);
+  const [isDownloadingCvFocado, setIsDownloadingCvFocado] = React.useState(false);
 
   const handleDownloadPdi = async () => {
     if (!matricula) return;
@@ -183,6 +185,48 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
       alert("Houve um erro ao gerar o documento do seu PDI. Tente novamente.");
     } finally {
       setIsDownloadingPdi(false);
+    }
+  };
+
+  const handleDownloadMasterCv = async () => {
+    if (!matricula) return;
+    setIsDownloadingMasterCv(true);
+    try {
+      const { getPreviousSurveysDataAction } = await import("@/actions/submit-survey");
+      const responses = await getPreviousSurveysDataAction(matricula);
+      const masterCvResponses = responses["master_cv"] as any;
+      if (!masterCvResponses) {
+        alert("Não foi possível encontrar as respostas do seu Master CV.");
+        return;
+      }
+      const { generateMasterCvDocx } = await import("@/lib/docx-generator");
+      await generateMasterCvDocx(masterCvResponses, nickname || "Membro");
+    } catch (err) {
+      console.error("Erro ao baixar Master CV:", err);
+      alert("Houve um erro ao gerar o documento do seu Master CV. Tente novamente.");
+    } finally {
+      setIsDownloadingMasterCv(false);
+    }
+  };
+
+  const handleDownloadCvFocado = async () => {
+    if (!matricula) return;
+    setIsDownloadingCvFocado(true);
+    try {
+      const { getPreviousSurveysDataAction } = await import("@/actions/submit-survey");
+      const responses = await getPreviousSurveysDataAction(matricula);
+      const cvFocadoResponses = responses["cv_focado"] as any;
+      if (!cvFocadoResponses) {
+        alert("Não foi possível encontrar as respostas do seu CV Focado.");
+        return;
+      }
+      const { generateCvFocadoDocx } = await import("@/lib/docx-generator");
+      await generateCvFocadoDocx(cvFocadoResponses, nickname || "Membro");
+    } catch (err) {
+      console.error("Erro ao baixar CV Focado:", err);
+      alert("Houve um erro ao gerar o documento do seu CV Focado. Tente novamente.");
+    } finally {
+      setIsDownloadingCvFocado(false);
     }
   };
 
@@ -391,6 +435,34 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
                            <span>{isDownloadingPdi ? "Gerando PDI..." : "Baixar PDI (.docx)"}</span>
                         </button>
                      )}
+                     {substep.referenceId === "master_cv" && (
+                        <button
+                           onClick={handleDownloadMasterCv}
+                           disabled={isDownloadingMasterCv}
+                           className="group relative flex items-center gap-3 px-8 py-3.5 bg-[var(--accent-start)] hover:bg-[var(--accent-end)] text-white rounded-full text-[10px] font-black uppercase tracking-wider transition-all shadow-lg hover:scale-105 active:scale-95 disabled:opacity-50 cursor-pointer"
+                        >
+                           {isDownloadingMasterCv ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                           ) : (
+                              <FileText size={14} />
+                           )}
+                           <span>{isDownloadingMasterCv ? "Gerando Master CV..." : "Baixar Master CV (.docx)"}</span>
+                        </button>
+                     )}
+                     {substep.referenceId === "cv_focado" && (
+                        <button
+                           onClick={handleDownloadCvFocado}
+                           disabled={isDownloadingCvFocado}
+                           className="group relative flex items-center gap-3 px-8 py-3.5 bg-[var(--accent-start)] hover:bg-[var(--accent-end)] text-white rounded-full text-[10px] font-black uppercase tracking-wider transition-all shadow-lg hover:scale-105 active:scale-95 disabled:opacity-50 cursor-pointer"
+                        >
+                           {isDownloadingCvFocado ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                           ) : (
+                              <FileText size={14} />
+                           )}
+                           <span>{isDownloadingCvFocado ? "Gerando CV Focado..." : "Baixar CV Focado (.docx)"}</span>
+                        </button>
+                     )}
                     </div>
 
                     <ConfettiCheckbox 
@@ -468,6 +540,34 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
                                 <FileText size={14} className="text-[var(--accent-start)]" />
                              )}
                              <span>{isDownloadingPdi ? "Gerando PDI..." : "Baixar PDI (.docx)"}</span>
+                          </button>
+                       )}
+                       {substep.referenceId === "master_cv" && (
+                          <button
+                             onClick={handleDownloadMasterCv}
+                             disabled={isDownloadingMasterCv}
+                             className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-start)] hover:text-[var(--accent-end)] transition-colors flex items-center gap-2 disabled:opacity-50 group cursor-pointer"
+                          >
+                             {isDownloadingMasterCv ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin text-[var(--accent-start)]" />
+                             ) : (
+                                <FileText size={14} className="text-[var(--accent-start)]" />
+                             )}
+                             <span>{isDownloadingMasterCv ? "Gerando Master CV..." : "Baixar Master CV (.docx)"}</span>
+                          </button>
+                       )}
+                       {substep.referenceId === "cv_focado" && (
+                          <button
+                             onClick={handleDownloadCvFocado}
+                             disabled={isDownloadingCvFocado}
+                             className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-start)] hover:text-[var(--accent-end)] transition-colors flex items-center gap-2 disabled:opacity-50 group cursor-pointer"
+                          >
+                             {isDownloadingCvFocado ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin text-[var(--accent-start)]" />
+                             ) : (
+                                <FileText size={14} className="text-[var(--accent-start)]" />
+                             )}
+                             <span>{isDownloadingCvFocado ? "Gerando CV Focado..." : "Baixar CV Focado (.docx)"}</span>
                           </button>
                        )}
                     </div>
