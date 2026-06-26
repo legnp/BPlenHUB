@@ -183,7 +183,13 @@ export const masterCvSurvey: SurveyConfig = {
             },
             { id: "curso", type: "text", label: "Nome do Curso", required: true },
             { id: "instituicao", type: "text", label: "Instituição de Ensino", required: true },
-            { id: "ano_conclusao", type: "text", label: "Ano de Conclusão (ou Previsão - MM/AAAA)", required: true },
+            { 
+              id: "ano_conclusao", 
+              type: "text", 
+              label: "Período do Curso", 
+              description: "Informe o mês e o ano de início e conclusão (ex: 03/2022). Se o curso ainda estiver em andamento, marque a caixa correspondente.", 
+              required: true 
+            },
             { id: "destaques", type: "textarea", label: "Em caso de conquistas, destaques, projetos, descreva-os:", required: false }
           ]
         }

@@ -81,8 +81,8 @@ export function DynamicList({ field, value = [], onChange }: DynamicListProps) {
                 </>
               );
 
-              // Renderização Especial para Período (Data de Início, Data de Término e Trabalho Atual side-by-side)
-              if (subField.id === "periodo") {
+              // Renderização Especial para Período (Data de Início, Data de Término e Trabalho Atual/Em andamento side-by-side)
+              if (subField.id === "periodo" || subField.id === "ano_conclusao") {
                 const parts = typeof val === "string" ? val.split(" a ") : [];
                 const startVal = parts[0] || "";
                 const endVal = parts[1] || "";
@@ -106,6 +106,8 @@ export function DynamicList({ field, value = [], onChange }: DynamicListProps) {
                     handleChange(index, subField.id, `${startVal} a `);
                   }
                 };
+
+                const checkboxLabel = subField.id === "ano_conclusao" ? "Em andamento" : "Trabalho atual";
 
                 return (
                   <div key={subField.id} className="col-span-1 md:col-span-2 space-y-3 pt-1">
@@ -144,16 +146,16 @@ export function DynamicList({ field, value = [], onChange }: DynamicListProps) {
                       <div className="flex items-center gap-2 pt-5 sm:pt-4 ml-1">
                         <input
                           type="checkbox"
-                          id={`atual-${index}`}
+                          id={`${subField.id}-atual-${index}`}
                           checked={isCurrent}
                           onChange={(e) => handleCurrentChange(e.target.checked)}
                           className="w-4.5 h-4.5 rounded border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--accent-start)] focus:ring-[var(--accent-start)]/50 cursor-pointer accent-[var(--accent-start)]"
                         />
                         <label
-                          htmlFor={`atual-${index}`}
+                          htmlFor={`${subField.id}-atual-${index}`}
                           className="text-xs font-semibold text-[var(--text-primary)] cursor-pointer select-none"
                         >
-                          Trabalho atual
+                          {checkboxLabel}
                         </label>
                       </div>
                     </div>
@@ -175,28 +177,35 @@ export function DynamicList({ field, value = [], onChange }: DynamicListProps) {
                 );
               }
 
-              if (subField.type === "choice") {
+              if (subField.type === "choice" || subField.type === "dropdown") {
                 return (
                   <div key={subField.id} className="space-y-2 pt-1">
                     {renderLabelAndDesc()}
-                    <select
-                      className="w-full bg-[var(--input-bg)] border border-[var(--input-border)] rounded-xl px-4 py-3 text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-start)] transition-colors appearance-none cursor-pointer"
-                      value={val as string}
-                      onChange={(e) => handleChange(index, subField.id, e.target.value)}
-                    >
-                      <option value="" disabled className="bg-[var(--bg-primary)] text-[var(--text-primary)]">
-                        Selecione...
-                      </option>
-                      {subField.options?.map((opt, i) => {
-                        const optLabel = typeof opt === "string" ? opt : opt.label;
-                        const optValue = typeof opt === "string" ? opt : opt.value;
-                        return (
-                          <option key={i} value={optValue} className="bg-[var(--bg-primary)] text-[var(--text-primary)]">
-                            {optLabel}
-                          </option>
-                        );
-                      })}
-                    </select>
+                    <div className="relative">
+                      <select
+                        className="w-full bg-[var(--input-bg)] border border-[var(--input-border)] rounded-xl px-4 py-3 pr-10 text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-start)] transition-all appearance-none cursor-pointer"
+                        value={val as string}
+                        onChange={(e) => handleChange(index, subField.id, e.target.value)}
+                      >
+                        <option value="" disabled className="bg-[var(--bg-primary)] text-[var(--text-primary)]">
+                          Selecione...
+                        </option>
+                        {subField.options?.map((opt, i) => {
+                          const optLabel = typeof opt === "string" ? opt : opt.label;
+                          const optValue = typeof opt === "string" ? opt : opt.value;
+                          return (
+                            <option key={i} value={optValue} className="bg-[var(--bg-primary)] text-[var(--text-primary)]">
+                              {optLabel}
+                            </option>
+                          );
+                        })}
+                      </select>
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-50 text-[var(--text-primary)]">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                      </div>
+                    </div>
                   </div>
                 );
               }
