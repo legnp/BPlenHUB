@@ -74,13 +74,8 @@ function isAtaOrFeedbackMatch(activityTitle: string, refId: string, itemTitle: s
   return false;
 }
 
-function getActivityName(type: string, _refId: string, defaultTitle: string): string {
-  // Fonte única de verdade: título vindo do Excel/banco (deliverySteps)
-  // Para meetings, adiciona o prefixo "Reunião de"
-  if (type === "meeting") {
-    return `Reunião de ${defaultTitle}`;
-  }
-
+function getActivityName(_type: string, _refId: string, defaultTitle: string): string {
+  // Fonte única de verdade: descrição vinda do Excel/banco (deliverySteps.description)
   return defaultTitle;
 }
 
@@ -194,7 +189,7 @@ export default function VisaoGeralPage() {
           status = "pending";
         }
 
-        const friendlyTitle = getActivityName(sub.type, sub.referenceId, sub.title);
+        const friendlyTitle = getActivityName(sub.type, sub.referenceId, sub.description || sub.title);
 
         // Correlacionar atas e feedbacks usando o titulo amigavel
         let documentUrl: string | undefined = undefined;
