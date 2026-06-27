@@ -1,6 +1,6 @@
 import { getDriveClient, getSheetsClient } from "@/lib/google-auth";
 import { serverEnv } from "@/env";
-import { ensureFolder, createSpreadsheet, getOrCreateSpreadsheet, syncDataToSheet, appendDataToSheet, getStandardFolderWithHealing, DRIVE_FOLDERS, LEGACY_FOLDERS } from "@/lib/drive-utils";
+import { ensureFolder, createSpreadsheet, getOrCreateSpreadsheet, syncDataToSheet, appendDataToSheet, getStandardFolderWithHealing, uploadFileToDrive, DRIVE_FOLDERS, LEGACY_FOLDERS } from "@/lib/drive-utils";
 
 /**
  * BPlen HUB — Drive Sync Service (🏁)
@@ -153,4 +153,67 @@ export async function syncBacklogToUserDrive(matricula: string, rowData: (string
     throw err;
   }
 }
+
+/**
+ * 📝 Salva o Termo de Aceite de Cupom de Desconto na pasta do usuário.
+ * Governança: sem emojis nos logs de console e erros.
+ */
+export async function syncCouponAcceptanceToDrive(
+  matricula: string,
+  couponCode: string,
+  termText: string,
+  details: {
+    cpfHash: string;
+    acceptedAt: Date;
+    ipAddress?: string;
+  }
+): Promise<{ id: string; webViewLink: string }> {
+  try {
+    const drive = await getDriveClient();
+    const userFolderId = await getUserRootFolder(matricula);
+
+    const docsFolderId = await getStandardFolderWithHealing(
+      drive,
+      userFolderId,
+      DRIVE_FOLDERS.DOCUMENTOS,
+      LEGACY_FOLDERS.DOCUMENTOS
+    );
+
+    const fileName = `Aceite_Termos_Cupom_${couponCode}`;
+    const timestampStr = details.acceptedAt.toISOString();
+
+    const fileContent = `==================================================
+COMPROVANTE DE ACEITE DIGITAL DE TERMO E CONDICOES
+==================================================
+
+Identificacao do Membro:
+- Matricula: ${matricula}
+- Codigo do Cupom: ${couponCode}
+- Hash de Identificacao (CPF): ${details.cpfHash}
+- Data/Hora do Aceite: ${timestampStr}
+- Endereco IP (se disponivel): ${details.ipAddress || "N/A"}
+
+--------------------------------------------------
+TEXTO INTEGRAL DOS TERMOS ACEITOS
+--------------------------------------------------
+${termText}
+==================================================
+`;
+
+    const result = await uploadFileToDrive(
+      drive,
+      docsFolderId,
+      `${fileName}.txt`,
+      "text/plain",
+      fileContent
+    );
+
+    console.log(`[DriveSync:Coupon] Comprovante de aceite enviado ao Drive para matricula: ${matricula}`);
+    return result;
+  } catch (err) {
+    console.error(`[DriveSync:Coupon] Falha ao sincronizar comprovante de termos:`, err);
+    throw err;
+  }
+}
+
 

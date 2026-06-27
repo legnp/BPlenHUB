@@ -111,5 +111,31 @@ export async function grantServiceEntitlement(params: GrantEntitlementParams) {
     console.error("🚨 [Entitlement] Erro ao depositar cotas:", error);
   }
 
+  // 🎟️ Marca o cupom V2 como utilizado se houver couponCode na ordem correspondente
+  if (finalOrderId) {
+    try {
+      const orderSnap = await db.collection("User_Orders").doc(finalOrderId).get();
+      if (orderSnap.exists) {
+        const orderData = orderSnap.data();
+        if (orderData?.couponCode) {
+          const { COUPONS_V2_COLLECTION } = await import("@/config/collections");
+          const couponSnap = await db.collection(COUPONS_V2_COLLECTION)
+            .where("code", "==", orderData.couponCode.toUpperCase().trim())
+            .limit(1)
+            .get();
+          if (!couponSnap.empty) {
+            await couponSnap.docs[0].ref.update({
+              isUsedInOrder: true,
+              orderId: finalOrderId
+            });
+            console.log(`[Entitlement] Cupom V2 ${orderData.couponCode} marcado como utilizado na ordem ${finalOrderId}`);
+          }
+        }
+      }
+    } catch (couponErr) {
+      console.error("[Entitlement] Erro ao processar utilizacao de cupom V2:", couponErr);
+    }
+  }
+
   return transactionResult;
 }

@@ -7,6 +7,7 @@ import { useAuthContext } from "@/context/AuthContext";
 import { ShoppingBag, ShieldCheck, Zap, Info, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { RegistrationStep } from "./RegistrationStep";
+import { CouponInput } from "./CouponInput";
 
 interface CheckoutFlowProps {
   product: {
@@ -28,8 +29,15 @@ export function CheckoutFlow({ product }: CheckoutFlowProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // states for V2 Coupon integration
+  const [discount, setDiscount] = useState(0); // e.g. 0.4 for 40% OFF
+  const [couponCode, setCouponCode] = useState<string | null>(null);
+
+  const discountAmount = product.price * discount;
+  const finalPrice = Math.max(0, product.price - discountAmount);
+
   async function handleInitCheckout() {
-    if (product.price === 0) {
+    if (finalPrice === 0) {
       setStep("free_activation");
       return;
     }
@@ -41,7 +49,7 @@ export function CheckoutFlow({ product }: CheckoutFlowProps) {
       
       const token = await user.getIdToken();
       setIdToken(token);
-      const result = await createPreferenceAction(product.slug, token);
+      const result = await createPreferenceAction(product.slug, token, couponCode || undefined);
 
       if (result.success && result.preferenceId && result.orderId) {
         setPreferenceId(result.preferenceId);
@@ -66,7 +74,7 @@ export function CheckoutFlow({ product }: CheckoutFlowProps) {
       const { processServicePurchaseAction } = await import("@/actions/checkout");
       
       // Call backend with legalConsent = true
-      const result = await processServicePurchaseAction(product.slug, token, undefined, true);
+      const result = await processServicePurchaseAction(product.slug, token, couponCode || undefined, true);
       
       if (result.success && result.orderId) {
          window.location.href = `/hub/membro/checkout/success?orderId=${result.orderId}`;
@@ -117,12 +125,27 @@ export function CheckoutFlow({ product }: CheckoutFlowProps) {
                  </div>
                  <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-emerald-500">
                     <span>Desconto</span>
-                    <span>- R$ 0,00</span>
+                    <span>- R$ {discountAmount.toFixed(2)}</span>
                  </div>
                  <div className="pt-3 border-t border-[var(--border-primary)] flex justify-between items-center">
                     <span className="text-xs font-black uppercase text-[var(--text-primary)]">Total</span>
-                    <span className="text-xl font-black text-[var(--text-primary)] italic">R$ {product.price.toFixed(2)}</span>
+                    <span className="text-xl font-black text-[var(--text-primary)] italic">R$ {finalPrice.toFixed(2)}</span>
                  </div>
+              </div>
+
+              {/* 🎟️ INPUT DE CUPOM */}
+              <div className="pt-2 border-t border-[var(--border-primary)]">
+                 <CouponInput 
+                    productSlug={product.slug}
+                    onApply={(discVal, codeVal) => {
+                       setDiscount(discVal);
+                       setCouponCode(codeVal);
+                    }}
+                    onRemove={() => {
+                       setDiscount(0);
+                       setCouponCode(null);
+                    }}
+                 />
               </div>
            </div>
 
@@ -257,7 +280,7 @@ export function CheckoutFlow({ product }: CheckoutFlowProps) {
                        <PaymentBrick 
                          preferenceId={preferenceId} 
                          orderId={orderId}
-                         amount={product.price} 
+                         amount={finalPrice} 
                          maxInstallments={product.maxInstallments}
                          idToken={idToken || undefined}
                          onSuccess={(paymentId) => {

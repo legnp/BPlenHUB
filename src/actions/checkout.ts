@@ -13,6 +13,8 @@ import { grantServiceEntitlement } from "@/lib/checkout";
  */
 
 import { validateCouponAction } from "./coupons";
+import { resolveMatricula } from "./get-user-results";
+import { hashCpf } from "@/utils/crypto";
 
 export async function processServicePurchaseAction(
   productSlug: string, 
@@ -48,12 +50,49 @@ export async function processServicePurchaseAction(
     
     // 🎟️ 2.1 Validar Cupom (se fornecido)
     let appliedDiscount = 0;
+    let couponDocRef: any = null;
+
     if (couponCode) {
-       const couponResult = await validateCouponAction(couponCode, product.price, productId, idToken);
-       if (couponResult.valid) {
-          appliedDiscount = couponResult.discountAmount;
-       } else {
-          console.warn(`⚠️ [Checkout] Cupom inválido tentado: ${couponCode}`);
+       const matricula = await resolveMatricula(session.uid, session.email || "");
+       if (matricula) {
+          const userSnap = await db.doc(`User/${matricula}`).get();
+          const profile = userSnap.data()?.profile || {};
+          const cpfClean = (profile.cpf || "").replace(/\D/g, "");
+          const cpfHash = hashCpf(cpfClean);
+
+          const { COUPONS_V2_COLLECTION, COUPON_BATCHES_COLLECTION } = await import("@/config/collections");
+
+          const couponSnap = await db.collection(COUPONS_V2_COLLECTION)
+             .where("code", "==", couponCode.toUpperCase().trim())
+             .limit(1)
+             .get();
+
+          if (!couponSnap.empty) {
+             const couponDoc = couponSnap.docs[0];
+             const couponData = couponDoc.data();
+             
+             // Verificar se o cupom está resgatado pelo usuário
+             if (couponData.isRedeemed && couponData.cpfHash === cpfHash && !couponData.isUsedInOrder) {
+                const batchDoc = await db.collection(COUPON_BATCHES_COLLECTION).doc(couponData.batchId).get();
+                if (batchDoc.exists) {
+                   const batchData = batchDoc.data();
+                   if (batchData) {
+                      appliedDiscount = product.price * batchData.discount;
+                      couponDocRef = couponDoc.ref;
+                   }
+                }
+             }
+          }
+       }
+
+       // Fallback original para cupons v1
+       if (!couponDocRef) {
+          const couponResult = await validateCouponAction(couponCode, product.price, productId, idToken);
+          if (couponResult.valid) {
+             appliedDiscount = couponResult.discountAmount;
+          } else {
+             console.warn(`[Checkout] Cupom invalido tentado: ${couponCode}`);
+          }
        }
     }
 
@@ -80,8 +119,9 @@ export async function processServicePurchaseAction(
         productTitle: product.title,
         productKicker: product.kicker || "",
         basePrice: product.price || 0,
-        appliedDiscount: product.price || 0,
-        finalPrice: 0,
+        couponCode: couponCode || null,
+        appliedDiscount: appliedDiscount,
+        finalPrice: Math.max(0, (product.price || 0) - appliedDiscount),
         currency: "BRL",
         status: "approved",
         statusDetail: "accredited",
@@ -97,7 +137,7 @@ export async function processServicePurchaseAction(
       
       sendFreeOrderApprovedEmail(
         { name: nickname, email: session.email || "" },
-        { orderId: grantResult.orderId, productTitle: product.title, finalPrice: 0 }
+        { orderId: grantResult.orderId, productTitle: product.title, finalPrice: Math.max(0, (product.price || 0) - appliedDiscount) }
       );
     }
 

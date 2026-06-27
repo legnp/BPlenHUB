@@ -177,3 +177,103 @@ export async function sendFreeOrderApprovedEmail(user: UserDetails, order: Order
     console.error("❌ ERRO ao enviar e-mail de compra gratuita:", error);
   }
 }
+
+/**
+ * 📧 E-mail 5: Cupom Resgatado
+ * Remetente: hub@bplen.com
+ * Destinatários: Usuário e promo@bplen.com (via bcc ou campo to secundário)
+ * Design: Soberana v3.1 (sem emojis, alinhado à esquerda)
+ */
+export async function sendCouponRedeemedEmail(
+  user: { name: string; email: string },
+  coupon: { code: string; discount: number; serviceName: string; expiresAt: string },
+  termsPdfUrl?: string
+) {
+  try {
+    await resend.emails.send({
+      from: "BPlen HUB <hub@bplen.com>",
+      to: user.email,
+      cc: "promo@bplen.com",
+      subject: `Confirmado: Seu cupom BPlen foi resgatado`,
+      html: buildSoberanaEmail(`
+        <h2 style="${EMAIL_STYLES.h2}">Cupom resgatado.</h2>
+        <p style="${EMAIL_STYLES.p}">Olá, <b>${user.name || "Membro BPlen"}</b>.</p>
+        
+        <p style="${EMAIL_STYLES.p}">
+          Confirmamos que o seu cupom <strong>${coupon.code}</strong> foi resgatado com sucesso e o desconto de <strong>${coupon.discount}%</strong> foi aplicado para o serviço <strong>${coupon.serviceName}</strong>.
+        </p>
+
+        <div style="background: #F8FAFC; padding: 20px; border-radius: 12px; margin: 24px 0;">
+          <p style="margin: 0 0 8px 0; font-size: 11px; color: #94A3B8; font-weight: bold; text-transform: uppercase;">Resumo do Resgate</p>
+          <p style="margin: 4px 0; font-size: 14px;">Cupom: <strong>${coupon.code}</strong></p>
+          <p style="margin: 4px 0; font-size: 14px;">Desconto: <strong>${coupon.discount}%</strong></p>
+          <p style="margin: 4px 0; font-size: 14px;">Validade: <strong>Até ${coupon.expiresAt}</strong></p>
+        </div>
+
+        <p style="${EMAIL_STYLES.p}">
+          O termo de aceitação digital contendo as regras de uso foi registrado no sistema e uma cópia em texto foi armazenada na pasta <strong>5.Documentos</strong> do seu Google Drive pessoal.
+        </p>
+        
+        ${termsPdfUrl ? `<p style="${EMAIL_STYLES.p}">Você também pode acessar as regras do termo através do link: <a href="${termsPdfUrl}" style="color: #1D1D1F; font-weight: bold; text-decoration: underline;">Visualizar Documento no Drive</a></p>` : ""}
+
+        <hr style="border: 0; border-top: 1px solid #E2E8F0; margin: 30px 0;" />
+        
+        <p style="font-size: 12px; color: #64748B; text-align: left; line-height: 1.5;">
+          Equipe BPlen HUB
+        </p>
+      `, "Equipe BPlen HUB")
+    });
+    console.log(`[E-mail] Cupom resgatado enviado para ${user.email}`);
+  } catch (error) {
+    console.error("[Erro] Falha ao enviar e-mail de cupom resgatado:", error);
+  }
+}
+
+/**
+ * 📧 E-mail 6: Cupom Expirado
+ * Remetente: hub@bplen.com
+ * Destinatários: Usuário e promo@bplen.com
+ * Design: Soberana v3.1 (sem emojis, alinhado à esquerda)
+ */
+export async function sendCouponExpiredEmail(
+  user: { name: string; email: string },
+  coupon: { code: string; serviceName: string }
+) {
+  try {
+    await resend.emails.send({
+      from: "BPlen HUB <hub@bplen.com>",
+      to: user.email,
+      cc: "promo@bplen.com",
+      subject: `Aviso: Seu cupom BPlen expirou`,
+      html: buildSoberanaEmail(`
+        <h2 style="${EMAIL_STYLES.h2}">Cupom expirado.</h2>
+        <p style="${EMAIL_STYLES.p}">Olá, <b>${user.name || "Membro BPlen"}</b>.</p>
+        
+        <p style="${EMAIL_STYLES.p}">
+          O prazo de validade do seu cupom <strong>${coupon.code}</strong> para o serviço <strong>${coupon.serviceName}</strong> expirou.
+        </p>
+
+        <div style="background: #F8FAFC; padding: 20px; border-radius: 12px; margin: 24px 0;">
+          <p style="margin: 0 0 8px 0; font-size: 11px; color: #94A3B8; font-weight: bold; text-transform: uppercase;">Detalhes do Cupom</p>
+          <p style="margin: 4px 0; font-size: 14px;">Cupom: <strong>${coupon.code}</strong></p>
+          <p style="margin: 4px 0; font-size: 14px;">Serviço: <strong>${coupon.serviceName}</strong></p>
+          <p style="margin: 4px 0; font-size: 14px;">Status: <strong>Expirado</strong></p>
+        </div>
+
+        <p style="${EMAIL_STYLES.p}">
+          Caso queira obter uma nova oportunidade ou tirar dúvidas, fale conosco na sua próxima sessão.
+        </p>
+
+        <hr style="border: 0; border-top: 1px solid #E2E8F0; margin: 30px 0;" />
+        
+        <p style="font-size: 12px; color: #64748B; text-align: left; line-height: 1.5;">
+          Equipe BPlen HUB
+        </p>
+      `, "Equipe BPlen HUB")
+    });
+    console.log(`[E-mail] Cupom expirado enviado para ${user.email}`);
+  } catch (error) {
+    console.error("[Erro] Falha ao enviar e-mail de cupom expirado:", error);
+  }
+}
+

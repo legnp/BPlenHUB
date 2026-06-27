@@ -10,3 +10,9 @@ export const USER_PERMISSIONS_COLLECTION = "User_Permissions"; // ⚠️ LEGADO:
 export const USER_ORDERS_COLLECTION = "User_Orders";
 export const USER_COLLECTION = "User";
 export const AUTH_MAP_COLLECTION = "_AuthMap";
+
+export const COUPON_BATCHES_COLLECTION = "coupon_batches";
+export const COUPONS_V2_COLLECTION = "coupons_v2";
+export const COUPON_REDEMPTIONS_COLLECTION = "coupon_redemptions";
+export const COUPON_ACCEPTANCES_COLLECTION = "coupon_acceptances";
+
