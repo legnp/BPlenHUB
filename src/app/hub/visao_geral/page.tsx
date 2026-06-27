@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useAuthContext } from "@/context/AuthContext";
 import { useJourney } from "@/hooks/useJourney";
 import { getCareerPlanningDataAction } from "@/actions/career-module";
+import { getMemberActivityArtifactsAction } from "@/actions/activity-artifacts";
 import { getUserBookingsAction } from "@/actions/calendar";
 import Link from "next/link";
 import { 
@@ -146,6 +147,7 @@ export default function VisaoGeralPage() {
   const { stages, progress, loading: journeyLoading, getStageTelemetry } = useJourney(user?.uid || "guest");
   
   const [careerData, setCareerData] = useState<any>(null);
+  const [activityArtifacts, setActivityArtifacts] = useState<{ feedbacks: any[]; atas: any[]; sharedDocuments: any[] }>({ feedbacks: [], atas: [], sharedDocuments: [] });
   const [userBookings, setUserBookings] = useState<any[]>([]);
   const [loadingCareer, setLoadingCareer] = useState(true);
   const [activeDetailItem, setActiveDetailItem] = useState<VisaoGeralActivity | null>(null);
@@ -160,14 +162,25 @@ export default function VisaoGeralPage() {
     async function loadData() {
       if (progress?.matricula && progress.matricula !== "PENDING") {
         try {
-          const res = await getCareerPlanningDataAction(progress.matricula);
-          if (res.success && res.data) {
-            setCareerData(res.data);
+          // 1. Artefatos de atividades (feedbacks, atas, docs) — SEM exigir career_planning
+          const artifacts = await getMemberActivityArtifactsAction(progress.matricula);
+          setActivityArtifacts(artifacts);
+
+          // 2. Dados do módulo de carreira (backlog, objetivos) — exige career_planning
+          try {
+            const res = await getCareerPlanningDataAction(progress.matricula);
+            if (res.success && res.data) {
+              setCareerData(res.data);
+            }
+          } catch (careerErr) {
+            // Módulo de carreira pode não estar liberado — ok, apenas backlog/objetivos não serão exibidos
+            console.info("[VisaoGeral] Módulo de carreira não disponível para este membro.");
           }
+
           const bookings = await getUserBookingsAction(progress.matricula);
           setUserBookings(bookings || []);
         } catch (e) {
-          console.error("Erro ao carregar dados de carreira/reunioes:", e);
+          console.error("Erro ao carregar dados de atividades/reunioes:", e);
         } finally {
           setLoadingCareer(false);
         }
@@ -258,9 +271,9 @@ export default function VisaoGeralPage() {
             }
           }
 
-          // Se houver atas de reunioes
-          if (sub.type === "meeting" && careerData.atas) {
-            const matchedAta = careerData.atas.find((a: any) => 
+          // Se houver atas de reunioes (via activityArtifacts — sem exigir career_planning)
+          if (sub.type === "meeting" && activityArtifacts.atas.length > 0) {
+            const matchedAta = activityArtifacts.atas.find((a: any) => 
               isAtaOrFeedbackMatch(friendlyTitle, sub.referenceId, a.title)
             );
             if (matchedAta) {
@@ -270,20 +283,20 @@ export default function VisaoGeralPage() {
             }
           }
 
-          // Se houver feedbacks cadastrados
-          if (careerData.feedbacks) {
-            const matchedFb = careerData.feedbacks.find((f: any) => 
+          // Se houver feedbacks cadastrados (via activityArtifacts)
+          if (activityArtifacts.feedbacks.length > 0) {
+            const matchedFb = activityArtifacts.feedbacks.find((f: any) => 
               isAtaOrFeedbackMatch(friendlyTitle, sub.referenceId, f.sessionTitle || f.title)
             );
             if (matchedFb) {
               hasFeedback = true;
-              feedbackText = matchedFb.feedbackText || feedbackText;
+              feedbackText = matchedFb.content || matchedFb.feedbackText || feedbackText;
             }
           }
 
-          // Se houver documentos compartilhados
-          if (careerData.sharedDocuments) {
-            const matchedDoc = careerData.sharedDocuments.find((d: any) => 
+          // Se houver documentos compartilhados (via activityArtifacts)
+          if (activityArtifacts.sharedDocuments.length > 0) {
+            const matchedDoc = activityArtifacts.sharedDocuments.find((d: any) => 
               isAtaOrFeedbackMatch(friendlyTitle, sub.referenceId, d.name || d.title)
             );
             if (matchedDoc && matchedDoc.fileUrl) {
@@ -393,7 +406,7 @@ export default function VisaoGeralPage() {
     }
 
     return list;
-  }, [stages, progress, journeyLoading, careerData, userBookings, getStageTelemetry]);
+  }, [stages, progress, journeyLoading, careerData, activityArtifacts, userBookings, getStageTelemetry]);
 
   // Filtro de busca global
   const filteredActivities = useMemo(() => {
