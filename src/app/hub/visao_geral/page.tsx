@@ -21,7 +21,8 @@ import {
   Search, 
   Briefcase, 
   Activity,
-  AlertCircle
+  AlertCircle,
+  ArrowLeft
 } from "lucide-react";
 import AtmosphericLoading from "@/components/shared/AtmosphericLoading";
 import { cn } from "@/lib/utils";
@@ -431,6 +432,19 @@ export default function VisaoGeralPage() {
   return (
     <div className="max-w-7xl mx-auto px-6 py-10 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       
+      {/* Header de Navegação */}
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+        <div className="space-y-4">
+          <Link 
+            href="/hub/membro"
+            className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors group"
+          >
+            <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+            Voltar ao Dashboard
+          </Link>
+        </div>
+      </header>
+
       {/* Header Central de Atividades */}
       <div className="glass p-10 relative overflow-hidden flex flex-col md:flex-row items-center md:items-start justify-between gap-6 border-[var(--glass-border)] rounded-[3rem]">
         <div className="relative z-10 flex gap-6 items-center">
