@@ -234,7 +234,7 @@ function shuffleOptions(options: string[] | { label: string; value: string; subO
  */
 export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onStepChange, returnToCheckoutSlug, userNickname, initialUserMetadata }: SurveyEngineProps) {
   const [currentStepIndex, setCurrentStepIndex] = useState<number>(() => {
-    if (typeof window !== "undefined" && config.id === "survey_plano_fase4" && userUid) {
+    if (typeof window !== "undefined" && (config.saveProgressively || config.id === "survey_plano_fase4") && userUid) {
       const saved = localStorage.getItem(`survey_draft_${config.id}_${userUid}`);
       if (saved) {
         try {
@@ -245,7 +245,7 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
     return 0;
   });
   const [responses, setResponses] = useState<Record<string, SurveyValue>>(() => {
-    if (typeof window !== "undefined" && config.id === "survey_plano_fase4" && userUid) {
+    if (typeof window !== "undefined" && (config.saveProgressively || config.id === "survey_plano_fase4") && userUid) {
       const saved = localStorage.getItem(`survey_draft_${config.id}_${userUid}`);
       if (saved) {
         try {
@@ -302,7 +302,7 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
   }, [responses]);
 
   useEffect(() => {
-    if (typeof window !== "undefined" && config.id === "survey_plano_fase4" && userUid) {
+    if (typeof window !== "undefined" && (config.saveProgressively || config.id === "survey_plano_fase4") && userUid) {
       localStorage.setItem(`survey_draft_${config.id}_${userUid}`, JSON.stringify({ responses, stepIndex: currentStepIndex }));
     }
   }, [responses, currentStepIndex, config.id, userUid]);
@@ -743,7 +743,7 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
       const { submitSurvey } = await import("@/actions/submit-survey");
       const res = await submitSurvey(config, payload, userUid);
       
-      if (typeof window !== "undefined" && config.id === "survey_plano_fase4" && userUid) {
+      if (typeof window !== "undefined" && (config.saveProgressively || config.id === "survey_plano_fase4") && userUid) {
         localStorage.removeItem(`survey_draft_${config.id}_${userUid}`);
       }
 

@@ -97,6 +97,7 @@ export interface SurveyConfig {
   submitLabel?: string;
   completionMessage?: string; // Mensagem final exibida ao fechar a pesquisa
   templateData?: Record<string, string>; // Dados para interpolação nas perguntas
+  saveProgressively?: boolean; // Permite salvamento de rascunhos progressivamente no localStorage
 }
 
 export type SurveyValue = string | string[] | number | boolean | null | Record<string, unknown> | Record<string, unknown>[];

@@ -6,6 +6,7 @@ import { SurveyConfig } from "@/types/survey";
 export const preparacaoEntrevistasSurvey: SurveyConfig = {
   id: "preparacao_entrevistas_networking",
   kind: "survey",
+  saveProgressively: true,
   title: "Preparação para Entrevistas e Reuniões de Networking",
   description: "Preparação do seu discurso e interações profissionais.",
   submitLabel: "Concluir o Módulo e Aguardar a minha Consultoria Final de Posicionamento!",
