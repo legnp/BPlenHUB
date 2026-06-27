@@ -100,7 +100,13 @@ export default function StepJourneyPage() {
   
   // 🔒 Governança de Sequência Rígida (Soberania Metodológica 🛡️)
   const telemetry = progress ? getStageTelemetry(stepId) : null;
-  const isLockedBySequence = telemetry?.hasAccess && telemetry?.isSequenceLocked;
+  const hasAccess = telemetry?.hasAccess || false;
+  const isLockedBySequence = hasAccess && telemetry?.isSequenceLocked;
+
+  // 1. Bloqueio por falta de contratação/permissão (Upsell / Sem acesso)
+  if (telemetry && !hasAccess) {
+    return redirect("/hub/membro");
+  }
 
   if (isLockedBySequence) {
     const prevStageIdx = stages.findIndex(s => s.id === stepId) - 1;

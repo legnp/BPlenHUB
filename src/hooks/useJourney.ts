@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { JourneyProgress, StepStatus, UserStepProgress, JourneyStep, SubStepConfig } from "@/types/journey";
 import { getJourneyStagesAction, getJourneyProgressAction, updateJourneySubStepAction } from "@/actions/journey";
 import { getMemberQuotasAction } from "@/actions/quotas";
+import { fetchUserPermissionsStatus } from "@/actions/auth-permissions";
 import { MemberQuotaWallet } from "@/types/entitlements";
 import { normalizeString } from "@/lib/utils";
 
@@ -24,6 +25,7 @@ export function useJourney(uid: string) {
   const [stages, setStages] = useState<JourneyStep[]>([]);
   const [progress, setProgress] = useState<JourneyProgress | null>(null);
   const [quotas, setQuotas] = useState<MemberQuotaWallet | null>(null);
+  const [services, setServices] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
 
   const mergedStages = useMemo(() => {
@@ -58,6 +60,12 @@ export function useJourney(uid: string) {
       // 2. Fetch Real Quotas for granular access
       const userQuotas = await getMemberQuotasAction(uid);
       setQuotas(userQuotas);
+
+      // 2.5 Fetch Real Services (User_Permissions/access)
+      const userPermissions = await fetchUserPermissionsStatus(uid);
+      if (userPermissions?.services) {
+        setServices(userPermissions.services as Record<string, boolean>);
+      }
 
       // 3. Fetch Real Progress from Firestore
       const dbProgress = await getJourneyProgressAction(uid);
@@ -193,6 +201,20 @@ export function useJourney(uid: string) {
        hasQuota = (quotaLower && quotaLower.total > 0) || (quotaUpper && quotaUpper.total > 0) || false;
     }
     
+    // 🛡️ Checagem Mestra de Serviços (User_Permissions/access)
+    // Se o serviço estiver explicitamente listado nos `services` (do toggle do admin), 
+    // ele SOBRESCREVE a leitura de quotas.
+    const serviceKey = stepIdLower;
+    let finalHasAccess = hasQuota;
+    
+    if (services !== undefined && services !== null) {
+      if (services[serviceKey] === false) {
+         finalHasAccess = false; // Administrador revogou ou usuário não comprou (explicitamente false)
+      } else if (services[serviceKey] === true) {
+         finalHasAccess = true; // Liberado via acesso contínuo (ex: pacote)
+      }
+    }
+    
     // Checagem Global: O usuário adquiriu QUALQUER serviço? 💳
     const hasAnyQuota = quotas ? Object.values(quotas.quotas).some(q => q.total > 0) : false;
 
@@ -220,7 +242,7 @@ export function useJourney(uid: string) {
     return {
       status: stepProgress?.status || "locked",
       percentage,
-      hasAccess: hasQuota || stage?.order === 0 || (stepId === 'onboarding' && hasAnyQuota), // Step 0 sempre livre, Onboarding livre se tiver algum serviço
+      hasAccess: finalHasAccess || stage?.order === 0 || (stepId === 'onboarding' && hasAnyQuota), // Step 0 sempre livre, Onboarding livre se tiver algum serviço
       isNext,
       isSequenceLocked, // 🧬 Nova flag de governança metodológica
       substepsLabel: `${completedCount}/${totalSubsteps}`
