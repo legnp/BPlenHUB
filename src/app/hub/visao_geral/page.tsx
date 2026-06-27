@@ -74,69 +74,11 @@ function isAtaOrFeedbackMatch(activityTitle: string, refId: string, itemTitle: s
   return false;
 }
 
-function getActivityName(type: string, refId: string, defaultTitle: string): string {
-  const normalizedRefId = (refId || "").toLowerCase().replace(/-/g, "_");
-  
-  if (type === "survey") {
-    switch (normalizedRefId) {
-      case "desmistificando_candidaturas":
-        return "Diagnostico de Oportunidades e Mercado Oculto";
-      case "master_cv":
-        return "Preenchimento do Master CV";
-      case "cv_focado":
-        return "Customizacao do CV Focado";
-      case "perfil_profissional_publico":
-        return "Otimizacao do Perfil Profissional Publico (LinkedIn)";
-      case "preparacao_entrevistas_networking":
-        return "Preparacao para Entrevistas e Networking";
-      case "pre_analise_comportamental":
-        return "Pre-Analise de Inteligencia Comportamental";
-      case "feedback_posicionamento_profissional":
-        return "Feedback de Posicionamento Profissional";
-      case "check_in":
-        return "Formulario de Check-in Metodologico";
-      case "disc":
-        return "Mapeamento do Perfil Comportamental (DISC)";
-      case "preferencias_reconhecimento":
-        return "Avaliacao de Preferencias de Reconhecimento";
-      case "preferencias_aprendizado":
-        return "Avaliacao de Preferencias de Aprendizado";
-      case "gestao_tempo":
-        return "Mapeamento de Gestao de Tempo";
-      case "survey_plano_acordos":
-        return "Avisos e Acordos do Plano de Carreira";
-      case "survey_plano_fase1":
-        return "Definicao de Objetivos do Plano de Carreira";
-      case "survey_plano_fase2":
-        return "Selecao de Recursos do Plano de Carreira";
-      case "survey_plano_fase3":
-        return "Plano de Acao de Carreira";
-      case "survey_plano_fase4":
-        return "Consolidacao do Plano de Carreira";
-      case "survey_agendamento_devolutiva":
-        return "Agendamento de Devolutiva do Plano de Carreira";
-      case "offboarding_survey":
-        return "Avaliacao de Fechamento de Ciclo";
-      default:
-        return defaultTitle;
-    }
-  }
-
+function getActivityName(type: string, _refId: string, defaultTitle: string): string {
+  // Fonte única de verdade: título vindo do Excel/banco (deliverySteps)
+  // Para meetings, adiciona o prefixo "Reunião de"
   if (type === "meeting") {
-    switch (normalizedRefId) {
-      case "onboarding":
-        return "Mentoria Individual de Onboarding";
-      case "devolutiva_analise_comportamental":
-        return "Mentoria Individual de Devolutiva de Perfil";
-      case "devolutiva_plano_carreira":
-        return "Mentoria Individual de Alinhamento de PDI";
-      case "sessao_mentocoach":
-        return "Sessao Individual de MentoCoach";
-      case "offboarding":
-        return "Mentoria Individual de Fechamento";
-      default:
-        return defaultTitle;
-    }
+    return `Reunião de ${defaultTitle}`;
   }
 
   return defaultTitle;
