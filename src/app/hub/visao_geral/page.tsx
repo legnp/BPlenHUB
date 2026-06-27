@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useAuthContext } from "@/context/AuthContext";
 import { useJourney } from "@/hooks/useJourney";
 import { getCareerPlanningDataAction } from "@/actions/career-module";
+import { getUserBookingsAction } from "@/actions/calendar";
 import Link from "next/link";
 import { 
   CheckCircle2, 
@@ -19,10 +20,10 @@ import {
   Search, 
   Briefcase, 
   Activity,
-  FileSpreadsheet,
   AlertCircle
 } from "lucide-react";
 import AtmosphericLoading from "@/components/shared/AtmosphericLoading";
+import { cn } from "@/lib/utils";
 
 interface VisaoGeralActivity {
   id: string;
@@ -38,10 +39,38 @@ interface VisaoGeralActivity {
   hasTaskDetail?: boolean;
   feedbackText?: string;
   taskStatus?: string;
+  completionDate?: string;
+  stageOrder: number;
+  isSequenceLocked: boolean;
+  isSubstepLocked: boolean;
+  bookingStatus: "not_booked" | "booked_future" | "booked_past";
 }
 
 function normalizeStr(s: string) {
-  return (s || "").toLowerCase().trim().replace(/_/g, "-");
+  return (s || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .replace(/_/g, "-");
+}
+
+function isAtaOrFeedbackMatch(activityTitle: string, refId: string, itemTitle: string): boolean {
+  const aTitle = normalizeStr(activityTitle);
+  const iTitle = normalizeStr(itemTitle);
+  const rId = normalizeStr(refId);
+
+  if (aTitle === iTitle) return true;
+  if (aTitle.includes(iTitle) || iTitle.includes(aTitle)) return true;
+
+  // Keyword exceptions
+  if (rId.includes("onboarding") && iTitle.includes("onboarding")) return true;
+  if (rId.includes("devolutiva-analise") && (iTitle.includes("devolutiva") || iTitle.includes("perfil"))) return true;
+  if (rId.includes("devolutiva-plano") && (iTitle.includes("plano") || iTitle.includes("pdi"))) return true;
+  if (rId.includes("mentocoach") && iTitle.includes("mentocoach")) return true;
+  if (rId.includes("offboarding") && iTitle.includes("offboarding")) return true;
+
+  return false;
 }
 
 function getActivityName(type: string, refId: string, defaultTitle: string): string {
@@ -117,19 +146,28 @@ export default function VisaoGeralPage() {
   const { stages, progress, loading: journeyLoading, getStageTelemetry } = useJourney(user?.uid || "guest");
   
   const [careerData, setCareerData] = useState<any>(null);
+  const [userBookings, setUserBookings] = useState<any[]>([]);
   const [loadingCareer, setLoadingCareer] = useState(true);
   const [activeDetailItem, setActiveDetailItem] = useState<VisaoGeralActivity | null>(null);
 
+  // Filtros e ordenacao
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortPendentes, setSortPendentes] = useState<"service" | "title-asc" | "title-desc">("service");
+  const [sortEmAndamento, setSortEmAndamento] = useState<"service" | "title-asc" | "title-desc">("service");
+  const [sortConcluidas, setSortConcluidas] = useState<"service" | "title-asc" | "title-desc" | "date-desc" | "date-asc">("service");
+
   useEffect(() => {
-    async function loadCareerData() {
+    async function loadData() {
       if (progress?.matricula && progress.matricula !== "PENDING") {
         try {
           const res = await getCareerPlanningDataAction(progress.matricula);
           if (res.success && res.data) {
             setCareerData(res.data);
           }
+          const bookings = await getUserBookingsAction(progress.matricula);
+          setUserBookings(bookings || []);
         } catch (e) {
-          console.error("Erro ao carregar dados de carreira:", e);
+          console.error("Erro ao carregar dados de carreira/reunioes:", e);
         } finally {
           setLoadingCareer(false);
         }
@@ -137,7 +175,7 @@ export default function VisaoGeralPage() {
         setLoadingCareer(false);
       }
     }
-    loadCareerData();
+    loadData();
   }, [progress]);
 
   const activities = useMemo(() => {
@@ -169,9 +207,17 @@ export default function VisaoGeralPage() {
         return;
       }
 
-      const completedIds = progress?.steps[stage.id]?.completedSubSteps || [];
+      // 🛡️ Filtro de Habilitacao (adquirido pelo cliente)
+      const telemetry = getStageTelemetry(stage.id);
+      if (!telemetry.hasAccess) {
+        return;
+      }
 
-      stage.substeps?.forEach(sub => {
+      const completedIds = progress?.steps[stage.id]?.completedSubSteps || [];
+      const compDates = progress?.steps[stage.id]?.subStepCompletionDates || {};
+      const firstIncompleteIdx = stage.substeps?.findIndex(sub => !completedIds.includes(sub.id));
+
+      stage.substeps?.forEach((sub, idx) => {
         // Ignorar atividades secundarias (perfil, networking, etc)
         const refIdLower = (sub.referenceId || "").toLowerCase();
         if (
@@ -193,31 +239,29 @@ export default function VisaoGeralPage() {
           status = "pending";
         }
 
-        // Tentar correlacionar com atas do modulo de carreira (para meetings concluidas)
+        const friendlyTitle = getActivityName(sub.type, sub.referenceId, sub.title);
+
+        // Correlacionar atas e feedbacks usando o titulo amigavel
         let documentUrl: string | undefined = undefined;
         let hasFeedback = false;
         let feedbackText: string | undefined = undefined;
 
         if (careerData) {
-          // Casos especificos de documentos da jornada
+          // Documentos padrao gerados
           if (isCompleted) {
             if (sub.referenceId === "master_cv" || sub.referenceId === "cv_focado") {
-              // CVs gerados ficam na propria rota do estagio para download
               documentUrl = `/hub/membro/journey/${stage.id}`;
             } else if (sub.referenceId === "disc") {
-              // DISC report
               documentUrl = `/hub/membro/journey/${stage.id}`;
             } else if (sub.referenceId === "survey_plano_fase4") {
-              // PDI consolidado
               documentUrl = `/hub/membro/journey/${stage.id}`;
             }
           }
 
-          // Se for uma reuniao, buscar ata correspondente por titulo
+          // Se houver atas de reunioes
           if (sub.type === "meeting" && careerData.atas) {
-            const subTitleNorm = normalizeStr(sub.title);
             const matchedAta = careerData.atas.find((a: any) => 
-              normalizeStr(a.title).includes(subTitleNorm) || subTitleNorm.includes(normalizeStr(a.title))
+              isAtaOrFeedbackMatch(friendlyTitle, sub.referenceId, a.title)
             );
             if (matchedAta) {
               documentUrl = matchedAta.fileUrl;
@@ -226,22 +270,47 @@ export default function VisaoGeralPage() {
             }
           }
 
-          // Buscar feedback especifico
+          // Se houver feedbacks cadastrados
           if (careerData.feedbacks) {
-            const subTitleNorm = normalizeStr(sub.title);
             const matchedFb = careerData.feedbacks.find((f: any) => 
-              normalizeStr(f.sessionTitle || "").includes(subTitleNorm) || subTitleNorm.includes(normalizeStr(f.sessionTitle || ""))
+              isAtaOrFeedbackMatch(friendlyTitle, sub.referenceId, f.sessionTitle || f.title)
             );
             if (matchedFb) {
               hasFeedback = true;
               feedbackText = matchedFb.feedbackText || feedbackText;
             }
           }
+
+          // Se houver documentos compartilhados
+          if (careerData.sharedDocuments) {
+            const matchedDoc = careerData.sharedDocuments.find((d: any) => 
+              isAtaOrFeedbackMatch(friendlyTitle, sub.referenceId, d.name || d.title)
+            );
+            if (matchedDoc && matchedDoc.fileUrl) {
+              documentUrl = matchedDoc.fileUrl;
+            }
+          }
         }
+
+        // Determinar status de agendamento (bookings)
+        let bookingStatus: "not_booked" | "booked_future" | "booked_past" = "not_booked";
+        if (sub.type === "meeting" && userBookings.length > 0) {
+          const matchedBooking = userBookings.find(b => 
+            isAtaOrFeedbackMatch(friendlyTitle, sub.referenceId, b.eventTheme || b.eventSummary || "")
+          );
+          if (matchedBooking) {
+            const now = new Date();
+            const eventDate = new Date(matchedBooking.dateTime);
+            bookingStatus = eventDate > now ? "booked_future" : "booked_past";
+          }
+        }
+
+        // Determinar bloqueios de checkpoint no mesmo estagio
+        const isSubstepLocked = !isCompleted && firstIncompleteIdx !== undefined && idx > firstIncompleteIdx;
 
         list.push({
           id: sub.id,
-          title: getActivityName(sub.type, sub.referenceId, sub.title),
+          title: friendlyTitle,
           stageName: stage.title,
           stageId: stage.id,
           type: sub.type,
@@ -250,13 +319,19 @@ export default function VisaoGeralPage() {
           url: `/hub/membro/journey/${stage.id}`,
           documentUrl,
           hasFeedback,
-          feedbackText
+          feedbackText,
+          completionDate: compDates[sub.id],
+          stageOrder: stage.order || 1,
+          isSequenceLocked: telemetry.isSequenceLocked,
+          isSubstepLocked,
+          bookingStatus
         });
       });
     });
 
-    // 3. Incluir tarefas especificas de Gestao de Carreira (se houver backlog cadastrado)
-    if (careerData?.backlog && careerData.backlog.length > 0) {
+    // 3. Incluir tarefas de carreira (se a Gestao de Carreira estiver habilitada)
+    const hasGdcAccess = stages.find(s => s.id === "gestao-e-desenvolvimento")?.id;
+    if (hasGdcAccess && careerData?.backlog && careerData.backlog.length > 0) {
       careerData.backlog.forEach((task: any) => {
         let status: "completed" | "in_progress" | "pending" = "pending";
         if (task.status === "Concluida" || task.status === "Concluída") {
@@ -276,13 +351,18 @@ export default function VisaoGeralPage() {
           url: "/hub/membro/gestao_carreira",
           hasTaskDetail: true,
           taskStatus: task.status,
-          feedbackText: task.feedback || task.notes
+          feedbackText: task.feedback || task.notes,
+          completionDate: task.completedAt || task.updatedAt || undefined,
+          stageOrder: 5,
+          isSequenceLocked: false,
+          isSubstepLocked: false,
+          bookingStatus: "not_booked"
         });
       });
     }
 
-    // 4. Incluir objetivos estrategicos do membro
-    if (careerData?.objectives && careerData.objectives.length > 0) {
+    // 4. Incluir metas estrategicas
+    if (hasGdcAccess && careerData?.objectives && careerData.objectives.length > 0) {
       careerData.objectives.forEach((obj: any) => {
         let status: "completed" | "in_progress" | "pending" = "pending";
         if (obj.status === "Concluido" || obj.status === "Concluído") {
@@ -302,25 +382,76 @@ export default function VisaoGeralPage() {
           url: "/hub/membro/gestao_carreira",
           hasTaskDetail: true,
           taskStatus: obj.status,
-          feedbackText: obj.description
+          feedbackText: obj.description,
+          completionDate: obj.completedAt || obj.updatedAt || undefined,
+          stageOrder: 5,
+          isSequenceLocked: false,
+          isSubstepLocked: false,
+          bookingStatus: "not_booked"
         });
       });
     }
 
     return list;
-  }, [stages, progress, journeyLoading, careerData, getStageTelemetry]);
+  }, [stages, progress, journeyLoading, careerData, userBookings, getStageTelemetry]);
 
-  // Filtrar em 3 colunas
-  const pendentes = useMemo(() => activities.filter(a => a.status === "pending"), [activities]);
-  const emAndamento = useMemo(() => activities.filter(a => a.status === "in_progress"), [activities]);
-  const concluidas = useMemo(() => activities.filter(a => a.status === "completed"), [activities]);
+  // Filtro de busca global
+  const filteredActivities = useMemo(() => {
+    if (!searchTerm.trim()) return activities;
+    const term = normalizeStr(searchTerm);
+    return activities.filter(act => 
+      normalizeStr(act.title).includes(term) ||
+      normalizeStr(act.stageName).includes(term) ||
+      normalizeStr(act.feedbackText || "").includes(term)
+    );
+  }, [activities, searchTerm]);
+
+  // Ordenador genérico
+  const sortActivities = (list: VisaoGeralActivity[], mode: string) => {
+    const sorted = [...list];
+    if (mode === "title-asc") {
+      sorted.sort((a, b) => a.title.localeCompare(b.title));
+    } else if (mode === "title-desc") {
+      sorted.sort((a, b) => b.title.localeCompare(a.title));
+    } else if (mode === "service") {
+      sorted.sort((a, b) => a.stageOrder - b.stageOrder);
+    } else if (mode === "date-desc") {
+      sorted.sort((a, b) => {
+        const timeA = a.completionDate ? new Date(a.completionDate).getTime() : 0;
+        const timeB = b.completionDate ? new Date(b.completionDate).getTime() : 0;
+        return timeB - timeA;
+      });
+    } else if (mode === "date-asc") {
+      sorted.sort((a, b) => {
+        const timeA = a.completionDate ? new Date(a.completionDate).getTime() : 9999999999999;
+        const timeB = b.completionDate ? new Date(b.completionDate).getTime() : 9999999999999;
+        return timeA - timeB;
+      });
+    }
+    return sorted;
+  };
+
+  const pendentesSorted = useMemo(() => 
+    sortActivities(filteredActivities.filter(a => a.status === "pending"), sortPendentes),
+    [filteredActivities, sortPendentes]
+  );
+
+  const emAndamentoSorted = useMemo(() => 
+    sortActivities(filteredActivities.filter(a => a.status === "in_progress"), sortEmAndamento),
+    [filteredActivities, sortEmAndamento]
+  );
+
+  const concluidasSorted = useMemo(() => 
+    sortActivities(filteredActivities.filter(a => a.status === "completed"), sortConcluidas),
+    [filteredActivities, sortConcluidas]
+  );
 
   if (journeyLoading || loadingCareer) {
     return <AtmosphericLoading />;
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-10 space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="max-w-7xl mx-auto px-6 py-10 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       
       {/* Header Central de Atividades */}
       <div className="glass p-10 relative overflow-hidden flex flex-col md:flex-row items-center md:items-start justify-between gap-6 border-[var(--glass-border)] rounded-[3rem]">
@@ -339,28 +470,53 @@ export default function VisaoGeralPage() {
         </div>
       </div>
 
+      {/* Barra de Filtros e Busca */}
+      <div className="glass p-5 border-[var(--glass-border)] rounded-[2rem] flex flex-col md:flex-row items-center gap-4">
+        <div className="relative flex-1 w-full">
+          <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
+          <input
+            type="text"
+            placeholder="Buscar por titulo de atividade, estagio ou feedback recebido..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-12 pr-4 py-3 bg-[var(--input-bg)] border border-[var(--input-border)] text-sm rounded-xl focus:border-[var(--accent-start)]/50 focus:outline-none transition-all text-[var(--text-primary)] font-medium"
+          />
+        </div>
+      </div>
+
       {/* Grid de 3 Colunas Horizontais */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         
         {/* Coluna 1: Proximas Atividades */}
         <div className="glass p-6 border-[var(--glass-border)] rounded-[2.5rem] flex flex-col min-h-[500px]">
           <div className="flex items-center justify-between border-b border-[var(--border-primary)] pb-4 mb-4">
-            <h3 className="text-md font-black uppercase tracking-widest text-[var(--text-primary)] flex items-center gap-2">
-              <Clock size={16} className="text-yellow-500" /> Proximas Atividades
+            <h3 className="text-xs font-black uppercase tracking-widest text-[var(--text-primary)] flex items-center gap-2">
+              <Clock size={14} className="text-yellow-500" /> Proximas
             </h3>
-            <span className="text-[10px] font-mono bg-yellow-500/10 text-yellow-600 px-2.5 py-0.5 rounded-full font-bold">
-              {pendentes.length}
-            </span>
+            <div className="flex items-center gap-2">
+              <select
+                value={sortPendentes}
+                onChange={(e: any) => setSortPendentes(e.target.value)}
+                className="bg-[var(--input-bg)] border border-[var(--border-primary)] text-[9px] font-bold text-[var(--text-muted)] rounded-lg px-2 py-1 outline-none cursor-pointer focus:border-[var(--accent-start)]/30"
+              >
+                <option value="service">Servico</option>
+                <option value="title-asc">A-Z</option>
+                <option value="title-desc">Z-A</option>
+              </select>
+              <span className="text-[9px] font-mono bg-yellow-500/10 text-yellow-600 px-2.5 py-0.5 rounded-full font-bold">
+                {pendentesSorted.length}
+              </span>
+            </div>
           </div>
 
           <div className="space-y-3 flex-1">
-            {pendentes.length === 0 ? (
+            {pendentesSorted.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center py-20 text-center opacity-40">
                 <CheckCircle2 size={32} className="text-[var(--text-muted)] mb-2" />
                 <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Nenhuma atividade pendente</p>
               </div>
             ) : (
-              pendentes.map(act => (
+              pendentesSorted.map(act => (
                 <ActivityRow key={act.id} activity={act} onOpenDetails={setActiveDetailItem} />
               ))
             )}
@@ -370,22 +526,33 @@ export default function VisaoGeralPage() {
         {/* Coluna 2: Atividades em Andamento */}
         <div className="glass p-6 border-[var(--glass-border)] rounded-[2.5rem] flex flex-col min-h-[500px]">
           <div className="flex items-center justify-between border-b border-[var(--border-primary)] pb-4 mb-4">
-            <h3 className="text-md font-black uppercase tracking-widest text-[var(--text-primary)] flex items-center gap-2">
-              <Activity size={16} className="text-blue-500" /> Em Andamento
+            <h3 className="text-xs font-black uppercase tracking-widest text-[var(--text-primary)] flex items-center gap-2">
+              <Activity size={14} className="text-blue-500" /> Em Foco
             </h3>
-            <span className="text-[10px] font-mono bg-blue-500/10 text-blue-600 px-2.5 py-0.5 rounded-full font-bold">
-              {emAndamento.length}
-            </span>
+            <div className="flex items-center gap-2">
+              <select
+                value={sortEmAndamento}
+                onChange={(e: any) => setSortEmAndamento(e.target.value)}
+                className="bg-[var(--input-bg)] border border-[var(--border-primary)] text-[9px] font-bold text-[var(--text-muted)] rounded-lg px-2 py-1 outline-none cursor-pointer focus:border-[var(--accent-start)]/30"
+              >
+                <option value="service">Servico</option>
+                <option value="title-asc">A-Z</option>
+                <option value="title-desc">Z-A</option>
+              </select>
+              <span className="text-[9px] font-mono bg-blue-500/10 text-blue-600 px-2.5 py-0.5 rounded-full font-bold">
+                {emAndamentoSorted.length}
+              </span>
+            </div>
           </div>
 
           <div className="space-y-3 flex-1">
-            {emAndamento.length === 0 ? (
+            {emAndamentoSorted.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center py-20 text-center opacity-40">
                 <Clock size={32} className="text-[var(--text-muted)] mb-2" />
                 <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Foco concluido no momento</p>
               </div>
             ) : (
-              emAndamento.map(act => (
+              emAndamentoSorted.map(act => (
                 <ActivityRow key={act.id} activity={act} onOpenDetails={setActiveDetailItem} />
               ))
             )}
@@ -395,22 +562,35 @@ export default function VisaoGeralPage() {
         {/* Coluna 3: Atividades Concluidas */}
         <div className="glass p-6 border-[var(--glass-border)] rounded-[2.5rem] flex flex-col min-h-[500px]">
           <div className="flex items-center justify-between border-b border-[var(--border-primary)] pb-4 mb-4">
-            <h3 className="text-md font-black uppercase tracking-widest text-[var(--text-primary)] flex items-center gap-2">
-              <CheckCircle2 size={16} className="text-green-500" /> Atividades Concluidas
+            <h3 className="text-xs font-black uppercase tracking-widest text-[var(--text-primary)] flex items-center gap-2">
+              <CheckCircle2 size={14} className="text-green-500" /> Concluidas
             </h3>
-            <span className="text-[10px] font-mono bg-green-500/10 text-green-600 px-2.5 py-0.5 rounded-full font-bold">
-              {concluidas.length}
-            </span>
+            <div className="flex items-center gap-2">
+              <select
+                value={sortConcluidas}
+                onChange={(e: any) => setSortConcluidas(e.target.value)}
+                className="bg-[var(--input-bg)] border border-[var(--border-primary)] text-[9px] font-bold text-[var(--text-muted)] rounded-lg px-2 py-1 outline-none cursor-pointer focus:border-[var(--accent-start)]/30"
+              >
+                <option value="service">Servico</option>
+                <option value="date-desc">Recentes</option>
+                <option value="date-asc">Antigas</option>
+                <option value="title-asc">A-Z</option>
+                <option value="title-desc">Z-A</option>
+              </select>
+              <span className="text-[9px] font-mono bg-green-500/10 text-green-600 px-2.5 py-0.5 rounded-full font-bold">
+                {concluidasSorted.length}
+              </span>
+            </div>
           </div>
 
           <div className="space-y-3 flex-1">
-            {concluidas.length === 0 ? (
+            {concluidasSorted.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center py-20 text-center opacity-40">
                 <AlertCircle size={32} className="text-[var(--text-muted)] mb-2" />
                 <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Nenhuma atividade concluida</p>
               </div>
             ) : (
-              concluidas.map(act => (
+              concluidasSorted.map(act => (
                 <ActivityRow key={act.id} activity={act} onOpenDetails={setActiveDetailItem} />
               ))
             )}
@@ -432,7 +612,7 @@ export default function VisaoGeralPage() {
               </div>
               <button 
                 onClick={() => setActiveDetailItem(null)}
-                className="text-[var(--text-muted)] hover:text-[var(--text-primary)] p-1 text-sm font-black"
+                className="text-[var(--text-muted)] hover:text-[var(--text-primary)] p-1 text-xs font-black tracking-widest"
               >
                 FECHAR
               </button>
@@ -486,7 +666,7 @@ export default function VisaoGeralPage() {
                   className="px-6 py-3 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-full text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all text-center flex-1"
                   onClick={() => setActiveDetailItem(null)}
                 >
-                  Ir ate a atividade
+                  Ir para
                 </Link>
               )}
               <button
@@ -522,8 +702,49 @@ function ActivityRow({
   if (activity.type === "task") Icon = Briefcase;
   if (activity.type === "result") Icon = Award;
 
+  // Máquina de estados de CTAs dinâmicos
+  let ctaLabel = "Ir para";
+  let ctaClass = "bg-[var(--text-primary)] hover:bg-[var(--text-primary)]/90 text-[var(--bg-primary)] hover:scale-105";
+  let ctaEnabled = true;
+
+  if (!isCompleted) {
+    if (activity.isSequenceLocked) {
+      ctaLabel = "Aguardando Etapa Anterior";
+      ctaClass = "bg-white/5 border border-white/5 text-[var(--text-muted)] opacity-50 cursor-not-allowed";
+      ctaEnabled = false;
+    } else if (activity.isSubstepLocked) {
+      ctaLabel = "Aguardando Checkpoint Anterior";
+      ctaClass = "bg-white/5 border border-white/5 text-[var(--text-muted)] opacity-50 cursor-not-allowed";
+      ctaEnabled = false;
+    } else if (activity.type === "meeting") {
+      if (activity.bookingStatus === "not_booked") {
+        ctaLabel = "Agendar Reuniao";
+        ctaClass = "bg-[var(--accent-start)] hover:opacity-90 text-white shadow-lg shadow-accent-start/20 animate-pulse";
+      } else if (activity.bookingStatus === "booked_future") {
+        ctaLabel = "Aguardando Data do Evento";
+        ctaClass = "bg-yellow-500/10 text-yellow-600 border border-yellow-500/20 cursor-not-allowed";
+        ctaEnabled = false;
+      } else if (activity.bookingStatus === "booked_past") {
+        ctaLabel = "Aguardando Encerramento";
+        ctaClass = "bg-blue-500/10 text-blue-600 border border-blue-500/20 cursor-not-allowed";
+        ctaEnabled = false;
+      }
+    }
+  }
+
+  // Formatar data de conclusão se aplicável
+  const formattedDate = useMemo(() => {
+    if (!isCompleted || !activity.completionDate) return null;
+    try {
+      const d = new Date(activity.completionDate);
+      return d.toLocaleDateString("pt-BR");
+    } catch {
+      return null;
+    }
+  }, [isCompleted, activity.completionDate]);
+
   return (
-    <div className="p-4 rounded-2xl bg-[var(--input-bg)] border border-[var(--input-border)] hover:bg-white/5 transition-all group flex flex-col justify-between gap-3 text-left">
+    <div className="p-4 rounded-2xl bg-[var(--input-bg)] border border-[var(--input-border)] hover:bg-white/5 transition-all group flex flex-col justify-between gap-3 text-left relative overflow-hidden">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 min-w-0">
           <div className="p-2.5 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-xl text-[var(--text-muted)] group-hover:text-[var(--accent-start)] transition-all shrink-0 mt-0.5">
@@ -533,9 +754,19 @@ function ActivityRow({
             <h4 className="text-xs font-bold text-[var(--text-primary)] group-hover:translate-x-0.5 transition-transform leading-snug break-words">
               {activity.title}
             </h4>
-            <span className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60 mt-1 block">
-              {activity.stageName}
-            </span>
+            <div className="flex flex-wrap items-center gap-1.5 mt-1">
+              <span className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60">
+                {activity.stageName}
+              </span>
+              {formattedDate && (
+                <>
+                  <span className="text-[8px] text-[var(--text-muted)] opacity-40">•</span>
+                  <span className="text-[8px] font-mono text-[var(--text-muted)] font-bold">
+                    Concluido em {formattedDate}
+                  </span>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -597,12 +828,18 @@ function ActivityRow({
 
           {/* Botão de Ir para Atividade */}
           {!isCompleted && (
-            <Link
-              href={activity.url}
-              className="px-3 py-1.5 bg-[var(--text-primary)] hover:bg-[var(--text-primary)]/90 text-[var(--bg-primary)] text-[8px] font-black uppercase tracking-widest rounded-lg transition-all"
-            >
-              Ir ate
-            </Link>
+            ctaEnabled ? (
+              <Link
+                href={activity.url}
+                className={cn("px-2.5 py-1 text-[8px] font-black uppercase tracking-widest rounded-lg transition-all text-center shrink-0", ctaClass)}
+              >
+                {ctaLabel}
+              </Link>
+            ) : (
+              <span className={cn("px-2.5 py-1 text-[8px] font-black uppercase tracking-widest rounded-lg text-center shrink-0", ctaClass)}>
+                {ctaLabel}
+              </span>
+            )
           )}
         </div>
 

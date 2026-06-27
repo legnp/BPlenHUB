@@ -157,6 +157,12 @@ export function HubHomeView() {
         return;
       }
 
+      // 🛡️ Filtro de Habilitação: Apenas serviços adquiridos/habilitados para o cliente
+      const telemetry = getStageTelemetry(stage.id);
+      if (!telemetry.hasAccess) {
+        return;
+      }
+
       const completedIds = progress?.steps[stage.id]?.completedSubSteps || [];
       const compDates = progress?.steps[stage.id]?.subStepCompletionDates || {};
 
@@ -305,7 +311,7 @@ export function HubHomeView() {
                      <>
                         {/* Card 1: Próxima Atividade */}
                         <ActivityCard 
-                           kicker="1º Proxima Atividade" 
+                           kicker="Proxima Atividade" 
                            activity={cardsData.proxima} 
                            fallbackText="Nenhuma atividade pendente"
                            iconColor="text-yellow-500"
@@ -314,7 +320,7 @@ export function HubHomeView() {
 
                         {/* Card 2: Atividade em Andamento */}
                         <ActivityCard 
-                           kicker="2º Atividade em Andamento" 
+                           kicker="Atividade em Andamento" 
                            activity={cardsData.emAndamento} 
                            fallbackText="Nenhum foco ativo no momento"
                            iconColor="text-blue-500"
@@ -323,7 +329,7 @@ export function HubHomeView() {
 
                         {/* Card 3: Última Atividade Concluída */}
                         <ActivityCard 
-                           kicker="3º Ultima Atividade Concluida" 
+                           kicker="Ultima Atividade Concluida" 
                            activity={cardsData.ultimaConcluida} 
                            fallbackText="Nenhuma atividade concluida"
                            iconColor="text-green-500"
