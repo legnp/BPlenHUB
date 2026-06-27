@@ -3,6 +3,7 @@
 import React from "react";
 import { SubStepConfig } from "@/types/journey";
 import { ConfettiCheckbox } from "./ConfettiCheckbox";
+import Link from "next/link";
 
 import { 
   Loader2, 
@@ -121,6 +122,9 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
       
       const keyword = normalizeStr(getMeetingFilterKeyword(substep));
       const filteredEvents = allEvents.filter(ev => {
+        if (ev.theme) {
+          return normalizeStr(ev.theme) === normalizeStr(substep.title);
+        }
         const summaryNorm = normalizeStr(ev.summary || "");
         return summaryNorm.includes(keyword);
       });
@@ -589,8 +593,15 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
         // Identificar se há um agendamento existente para este contexto
         const keyword = normalizeStr(getMeetingFilterKeyword(substep));
         const activeBooking = userBookings.find(b => {
-           const summaryNorm = normalizeStr(b.eventDetail?.summary || "");
-           return summaryNorm.includes(keyword) && b.eventLifecycleStatus !== "cancelled";
+           const ev = b.eventDetail;
+           if (!ev) return false;
+           if (b.eventLifecycleStatus === "cancelled") return false;
+           
+           if (ev.theme) {
+             return normalizeStr(ev.theme) === normalizeStr(substep.title);
+           }
+           const summaryNorm = normalizeStr(ev.summary || "");
+           return summaryNorm.includes(keyword);
         });
 
         const isCompleted = activeBooking?.eventLifecycleStatus === "completed" || activeBooking?.attendanceStatus === "present";
@@ -598,14 +609,27 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
         return (
           <div className="flex-1 flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-6 duration-1000">
              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                   <div className="w-8 h-8 bg-amber-500/10 rounded-xl flex items-center justify-center text-amber-500">
-                      <DynamicIcon name={icon} />
+                <div className="flex items-center justify-between gap-4 flex-wrap">
+                   <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-amber-500/10 rounded-xl flex items-center justify-center text-amber-500">
+                         <DynamicIcon name={icon} />
+                      </div>
+                      <span className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-500">
+                         {kicker || (isCompleted ? nomen.badge_meeting.completed : activeBooking ? nomen.badge_meeting.confirmed : nomen.badge_meeting.booking)}
+                      </span>
                    </div>
-                   <span className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-500">
-                      {kicker || (isCompleted ? nomen.badge_meeting.completed : activeBooking ? nomen.badge_meeting.confirmed : nomen.badge_meeting.booking)}
-                   </span>
+
+                   {stageId === "gestao-e-desenvolvimento" && parseFloat(substep.order || "0") >= 2 && (
+                      <Link 
+                         href="/hub/membro/gestao_agenda"
+                         className="flex items-center gap-2 px-5 py-2.5 bg-[var(--input-bg)]/30 hover:bg-[var(--input-bg)]/50 border border-[var(--border-primary)] rounded-full text-[10px] font-black uppercase tracking-wider transition-all hover:scale-105 active:scale-95 shadow-sm text-[var(--text-primary)]"
+                      >
+                         <CalendarIcon size={14} className="text-amber-500" />
+                         <span>Agendar Sessao 1-to-1</span>
+                      </Link>
+                   )}
                 </div>
+
                 <h2 className="text-3xl font-black tracking-tight">
                    {isCompleted ? "Histórico da Sessão" : activeBooking ? "Tudo certo para o encontro!" : substep.title}
                 </h2>
@@ -642,6 +666,7 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
                       <UserBookings 
                          compact={true} 
                          filterSummary={getMeetingFilterKeyword(substep)} 
+                         filterTheme={substep.title}
                          onRefresh={() => loadData()}
                       />
                    </div>
@@ -664,6 +689,7 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
                    <UserBookings 
                       compact={true} 
                       filterSummary={getMeetingFilterKeyword(substep)} 
+                      filterTheme={substep.title}
                    />
                 </div>
              )}

@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { JourneyProgress, StepStatus, UserStepProgress, JourneyStep } from "@/types/journey";
+import { useState, useEffect, useMemo } from "react";
+import { JourneyProgress, StepStatus, UserStepProgress, JourneyStep, SubStepConfig } from "@/types/journey";
 import { getJourneyStagesAction, getJourneyProgressAction, updateJourneySubStepAction } from "@/actions/journey";
 import { getMemberQuotasAction } from "@/actions/quotas";
 import { MemberQuotaWallet } from "@/types/entitlements";
@@ -25,6 +25,26 @@ export function useJourney(uid: string) {
   const [progress, setProgress] = useState<JourneyProgress | null>(null);
   const [quotas, setQuotas] = useState<MemberQuotaWallet | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const mergedStages = useMemo(() => {
+    if (!progress) return stages;
+    return stages.map(stage => {
+      const sProgress = progress.steps[stage.id];
+      const dynamicSubsteps = sProgress?.dynamicSubSteps || [];
+      if (dynamicSubsteps.length === 0) return stage;
+      
+      const mergedSubsteps: SubStepConfig[] = [];
+      stage.substeps.forEach(sub => {
+        mergedSubsteps.push(sub);
+        const children = dynamicSubsteps.filter((ds: any) => ds.parentId === sub.id);
+        mergedSubsteps.push(...children);
+      });
+      return {
+        ...stage,
+        substeps: mergedSubsteps
+      };
+    });
+  }, [stages, progress]);
 
   const init = async () => {
     setLoading(true);
@@ -100,7 +120,7 @@ export function useJourney(uid: string) {
       if (result.success && result.progress) {
         const normalizedSteps: Record<string, UserStepProgress> = {};
         for (const [key, val] of Object.entries(result.progress.steps)) {
-          const matchedStage = stages.find(stage => 
+          const matchedStage = mergedStages.find(stage => 
             normalizeString(stage.id) === normalizeString(key)
           );
           const finalKey = matchedStage ? matchedStage.id : key;
@@ -123,7 +143,7 @@ export function useJourney(uid: string) {
    * Retorna os dados analíticos de uma etapa (Telemetria Real)
    */
   const getStageTelemetry = (stepId: string): StageTelemetry => {
-    const stage = stages.find(s => s.id === stepId);
+    const stage = mergedStages.find(s => s.id === stepId);
     const stepProgress = progress?.steps[stepId];
     
     // Cálculo de % Real (Rigoroso: apenas conta o que existe na definição atual da etapa) 🛡️
@@ -171,8 +191,8 @@ export function useJourney(uid: string) {
     const hasAnyQuota = quotas ? Object.values(quotas.quotas).some(q => q.total > 0) : false;
 
     // Identificar se é o "Próximo Passo" lógico (Baseado em ID sequencial ou LastActive)
-    const currentStepIndex = stages.findIndex(s => s.id === progress?.lastActiveStepId);
-    const thisStepIndex = stages.findIndex(s => s.id === stepId);
+    const currentStepIndex = mergedStages.findIndex(s => s.id === progress?.lastActiveStepId);
+    const thisStepIndex = mergedStages.findIndex(s => s.id === stepId);
     const isNext = thisStepIndex === currentStepIndex + 1;
 
     // 🔒 Trava de Sequência BPlen (Metodologia Linear)
@@ -183,7 +203,7 @@ export function useJourney(uid: string) {
        const isOnboarding = stepId === 'onboarding' || stepId === 'ONBOARDING';
        
        if (!isOnboarding) {
-          const prevStageId = stages[thisStepIndex - 1].id;
+          const prevStageId = mergedStages[thisStepIndex - 1].id;
           const prevStepProgress = progress?.steps[prevStageId];
           isSequenceLocked = prevStepProgress?.status !== "completed";
        }
@@ -214,7 +234,7 @@ export function useJourney(uid: string) {
   };
 
   return {
-    stages,
+    stages: mergedStages,
     progress,
     loading,
     quotas,

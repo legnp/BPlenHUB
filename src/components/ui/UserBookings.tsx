@@ -49,11 +49,13 @@ export default function UserBookings({
   refreshCounter = 0, 
   onRefresh = () => {},
   filterSummary,
+  filterTheme,
   compact = false
 }: { 
   refreshCounter?: number; 
   onRefresh?: () => void; 
   filterSummary?: string;
+  filterTheme?: string;
   compact?: boolean;
 }) {
   const { matricula, user } = useAuthContext();
@@ -152,6 +154,17 @@ export default function UserBookings({
       result = result.filter(b => {
         const summaryNorm = (b.eventDetail?.summary || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
         return summaryNorm.includes(normFilter);
+      });
+    }
+
+    // Theme filter (Prop-based matching exact normalized checkpoint title)
+    if (filterTheme) {
+      const normTheme = filterTheme.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+      result = result.filter(b => {
+        const ev = b.eventDetail;
+        if (!ev || !ev.theme) return false;
+        const themeNorm = ev.theme.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+        return themeNorm === normTheme;
       });
     }
 

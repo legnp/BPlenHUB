@@ -38,6 +38,8 @@ import { useAuthContext } from "@/context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { surveys } from "@/config/surveys";
+import { assignDynamicSubstepToPresentAttendeesAction } from "@/actions/journey";
 
 interface PostEventWizardProps {
   isOpen: boolean;
@@ -75,6 +77,11 @@ export default function PostEventWizard({ isOpen, onClose, event, onSuccess }: P
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchingUsers, setIsSearchingUsers] = useState(false);
   const [isGeneratingSheet, setIsGeneratingSheet] = useState(false);
+
+  // Dynamic Subcheckpoints Bulk Assigner States
+  const [selectedSubstepRef, setSelectedSubstepRef] = useState("");
+  const [substepTitle, setSubstepTitle] = useState("");
+  const [isAssigningSubstep, setIsAssigningSubstep] = useState(false);
 
   useEffect(() => {
     if (isOpen && event) {
@@ -295,6 +302,32 @@ export default function PostEventWizard({ isOpen, onClose, event, onSuccess }: P
     }
   };
 
+  const handleAssignBulkSubstep = async () => {
+    if (!event || !selectedSubstepRef) return;
+    setIsAssigningSubstep(true);
+    try {
+      const res = await assignDynamicSubstepToPresentAttendeesAction(event.id, {
+        title: substepTitle || "Atividade Complementar",
+        type: "survey",
+        referenceId: selectedSubstepRef,
+        description: "Atividade complementar atribuida pelo consultor"
+      });
+      
+      if (res.success) {
+        alert(res.message);
+        setSelectedSubstepRef("");
+        setSubstepTitle("");
+      } else {
+        alert("Erro ao atribuir: " + res.message);
+      }
+    } catch (e: any) {
+      console.error(e);
+      alert("Erro ao executar acao: " + (e.message || "Erro desconhecido"));
+    } finally {
+      setIsAssigningSubstep(false);
+    }
+  };
+
   if (!event) return null;
 
   return (
@@ -470,14 +503,52 @@ export default function PostEventWizard({ isOpen, onClose, event, onSuccess }: P
                   </button>
                 ))}
               </div>
-              <div className="p-4 border-t border-[var(--border-primary)]">
-                 <button 
-                   onClick={() => setStep(1)}
-                   className="w-full py-3 flex items-center justify-center gap-2 bg-[var(--bg-primary)] hover:bg-[var(--accent-soft)] rounded-2xl transition-all text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)]"
-                 >
-                    <ArrowLeft size={12} /> Voltar para Geral
-                 </button>
-              </div>
+              <div className="p-4 border-t border-[var(--border-primary)] space-y-4">
+                  {/* Bulk Subcheckpoint Widget */}
+                  <div className="p-4 bg-[var(--bg-primary)] rounded-2xl border border-[var(--border-primary)] space-y-3">
+                     <p className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)]">Subcheckpoint Dinamico em Lote</p>
+                     <div className="space-y-2">
+                        <select 
+                           value={selectedSubstepRef}
+                           onChange={(e) => {
+                              const ref = e.target.value;
+                              setSelectedSubstepRef(ref);
+                              const surveyObj = (surveys as any)[ref];
+                              setSubstepTitle(surveyObj?.title || "");
+                           }}
+                           className="w-full p-2.5 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-xl text-[10px] font-bold text-[var(--text-primary)] focus:outline-none"
+                        >
+                           <option value="">Selecione um Modelo...</option>
+                           {Object.entries(surveys).map(([key, val]: any) => (
+                              <option key={key} value={key}>{val.title || key}</option>
+                           ))}
+                        </select>
+                        
+                        <input 
+                           type="text"
+                           placeholder="Titulo customizado do Checkpoint..."
+                           value={substepTitle}
+                           onChange={(e) => setSubstepTitle(e.target.value)}
+                           className="w-full p-2.5 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-xl text-[10px] font-bold text-[var(--text-primary)] focus:outline-none"
+                        />
+                        
+                        <button
+                           onClick={handleAssignBulkSubstep}
+                           disabled={!selectedSubstepRef || isAssigningSubstep}
+                           className="w-full py-2.5 bg-[var(--accent-start)] hover:bg-[var(--accent-end)] text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-all disabled:opacity-50"
+                        >
+                           {isAssigningSubstep ? "Atribuindo..." : "Atribuir aos Presentes"}
+                        </button>
+                     </div>
+                  </div>
+
+                  <button 
+                    onClick={() => setStep(1)}
+                    className="w-full py-3 flex items-center justify-center gap-2 bg-[var(--bg-primary)] hover:bg-[var(--accent-soft)] rounded-2xl transition-all text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)]"
+                  >
+                     <ArrowLeft size={12} /> Voltar para Geral
+                  </button>
+               </div>
             </div>
 
             {/* Main Content: Attendee Details */}

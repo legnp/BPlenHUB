@@ -392,7 +392,7 @@ export async function updateJourneySubStepAction(
         stage = await getStandaloneStageAction(stepId) || undefined;
       }
 
-      const totalSubsteps = stage?.substeps.length || 0;
+      const totalSubsteps = (stage?.substeps.length || 0) + (stepProgress.dynamicSubSteps?.length || 0);
       const newStatus = (totalSubsteps > 0 && newCompleted.length >= totalSubsteps) ? "completed" : "current";
 
       const updatedSteps = {
@@ -406,7 +406,7 @@ export async function updateJourneySubStepAction(
         }
       };
 
-      // 🛰️ LIBERAÇÃO AUTOMÁTICA EM CADEIA
+      // LIBERACAO AUTOMATICA EM CADEIA
       if (newStatus === "completed") {
          const currentIdx = stages.findIndex(s => s.id === stepId);
          if (currentIdx !== -1 && currentIdx < stages.length - 1) {
@@ -423,13 +423,19 @@ export async function updateJourneySubStepAction(
          }
       }
 
-      // 📈 CÁLCULO DE TELEMETRIA GLOBAL REAL
-      // Incluímos todos os estágios conhecidos na conta do progresso total
-      const totalAllSubsteps = stages.reduce((acc, s) => acc + s.substeps.length, 0);
-      const completedAllSubsteps = stages.reduce((acc, s) => {
+      // CALCULO DE TELEMETRIA GLOBAL REAL
+      // Incluimos todos os estagios conhecidos na conta do progresso total, somando base e dynamic subcheckpoints
+      let totalAllSubsteps = 0;
+      let completedAllSubsteps = 0;
+
+      stages.forEach(s => {
         const sProgress = updatedSteps[s.id];
-        return acc + (sProgress?.completedSubSteps?.length || 0);
-      }, 0);
+        const baseCount = s.substeps.length;
+        const dynamicCount = sProgress?.dynamicSubSteps?.length || 0;
+        
+        totalAllSubsteps += baseCount + dynamicCount;
+        completedAllSubsteps += sProgress?.completedSubSteps?.length || 0;
+      });
       
       const overallProgress = totalAllSubsteps > 0 
         ? Math.round((completedAllSubsteps / totalAllSubsteps) * 100) 
@@ -496,8 +502,191 @@ export async function updateJourneySubStepAction(
 
     return { success: true, progress: finalProgressTyped };
   } catch (error) {
-    console.error("❌ [JourneyAction] Erro ao atualizar subpasso:", error);
+    console.error("[JourneyAction] Erro ao atualizar subpasso:", error);
     return { success: false };
+  }
+}
+
+export async function assignDynamicSubstepAction(
+  targetMatricula: string,
+  stepId: string,
+  parentSubStepId: string,
+  subStepConfig: {
+    title: string;
+    type: "survey" | "form" | "meeting" | "content";
+    referenceId: string;
+    description?: string;
+  }
+): Promise<{ success: boolean; message: string }> {
+  try {
+    const db = getAdminDb();
+    const subStepId = `ss-dynamic-${subStepConfig.type}-${subStepConfig.referenceId}-${Date.now()}`;
+    const progressRef = db.collection("User").doc(targetMatricula).collection("User_Journey").doc("progress");
+    
+    await db.runTransaction(async (transaction) => {
+      const snap = await transaction.get(progressRef);
+      if (!snap.exists) {
+        throw new Error("Jornada do usuario nao encontrada. Pecao para o usuario acessar a area de membros primeiro.");
+      }
+      
+      const progressData = snap.data() || {};
+      const steps = progressData.steps || {};
+      
+      let matchedDbKey = stepId;
+      const stepIdNormalized = normalizeString(stepId);
+      for (const key of Object.keys(steps)) {
+        if (normalizeString(key) === stepIdNormalized) {
+          matchedDbKey = key;
+          break;
+        }
+      }
+      
+      const stepProgress = steps[matchedDbKey] || {
+        stepId: matchedDbKey,
+        status: "current",
+        completedSubSteps: [],
+        dynamicSubSteps: []
+      };
+      
+      const dynamicSubSteps = [...(stepProgress.dynamicSubSteps || [])];
+      
+      const alreadyExists = dynamicSubSteps.some(
+        (ds: any) => ds.referenceId === subStepConfig.referenceId && ds.parentId === parentSubStepId
+      );
+      
+      if (!alreadyExists) {
+        dynamicSubSteps.push({
+          id: subStepId,
+          parentId: parentSubStepId,
+          title: subStepConfig.title,
+          type: subStepConfig.type,
+          referenceId: subStepConfig.referenceId,
+          description: subStepConfig.description || "Subcheckpoint dinamico atribuido",
+          order: `${parentSubStepId}-sub-${dynamicSubSteps.length + 1}`
+        });
+      }
+      
+      const updatedSteps = {
+        ...steps,
+        [matchedDbKey]: {
+          ...stepProgress,
+          dynamicSubSteps,
+          status: "current"
+        }
+      };
+      
+      const stages = await getJourneyStagesAction();
+      let totalAllSubsteps = 0;
+      let completedAllSubsteps = 0;
+
+      stages.forEach(s => {
+        const sProgress = updatedSteps[s.id];
+        const baseCount = s.substeps.length;
+        const dynamicCount = sProgress?.dynamicSubSteps?.length || 0;
+        
+        totalAllSubsteps += baseCount + dynamicCount;
+        completedAllSubsteps += sProgress?.completedSubSteps?.length || 0;
+      });
+      
+      const overallProgress = totalAllSubsteps > 0 
+        ? Math.round((completedAllSubsteps / totalAllSubsteps) * 100) 
+        : 0;
+        
+      const finalProgress = {
+        ...progressData,
+        steps: updatedSteps,
+        overallProgress,
+        updatedAt: new Date().toISOString()
+      };
+      
+      transaction.set(progressRef, finalProgress, { merge: true });
+    });
+    
+    return { success: true, message: "Subcheckpoint atribuido com sucesso." };
+  } catch (error: any) {
+    console.error("Erro ao atribuir subcheckpoint:", error);
+    return { success: false, message: error.message || "Erro desconhecido" };
+  }
+}
+
+export async function assignDynamicSubstepToPresentAttendeesAction(
+  eventId: string,
+  subStepConfig: {
+    title: string;
+    type: "survey" | "form" | "meeting" | "content";
+    referenceId: string;
+    description?: string;
+  }
+): Promise<{ success: boolean; message: string }> {
+  try {
+    const db = getAdminDb();
+    const eventRef = db.collection("Calendar_Events").doc(eventId);
+    const eventSnap = await eventRef.get();
+    if (!eventSnap.exists) throw new Error("Evento nao encontrado.");
+    
+    const eventData = eventSnap.data() || {};
+    const eventTheme = eventData.theme || "";
+    const eventType = eventData.slug || "";
+    
+    const stages = await getJourneyStagesAction();
+    
+    // Resolve dynamically which stage allows this eventType or match by keywords
+    let matchedStage = stages.find(s => s.id === "gestao-e-desenvolvimento");
+    const typeLower = eventType.toLowerCase();
+    if (typeLower.includes("onboarding")) {
+      matchedStage = stages.find(s => s.id === "onboarding");
+    } else if (typeLower.includes("analise") || typeLower.includes("devolutiva-analise")) {
+      matchedStage = stages.find(s => s.id === "analise-comportamental");
+    } else if (typeLower.includes("plano") || typeLower.includes("devolutiva-plano")) {
+      matchedStage = stages.find(s => s.id === "plano-de-carreira");
+    } else if (typeLower.includes("grupo") || typeLower.includes("orientacao-em-grupo")) {
+      matchedStage = stages.find(s => s.id === "gestao-e-desenvolvimento");
+    } else if (typeLower.includes("coaching") || typeLower.includes("mentoria") || typeLower.includes("1-to-1")) {
+      matchedStage = stages.find(s => s.id === "coaching-e-mentoria");
+    }
+    
+    if (!matchedStage) throw new Error("Estagio nao localizado para este tipo de evento.");
+    
+    const parentCheckpoint = matchedStage.substeps.find(
+      ss => normalizeString(ss.title) === normalizeString(eventTheme)
+    );
+    
+    const parentSubStepId = parentCheckpoint?.id || matchedStage.substeps[0]?.id;
+    if (!parentSubStepId) throw new Error("Nenhum checkpoint pai localizado.");
+    
+    const attendeesSnap = await eventRef.collection("attendees").get();
+    const presentAttendees = attendeesSnap.docs
+      .map(doc => doc.data())
+      .filter(att => att.attendanceStatus === "present" && att.matricula && att.matricula !== "PENDING");
+      
+    if (presentAttendees.length === 0) {
+      return { success: true, message: "Nenhum participante com presenca confirmada para atribuir." };
+    }
+    
+    let successCount = 0;
+    let failedCount = 0;
+    
+    for (const att of presentAttendees) {
+      const res = await assignDynamicSubstepAction(
+        att.matricula,
+        matchedStage.id,
+        parentSubStepId,
+        subStepConfig
+      );
+      if (res.success) {
+        successCount++;
+      } else {
+        failedCount++;
+      }
+    }
+    
+    return {
+      success: true,
+      message: `Subcheckpoint atribuido com sucesso a ${successCount} participantes. Falhas: ${failedCount}.`
+    };
+  } catch (error: any) {
+    console.error("Erro ao atribuir subcheckpoints em lote:", error);
+    return { success: false, message: error.message || "Erro desconhecido" };
   }
 }
 

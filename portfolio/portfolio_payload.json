@@ -682,29 +682,100 @@
     ],
     "deliverySteps": [
       {
-        "id": "ss-form-gdc",
-        "type": "form",
-        "referenceId": "gdc",
-        "title": "Gestão de Carreira",
-        "description": "Formulário de acompanhamento GDC.",
+        "id": "ss-meeting-orientacao-em-grupo-1",
+        "type": "meeting",
+        "referenceId": "orientacao-em-grupo",
+        "title": "Autoconhecimento e Aprendizagem",
+        "description": "Etapa recomendada de desenvolvimento",
         "order": "1"
       },
       {
-        "id": "ss-meeting-gdc-mentorias",
+        "id": "ss-meeting-orientacao-em-grupo-2",
         "type": "meeting",
-        "referenceId": "gdc-mentorias",
-        "title": "Agendar Mentorias",
-        "description": "Agendamento de sessões periódicas de mentoria.",
+        "referenceId": "orientacao-em-grupo",
+        "title": "Gestão Comportamental e Emocional",
+        "description": "Etapa recomendada de desenvolvimento",
         "order": "2"
+      },
+      {
+        "id": "ss-meeting-orientacao-em-grupo-3",
+        "type": "meeting",
+        "referenceId": "orientacao-em-grupo",
+        "title": "Técnicas de Posicionamento",
+        "description": "Etapa recomendada de desenvolvimento",
+        "order": "3"
+      },
+      {
+        "id": "ss-meeting-orientacao-em-grupo-4",
+        "type": "meeting",
+        "referenceId": "orientacao-em-grupo",
+        "title": "Gestão de Tempo e Tarefas",
+        "description": "Etapa recomendada de desenvolvimento",
+        "order": "4"
+      },
+      {
+        "id": "ss-meeting-orientacao-em-grupo-5",
+        "type": "meeting",
+        "referenceId": "orientacao-em-grupo",
+        "title": "Comunicação e Relacionamento Interpessoal",
+        "description": "Etapa recomendada de desenvolvimento",
+        "order": "5"
+      },
+      {
+        "id": "ss-meeting-orientacao-em-grupo-6",
+        "type": "meeting",
+        "referenceId": "orientacao-em-grupo",
+        "title": "Técnicas de Negociação",
+        "description": "Etapa recomendada de desenvolvimento",
+        "order": "6"
+      },
+      {
+        "id": "ss-meeting-orientacao-em-grupo-7",
+        "type": "meeting",
+        "referenceId": "orientacao-em-grupo",
+        "title": "Networking e Geração de Valor",
+        "description": "Etapa recomendada de desenvolvimento",
+        "order": "7"
+      },
+      {
+        "id": "ss-meeting-orientacao-em-grupo-8",
+        "type": "meeting",
+        "referenceId": "orientacao-em-grupo",
+        "title": "Finanças para Carreira Profissional",
+        "description": "Etapa recomendada de desenvolvimento",
+        "order": "8"
+      },
+      {
+        "id": "ss-meeting-orientacao-em-grupo-9",
+        "type": "meeting",
+        "referenceId": "orientacao-em-grupo",
+        "title": "Liderança e Autoliderança",
+        "description": "Etapa recomendada de desenvolvimento",
+        "order": "9"
+      },
+      {
+        "id": "ss-meeting-orientacao-em-grupo-10",
+        "type": "meeting",
+        "referenceId": "orientacao-em-grupo",
+        "title": "Práticas de Melhoria Contínua",
+        "description": "Etapa recomendada de desenvolvimento",
+        "order": "10"
       }
     ],
     "capabilities": {
       "surveys": [],
-      "forms": [
-        "gdc"
-      ],
+      "forms": [],
       "allowedEventTypes": [
-        "gdc-mentorias"
+        "orientacao-em-grupo",
+        "orientacao-em-grupo",
+        "orientacao-em-grupo",
+        "orientacao-em-grupo",
+        "orientacao-em-grupo",
+        "orientacao-em-grupo",
+        "orientacao-em-grupo",
+        "orientacao-em-grupo",
+        "orientacao-em-grupo",
+        "orientacao-em-grupo"
       ]
     }
   },

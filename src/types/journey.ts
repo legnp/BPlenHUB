@@ -53,6 +53,7 @@ export interface UserStepProgress {
   startedAt?: string;
   completedAt?: string;
   updatedAt?: string;
+  dynamicSubSteps?: SubStepConfig[];
 }
 
 export interface JourneyProgress {

@@ -218,8 +218,12 @@ try:
         if service_code not in checkpoints_by_service:
             checkpoints_by_service[service_code] = []
             
+        checkpoint_id = f"ss-{type_val}-{ref_id}"
+        if service_code == "BPL-004" and order is not None:
+            checkpoint_id = f"{checkpoint_id}-{order}"
+            
         checkpoints_by_service[service_code].append({
-            "id": f"ss-{type_val}-{ref_id}",
+            "id": checkpoint_id,
             "type": type_val,
             "referenceId": ref_id,
             "title": title,
