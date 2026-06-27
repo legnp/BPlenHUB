@@ -37,6 +37,11 @@ import { CvKeywordsCopier } from "./SurveyFields/CvKeywordsCopier";
 import { CvFocadoExporter } from "./SurveyFields/CvFocadoExporter";
 import { CvPhotoGuide } from "./SurveyFields/CvPhotoGuide";
 import { NarrativeContent, NarrativeBlock } from "./NarrativeContent";
+import { CvAudioRecorder } from "./SurveyFields/CvAudioRecorder";
+import { CvDownloadButton } from "./SurveyFields/CvDownloadButton";
+import { CvVagaDescriptionButton } from "./SurveyFields/CvVagaDescriptionButton";
+import { CvLisContactButton } from "./SurveyFields/CvLisContactButton";
+import { CvBusinessCardGenerator } from "./SurveyFields/CvBusinessCardGenerator";
 import { resolveUserIdentity, getUserMetadata } from "@/actions/survey-effects";
 import { getPreviousSurveysDataAction } from "@/actions/submit-survey";
 import Calendar, { CalendarEvent } from "@/components/ui/Calendar";
@@ -335,7 +340,7 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
         const meta = await getUserMetadata(userUid);
         
         let combinedMeta = { ...meta };
-        if (config.id && (config.id.startsWith("survey_plano_fase") || config.id === "cv_focado" || config.id === "perfil_profissional_publico")) {
+        if (config.id && (config.id.startsWith("survey_plano_fase") || config.id === "cv_focado" || config.id === "perfil_profissional_publico" || config.id === "preparacao_entrevistas_networking")) {
           try {
             const previousData = await getPreviousSurveysDataAction(mat);
             combinedMeta = { ...combinedMeta, ...previousData };
@@ -518,7 +523,46 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
         if (!field.dependsOn) return true;
         const deps = field.dependsOn.split(",");
         return deps.every(depId => {
-          const depValue = responses[depId.trim()];
+          const trimmedDep = depId.trim();
+          const eqIndex = trimmedDep.indexOf("=");
+          let depPath = trimmedDep;
+          let expectedValue: string | null = null;
+          if (eqIndex !== -1) {
+            depPath = trimmedDep.substring(0, eqIndex);
+            expectedValue = trimmedDep.substring(eqIndex + 1);
+          }
+
+          let depValue: any = responses[depPath];
+          if (depValue === undefined && depPath.includes(".")) {
+            const parts = depPath.split(".");
+            let current: any = { ...userMetadata, ...responses };
+            for (const part of parts) {
+              if (current === null || current === undefined) {
+                depValue = undefined;
+                break;
+              }
+              if (typeof current === "object") {
+                const foundKey = Object.keys(current).find(k => k.toLowerCase() === part.toLowerCase());
+                if (foundKey !== undefined) {
+                  current = current[foundKey];
+                  depValue = current;
+                } else {
+                  depValue = undefined;
+                  break;
+                }
+              } else {
+                depValue = undefined;
+                break;
+              }
+            }
+          }
+
+          if (expectedValue !== null) {
+            if (depValue === undefined || depValue === null) return false;
+            const allowedValues = expectedValue.split("|").map(v => v.trim());
+            return allowedValues.includes(String(depValue).trim());
+          }
+
           return depValue !== undefined && depValue !== "" && depValue !== false && (Array.isArray(depValue) ? depValue.length > 0 : true);
         });
       })
@@ -1067,6 +1111,40 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
       case "cv_photo_guide":
         return (
           <CvPhotoGuide />
+        );
+
+      case "cv_audio_recorder":
+        return (
+          <CvAudioRecorder />
+        );
+
+      case "cv_download_button":
+        return (
+          <CvDownloadButton
+            masterCvData={userMetadata?.master_cv}
+            userNickname={userNickname || "Membro"}
+          />
+        );
+
+      case "cv_vaga_description_button":
+        return (
+          <CvVagaDescriptionButton
+            descricaoVaga={(userMetadata?.cv_focado as any)?.descricao_vaga}
+          />
+        );
+
+      case "cv_lis_contact_button":
+        return (
+          <CvLisContactButton />
+        );
+
+      case "cv_business_card_generator":
+        return (
+          <CvBusinessCardGenerator
+            value={rawValue}
+            masterCvData={userMetadata?.master_cv}
+            onChange={(val) => updateResponse(field.id, val)}
+          />
         );
 
       case "ranking":

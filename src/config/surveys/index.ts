@@ -25,6 +25,7 @@ import { pdiFase3Survey } from "./definitions/pdi-fase3";
 import { pdiFase4Survey } from "./definitions/pdi-fase4";
 import { cvFocadoSurvey } from "./definitions/cv-focado";
 import { perfilProfissionalPublicoSurvey } from "./definitions/perfil-publico";
+import { preparacaoEntrevistasSurvey } from "./definitions/preparacao-entrevistas";
 
 /**
  * BPlen HUB — Survey Registry (🗂️)
@@ -58,7 +59,8 @@ export const surveys = {
   "survey_pdi_fase1": pdiFase1Survey,
   "survey_pdi_fase2": pdiFase2Survey,
   "survey_pdi_fase3": pdiFase3Survey,
-  "survey_pdi_fase4": pdiFase4Survey
+  "survey_pdi_fase4": pdiFase4Survey,
+  "preparacao_entrevistas_networking": preparacaoEntrevistasSurvey
 };
 
 export const SURVEY_REGISTRY = Object.values(surveys);
