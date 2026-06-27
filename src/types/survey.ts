@@ -73,6 +73,7 @@ export interface SurveyFieldConfig {
   excludeIfSelectedIn?: string; // ID de outro campo do qual este deve excluir opções selecionadas
   dependsOn?: string; // ID de outro campo que deve estar preenchido para este aparecer
   column?: "left" | "right"; // Em layout split-columns, define em qual coluna o campo fica
+  buttonLabel?: string; // Rotulo customizado para botoes de acao (como download/exportacao)
 }
 
 export interface SurveyStepConfig {

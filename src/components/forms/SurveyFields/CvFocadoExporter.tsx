@@ -9,6 +9,7 @@ interface CvFocadoExporterProps {
   options?: string[];
   label?: string;
   description?: string;
+  buttonLabel?: string;
 }
 
 export function CvFocadoExporter({
@@ -16,7 +17,8 @@ export function CvFocadoExporter({
   userNickname,
   options = [],
   label,
-  description
+  description,
+  buttonLabel
 }: CvFocadoExporterProps) {
   const [generating, setGenerating] = useState(false);
   const [done, setDone] = useState(false);
@@ -92,7 +94,7 @@ export function CvFocadoExporter({
             ) : (
               <>
                 <Download className="w-4 h-4" />
-                <span>{isPdf ? "Baixar CV Focado (.docx)" : "Baixar CV Focado (.docx)"}</span>
+                <span>{buttonLabel || (isPdf ? "Baixar CV Focado (.docx)" : "Baixar CV Focado (.docx)")}</span>
               </>
             )}
           </button>

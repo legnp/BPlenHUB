@@ -240,6 +240,21 @@ export const preparacaoEntrevistasSurvey: SurveyConfig = {
           id: "gerador_cartao",
           type: "cv_business_card_generator",
           required: false
+        },
+        {
+          id: "impresso_cv_focado_exporter",
+          type: "cv_focado_exporter",
+          label: "Passo 2: Currículo Impresso",
+          description: "Para etapas finais de entrevistas presenciais, o documento impresso transmite autoridade e cuidado. O sistema disponibiliza uma versão do seu CV Focado com Design de Alta Leitura Visual (própria para impressão e contato humano, diferentemente do arquivo simples enviado aos sistemas ATS).\n\nLegenda de Abordagem: Haptologia é o estudo científico do impacto do sentido do tato na percepção e nos julgamentos humanos.\n\nOrientação de Impressão: A gramatura do papel influencia a percepção do avaliador. Quando convocado presencialmente, evite o papel sulfite comum (75g/m²). Imprima o documento em papel de alta qualidade (120g/m² ou 32 lb), preferencialmente em cor branca ou marfim. Isso assegura solidez ao toque.",
+          required: false,
+          options: ["pdf"],
+          buttonLabel: "Baixar meu CV Focado (Versão para Impressão/Design Humano)"
+        },
+        {
+          id: "impresso_check",
+          type: "checkbox",
+          label: "Compreendido! Fiz o dowload do CV para imprimi-lo quando necessário!",
+          required: true
         }
       ]
     },

@@ -1157,6 +1157,7 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
             options={field.options as string[]}
             label={field.label}
             description={field.description}
+            buttonLabel={field.buttonLabel}
           />
         );
 
