@@ -34,7 +34,7 @@ export function CouponInput({ productSlug, onApply, onRemove }: CouponInputProps
     setSuccess(false);
 
     try {
-      if (!user) throw new Error("Voce precisa estar autenticado para aplicar cupons.");
+      if (!user) throw new Error("Você precisa estar autenticado para aplicar cupons.");
       const token = await user.getIdToken();
 
       const result = await applyCouponV2Action({
@@ -55,7 +55,7 @@ export function CouponInput({ productSlug, onApply, onRemove }: CouponInputProps
         setExpiresAfterDays(result.expiresAfterDays || 7);
         setModalOpen(true);
       } else {
-        setError(result.message || "Cupom invalido ou expirado.");
+        setError(result.message || "Cupom inválido ou expirado.");
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Erro desconhecido ao aplicar cupom.");
