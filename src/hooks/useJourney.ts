@@ -226,13 +226,20 @@ export function useJourney(uid: string) {
     // 🔒 Trava de Sequência BPlen (Metodologia Linear)
     // Uma etapa só pode ser ACESSADA se a anterior estiver 'completed'.
     let isSequenceLocked = false;
+    const isOffboarding = stepId.toLowerCase() === 'offboarding';
+    
     if (thisStepIndex > 0) {
        // EXCEÇÃO ESTRATÉGICA: Onboarding e Mentocoach podem ser acessados sem concluir a etapa anterior 🧬
        const isOnboarding = stepId.toLowerCase() === 'onboarding';
        const isMentocoach = stepId.toLowerCase().includes('mentocoach');
        const isException = isOnboarding || isMentocoach;
        
-       if (!isException) {
+       if (isOffboarding) {
+          // Offboarding: liberado na conclusão total de Gestão de Carreira ou Mentocoach
+          const devProgress = progress?.steps['desenvolvimento-de-carreira']?.status === "completed";
+          const mentocoachProgress = progress?.steps['coaching-e-mentoria']?.status === "completed" || progress?.steps['mentocoach']?.status === "completed";
+          isSequenceLocked = !(devProgress || mentocoachProgress);
+       } else if (!isException) {
           const prevStageId = mergedStages[thisStepIndex - 1].id;
           const prevStepProgress = progress?.steps[prevStageId];
           isSequenceLocked = prevStepProgress?.status !== "completed";
@@ -242,7 +249,7 @@ export function useJourney(uid: string) {
     return {
       status: stepProgress?.status || "locked",
       percentage,
-      hasAccess: finalHasAccess || stage?.order === 0 || (stepId === 'onboarding' && hasAnyQuota), // Step 0 sempre livre, Onboarding livre se tiver algum serviço
+      hasAccess: finalHasAccess || stage?.order === 0 || ((stepId === 'onboarding' || isOffboarding) && hasAnyQuota), // Step 0 sempre livre, Onboarding/Offboarding livres se tiver algum serviço
       isNext,
       isSequenceLocked, // 🧬 Nova flag de governança metodológica
       substepsLabel: `${completedCount}/${totalSubsteps}`
