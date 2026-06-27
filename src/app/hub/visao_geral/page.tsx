@@ -26,6 +26,15 @@ import {
 import AtmosphericLoading from "@/components/shared/AtmosphericLoading";
 import { cn } from "@/lib/utils";
 
+function extractGoogleDriveFileId(url: string): string | null {
+  if (!url) return null;
+  const fileDMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (fileDMatch && fileDMatch[1]) return fileDMatch[1];
+  const idMatch = url.match(/id=([a-zA-Z0-9_-]+)/);
+  if (idMatch && idMatch[1]) return idMatch[1];
+  return null;
+}
+
 interface VisaoGeralActivity {
   id: string;
   title: string;
@@ -94,6 +103,25 @@ export default function VisaoGeralPage() {
   const [sortPendentes, setSortPendentes] = useState<"service" | "title-asc" | "title-desc">("service");
   const [sortEmAndamento, setSortEmAndamento] = useState<"service" | "title-asc" | "title-desc">("service");
   const [sortConcluidas, setSortConcluidas] = useState<"service" | "title-asc" | "title-desc" | "date-desc" | "date-asc">("service");
+
+  // Handle secure Google Drive document downloading/viewing via proxy
+  const handleDownloadFile = async (e: React.MouseEvent, fileUrl: string) => {
+    e.preventDefault();
+    if (!user) return;
+
+    const fileId = extractGoogleDriveFileId(fileUrl);
+    if (fileId) {
+      try {
+        const token = await user.getIdToken();
+        window.open(`/api/docs/${fileId}?token=${token}`, "_blank");
+      } catch (err) {
+        console.error("Erro ao obter token de acesso para documento:", err);
+        window.open(fileUrl, "_blank"); // fallback seguro
+      }
+    } else {
+      window.open(fileUrl, "_blank"); // fallback seguro para URLs externas
+    }
+  };
 
   useEffect(() => {
     async function loadData() {
@@ -467,7 +495,7 @@ export default function VisaoGeralPage() {
               </div>
             ) : (
               pendentesSorted.map(act => (
-                <ActivityRow key={act.id} activity={act} onOpenDetails={setActiveDetailItem} />
+                <ActivityRow key={act.id} activity={act} onOpenDetails={setActiveDetailItem} onDownloadFile={handleDownloadFile} />
               ))
             )}
           </div>
@@ -503,7 +531,7 @@ export default function VisaoGeralPage() {
               </div>
             ) : (
               emAndamentoSorted.map(act => (
-                <ActivityRow key={act.id} activity={act} onOpenDetails={setActiveDetailItem} />
+                <ActivityRow key={act.id} activity={act} onOpenDetails={setActiveDetailItem} onDownloadFile={handleDownloadFile} />
               ))
             )}
           </div>
@@ -541,7 +569,7 @@ export default function VisaoGeralPage() {
               </div>
             ) : (
               concluidasSorted.map(act => (
-                <ActivityRow key={act.id} activity={act} onOpenDetails={setActiveDetailItem} />
+                <ActivityRow key={act.id} activity={act} onOpenDetails={setActiveDetailItem} onDownloadFile={handleDownloadFile} />
               ))
             )}
           </div>
@@ -636,10 +664,12 @@ export default function VisaoGeralPage() {
 
 function ActivityRow({ 
   activity, 
-  onOpenDetails 
+  onOpenDetails,
+  onDownloadFile
 }: { 
   activity: VisaoGeralActivity; 
   onOpenDetails: (act: VisaoGeralActivity) => void;
+  onDownloadFile: (e: React.MouseEvent, url: string) => void;
 }) {
   const isCompleted = activity.status === "completed";
   const isInProgress = activity.status === "in_progress";
@@ -744,14 +774,23 @@ function ActivityRow({
         <div className="flex items-center gap-2">
           {/* Documento Atrelado */}
           {activity.documentUrl && (
-            <Link
-              href={activity.documentUrl}
-              target={activity.documentUrl.startsWith("http") ? "_blank" : "_self"}
-              className="p-1.5 rounded-lg bg-[var(--input-bg)] border border-[var(--border-primary)] text-[var(--text-muted)] hover:text-[var(--accent-start)] hover:border-[var(--accent-start)]/20 transition-all"
-              title="Ver documento associado"
-            >
-              <FileDown size={12} />
-            </Link>
+            activity.documentUrl.startsWith("http") ? (
+              <button
+                onClick={(e) => activity.documentUrl && onDownloadFile(e, activity.documentUrl)}
+                className="p-1.5 rounded-lg bg-[var(--input-bg)] border border-[var(--border-primary)] text-[var(--text-muted)] hover:text-[var(--accent-start)] hover:border-[var(--accent-start)]/20 transition-all"
+                title="Ver documento associado"
+              >
+                <FileDown size={12} />
+              </button>
+            ) : (
+              <Link
+                href={activity.documentUrl}
+                className="p-1.5 rounded-lg bg-[var(--input-bg)] border border-[var(--border-primary)] text-[var(--text-muted)] hover:text-[var(--accent-start)] hover:border-[var(--accent-start)]/20 transition-all"
+                title="Ir para a página do documento"
+              >
+                <FileDown size={12} />
+              </Link>
+            )
           )}
 
           {/* Feedback/Ata/Notas */}
