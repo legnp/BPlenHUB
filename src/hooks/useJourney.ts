@@ -170,6 +170,12 @@ export function useJourney(uid: string) {
              hasQuota = true;
              break;
           }
+
+          // Fallback rigoroso direto (ignora apenas hífens e case) 🛡️
+          if (quotaKey.toLowerCase().replace(/[-_]/g, "") === stepIdLower.replace(/[-_]/g, "")) {
+             hasQuota = true;
+             break;
+          }
           
           const keyUpper = quotaKey.toUpperCase();
           // Fallbacks metodologicos (ex: Coaching-e-mentoria desbloqueado por sessao de coaching)
