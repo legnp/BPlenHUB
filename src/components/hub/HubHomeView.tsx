@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { 
@@ -23,7 +23,10 @@ import {
   Target,
   Briefcase,
   Globe,
-  Search
+  Search,
+  Clock,
+  Calendar,
+  Activity
 } from "lucide-react";
 import { MOCK_SERVICES, MOCK_TOOLS } from "@/config/hub-data";
 import { useTheme } from "@/context/ThemeContext";
@@ -42,9 +45,65 @@ import * as LucideIcons from "lucide-react";
  * Estruturada como uma jornada de desenvolvimento.
  */
 
+
+function ActivityCard({ 
+  kicker, 
+  activity, 
+  fallbackText, 
+  iconColor, 
+  icon: Icon 
+}: { 
+  kicker: string; 
+  activity: any; 
+  fallbackText: string; 
+  iconColor: string; 
+  icon: any; 
+}) {
+  if (!activity) {
+    return (
+      <div className="p-6 rounded-[2rem] border border-[var(--input-border)] bg-[var(--input-bg)] opacity-50 flex flex-col justify-between h-44 text-left">
+        <div>
+          <span className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)] block mb-2">
+            {kicker}
+          </span>
+          <p className="text-xs font-bold text-[var(--text-muted)] italic mt-4">{fallbackText}</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <Link 
+      href={activity.url}
+      className="p-6 rounded-[2rem] border border-[var(--input-border)] bg-[var(--input-bg)] hover:bg-white/5 hover:border-[var(--accent-start)]/20 transition-all flex flex-col justify-between h-44 text-left group relative overflow-hidden"
+    >
+      <div>
+        <div className="flex items-center justify-between gap-2 mb-3">
+          <span className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)] block">
+            {kicker}
+          </span>
+          <div className={cn("p-1.5 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-lg shrink-0", iconColor)}>
+            <Icon size={12} />
+          </div>
+        </div>
+        <h4 className="text-xs font-bold text-[var(--text-primary)] group-hover:translate-x-1 transition-transform line-clamp-2 leading-snug">
+          {activity.title}
+        </h4>
+      </div>
+
+      <div className="mt-4 flex items-center justify-between">
+        <span className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60">
+          {activity.stageName}
+        </span>
+        <ChevronRight size={12} className="text-[var(--text-muted)] opacity-30 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+      </div>
+    </Link>
+  );
+}
+
 export function HubHomeView() {
   const { user } = useAuthContext();
-  const { stages, progress, loading: journeyLoading } = useJourney(user?.uid || "guest");
+  const { stages, progress, loading: journeyLoading, getStageTelemetry } = useJourney(user?.uid || "guest");
   
   const [latestPosts, setLatestPosts] = useState<SocialPost[]>([]);
   const [isLoadingPosts, setIsLoadingPosts] = useState(true);
@@ -63,10 +122,98 @@ export function HubHomeView() {
     loadPosts();
   }, []);
 
-  // 🛰️ Localizar Estágio "Primeiros Passos" (Order 0)
-  const primeirosPassosStage = stages.find(s => s.order === 0 || s.id === 'primeiros_passos');
-  const ppSubsteps = primeirosPassosStage?.substeps || [];
-  const ppProgress = progress?.steps[primeirosPassosStage?.id || ""]?.completedSubSteps || [];
+  // 🧬 Mapear e classificar atividades do membro para exibição de status real
+  const activities = useMemo(() => {
+    if (journeyLoading || stages.length === 0) return [];
+    const list: Array<{
+      id: string;
+      title: string;
+      stageName: string;
+      stageId: string;
+      type: string;
+      status: "completed" | "in_progress" | "pending";
+      url: string;
+      completionDate?: string;
+    }> = [];
+
+    let firstActiveStageId = "";
+    let firstIncompleteSubstepId = "";
+
+    for (const stage of stages) {
+      const tel = getStageTelemetry(stage.id);
+      if (tel.status === "current" || tel.status === "available") {
+        firstActiveStageId = stage.id;
+        const completedIds = progress?.steps[stage.id]?.completedSubSteps || [];
+        const incomplete = stage.substeps?.find(ss => !completedIds.includes(ss.id));
+        if (incomplete) {
+          firstIncompleteSubstepId = incomplete.id;
+        }
+        break;
+      }
+    }
+
+    stages.forEach(stage => {
+      if (stage.id === "primeiros-passos" || stage.id === "primeiros_passos" || stage.order === 0) {
+        return;
+      }
+
+      const completedIds = progress?.steps[stage.id]?.completedSubSteps || [];
+      const compDates = progress?.steps[stage.id]?.subStepCompletionDates || {};
+
+      stage.substeps?.forEach(sub => {
+        const refIdLower = (sub.referenceId || "").toLowerCase();
+        if (
+          refIdLower.includes("perfil_settings") || 
+          refIdLower.includes("networking") || 
+          refIdLower.includes("tema")
+        ) {
+          return;
+        }
+
+        const isCompleted = completedIds.includes(sub.id);
+        let status: "completed" | "in_progress" | "pending" = "pending";
+
+        if (isCompleted) {
+          status = "completed";
+        } else if (stage.id === firstActiveStageId && sub.id === firstIncompleteSubstepId) {
+          status = "in_progress";
+        } else {
+          status = "pending";
+        }
+
+        list.push({
+          id: sub.id,
+          title: sub.title,
+          stageName: stage.title,
+          stageId: stage.id,
+          type: sub.type,
+          status,
+          url: `/hub/membro/journey/${stage.id}`,
+          completionDate: compDates[sub.id]
+        });
+      });
+    });
+
+    return list;
+  }, [stages, progress, journeyLoading, getStageTelemetry]);
+
+  const cardsData = useMemo(() => {
+    const proxima = activities.find(a => a.status === "pending");
+    const emAndamento = activities.find(a => a.status === "in_progress");
+    const completedList = activities.filter(a => a.status === "completed");
+    let ultimaConcluida: typeof activities[0] | undefined = undefined;
+    
+    if (completedList.length > 0) {
+      const sortedByDate = [...completedList].sort((a, b) => {
+        const dateA = a.completionDate ? new Date(a.completionDate).getTime() : 0;
+        const dateB = b.completionDate ? new Date(b.completionDate).getTime() : 0;
+        return dateB - dateA;
+      });
+      ultimaConcluida = sortedByDate[0];
+    }
+
+    return { proxima, emAndamento, ultimaConcluida };
+  }, [activities]);
 
   const getPlatformLabel = (platform: string) => {
     const labels: Record<string, string> = {
@@ -138,86 +285,54 @@ export function HubHomeView() {
               </div>
            </section>
 
-           {/* 🧬 Telemetria Ativa: Primeiros Passos */}
-           <section id="primeiros-passos-acesso" className="space-y-8">
-              <div className="flex items-center justify-between border-b border-[var(--border-primary)] pb-6">
-                 <h3 className="text-2xl font-bold text-[var(--text-primary)] flex items-center gap-3">
-                    <Target size={22} className="text-[#667eea]" /> Primeiros Passos
-                 </h3>
-                 <Link href="/hub/primeiros_passos" className="text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all flex items-center gap-2 group">
-                    Explorar trilha <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                 </Link>
-              </div>
+            {/* 🧬 Telemetria Ativa: Suas atividades no HUB */}
+            <section id="atividades-hub-acesso" className="space-y-8">
+               <div className="flex items-center justify-between border-b border-[var(--border-primary)] pb-6">
+                  <h3 className="text-2xl font-bold text-[var(--text-primary)] flex items-center gap-3">
+                     <Target size={22} className="text-[#667eea]" /> Suas atividades no HUB
+                  </h3>
+                  <Link href="/hub/visao_geral" className="text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all flex items-center gap-2 group">
+                     Ir para Visao Geral <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                  </Link>
+               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                 {journeyLoading ? (
-                    Array.from({ length: 4 }).map((_, i) => (
-                       <div key={i} className="h-40 bg-[var(--input-bg)] animate-pulse rounded-[2rem] border border-[var(--border-primary)]" />
-                    ))
-                 ) : ppSubsteps.length > 0 ? (
-                    ppSubsteps.map((substep, idx) => {
-                       const isCompleted = ppProgress.includes(substep.id);
-                       // Resolver ícone baseado no tipo (Survey, Form, etc)
-                       let Icon = Search;
-                       if (substep.type === "survey") Icon = MessageSquare;
-                       if (substep.type === "meeting") Icon = Globe;
-                       
-                       return (
-                          <Link 
-                            key={substep.id}
-                            href="/hub/primeiros_passos"
-                            className={cn(
-                               "p-6 rounded-[2rem] border transition-all group relative overflow-hidden h-full flex flex-col",
-                               isCompleted 
-                                 ? "bg-[var(--accent-soft)]/5 border-[var(--accent-start)]/20 shadow-sm" 
-                                 : "bg-[var(--input-bg)] border-[var(--input-border)] hover:bg-white/5 hover:border-[#667eea]/20"
-                            )}
-                          >
-                             <div className="flex flex-col gap-4 relative z-10 flex-grow text-left">
-                                <div className={cn(
-                                   "p-3 w-fit rounded-xl transition-colors",
-                                   isCompleted ? "bg-[var(--accent-start)]/10 text-[var(--accent-start)]" : "bg-[var(--input-bg)] text-[var(--text-muted)] group-hover:text-[#667eea]"
-                                )}>
-                                   <Icon size={20} />
-                                </div>
-                                <div className="space-y-1">
-                                   <h4 className="text-sm font-bold text-[var(--text-primary)] group-hover:translate-x-1 transition-transform line-clamp-1">{substep.title}</h4>
-                                   <p className="text-[10px] font-medium text-[var(--text-muted)] line-clamp-2 leading-tight opacity-70 italic">
-                                      {substep.description || "Parada da jornada estratégica"}
-                                   </p>
-                                </div>
-                             </div>
+               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {journeyLoading ? (
+                     Array.from({ length: 3 }).map((_, i) => (
+                        <div key={i} className="h-44 bg-[var(--input-bg)] animate-pulse rounded-[2rem] border border-[var(--border-primary)]" />
+                     ))
+                  ) : (
+                     <>
+                        {/* Card 1: Próxima Atividade */}
+                        <ActivityCard 
+                           kicker="1º Proxima Atividade" 
+                           activity={cardsData.proxima} 
+                           fallbackText="Nenhuma atividade pendente"
+                           iconColor="text-yellow-500"
+                           icon={Clock}
+                        />
 
-                             <div className="mt-6 flex items-center justify-between">
-                                <div className={cn(
-                                   "flex items-center gap-2 text-[9px] font-black uppercase tracking-widest",
-                                   isCompleted ? "text-[var(--accent-start)]" : "text-[var(--text-muted)]"
-                                )}>
-                                   <div className={cn(
-                                      "w-1.5 h-1.5 rounded-full animate-pulse",
-                                      isCompleted ? "bg-[var(--accent-start)]" : "bg-gray-400 opacity-40"
-                                   )} />
-                                   {isCompleted ? "100% Concluído" : "Pendente (0%)"}
-                                </div>
-                                <ChevronRight size={12} className="text-[var(--text-muted)] opacity-30" />
-                             </div>
+                        {/* Card 2: Atividade em Andamento */}
+                        <ActivityCard 
+                           kicker="2º Atividade em Andamento" 
+                           activity={cardsData.emAndamento} 
+                           fallbackText="Nenhum foco ativo no momento"
+                           iconColor="text-blue-500"
+                           icon={Activity}
+                        />
 
-                             {/* Selo de Conclusão Glass */}
-                             {isCompleted && (
-                                <div className="absolute top-4 right-4 text-[var(--accent-start)]/40 p-1">
-                                   <CheckCircle2 size={16} />
-                                </div>
-                             )}
-                          </Link>
-                       )
-                    })
-                 ) : (
-                    <div className="col-span-2 py-12 px-6 border border-dashed border-[var(--border-primary)] rounded-[2rem] text-center">
-                       <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-40">Módulo em configuração ativa</p>
-                    </div>
-                 )}
-              </div>
-           </section>
+                        {/* Card 3: Última Atividade Concluída */}
+                        <ActivityCard 
+                           kicker="3º Ultima Atividade Concluida" 
+                           activity={cardsData.ultimaConcluida} 
+                           fallbackText="Nenhuma atividade concluida"
+                           iconColor="text-green-500"
+                           icon={CheckCircle2}
+                        />
+                     </>
+                  )}
+               </div>
+            </section>
 
         </div>
 

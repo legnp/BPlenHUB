@@ -12,10 +12,10 @@ import Link from "next/link";
 export default async function CheckoutPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   
-  // 🧬 CONEXÃO DE FLOW: Plano Junior redireciona diretamente para o Primeiros Passos
+  // 🧬 CONEXÃO DE FLOW: Plano Junior redireciona diretamente para o Posicionamento de Carreira
   if (slug === "junior") {
     const { redirect } = await import("next/navigation");
-    redirect("/hub/primeiros_passos");
+    redirect("/hub/membro/journey/posicionamento-profissional");
   }
   
   // Recupera dados do serviço de forma segura no servidor

@@ -37,9 +37,9 @@ export function MatriculaGuard({ productSlug, className, children }: MatriculaGu
       return;
     }
 
-    // 🧬 CONEXÃO DE FLOW: Plano Junior redireciona diretamente para os Primeiros Passos
+    // 🧬 CONEXÃO DE FLOW: Plano Junior redireciona diretamente para o Posicionamento de Carreira
     if (productSlug === "junior") {
-      router.push("/hub/primeiros_passos");
+      router.push("/hub/membro/journey/posicionamento-profissional");
       return;
     }
 
@@ -49,9 +49,9 @@ export function MatriculaGuard({ productSlug, className, children }: MatriculaGu
   function handleModalConfirm() {
     setIsModalOpen(false);
     if (modalMode === "login") {
-       // Redireciona para login e volta para o checkout do produto (ou Primeiros Passos se Junior)
-       const targetPath = productSlug === "junior" ? "/hub/primeiros_passos" : `/hub/membro/checkout/${productSlug}`;
-       router.push(`/?auth=required&returnTo=${encodeURIComponent(targetPath)}`);
+       // Redireciona para login e volta para o checkout do produto (ou Posicionamento de Carreira se Junior)
+      const targetPath = productSlug === "junior" ? "/hub/membro/journey/posicionamento-profissional" : `/hub/membro/checkout/${productSlug}`;
+      router.push(`/?auth=required&returnTo=${encodeURIComponent(targetPath)}`);
     }
   }
 
