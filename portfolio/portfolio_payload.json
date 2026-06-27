@@ -225,9 +225,9 @@
         "order": "3.3"
       },
       {
-        "id": "ss-survey-pendente",
+        "id": "ss-survey-preparacao_entrevistas_networking",
         "type": "survey",
-        "referenceId": "pendente",
+        "referenceId": "preparacao_entrevistas_networking",
         "title": "Preparação para Entrevistas e Networking",
         "description": "Preparação de apresentação e pitch em entrevistas",
         "order": "4"
@@ -237,15 +237,15 @@
         "type": "survey",
         "referenceId": "pre_analise_comportamental",
         "title": "Feedback Tecnico",
-        "description": "Analise Comportamental Basica",
+        "description": "Análise Comportamental Básica",
         "order": "5.1"
       },
       {
-        "id": "ss-survey-orientacao-individual-posicionamento",
+        "id": "ss-survey-feedback-posicionamento-profissional",
         "type": "survey",
-        "referenceId": "orientacao-individual-posicionamento",
+        "referenceId": "feedback-posicionamento-profissional",
         "title": "Feedback Tecnico",
-        "description": "Sessao individual de feedback do PDI e perfil profissional",
+        "description": "Sessão de feedback do Posicionamento Profissional",
         "order": "5.2"
       }
     ],
@@ -259,9 +259,9 @@
         "master_cv",
         "cv_focado",
         "perfil_profissional_publico",
-        "pendente",
+        "preparacao_entrevistas_networking",
         "pre_analise_comportamental",
-        "orientacao-individual-posicionamento"
+        "feedback-posicionamento-profissional"
       ],
       "forms": [],
       "allowedEventTypes": []
@@ -686,7 +686,7 @@
         "type": "meeting",
         "referenceId": "orientacao-em-grupo",
         "title": "Autoconhecimento e Aprendizagem",
-        "description": "Etapa recomendada de desenvolvimento",
+        "description": "Autoconhecimento e Aprendizagem",
         "order": "1"
       },
       {
@@ -694,7 +694,7 @@
         "type": "meeting",
         "referenceId": "orientacao-em-grupo",
         "title": "Gestão Comportamental e Emocional",
-        "description": "Etapa recomendada de desenvolvimento",
+        "description": "Gestão Comportamental e Emocional",
         "order": "2"
       },
       {
@@ -702,7 +702,7 @@
         "type": "meeting",
         "referenceId": "orientacao-em-grupo",
         "title": "Técnicas de Posicionamento",
-        "description": "Etapa recomendada de desenvolvimento",
+        "description": "Técnicas de Posicionamento",
         "order": "3"
       },
       {
@@ -710,7 +710,7 @@
         "type": "meeting",
         "referenceId": "orientacao-em-grupo",
         "title": "Gestão de Tempo e Tarefas",
-        "description": "Etapa recomendada de desenvolvimento",
+        "description": "Gestão de Tempo e Tarefas",
         "order": "4"
       },
       {
@@ -718,7 +718,7 @@
         "type": "meeting",
         "referenceId": "orientacao-em-grupo",
         "title": "Comunicação e Relacionamento Interpessoal",
-        "description": "Etapa recomendada de desenvolvimento",
+        "description": "Comunicação e Relacionamento Interpessoal",
         "order": "5"
       },
       {
@@ -726,7 +726,7 @@
         "type": "meeting",
         "referenceId": "orientacao-em-grupo",
         "title": "Técnicas de Negociação",
-        "description": "Etapa recomendada de desenvolvimento",
+        "description": "Técnicas de Negociação",
         "order": "6"
       },
       {
@@ -734,7 +734,7 @@
         "type": "meeting",
         "referenceId": "orientacao-em-grupo",
         "title": "Networking e Geração de Valor",
-        "description": "Etapa recomendada de desenvolvimento",
+        "description": "Networking e Geração de Valor",
         "order": "7"
       },
       {
@@ -742,7 +742,7 @@
         "type": "meeting",
         "referenceId": "orientacao-em-grupo",
         "title": "Finanças para Carreira Profissional",
-        "description": "Etapa recomendada de desenvolvimento",
+        "description": "Finanças para Carreira Profissional",
         "order": "8"
       },
       {
@@ -750,7 +750,7 @@
         "type": "meeting",
         "referenceId": "orientacao-em-grupo",
         "title": "Liderança e Autoliderança",
-        "description": "Etapa recomendada de desenvolvimento",
+        "description": "Liderança e Autoliderança",
         "order": "9"
       },
       {
@@ -758,7 +758,7 @@
         "type": "meeting",
         "referenceId": "orientacao-em-grupo",
         "title": "Práticas de Melhoria Contínua",
-        "description": "Etapa recomendada de desenvolvimento",
+        "description": "Práticas de Melhoria Contínua",
         "order": "10"
       }
     ],
@@ -884,29 +884,73 @@
     ],
     "deliverySteps": [
       {
-        "id": "ss-form-mentocoach",
-        "type": "form",
-        "referenceId": "mentocoach",
-        "title": "Acompanhamento MentoCoach",
-        "description": "Formulário de autoavaliação MentoCoach.",
+        "id": "ss-survey-disc",
+        "type": "survey",
+        "referenceId": "disc",
+        "title": "Análise Comportamental",
+        "description": "Avaliação de Perfil Comportamental (DISC)",
         "order": "1"
       },
       {
-        "id": "ss-meeting-mentocoach-sessoes",
-        "type": "meeting",
-        "referenceId": "mentocoach-sessoes",
-        "title": "Agendar Sessões de Coaching",
-        "description": "Agendamento das sessões individuais de coaching de alta performance.",
+        "id": "ss-survey-preferencias_reconhecimento",
+        "type": "survey",
+        "referenceId": "preferencias_reconhecimento",
+        "title": "Análise Comportamental",
+        "description": "Mapa de preferências de reconhecimento interpessoal",
         "order": "2"
+      },
+      {
+        "id": "ss-survey-preferencias_aprendizado",
+        "type": "survey",
+        "referenceId": "preferencias_aprendizado",
+        "title": "Análise Comportamental",
+        "description": "Mapa de preferências de formas e habitos de aprendizado",
+        "order": "3"
+      },
+      {
+        "id": "ss-survey-gestao_tempo",
+        "type": "survey",
+        "referenceId": "gestao_tempo",
+        "title": "Análise Comportamental",
+        "description": "Mapa de habitos de priorização de tarefas e tempo",
+        "order": "4"
+      },
+      {
+        "id": "ss-meeting-devolutiva-analise-comportamental",
+        "type": "meeting",
+        "referenceId": "devolutiva-analise-comportamental",
+        "title": "Análise Comportamental",
+        "description": "Sessão individual de Devolutiva Comportamental",
+        "order": "5"
+      },
+      {
+        "id": "ss-meeting-sessao-mentocoach",
+        "type": "meeting",
+        "referenceId": "sessao-mentocoach",
+        "title": "Sessões de MentoCoach",
+        "description": "Sessão de MentoCoach",
+        "order": "6"
+      },
+      {
+        "id": "ss-dashboard-mentocoach-dashboard",
+        "type": "dashboard",
+        "referenceId": "mentocoach-dashboard",
+        "title": "MentoCoach Dashboard",
+        "description": "Acompanhamento do Progresso",
+        "order": "7"
       }
     ],
     "capabilities": {
-      "surveys": [],
-      "forms": [
-        "mentocoach"
+      "surveys": [
+        "disc",
+        "preferencias_reconhecimento",
+        "preferencias_aprendizado",
+        "gestao_tempo"
       ],
+      "forms": [],
       "allowedEventTypes": [
-        "mentocoach-sessoes"
+        "devolutiva-analise-comportamental",
+        "sessao-mentocoach"
       ]
     }
   },
@@ -955,8 +999,16 @@
         "type": "survey",
         "referenceId": "offboarding_survey",
         "title": "Avaliação Final",
-        "description": "Pesquisa de encerramento e consolidação de resultados.",
+        "description": "Avalição de encerramento e consolidação de resultados.",
         "order": "1"
+      },
+      {
+        "id": "ss-meeting-offboarding",
+        "type": "meeting",
+        "referenceId": "offboarding",
+        "title": "Sessão de Offboarding",
+        "description": "Encerramento e alinhamento de próximos passos",
+        "order": "2"
       }
     ],
     "capabilities": {
