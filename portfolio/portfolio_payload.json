@@ -241,8 +241,8 @@
         "order": "5.1"
       },
       {
-        "id": "ss-survey-feedback-posicionamento-profissional",
-        "type": "survey",
+        "id": "ss-meeting-feedback-posicionamento-profissional",
+        "type": "meeting",
         "referenceId": "feedback-posicionamento-profissional",
         "title": "Consultoria de Feedback",
         "description": "Sessão de feedback do Posicionamento Profissional",
@@ -260,11 +260,12 @@
         "cv_focado",
         "perfil_profissional_publico",
         "preparacao_entrevistas_networking",
-        "pre_analise_comportamental",
-        "feedback-posicionamento-profissional"
+        "pre_analise_comportamental"
       ],
       "forms": [],
-      "allowedEventTypes": []
+      "allowedEventTypes": [
+        "feedback-posicionamento-profissional"
+      ]
     }
   },
   {

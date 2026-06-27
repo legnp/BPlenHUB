@@ -43,6 +43,10 @@ function getMeetingFilterKeyword(substep: SubStepConfig): string {
   const refId = (substep.referenceId || "").toLowerCase();
   const title = (substep.title || "").toLowerCase();
 
+  if (refId.includes("feedback") && refId.includes("posicionamento")) {
+    return "feedback posicionamento";
+  }
+
   if (refId.includes("onboarding") || title.includes("onboarding")) return "onboarding";
   
   if (refId.includes("analise") || refId.includes("comportamental") || 
