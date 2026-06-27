@@ -436,11 +436,11 @@ export default function VisaoGeralPage() {
       <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div className="space-y-4">
           <Link 
-            href="/hub/membro"
+            href="/hub"
             className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors group"
           >
             <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-            Voltar ao Dashboard
+            Voltar para o HUB
           </Link>
         </div>
       </header>
