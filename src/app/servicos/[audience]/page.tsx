@@ -123,7 +123,62 @@ export default async function SegmentedServicesPage({ params }: PageProps) {
             </h2>
           </div>
 
-          {individualServices.length === 0 ? (
+          {config.id === 'companies' ? (
+            <div className="bg-white/5 border border-white/10 p-8 md:p-12 rounded-[2rem] max-w-4xl mx-auto shadow-2xl relative overflow-hidden group">
+               {/* Decorative Gradient Background */}
+               <div className="absolute inset-0 bg-gradient-to-br from-[#667eea]/10 to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-700" />
+               <div className="relative z-10">
+                 <h2 className="text-2xl md:text-3xl font-black text-white mb-6 leading-tight">
+                    A proposta de valor para sua empresa está em desenvolvimento.
+                 </h2>
+                 <p className="text-gray-400 text-sm md:text-base leading-relaxed mb-6 font-medium">
+                    Como parte do nosso compromisso com a excelência técnica e o desenvolvimento humano organizacional profundo, estamos preparando uma proposta de valor exclusiva para que a BPlen possa auxiliar na potencialização dos resultados do seu negócio.
+                 </p>
+                 <p className="text-gray-400 text-sm md:text-base leading-relaxed mb-8 font-medium">
+                    Enquanto desenhamos esta solução, convidamos você para <Link href="/agendar" className="text-[#667eea] hover:text-white transition-colors underline underline-offset-4 decoration-[#667eea]/50">agendar uma conversa conosco</Link>, sem qualquer compromisso. O objetivo é apresentarmos os principais marcos e resultados da BPlen, além de compreendermos a fundo o contexto e a visão de futuro da sua empresa.
+                 </p>
+
+                 <div className="bg-black/20 rounded-2xl p-6 mb-8 border border-white/5">
+                   <h3 className="text-white font-bold text-sm uppercase tracking-widest mb-4">Você também pode aproveitar este momento para:</h3>
+                   <ul className="space-y-4">
+                     <li className="flex gap-4">
+                       <div className="mt-0.5 shrink-0"><ChevronRight size={16} className="text-[#667eea]" /></div>
+                       <span className="text-sm text-gray-300">
+                         Conhecer os nossos <Link href="/servicos/pessoas" className="text-white hover:text-[#667eea] transition-colors underline decoration-white/20 underline-offset-4">Serviços para Pessoas</Link>
+                       </span>
+                     </li>
+                     <li className="flex gap-4">
+                       <div className="mt-0.5 shrink-0"><ChevronRight size={16} className="text-[#667eea]" /></div>
+                       <span className="text-sm text-gray-300">
+                         Explorar as soluções dos <Link href="/servicos/parceiros" className="text-white hover:text-[#667eea] transition-colors underline decoration-white/20 underline-offset-4">Nossos Parceiros</Link>
+                       </span>
+                     </li>
+                     <li className="flex gap-4">
+                       <div className="mt-0.5 shrink-0"><ChevronRight size={16} className="text-[#667eea]" /></div>
+                       <span className="text-sm text-gray-300">
+                         Acessar materiais de referência na nossa <Link href="/conteudo" className="text-white hover:text-[#667eea] transition-colors underline decoration-white/20 underline-offset-4">Página de Conteúdos</Link>
+                       </span>
+                     </li>
+                     <li className="flex gap-4">
+                       <div className="mt-0.5 shrink-0"><ChevronRight size={16} className="text-[#667eea]" /></div>
+                       <span className="text-sm text-gray-300 leading-relaxed">
+                         Solicitar uma Demonstração Grátis do BPlen HUB <Link href="/agendar" className="text-white hover:text-[#667eea] transition-colors underline decoration-white/20 underline-offset-4">agendando uma conversa conosco</Link> ou nos <a href="https://wa.me/5511945152088?text=Ol%C3%A1%2C%20Lis%21%20Eu%20gostaria%20de%20solicitar%20uma%20demonstra%C3%A7%C3%A3o%20gr%C3%A1tis%20da%20BPlen%20HUB" target="_blank" rel="noopener noreferrer" className="text-white hover:text-[#667eea] transition-colors underline decoration-white/20 underline-offset-4">chamando no WhatsApp</a>.
+                       </span>
+                     </li>
+                   </ul>
+                 </div>
+
+                 <div className="flex items-center gap-4 text-white font-medium bg-[#667eea]/10 p-5 rounded-xl border border-[#667eea]/20">
+                   <div className="w-10 h-10 rounded-full bg-[#667eea]/20 flex items-center justify-center shrink-0">
+                     <Users size={20} className="text-[#667eea]" />
+                   </div>
+                   <p className="text-sm leading-relaxed">
+                     Aguardamos a oportunidade para juntos começarmos a descomplicar o desenvolvimento humano na sua empresa!
+                   </p>
+                 </div>
+               </div>
+            </div>
+          ) : individualServices.length === 0 ? (
             <div className="p-20 text-center border border-white/5 bg-white/5 rounded-[3rem] opacity-40">
                <Package size={48} className="mx-auto mb-4 opacity-20" />
                <p className="text-xs font-black uppercase tracking-widest">Nenhum serviço disponível neste segmento ainda</p>
