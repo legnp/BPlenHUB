@@ -197,7 +197,7 @@ export default function VisaoGeralPage() {
         let feedbackText: string | undefined = undefined;
 
         if (careerData) {
-          // Documentos padrao gerados
+          // Documentos padrao gerados (dependem do modulo de carreira)
           if (isCompleted) {
             if (sub.referenceId === "master_cv" || sub.referenceId === "cv_focado") {
               documentUrl = `/hub/membro/journey/${stage.id}`;
@@ -207,38 +207,38 @@ export default function VisaoGeralPage() {
               documentUrl = `/hub/membro/journey/${stage.id}`;
             }
           }
+        }
 
-          // Se houver atas de reunioes (via activityArtifacts — sem exigir career_planning)
-          if (sub.type === "meeting" && activityArtifacts.atas.length > 0) {
-            const matchedAta = activityArtifacts.atas.find((a: any) => 
-              isAtaOrFeedbackMatch(friendlyTitle, sub.referenceId, a.title)
-            );
-            if (matchedAta) {
-              documentUrl = matchedAta.fileUrl;
-              hasFeedback = true;
-              feedbackText = matchedAta.contentSummary || "Sessao realizada com sucesso.";
-            }
+        // Se houver atas de reunioes (via activityArtifacts — independente de career_planning)
+        if (sub.type === "meeting" && activityArtifacts.atas.length > 0) {
+          const matchedAta = activityArtifacts.atas.find((a: any) => 
+            isAtaOrFeedbackMatch(friendlyTitle, sub.referenceId, a.title)
+          );
+          if (matchedAta) {
+            documentUrl = matchedAta.fileUrl;
+            hasFeedback = true;
+            feedbackText = matchedAta.contentSummary || "Sessao realizada com sucesso.";
           }
+        }
 
-          // Se houver feedbacks cadastrados (via activityArtifacts)
-          if (activityArtifacts.feedbacks.length > 0) {
-            const matchedFb = activityArtifacts.feedbacks.find((f: any) => 
-              isAtaOrFeedbackMatch(friendlyTitle, sub.referenceId, f.sessionTitle || f.title)
-            );
-            if (matchedFb) {
-              hasFeedback = true;
-              feedbackText = matchedFb.content || matchedFb.feedbackText || feedbackText;
-            }
+        // Se houver feedbacks cadastrados (via activityArtifacts — independente de career_planning)
+        if (activityArtifacts.feedbacks.length > 0) {
+          const matchedFb = activityArtifacts.feedbacks.find((f: any) => 
+            isAtaOrFeedbackMatch(friendlyTitle, sub.referenceId, f.sessionTitle || f.title)
+          );
+          if (matchedFb) {
+            hasFeedback = true;
+            feedbackText = matchedFb.content || matchedFb.feedbackText || feedbackText;
           }
+        }
 
-          // Se houver documentos compartilhados (via activityArtifacts)
-          if (activityArtifacts.sharedDocuments.length > 0) {
-            const matchedDoc = activityArtifacts.sharedDocuments.find((d: any) => 
-              isAtaOrFeedbackMatch(friendlyTitle, sub.referenceId, d.name || d.title)
-            );
-            if (matchedDoc && matchedDoc.fileUrl) {
-              documentUrl = matchedDoc.fileUrl;
-            }
+        // Se houver documentos compartilhados (via activityArtifacts — independente de career_planning)
+        if (activityArtifacts.sharedDocuments.length > 0) {
+          const matchedDoc = activityArtifacts.sharedDocuments.find((d: any) => 
+            isAtaOrFeedbackMatch(friendlyTitle, sub.referenceId, d.name || d.title)
+          );
+          if (matchedDoc && matchedDoc.fileUrl) {
+            documentUrl = matchedDoc.fileUrl;
           }
         }
 
