@@ -372,13 +372,65 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
 
   const currentStep = config.steps[currentStepIndex];
 
-  // Lógica de Interpolação de Texto Reativa (Suporta {{nickname}} e {User-nickname}, arrays joined, fallbacks Maslow/carreira)
+  // Logica de Interpolacao de Texto Reativa (Suporta {{nickname}} e {User-nickname}, arrays joined, fallbacks Maslow/carreira)
   const interpolate = (text: string) => {
     const combinedData: Record<string, unknown> = {
       ...(config.templateData || {}),
       ...userMetadata,
       ...responses
     };
+
+    // Resolucao de senioridade para textos dinamicos (Junior/Pleno vs Senior/Lider)
+    let senioridade = "";
+    const cvFocado = combinedData["cv_focado"];
+    if (cvFocado && typeof cvFocado === "object") {
+      senioridade = String((cvFocado as any)["senioridade_pretendida"] || "");
+    }
+    if (!senioridade && combinedData["cv_focado.senioridade_pretendida"]) {
+      senioridade = String(combinedData["cv_focado.senioridade_pretendida"]);
+    }
+    if (!senioridade && combinedData["senioridade_pretendida"]) {
+      senioridade = String(combinedData["senioridade_pretendida"]);
+    }
+
+    const isSeniorLider = senioridade.includes("Sênior") || 
+                          senioridade.includes("Liderança") || 
+                          senioridade.includes("C-Level") ||
+                          senioridade.toLowerCase().includes("senior") ||
+                          senioridade.toLowerCase().includes("lider") ||
+                          senioridade.toLowerCase().includes("diretoria") ||
+                          senioridade.toLowerCase().includes("coordenação") ||
+                          senioridade.toLowerCase().includes("gerência");
+
+    const pdiEmpresa = combinedData["cv_focado.pdi_empresa_target"] || 
+                       (cvFocado && typeof cvFocado === "object" ? (cvFocado as any)["pdi_empresa_target"] : "") || 
+                       "nova empresa";
+
+    const pdiPosicao = combinedData["cv_focado.pdi_posicao_target"] || 
+                       (cvFocado && typeof cvFocado === "object" ? (cvFocado as any)["pdi_posicao_target"] : "") || 
+                       "nova posição";
+
+    if (isSeniorLider) {
+      combinedData["alerta_senioridade"] = `Não subestime a entrevista confiando apenas no seu histórico, nem superestime sua autoridade. O comitê de decisão quer visão de futuro e alinhamento cultural. Executivos com excelente histórico podem perder oportunidades quando não conseguem traduzir seu passado e adaptá-los para os desafios futuros como o da ${pdiEmpresa}.`;
+      
+      combinedData["exemplo_abt"] = `Considerando o cenário atual da ${pdiEmpresa}, qual é a fortaleza deles (E), qual é a dor estratégica que enfrentam (Mas), e como sua visão de liderança transforma isso em resultado (Portanto)?\n\nExemplo Prático: "A empresa tem um produto excelente no mercado (E), mas a retenção de clientes enterprise está caindo devido a falhas no processo de onboarding (Mas). Portanto, minha prioridade na cadeira de liderança será reestruturar essa jornada para proteger a receita e escalar a satisfação."`;
+      
+      combinedData["exemplo_star_la"] = `Baseado nas demandas da posição em foco, qual projeto transversal você liderou que uniu várias áreas? Como o aprendizado dessa liderança será crucial para o momento atual da ${pdiEmpresa}?`;
+      
+      combinedData["exemplo_pratico_pitch"] = `Aborde um par estratégico, parceiro de negócios ou chefe atual. Ao apresentar seu pitch, pergunte a essa pessoa: "O meu discurso transmite o impacto financeiro/operacional de forma clara? Ele soa como alguém pronto para assumir os desafios da cadeira de ${pdiPosicao}?"`;
+      
+      combinedData["exemplo_pratico_pitch_digital"] = `Faça contato com um Headhunter do seu setor ou um C-Level da ${pdiEmpresa}. Exemplo de pauta: Utilize a abordagem consultiva (Jornada do Herói). Aponte um cenário ou desafio que a empresa ou o setor deles está enfrentando, apresente seu pitch como uma possível solução e sugira uma troca de ideias sobre o mercado.`;
+    } else {
+      combinedData["alerta_senioridade"] = "Não subestime a entrevista achando que lhe falta bagagem, nem a superestime achando que precisa saber tudo. Avaliadores buscam potencial, adaptabilidade e como você resolve problemas práticos no dia a dia.";
+      
+      combinedData["exemplo_abt"] = `Qual é a sua base técnica (E), qual problema comum na operação você notou (Mas), e como você atua para resolver isso (Portanto)?\n\nExemplo Prático: "Tenho sólida formação em análise de dados (E), notei que a extração de relatórios costuma tomar muito tempo da equipe (Mas). Portanto, utilizo a ferramenta X para automatizar esse fluxo e aumentar a eficiência da área."`;
+      
+      combinedData["exemplo_star_la"] = `"Na empresa anterior, tínhamos um atraso constante no fechamento (Situação/Tarefa). Implementei macros no Excel (Ação) que reduziram o tempo de entrega em 30% (Resultado). Aprendi a importância de questionar processos manuais repetitivos (Aprendizado) e pretendo aplicar essa visão de melhoria contínua aqui na ${pdiEmpresa} (Aplicação)."`;
+      
+      combinedData["exemplo_pratico_pitch"] = `Aborde um colega ou mentor. Apresente seu pitch de 60 segundos e faça uma pergunta para validar se a sua mensagem foi entendida: "Ficou claro qual é a minha principal ferramenta técnica e qual problema rotineiro eu consigo resolver com ela?"`;
+      
+      combinedData["exemplo_pratico_pitch_digital"] = `Envie uma mensagem no LinkedIn para um potencial par de equipe ou recrutador. Exemplo de pauta: Apresente-se brevemente usando as duas primeiras linhas do seu pitch e peça 15 minutos para uma conversa rápida sobre como é o dia a dia e os processos na empresa deles. Foco em aprendizado e conexão.`;
+    }
 
     const menorPilar = combinedData["maslow_menor_pilar"] || combinedData["Maslow_Menor_Pilar"];
     const maiorPilar = combinedData["maslow_maior_pilar"] || combinedData["Maslow_Maior_Pilar"];
@@ -1580,7 +1632,7 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
       return String(val).toLowerCase().includes("outro") || String(val).toLowerCase() === "outros" || String(val).toLowerCase() === "indicação";
   };
 
-  const canProgress = currentStep.fields.every(f => {
+  const canProgress = preparedFields.every(f => {
     if (!f.required) return true;
     const val = responses[f.id];
 

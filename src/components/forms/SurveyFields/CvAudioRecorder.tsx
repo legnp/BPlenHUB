@@ -9,21 +9,83 @@ export function CvAudioRecorder() {
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [recordingTime, setRecordingTime] = useState(0);
 
+  // Microphone Devices & Permissions State
+  const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string>("");
+  const [permissionState, setPermissionState] = useState<"prompt" | "granted" | "denied">("prompt");
+
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
+    // Detect initial permission status and load devices if already granted
+    if (navigator.permissions && navigator.permissions.query) {
+      navigator.permissions.query({ name: "microphone" as any }).then((result) => {
+        setPermissionState(result.state as any);
+        if (result.state === "granted") {
+          loadAudioDevices();
+        }
+        result.onchange = () => {
+          setPermissionState(result.state as any);
+          if (result.state === "granted") {
+            loadAudioDevices();
+          }
+        };
+      }).catch((err) => {
+        console.warn("navigator.permissions.query nao suportada para microfone:", err);
+      });
+    }
+
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, []);
 
-  const startRecording = async () => {
-    audioChunksRef.current = [];
+  const loadAudioDevices = async () => {
+    try {
+      const allDevices = await navigator.mediaDevices.enumerateDevices();
+      const audioInputs = allDevices.filter((d) => d.kind === "audioinput");
+      setDevices(audioInputs);
+      if (audioInputs.length > 0) {
+        setSelectedDeviceId((prev) => {
+          const exists = audioInputs.some((d) => d.deviceId === prev);
+          return exists ? prev : audioInputs[0].deviceId;
+        });
+      }
+    } catch (err) {
+      console.error("Erro ao listar dispositivos de audio:", err);
+    }
+  };
+
+  const requestMicrophonePermission = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      setPermissionState("granted");
+      await loadAudioDevices();
+      stream.getTracks().forEach((track) => track.stop());
+      return true;
+    } catch (err) {
+      console.error("Erro ao solicitar permissao do microfone:", err);
+      setPermissionState("denied");
+      return false;
+    }
+  };
+
+  const startRecording = async () => {
+    audioChunksRef.current = [];
+
+    if (permissionState !== "granted") {
+      const granted = await requestMicrophonePermission();
+      if (!granted) return;
+    }
+
+    try {
+      const constraints: MediaStreamConstraints = {
+        audio: selectedDeviceId ? { deviceId: { exact: selectedDeviceId } } : true
+      };
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
       const mediaRecorder = new MediaRecorder(stream);
       mediaRecorderRef.current = mediaRecorder;
 
@@ -50,7 +112,7 @@ export function CvAudioRecorder() {
       }, 1000);
     } catch (err) {
       console.error("Erro ao acessar microfone:", err);
-      alert("Nao foi possivel acessar o seu microfone. Por favor, verifique as permissoes do seu navegador.");
+      setPermissionState("denied");
     }
   };
 
@@ -107,6 +169,35 @@ export function CvAudioRecorder() {
         <span className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-start)] ml-1 block mb-3">
           Gravador de Audio
         </span>
+
+        {/* Device selector and permissions message */}
+        <div className="mb-4 space-y-3">
+          {permissionState === "denied" && (
+            <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-center space-y-1 animate-fade-in">
+              <p className="text-[10px] font-black uppercase tracking-wider text-red-500">Acesso ao Microfone Bloqueado</p>
+              <p className="text-[9px] font-bold text-[var(--text-muted)] leading-relaxed">
+                Por favor, clique no icone de cadeado/microfone na barra de enderecos do navegador para liberar o acesso ao microfone.
+              </p>
+            </div>
+          )}
+
+          {devices.length > 1 && !isRecording && (
+            <div className="space-y-1.5">
+              <label className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)] block">Dispositivo de Entrada</label>
+              <select
+                value={selectedDeviceId}
+                onChange={(e) => setSelectedDeviceId(e.target.value)}
+                className="w-full p-2.5 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-xl text-[10px] font-bold text-[var(--text-primary)] focus:outline-none"
+              >
+                {devices.map((device) => (
+                  <option key={device.deviceId} value={device.deviceId}>
+                    {device.label || `Microfone ${device.deviceId.substring(0, 5)}`}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+        </div>
 
         <div className="flex flex-col items-center justify-center p-6 bg-white/40 border border-[var(--input-border)]/50 rounded-xl space-y-4 min-h-[140px]">
           {isRecording ? (
