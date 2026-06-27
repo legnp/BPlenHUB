@@ -205,10 +205,12 @@ export function useJourney(uid: string) {
     // Uma etapa só pode ser ACESSADA se a anterior estiver 'completed'.
     let isSequenceLocked = false;
     if (thisStepIndex > 0) {
-       // EXCEÇÃO ESTRATÉGICA: Onboarding pode ser acessado mesmo sem concluir Primeiros Passos 🧬
-       const isOnboarding = stepId === 'onboarding' || stepId === 'ONBOARDING';
+       // EXCEÇÃO ESTRATÉGICA: Onboarding e Mentocoach podem ser acessados sem concluir a etapa anterior 🧬
+       const isOnboarding = stepId.toLowerCase() === 'onboarding';
+       const isMentocoach = stepId.toLowerCase().includes('mentocoach');
+       const isException = isOnboarding || isMentocoach;
        
-       if (!isOnboarding) {
+       if (!isException) {
           const prevStageId = mergedStages[thisStepIndex - 1].id;
           const prevStepProgress = progress?.steps[prevStageId];
           isSequenceLocked = prevStepProgress?.status !== "completed";
