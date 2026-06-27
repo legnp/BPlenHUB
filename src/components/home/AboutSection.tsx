@@ -72,7 +72,7 @@ export function AboutSection() {
               <Briefcase className="text-[#ff0080] mb-5" size={24} />
               <h3 className={LANDING_TOKENS.card.title}>O Que Nos Move</h3>
               <p className={LANDING_TOKENS.card.description}>
-                Integramos dados, métodos e desenvolvimento humano para transformar conflitos em oportunidades e potencializar performance junto à qualidade de vida.
+                Integramos dados, métodos e desenvolvimento humano para transformar contextos em oportunidades e potencializar a performance sustentável.
               </p>
             </div>
           </ScrollReveal>
