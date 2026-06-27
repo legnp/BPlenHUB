@@ -164,7 +164,7 @@
         "id": "ss-survey-desmistificando_candidaturas",
         "type": "survey",
         "referenceId": "desmistificando_candidaturas",
-        "title": "Desmistificando: Vagas publicadas e mercado oculto",
+        "title": "Oportunidades e Mercado Oculto",
         "description": "A realidade do mercado de trabalho",
         "order": "1"
       },
@@ -172,7 +172,7 @@
         "id": "ss-survey-survey_pdi_fase1",
         "type": "survey",
         "referenceId": "survey_pdi_fase1",
-        "title": "Definição de Objetivos",
+        "title": "Elaboração de PDI",
         "description": "Definição de objetivos de carreira profissional",
         "order": "2.1"
       },
@@ -180,7 +180,7 @@
         "id": "ss-survey-survey_pdi_fase2",
         "type": "survey",
         "referenceId": "survey_pdi_fase2",
-        "title": "Seleção de recursos e habilidades",
+        "title": "Elaboração de PDI",
         "description": "Analise de Potencial e Riscos",
         "order": "2.2"
       },
@@ -188,7 +188,7 @@
         "id": "ss-survey-survey_pdi_fase3",
         "type": "survey",
         "referenceId": "survey_pdi_fase3",
-        "title": "Definição de metas e ciclos",
+        "title": "Elaboração de PDI",
         "description": "Definição de metas e ciclos",
         "order": "2.3"
       },
@@ -196,7 +196,7 @@
         "id": "ss-survey-survey_pdi_fase4",
         "type": "survey",
         "referenceId": "survey_pdi_fase4",
-        "title": "Consolidação de PDI",
+        "title": "Elaboração de PDI",
         "description": "Consolidação do PDI",
         "order": "2.4"
       },
@@ -204,7 +204,7 @@
         "id": "ss-survey-master_cv",
         "type": "survey",
         "referenceId": "master_cv",
-        "title": "Revisão e elaboração de CV",
+        "title": "CV e Perfil Profissional",
         "description": "Central de do histórico profissional",
         "order": "3.1"
       },
@@ -212,7 +212,7 @@
         "id": "ss-survey-cv_focado",
         "type": "survey",
         "referenceId": "cv_focado",
-        "title": "Revisão e elaboração de CV",
+        "title": "CV e Perfil Profissional",
         "description": "Adaptação do CV com foco no objetivo pretendido",
         "order": "3.2"
       },
@@ -220,7 +220,7 @@
         "id": "ss-survey-perfil_profissional_publico",
         "type": "survey",
         "referenceId": "perfil_profissional_publico",
-        "title": "Revisão e elaboração de CV",
+        "title": "CV e Perfil Profissional",
         "description": "Aplicação do CV nos perfis profissionais online",
         "order": "3.3"
       },
@@ -228,15 +228,15 @@
         "id": "ss-survey-preparacao_entrevistas_networking",
         "type": "survey",
         "referenceId": "preparacao_entrevistas_networking",
-        "title": "Preparação para Entrevistas e Networking",
-        "description": "Preparação de apresentação e pitch em entrevistas",
+        "title": "Entrevistas e Networking",
+        "description": "Preparação de apresentação e pitch em entrevistas e reuniões de networking",
         "order": "4"
       },
       {
         "id": "ss-survey-pre_analise_comportamental",
         "type": "survey",
         "referenceId": "pre_analise_comportamental",
-        "title": "Feedback Tecnico",
+        "title": "Consultoria de Feedback",
         "description": "Análise Comportamental Básica",
         "order": "5.1"
       },
@@ -244,7 +244,7 @@
         "id": "ss-survey-feedback-posicionamento-profissional",
         "type": "survey",
         "referenceId": "feedback-posicionamento-profissional",
-        "title": "Feedback Tecnico",
+        "title": "Consultoria de Feedback",
         "description": "Sessão de feedback do Posicionamento Profissional",
         "order": "5.2"
       }
