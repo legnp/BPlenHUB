@@ -39,5 +39,6 @@ export interface MemberQuota {
 
 export interface MemberQuotaWallet {
   uid: string;
+  mentoCoachSessionsLimit?: number; // Cota manual administrativa
   quotas: Record<string, MemberQuota>; // Tipo de Evento -> Dados de Cota
 }

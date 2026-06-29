@@ -280,6 +280,8 @@ export async function updateMentoCoachSessionsQuotaAction(matricula: string, lim
 
     revalidatePath("/admin/users");
     revalidatePath("/hub/membro/gestao_carreira");
+    revalidatePath("/hub/membro/journey/mentocoach");
+    revalidatePath("/hub/membro");
     
     console.log(`✅ [Governance Admin] Limite de MentoCoach ajustado para ${limit} na matrícula ${matricula}`);
     return { success: true };

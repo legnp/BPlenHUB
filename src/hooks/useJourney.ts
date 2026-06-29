@@ -207,6 +207,11 @@ export function useJourney(uid: string) {
     const serviceKey = stepIdLower;
     let finalHasAccess = hasQuota;
     
+    // 🚀 Verificação Especial do Novo Limite MentoCoach
+    if (stepIdLower.includes('mentocoach') && quotas && (quotas.mentoCoachSessionsLimit || 0) > 0) {
+       finalHasAccess = true;
+    }
+    
     if (services !== undefined && services !== null) {
       if (services[serviceKey] === false) {
          finalHasAccess = false; // Administrador revogou ou usuário não comprou (explicitamente false)
