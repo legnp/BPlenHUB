@@ -890,7 +890,7 @@
         "referenceId": "disc",
         "title": "Análise Comportamental",
         "description": "Avaliação de Perfil Comportamental (DISC)",
-        "order": "1"
+        "order": "1.1"
       },
       {
         "id": "ss-survey-preferencias_reconhecimento",
@@ -898,7 +898,7 @@
         "referenceId": "preferencias_reconhecimento",
         "title": "Análise Comportamental",
         "description": "Mapa de preferências de reconhecimento interpessoal",
-        "order": "2"
+        "order": "1.2"
       },
       {
         "id": "ss-survey-preferencias_aprendizado",
@@ -906,7 +906,7 @@
         "referenceId": "preferencias_aprendizado",
         "title": "Análise Comportamental",
         "description": "Mapa de preferências de formas e habitos de aprendizado",
-        "order": "3"
+        "order": "1.3"
       },
       {
         "id": "ss-survey-gestao_tempo",
@@ -914,7 +914,7 @@
         "referenceId": "gestao_tempo",
         "title": "Análise Comportamental",
         "description": "Mapa de habitos de priorização de tarefas e tempo",
-        "order": "4"
+        "order": "1.4"
       },
       {
         "id": "ss-meeting-devolutiva-analise-comportamental",
@@ -922,7 +922,7 @@
         "referenceId": "devolutiva-analise-comportamental",
         "title": "Análise Comportamental",
         "description": "Sessão individual de Devolutiva Comportamental",
-        "order": "5"
+        "order": "1.5"
       },
       {
         "id": "ss-meeting-sessao-mentocoach",
