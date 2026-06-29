@@ -251,10 +251,19 @@ export function useJourney(uid: string) {
        }
     }
 
+    const finalHasAccessLogic = finalHasAccess || stage?.order === 0 || ((stepId === 'onboarding' || isOffboarding) && hasAnyQuota);
+
+    let resolvedStatus = stepProgress?.status || "locked";
+    
+    // 🚀 Governança Dinâmica Central: Se o DB diz "locked" mas a telemetria libera, destravamos visualmente aqui
+    if (resolvedStatus === "locked" && finalHasAccessLogic && !isSequenceLocked) {
+       resolvedStatus = "current";
+    }
+
     return {
-      status: stepProgress?.status || "locked",
+      status: resolvedStatus,
       percentage,
-      hasAccess: finalHasAccess || stage?.order === 0 || ((stepId === 'onboarding' || isOffboarding) && hasAnyQuota), // Step 0 sempre livre, Onboarding/Offboarding livres se tiver algum serviço
+      hasAccess: finalHasAccessLogic, // Step 0 sempre livre, Onboarding/Offboarding livres se tiver algum serviço
       isNext,
       isSequenceLocked, // 🧬 Nova flag de governança metodológica
       substepsLabel: `${completedCount}/${totalSubsteps}`
@@ -262,17 +271,8 @@ export function useJourney(uid: string) {
   };
 
   const getStepStatus = (stepId: string): StepStatus => {
-    const dbStatus = progress?.steps[stepId]?.status || "locked";
-    
-    // 🚀 Governança Dinâmica: Se o DB diz "locked" mas a telemetria libera (ex: Onboarding com pacote), destravamos visualmente
-    if (dbStatus === "locked") {
-       const telemetry = getStageTelemetry(stepId);
-       if (telemetry.hasAccess && !telemetry.isSequenceLocked) {
-          return "current"; // Permite acesso e renderiza o StepRenderer
-       }
-    }
-
-    return dbStatus;
+    // Agora delega completamente para a inteligência central do getStageTelemetry
+    return getStageTelemetry(stepId).status as StepStatus;
   };
 
   return {
