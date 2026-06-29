@@ -318,7 +318,35 @@ export async function getJourneyProgressAction(uid: string): Promise<JourneyProg
 
     if (!progressSnap.exists) return null;
 
-    const data = progressSnap.data();
+    let data = progressSnap.data() as JourneyProgress;
+
+    // NOVO: Lazy Sync on Read (Sincronizacao Retroativa Cross-Service)
+    const stages = await getJourneyStagesAction();
+    const { updatedSteps, hasChanges } = applyCrossCompletionSweep(data?.steps || {}, stages);
+
+    if (hasChanges) {
+      let totalAllSubsteps = 0;
+      let completedAllSubsteps = 0;
+      stages.forEach(s => {
+         const sKey = Object.keys(updatedSteps).find(k => normalizeString(k) === normalizeString(s.id)) || s.id;
+         const sProgress = updatedSteps[sKey];
+         const baseCount = s.substeps.length;
+         const dynamicCount = sProgress?.dynamicSubSteps?.length || 0;
+         totalAllSubsteps += baseCount + dynamicCount;
+         completedAllSubsteps += sProgress?.completedSubSteps?.length || 0;
+      });
+      const overallProgress = totalAllSubsteps > 0 ? Math.round((completedAllSubsteps / totalAllSubsteps) * 100) : 0;
+      
+      data = {
+         ...data,
+         steps: updatedSteps,
+         overallProgress
+      };
+      
+      await progressRef.set(data, { merge: true });
+      console.log(`[JourneyAction] Sincronizacao Retroativa Cross-Service aplicada para ${matricula}.`);
+    }
+
     return {
       matricula,
       lastActiveStepId: data?.lastActiveStepId || "onboarding",
@@ -387,15 +415,21 @@ export async function updateJourneySubStepAction(
       const stages = await getJourneyStagesAction();
       let stage = stages.find(s => s.id === stepId || normalizeString(s.id) === normalizeString(stepId));
       
-      // Fallback para estágios especiais (Step 00 / Standalone)
+      // Fallback para estagios especiais (Step 00 / Standalone)
       if (!stage) {
         stage = await getStandaloneStageAction(stepId) || undefined;
       }
 
+      const allTargetSubsteps = [...(stage?.substeps || []), ...(stepProgress.dynamicSubSteps || [])];
+      const targetSubstepConfig = allTargetSubsteps.find(s => s.id === subStepId);
+      const forceRemoveKey = (!completed && targetSubstepConfig && targetSubstepConfig.referenceId) 
+        ? `${targetSubstepConfig.type}:${targetSubstepConfig.referenceId}` 
+        : undefined;
+
       const totalSubsteps = (stage?.substeps.length || 0) + (stepProgress.dynamicSubSteps?.length || 0);
       const newStatus = (totalSubsteps > 0 && newCompleted.length >= totalSubsteps) ? "completed" : "current";
 
-      const updatedSteps = {
+      const localUpdatedSteps = {
         ...current?.steps,
         [matchedDbKey]: {
           ...stepProgress,
@@ -406,22 +440,8 @@ export async function updateJourneySubStepAction(
         }
       };
 
-      // LIBERACAO AUTOMATICA EM CADEIA
-      if (newStatus === "completed") {
-         const currentIdx = stages.findIndex(s => s.id === stepId);
-         if (currentIdx !== -1 && currentIdx < stages.length - 1) {
-            const nextStageId = stages[currentIdx + 1].id;
-            if (!updatedSteps[nextStageId]) {
-               updatedSteps[nextStageId] = {
-                  stepId: nextStageId,
-                  status: "current",
-                  completedSubSteps: []
-               };
-            } else if (updatedSteps[nextStageId].status === "locked") {
-               updatedSteps[nextStageId].status = "current";
-            }
-         }
-      }
+      // NOVO: MOTOR DE CONCLUSAO CRUZADA E CASCATA
+      const { updatedSteps } = applyCrossCompletionSweep(localUpdatedSteps, stages, forceRemoveKey);
 
       // CALCULO DE TELEMETRIA GLOBAL REAL
       // Incluimos todos os estagios conhecidos na conta do progresso total, somando base e dynamic subcheckpoints
@@ -429,7 +449,8 @@ export async function updateJourneySubStepAction(
       let completedAllSubsteps = 0;
 
       stages.forEach(s => {
-        const sProgress = updatedSteps[s.id];
+        const sKey = Object.keys(updatedSteps).find(k => normalizeString(k) === normalizeString(s.id)) || s.id;
+        const sProgress = updatedSteps[sKey];
         const baseCount = s.substeps.length;
         const dynamicCount = sProgress?.dynamicSubSteps?.length || 0;
         
@@ -445,8 +466,7 @@ export async function updateJourneySubStepAction(
         matricula,
         lastActiveStepId: stepId,
         steps: updatedSteps,
-        overallProgress: overallProgress,
-        updatedAt: new Date().toISOString()
+        overallProgress: overallProgress
       };
 
       transaction.set(progressRef, finalProgress, { merge: true });
@@ -688,5 +708,117 @@ export async function assignDynamicSubstepToPresentAttendeesAction(
     console.error("Erro ao atribuir subcheckpoints em lote:", error);
     return { success: false, message: error.message || "Erro desconhecido" };
   }
+}
+
+/**
+ * Motor de Auto-Conclusao Cruzada (Cross-Service Auto-Completion)
+ * Varre o progresso e as etapas da jornada para garantir que atividades identicas
+ * (mesmo type e referenceId) compartilhem o mesmo status de conclusao em toda a plataforma.
+ */
+function applyCrossCompletionSweep(
+  currentSteps: Record<string, import("@/types/journey").UserStepProgress>,
+  stages: JourneyStep[],
+  forceRemoveActivityKey?: string
+): { updatedSteps: Record<string, import("@/types/journey").UserStepProgress>; hasChanges: boolean } {
+  let hasChanges = false;
+  const updatedSteps = JSON.parse(JSON.stringify(currentSteps)) as Record<string, import("@/types/journey").UserStepProgress>;
+
+  // 1. Extrair todas as atividades concluidas unicas (type:referenceId)
+  const completedActivities = new Set<string>();
+  
+  stages.forEach(stage => {
+    const sKey = Object.keys(updatedSteps).find(k => normalizeString(k) === normalizeString(stage.id)) || stage.id;
+    const progress = updatedSteps[sKey];
+    if (!progress || !progress.completedSubSteps) return;
+
+    const allSubsteps = [...(stage.substeps || []), ...(progress.dynamicSubSteps || [])];
+    
+    progress.completedSubSteps.forEach(subId => {
+      const config = allSubsteps.find(s => s.id === subId);
+      if (config && config.referenceId) {
+        const key = `${config.type}:${config.referenceId}`;
+        if (key !== forceRemoveActivityKey) {
+          completedActivities.add(key);
+        }
+      }
+    });
+  });
+
+  // 2. Aplicar conclusoes cruzadas (sincronizando adicoes e remocoes)
+  stages.forEach(stage => {
+    const sKey = Object.keys(updatedSteps).find(k => normalizeString(k) === normalizeString(stage.id)) || stage.id;
+    const progress = updatedSteps[sKey] || {
+      stepId: sKey,
+      status: "locked",
+      completedSubSteps: []
+    };
+
+    const allSubsteps = [...(stage.substeps || []), ...(progress.dynamicSubSteps || [])];
+    let stageChanged = false;
+    let newCompleted = [...(progress.completedSubSteps || [])];
+    let newDates = { ...(progress.subStepCompletionDates || {}) };
+
+    allSubsteps.forEach(sub => {
+      if (sub.referenceId) {
+        const activityKey = `${sub.type}:${sub.referenceId}`;
+        
+        // Ativar se estiver globalmente concluido
+        if (completedActivities.has(activityKey) && !newCompleted.includes(sub.id)) {
+          newCompleted.push(sub.id);
+          newDates[sub.id] = new Date().toISOString();
+          stageChanged = true;
+          hasChanges = true;
+        } 
+        // Forcar remocao se estiver marcado para remocao global
+        else if (forceRemoveActivityKey === activityKey && newCompleted.includes(sub.id)) {
+          newCompleted = newCompleted.filter(id => id !== sub.id);
+          delete newDates[sub.id];
+          stageChanged = true;
+          hasChanges = true;
+        }
+      }
+    });
+
+    if (stageChanged) {
+      // Reavaliar status da etapa
+      const totalSubsteps = allSubsteps.length;
+      const newStatus = (totalSubsteps > 0 && newCompleted.length >= totalSubsteps) 
+        ? "completed" 
+        : (progress.status === "locked" ? "locked" : "current");
+
+      updatedSteps[sKey] = {
+        ...progress,
+        completedSubSteps: newCompleted,
+        subStepCompletionDates: newDates,
+        status: newStatus,
+        updatedAt: new Date().toISOString()
+      };
+    }
+  });
+
+  // 3. Varredura em Cascata (Chain Unlocking)
+  stages.forEach((stage, idx) => {
+    const sKey = Object.keys(updatedSteps).find(k => normalizeString(k) === normalizeString(stage.id)) || stage.id;
+    const progress = updatedSteps[sKey];
+    
+    if (progress?.status === "completed" && idx < stages.length - 1) {
+      const nextStageId = stages[idx + 1].id;
+      const nextKey = Object.keys(updatedSteps).find(k => normalizeString(k) === normalizeString(nextStageId)) || nextStageId;
+      
+      if (!updatedSteps[nextKey]) {
+        updatedSteps[nextKey] = {
+          stepId: nextKey,
+          status: "current",
+          completedSubSteps: []
+        };
+        hasChanges = true;
+      } else if (updatedSteps[nextKey].status === "locked") {
+        updatedSteps[nextKey].status = "current";
+        hasChanges = true;
+      }
+    }
+  });
+
+  return { updatedSteps, hasChanges };
 }
 
