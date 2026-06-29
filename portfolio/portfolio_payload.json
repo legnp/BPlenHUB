@@ -928,17 +928,81 @@
         "id": "ss-meeting-sessao-mentocoach",
         "type": "meeting",
         "referenceId": "sessao-mentocoach",
-        "title": "Sessões de MentoCoach",
+        "title": "1ª Sessão de MentoCoach",
+        "description": "Sessão de MentoCoach",
+        "order": "2"
+      },
+      {
+        "id": "ss-meeting-sessao-mentocoach",
+        "type": "meeting",
+        "referenceId": "sessao-mentocoach",
+        "title": "2ª Sessão de MentoCoach",
+        "description": "Sessão de MentoCoach",
+        "order": "3"
+      },
+      {
+        "id": "ss-meeting-sessao-mentocoach",
+        "type": "meeting",
+        "referenceId": "sessao-mentocoach",
+        "title": "3ª Sessão de MentoCoach",
+        "description": "Sessão de MentoCoach",
+        "order": "4"
+      },
+      {
+        "id": "ss-meeting-sessao-mentocoach",
+        "type": "meeting",
+        "referenceId": "sessao-mentocoach",
+        "title": "4ª Sessão de MentoCoach",
+        "description": "Sessão de MentoCoach",
+        "order": "5"
+      },
+      {
+        "id": "ss-meeting-sessao-mentocoach",
+        "type": "meeting",
+        "referenceId": "sessao-mentocoach",
+        "title": "5ª Sessão de MentoCoach",
         "description": "Sessão de MentoCoach",
         "order": "6"
       },
       {
-        "id": "ss-dashboard-mentocoach-dashboard",
-        "type": "dashboard",
-        "referenceId": "mentocoach-dashboard",
-        "title": "MentoCoach Dashboard",
-        "description": "Acompanhamento do Progresso",
+        "id": "ss-meeting-sessao-mentocoach",
+        "type": "meeting",
+        "referenceId": "sessao-mentocoach",
+        "title": "6ª Sessão de MentoCoach",
+        "description": "Sessão de MentoCoach",
         "order": "7"
+      },
+      {
+        "id": "ss-meeting-sessao-mentocoach",
+        "type": "meeting",
+        "referenceId": "sessao-mentocoach",
+        "title": "7ª Sessão de MentoCoach",
+        "description": "Sessão de MentoCoach",
+        "order": "8"
+      },
+      {
+        "id": "ss-meeting-sessao-mentocoach",
+        "type": "meeting",
+        "referenceId": "sessao-mentocoach",
+        "title": "8ª Sessão de MentoCoach",
+        "description": "Sessão de MentoCoach",
+        "order": "9"
+      },
+      {
+        "id": "ss-meeting-sessao-mentocoach",
+        "type": "meeting",
+        "referenceId": "sessao-mentocoach",
+        "title": "9ª Sessão de MentoCoach",
+        "description": "Sessão de MentoCoach",
+        "order": "10"
+      },
+      {
+        "id": "ss-meeting-sessao-mentocoach",
+        "type": "meeting",
+        "referenceId": "sessao-mentocoach",
+        "title": "10ª Sessão de MentoCoach",
+        "description": "Sessão de MentoCoach",
+        "order": "11"
       }
     ],
     "capabilities": {
@@ -951,6 +1015,15 @@
       "forms": [],
       "allowedEventTypes": [
         "devolutiva-analise-comportamental",
+        "sessao-mentocoach",
+        "sessao-mentocoach",
+        "sessao-mentocoach",
+        "sessao-mentocoach",
+        "sessao-mentocoach",
+        "sessao-mentocoach",
+        "sessao-mentocoach",
+        "sessao-mentocoach",
+        "sessao-mentocoach",
         "sessao-mentocoach"
       ]
     }

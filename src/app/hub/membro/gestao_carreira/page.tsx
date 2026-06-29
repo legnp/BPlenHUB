@@ -38,6 +38,7 @@ import {
   saveCareerObjectiveAction,
   updateCareerGoalProgressAction
 } from "@/actions/career-module";
+import { getUserBookingsAction, getUserOneToOneQuotaAction } from "@/actions/calendar-module/queries";
 import { CareerTask, CareerTaskStatus, CareerObjective, CareerGoal } from "@/types/career";
 
 function extractGoogleDriveFileId(url: string): string | null {
@@ -68,6 +69,10 @@ export default function GestaoCarreiraPage() {
   const [careerData, setCareerData] = useState<any>(null);
   const [loadingCareer, setLoadingCareer] = useState<boolean>(true);
   const [activeAccordion, setActiveAccordion] = useState<string | null>(null);
+
+  // Mentoring states
+  const [mentoringQuotaTotal, setMentoringQuotaTotal] = useState<number | null>(null);
+  const [mentoringBookings, setMentoringBookings] = useState<any[]>([]);
 
   // New task state
   const [newTaskTitle, setNewTaskTitle] = useState<string>("");
@@ -100,6 +105,15 @@ export default function GestaoCarreiraPage() {
       } else {
         setCareerData(null);
       }
+
+      // Fetch mentoring data
+      const bookingsRes = await getUserBookingsAction(matricula);
+      const quotaRes = await getUserOneToOneQuotaAction(matricula);
+      
+      const oneToOneBookings = bookingsRes.filter(b => b.category === "1to1");
+      setMentoringBookings(oneToOneBookings);
+      setMentoringQuotaTotal(quotaRes);
+
     } catch (err) {
       console.error("Erro ao carregar planejamento de carreira:", err);
     } finally {
@@ -366,11 +380,10 @@ export default function GestaoCarreiraPage() {
     }
   };
 
-  // Mentoring quotas extraction
-  const mentoringQuota = progress?.steps ? (stages.length > 0 ? {
-    total: 10, // Default baseline limit
-    used: Object.values(progress.steps).reduce((acc, step) => acc + (step.completedSubSteps?.length || 0), 0)
-  } : null) : null;
+  // 1 to 1 Quotas and Statuses Calculation
+  const mentoringUsed = mentoringBookings.filter(b => b.attendanceStatus === "present").length;
+  const mentoringPending = mentoringBookings.filter(b => !b.attendanceStatus || b.attendanceStatus === "pending").length;
+  const mentoringAbsent = mentoringBookings.filter(b => b.attendanceStatus === "absent" || ["rescheduled", "cancelled"].includes(b.eventLifecycleStatus || "")).length;
 
   // Render Gate / Loading States
   if (loadingCareer || journeyLoading) {
@@ -567,7 +580,7 @@ export default function GestaoCarreiraPage() {
               </div>
             </div>
 
-            {mentoringQuota ? (
+            {mentoringQuotaTotal !== null && mentoringQuotaTotal > 0 ? (
               <div className="p-6 bg-[var(--bg-primary)]/40 border border-[var(--border-primary)]/40 rounded-2xl space-y-5 text-center">
                 <div className="relative w-36 h-36 mx-auto flex items-center justify-center">
                   {/* Circle SVG bar */}
@@ -589,12 +602,12 @@ export default function GestaoCarreiraPage() {
                       strokeWidth="6" 
                       fill="transparent" 
                       strokeDasharray="251.2"
-                      strokeDashoffset={251.2 - (251.2 * (mentoringQuota.used / mentoringQuota.total))}
+                      strokeDashoffset={251.2 - (251.2 * (mentoringUsed / mentoringQuotaTotal))}
                       className="transition-all duration-500"
                     />
                   </svg>
                   <div className="absolute flex flex-col items-center justify-center text-center">
-                    <span className="text-xl font-black text-[var(--text-primary)]">{mentoringQuota.used} / {mentoringQuota.total}</span>
+                    <span className="text-xl font-black text-[var(--text-primary)]">{mentoringUsed} / {mentoringQuotaTotal}</span>
                     <span className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60 mt-0.5">Sessoes Consumidas</span>
                   </div>
                 </div>
@@ -602,18 +615,31 @@ export default function GestaoCarreiraPage() {
                 <div className="border-t border-[var(--border-primary)]/40 pt-4 flex justify-around text-left">
                   <div>
                     <span className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)]">Saldo Restante</span>
-                    <p className="text-sm font-bold text-[var(--text-primary)] mt-0.5">{mentoringQuota.total - mentoringQuota.used} sessoes</p>
+                    <p className="text-sm font-bold text-[var(--text-primary)] mt-0.5">{mentoringQuotaTotal - mentoringUsed} sessoes</p>
                   </div>
                   <div className="border-l border-[var(--border-primary)]/40 pl-6">
                     <span className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)]">Cota Total Contratada</span>
-                    <p className="text-sm font-bold text-[var(--text-primary)] mt-0.5">{mentoringQuota.total} sessoes</p>
+                    <p className="text-sm font-bold text-[var(--text-primary)] mt-0.5">{mentoringQuotaTotal} sessoes</p>
                   </div>
+                </div>
+
+                {/* Sublist: Event Status */}
+                <div className="border-t border-[var(--border-primary)]/40 pt-4 flex flex-col gap-2 text-left px-2">
+                   <div className="flex items-center justify-between">
+                     <span className="text-[9px] font-bold uppercase tracking-widest text-amber-500 flex items-center gap-1.5"><Clock size={12} /> Pendentes de Realização</span>
+                     <span className="text-[10px] font-black text-[var(--text-primary)]">{mentoringPending}</span>
+                   </div>
+                   <div className="flex items-center justify-between">
+                     <span className="text-[9px] font-bold uppercase tracking-widest text-red-400 flex items-center gap-1.5"><Trash2 size={12} /> Ausências / Remarcadas</span>
+                     <span className="text-[10px] font-black text-[var(--text-primary)]">{mentoringAbsent}</span>
+                   </div>
                 </div>
               </div>
             ) : (
               <div className="py-20 text-center space-y-2 border border-dashed border-[var(--border-primary)]/60 rounded-2xl">
                 <Sparkles size={24} className="text-[var(--text-muted)] opacity-30 mx-auto" />
-                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60">Nenhuma cota de mentoria 1 to 1 ativa</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)] mt-2">Você ainda não tem cotas de 1 to 1</p>
+                <p className="text-[9px] text-[var(--text-muted)] mt-1">Sua cota contratada não foi identificada no sistema.</p>
               </div>
             )}
           </div>

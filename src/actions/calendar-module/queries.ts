@@ -1,3 +1,5 @@
+"use server";
+
 import { getAdminDb } from "@/lib/firebase-admin";
 import { requireAdmin, requireAuth } from "@/lib/auth-guards";
 import { getCalendarClient } from "@/lib/google-auth";
@@ -274,5 +276,36 @@ export async function getEventNpsDetailsAction(
   } catch (error) {
     console.error("Erro ao buscar detalhes NPS:", error);
     return { success: false, npsAvg: 0, reviewsCount: 0, reviews: [] };
+  }
+}
+
+/**
+ * Busca a cota real de sessões 1 to 1 contratada pelo membro.
+ */
+export async function getUserOneToOneQuotaAction(matricula: string): Promise<number | null> {
+  try {
+    const db = getAdminDb();
+    
+    // Tenta buscar no caminho de quotas padrão sob permissões
+    const quotaRef = db.collection("User").doc(matricula).collection("User_Permissions").doc("quotas");
+    const snap = await quotaRef.get();
+    
+    if (snap.exists) {
+       const data = snap.data();
+       // Se houver um valor explícito em 'oneToOne' ou 'mentoring', retornamos
+       if (data?.oneToOne !== undefined) return Number(data.oneToOne);
+       if (data?.mentoring !== undefined) return Number(data.mentoring);
+       // Ou se for um número direto salvo no doc:
+       if (data?.total !== undefined) return Number(data.total);
+       
+       // Caso contrário, tenta ver se no documento ele salva como { current: X, total: Y } 
+       if (data?.oneToOne?.total !== undefined) return Number(data.oneToOne.total);
+    }
+    
+    // Se não encontrou nada na estrutura, retornamos null para indicar que não possui cotas explícitas configuradas
+    return null;
+  } catch (error) {
+    console.error("Erro ao buscar cota 1 to 1 do usuário:", error);
+    return null;
   }
 }
