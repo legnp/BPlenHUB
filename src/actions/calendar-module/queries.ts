@@ -286,23 +286,28 @@ export async function getUserOneToOneQuotaAction(matricula: string): Promise<num
   try {
     const db = getAdminDb();
     
-    // Tenta buscar no caminho de quotas padrão sob permissões
+    // Tenta buscar no caminho de quotas sob permissões
     const quotaRef = db.collection("User").doc(matricula).collection("User_Permissions").doc("quotas");
     const snap = await quotaRef.get();
     
     if (snap.exists) {
        const data = snap.data();
-       // Se houver um valor explícito em 'oneToOne' ou 'mentoring', retornamos
-       if (data?.oneToOne !== undefined) return Number(data.oneToOne);
-       if (data?.mentoring !== undefined) return Number(data.mentoring);
-       // Ou se for um número direto salvo no doc:
-       if (data?.total !== undefined) return Number(data.total);
        
-       // Caso contrário, tenta ver se no documento ele salva como { current: X, total: Y } 
-       if (data?.oneToOne?.total !== undefined) return Number(data.oneToOne.total);
+       // 1. Prioridade Máxima: O novo campo configurado manualmente pelo Admin
+       if (data?.mentoCoachSessionsLimit !== undefined) {
+         return Number(data.mentoCoachSessionsLimit);
+       }
+       
+       // 2. Fallback: Leitura da chave legada dentro do mapa "quotas"
+       // Estrutura esperada: data.quotas["1-TO-1"].total
+       if (data?.quotas && data.quotas["1-TO-1"] && data.quotas["1-TO-1"].total !== undefined) {
+         return Number(data.quotas["1-TO-1"].total);
+       }
+       
+       // Caso nenhum dos dois exista, retorna null
+       return null;
     }
     
-    // Se não encontrou nada na estrutura, retornamos null para indicar que não possui cotas explícitas configuradas
     return null;
   } catch (error) {
     console.error("Erro ao buscar cota 1 to 1 do usuário:", error);

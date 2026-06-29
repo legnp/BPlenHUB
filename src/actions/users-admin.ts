@@ -50,11 +50,23 @@ export async function getAdminUsersList(adminToken?: string): Promise<{ success:
     }
     
     const permissionsMap = new Map<string, AccessDocData>();
+    const quotasMap = new Map<string, number>();
+
     permissionsSnap.forEach(docSnap => {
        if (docSnap.id === "access") {
           const matricula = docSnap.ref.parent.parent?.id;
           if (matricula) {
              permissionsMap.set(matricula, docSnap.data() as AccessDocData);
+          }
+       }
+       if (docSnap.id === "quotas") {
+          const matricula = docSnap.ref.parent.parent?.id;
+          if (matricula) {
+             const data = docSnap.data();
+             const limit = data.mentoCoachSessionsLimit !== undefined 
+               ? data.mentoCoachSessionsLimit 
+               : (data.quotas && data.quotas["1-TO-1"] ? data.quotas["1-TO-1"].total : 10);
+             quotasMap.set(matricula, limit);
           }
        }
     });
@@ -86,6 +98,7 @@ export async function getAdminUsersList(adminToken?: string): Promise<{ success:
         isAdmin: resolvedRole === "admin",
         role: resolvedRole,
         services: perm.services || {},
+        mentoCoachSessionsLimit: quotasMap.get(matricula) ?? 10,
         metadata: perm.metadata || {},
         isProfessional: data.profile?.networking?.isBPlenProfessional || false,
         onboardStatus: data.hasCompletedWelcome ? "completed" : "pending",
@@ -246,3 +259,33 @@ export async function toggleProfessionalStatusAction(matricula: string, status: 
     return { success: false, error: error.message };
   }
 }
+
+/**
+ * Define o limite customizado de sessões de MentoCoach (Cotas 1 to 1) do usuário.
+ */
+export async function updateMentoCoachSessionsQuotaAction(matricula: string, limit: number, adminToken?: string) {
+  try {
+    const session = await requireAdmin(adminToken);
+    const db = getAdminDb();
+    
+    const quotaRef = db.doc(`User/${matricula}/User_Permissions/quotas`);
+    
+    // Gravamos no documento 'quotas' a variável raiz mentoCoachSessionsLimit
+    // e atualizamos a auditoria de quem modificou
+    await quotaRef.set({
+      mentoCoachSessionsLimit: limit,
+      updatedBy: session.email || session.uid,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+
+    revalidatePath("/admin/users");
+    revalidatePath("/hub/membro/gestao_carreira");
+    
+    console.log(`✅ [Governance Admin] Limite de MentoCoach ajustado para ${limit} na matrícula ${matricula}`);
+    return { success: true };
+  } catch (error: any) {
+    console.error("❌ [UpdateMentoCoachQuota] Erro:", error);
+    return { success: false, error: error.message || "Erro ao atualizar cota de MentoCoach." };
+  }
+}
+

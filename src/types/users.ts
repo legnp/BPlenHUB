@@ -41,6 +41,9 @@ export interface AdminUser {
   
   // 🏗️ Serviços/Entitlements (Acesso Granular)
   services: UserServices;
+  
+  // 🎯 Cotas de Sessões Customizadas
+  mentoCoachSessionsLimit?: number;
 
   // 🌟 Status Profissional BPlen (Curadoria de Networking)
   isProfessional?: boolean;

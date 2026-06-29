@@ -25,7 +25,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { AdminUser, UserRole, UserServices } from "@/types/users";
 import { cn } from "@/lib/utils";
-import { getAdminUsersList, updateUserPermissions, toggleProfessionalStatusAction } from "@/actions/users-admin";
+import { getAdminUsersList, updateUserPermissions, toggleProfessionalStatusAction, updateMentoCoachSessionsQuotaAction } from "@/actions/users-admin";
 import { auth } from "@/lib/firebase";
 import { useAuthContext } from "@/context/AuthContext";
 import { DiscDevolutivaModal } from "@/components/admin/DiscDevolutivaModal";
@@ -162,6 +162,28 @@ export default function UsersManagementPage() {
       }
     } catch (err: any) {
       alert(err.message || "Erro ao atualizar perfil.");
+    } finally {
+      setProcessingUser(null);
+    }
+  };
+
+  const handleUpdateMentoCoachLimit = async (targetMatricula: string, limit: number) => {
+    try {
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) return;
+      setProcessingUser(targetMatricula);
+      const res = await updateMentoCoachSessionsQuotaAction(targetMatricula, limit, token);
+      if (res.success) {
+        alert("Limite de sessões atualizado!");
+        setUsers(users.map(u => 
+          u.matricula === targetMatricula ? { ...u, mentoCoachSessionsLimit: limit } : u
+        ));
+        setSelectedUser(prev => prev ? { ...prev, mentoCoachSessionsLimit: limit } : null);
+      } else {
+        alert(res.error || "Erro ao atualizar limite");
+      }
+    } catch (err: any) {
+      alert(err.message || "Erro ao atualizar limite");
     } finally {
       setProcessingUser(null);
     }
@@ -596,6 +618,34 @@ export default function UsersManagementPage() {
                                      <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${selectedUser.services.member_area_access ? 'left-6' : 'left-1'}`} />
                                   </div>
                                </button>
+
+                               {/* Cotas de Sessões de MentoCoach */}
+                               <div className="p-6 rounded-[2rem] border bg-white/5 border-[var(--border-primary)] text-left flex items-center justify-between transition-all">
+                                  <div>
+                                     <p className="text-[10px] font-bold uppercase text-[var(--text-primary)]">Cotas de MentoCoach</p>
+                                     <p className="text-[8px] text-[var(--text-muted)] uppercase mt-1">Sessões 1 to 1</p>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                     <input 
+                                       type="number"
+                                       value={selectedUser.mentoCoachSessionsLimit || 10}
+                                       onChange={(e) => {
+                                          const val = parseInt(e.target.value);
+                                          if (!isNaN(val)) {
+                                             setSelectedUser({ ...selectedUser, mentoCoachSessionsLimit: val });
+                                          }
+                                       }}
+                                       className="w-16 bg-transparent border-b border-[var(--border-primary)] text-center text-sm font-bold text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-start)] px-1 py-1"
+                                     />
+                                     <button 
+                                       onClick={() => handleUpdateMentoCoachLimit(selectedUser.matricula, selectedUser.mentoCoachSessionsLimit || 10)}
+                                       className="p-2 rounded-xl bg-[var(--input-bg)] text-[var(--accent-start)] hover:bg-[var(--accent-start)] hover:text-white transition-all"
+                                       title="Salvar Limite"
+                                     >
+                                        <CheckCircle2 size={16} />
+                                     </button>
+                                  </div>
+                               </div>
                             </div>
                          </div>
 
