@@ -42,6 +42,9 @@ Instruções do Projeto/
 .env.production.local
 *.json.bak
 *-adminsdk-*.json
+*credentials*.json
+*service-account*.json
+temp-credentials.json
 
 # vercel
 .vercel
@@ -52,6 +55,7 @@ next-env.d.ts
 
 # BPlen HUB - Temporary & Scratch
 /scratch
+/scratch_*
 /debug-*
 /find-*
 /query-*

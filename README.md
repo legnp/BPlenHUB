@@ -1,5 +1,7 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+Para diretrizes de engenharia e governança do projeto (regras de tipagem, design system, áreas que exigem aprovação explícita), ver [`CLAUDE.md`](CLAUDE.md).
+
 ## Getting Started
 
 First, run the development server:

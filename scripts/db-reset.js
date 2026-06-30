@@ -1,8 +1,15 @@
 const admin = require("firebase-admin");
 
 /**
- * BPlen HUB — Reset Script (Versão Nativa 💎)
+ * BPlen HUB — Reset Script (Versão Nativa)
  * Executado com o suporte nativo do Node.js para .env
+ *
+ * ATENCAO: este script apaga TODOS os documentos das colecoes User, _AuthMap,
+ * content_posts, Events, Networking, Checkouts e ServiceRequests, preservando
+ * apenas os registros do e-mail/CNPJ mestre. Conecta com as credenciais ativas
+ * do .env.local no momento da execucao. NAO executar sem confirmacao explicita
+ * do project owner e sem verificar manualmente qual projeto Firebase esta
+ * carregado em FIREBASE_PROJECT_ID.
  */
 
 // O replace de \n é o padrão da indústria para carregar chaves privadas de variáveis de ambiente
