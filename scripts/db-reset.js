@@ -24,7 +24,7 @@ if (!admin.apps.length && process.env.FIREBASE_PROJECT_ID) {
     }),
   });
 } else if (!process.env.FIREBASE_PROJECT_ID) {
-  console.error("❌ Erro: Variáveis de ambiente não carregadas. Use --env-file=.env.local");
+  console.error("[ERRO] Variaveis de ambiente nao carregadas. Use --env-file=.env.local");
   process.exit(1);
 }
 
@@ -32,17 +32,34 @@ const db = admin.firestore();
 const ADMIN_EMAIL = "legnp@bplen.com";
 const COLLECTIONS = ["User", "_AuthMap", "content_posts", "Events", "Networking", "Checkouts", "ServiceRequests"];
 
+// Trava de seguranca: o Firestore conectado tem dados reais de usuarios.
+// Este script so executa se a env var abaixo for definida explicitamente
+// com o nome exato do projeto Firebase que se pretende limpar, na mesma
+// chamada do comando. Isso evita execucao acidental (ex: rodar o arquivo
+// errado, copiar e colar um comando antigo, autocompletar no terminal).
+//
+// Uso: CONFIRM_DB_RESET_PROJECT_ID=<project-id-exato> node scripts/db-reset.js
+const confirmation = process.env.CONFIRM_DB_RESET_PROJECT_ID;
+
+if (confirmation !== process.env.FIREBASE_PROJECT_ID) {
+  console.error("[ABORTADO] Confirmacao de seguranca ausente ou incorreta.");
+  console.error(`Projeto carregado: ${process.env.FIREBASE_PROJECT_ID || "(nao definido)"}`);
+  console.error("Para executar de proposito, rode:");
+  console.error(`  CONFIRM_DB_RESET_PROJECT_ID=${process.env.FIREBASE_PROJECT_ID || "<project-id>"} node scripts/db-reset.js`);
+  process.exit(1);
+}
+
 async function runReset() {
-  console.log("🚀 [NATIVE-RESET] Iniciando limpeza profunda...");
-  
+  console.log("[RESET] Iniciando limpeza profunda...");
+
   try {
     for (const colName of COLLECTIONS) {
-      console.log(`🧹 Analisando: ${colName}`);
+      console.log(`Analisando: ${colName}`);
       const colRef = db.collection(colName);
       const snapshot = await colRef.get();
 
       if (snapshot.empty) {
-        console.log(`   ℹ️ Vazia.`);
+        console.log(`   Vazia.`);
         continue;
       }
 
@@ -70,11 +87,11 @@ async function runReset() {
       if (count > 0) {
         await batch.commit();
       }
-      console.log(`✅ ${colName}: ${count} removidos, ${preserved} preservados.`);
+      console.log(`${colName}: ${count} removidos, ${preserved} preservados.`);
     }
-    console.log("\n🏁 [SUCESSO] Operação finalizada.");
+    console.log("\n[SUCESSO] Operacao finalizada.");
   } catch (err) {
-    console.error("❌ Erro no reset:", err);
+    console.error("[ERRO] Falha no reset:", err);
   }
 }
 
