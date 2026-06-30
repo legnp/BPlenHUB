@@ -25,7 +25,7 @@ export async function getPendingContracts(userId: string) {
          const pDoc = await db.collection("Products").doc(pId).get();
          if (pDoc.exists) {
             const pData = pDoc.data() as any;
-            if (pData.type !== "free") { // Or any logic to determine SLA
+            if (pData.price !== 0) { // Or any logic to determine SLA
                pendingProducts.push({
                  productId: pId,
                  orderId: doc.id,

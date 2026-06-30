@@ -854,7 +854,7 @@ export default function UsersManagementPage() {
                             Crie um link para que clientes antigos possam assinar formalmente serviços que já possuem.
                           </p>
                           <div className="space-y-3">
-                            {products.filter(p => p.type !== 'free').map(p => (
+                            {products.filter(p => p.price !== 0).map(p => (
                                <div key={p.id} className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
                                   <div>
                                      <p className="text-xs font-bold">{p.title}</p>
