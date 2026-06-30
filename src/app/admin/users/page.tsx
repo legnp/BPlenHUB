@@ -21,7 +21,8 @@ import {
   ShieldAlert,
   Link2,
   Trophy,
-  FileText
+  FileText,
+  Copy
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AdminUser, UserRole, UserServices } from "@/types/users";
@@ -809,7 +810,12 @@ export default function UsersManagementPage() {
                          </div>
                        </div>
                    ) : activeTab === "contracts" ? (
-                      <div className="space-y-4">
+                       <div className="space-y-4">
+                        <div className="flex items-center justify-between mb-4">
+                          <h4 className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--accent-start)] flex items-center gap-3">
+                            <FileText size={16} /> Contratos Assinados
+                          </h4>
+                        </div>
                         {loadingContracts ? (
                           <div className="flex items-center justify-center p-8 text-[var(--text-muted)]">
                             <Loader2 className="w-6 h-6 animate-spin mr-2" />
@@ -839,6 +845,36 @@ export default function UsersManagementPage() {
                             <p>Nenhum contrato assinado por este usuário.</p>
                           </div>
                         )}
+
+                        <div className="mt-8 pt-8 border-t border-[var(--border-primary)] space-y-4">
+                          <h4 className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--accent-start)] flex items-center gap-3">
+                            <Link2 size={16} /> Gerar Link de Contrato Retroativo
+                          </h4>
+                          <p className="text-xs text-[var(--text-muted)]">
+                            Crie um link para que clientes antigos possam assinar formalmente serviços que já possuem.
+                          </p>
+                          <div className="space-y-3">
+                            {products.filter(p => p.type !== 'free').map(p => (
+                               <div key={p.id} className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+                                  <div>
+                                     <p className="text-xs font-bold">{p.title}</p>
+                                     <p className="text-[10px] text-[var(--text-muted)]">/contrato-retroativo/{p.slug}</p>
+                                  </div>
+                                  <button 
+                                     onClick={() => {
+                                        navigator.clipboard.writeText(`${window.location.origin}/contrato-retroativo/${p.slug}`);
+                                        alert("Link copiado para a área de transferência!");
+                                     }}
+                                     className="p-2 rounded-lg bg-[var(--input-bg)] hover:bg-[var(--accent-start)] hover:text-white transition-all group flex gap-2 items-center"
+                                     title="Copiar Link Retroativo"
+                                  >
+                                     <span className="text-[10px] font-bold uppercase opacity-0 group-hover:opacity-100 transition-opacity">Copiar</span>
+                                     <Copy size={16} />
+                                  </button>
+                               </div>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                    ) : null}
                 </div>
