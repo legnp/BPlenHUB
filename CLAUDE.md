@@ -66,6 +66,14 @@ explícita antes de implementar, sempre que a mudança tocar em:
 Para ajustes pequenos e localizados (copy de texto puro sem afetar layout,
 bugfix isolado a um único arquivo, scripts em `scratch/`) pode prosseguir direto.
 
+## Fluxo de entrega
+Mudanças de código de produto (features, correções, refatorações, limpeza de
+débito técnico) seguem branch própria + Pull Request — nunca commit direto na
+`main`. Isso garante preview automático da Vercel antes do merge e reversão
+fácil sem afetar `main`. Exceção: infraestrutura de governança/repositório de
+baixo risco (ex: `.gitignore`, `CLAUDE.md`, organização de `scripts/`) pode ir
+direto na `main` quando combinado explicitamente com o Gestor.
+
 ## Classificação de coleta de dados
 Toda nova demanda de coleta de dados (survey/form) deve ser classificada conforme
 `SURVEY_GLOBAL.md` / `FORMS_GLOBAL.md` antes da implementação.
