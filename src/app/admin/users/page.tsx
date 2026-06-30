@@ -20,7 +20,8 @@ import {
   Rocket,
   ShieldAlert,
   Link2,
-  Trophy
+  Trophy,
+  FileText
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AdminUser, UserRole, UserServices } from "@/types/users";
@@ -57,9 +58,11 @@ export default function UsersManagementPage() {
   
   // Modal de Serviços e Assessments
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
-  const [activeTab, setActiveTab] = useState<"services" | "assessments">("services");
+  const [activeTab, setActiveTab] = useState<"services" | "assessments" | "contracts">("services");
   const [userAssessments, setUserAssessments] = useState<any[]>([]);
   const [loadingAssessments, setLoadingAssessments] = useState(false);
+  const [userContracts, setUserContracts] = useState<any[]>([]);
+  const [loadingContracts, setLoadingContracts] = useState(false);
   const [editingQuotas, setEditingQuotas] = useState<Record<string, number>>({});
   const [isLoadingQuotas, setIsLoadingQuotas] = useState(false);
   const [discLinkInput, setDiscLinkInput] = useState("");
@@ -130,6 +133,20 @@ export default function UsersManagementPage() {
           const results = await getUserAssessments(selectedUser.matricula);
           setUserAssessments(results);
           setLoadingAssessments(false);
+       };
+       load();
+    }
+  }, [selectedUser, activeTab]);
+
+  // Carregar Contratos quando o modal abre
+  useEffect(() => {
+    if (selectedUser && activeTab === "contracts") {
+       const load = async () => {
+          const { getUserLegalAudits } = await import("@/actions/legal");
+          setLoadingContracts(true);
+          const results = await getUserLegalAudits(selectedUser.uid);
+          if (results.success) setUserContracts(results.audits);
+          setLoadingContracts(false);
        };
        load();
     }
@@ -525,7 +542,7 @@ export default function UsersManagementPage() {
                       <p className="text-[10px] font-bold text-[var(--accent-start)] uppercase tracking-widest">Governança & Mapeamento</p>
                       <h3 className="text-xl font-bold text-[var(--text-primary)]">{selectedUser.name}</h3>
                       <div className="flex gap-4 mt-4">
-                        {["services", "assessments"].map((tab) => (
+                        {["services", "assessments", "contracts"].map((tab) => (
                           <button
                             key={tab}
                             onClick={() => setActiveTab(tab as any)}
@@ -535,7 +552,7 @@ export default function UsersManagementPage() {
                               : "border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)]"
                             }`}
                           >
-                            {tab === "services" ? "Acessos & Serviços" : "Assessments / Devolutivas"}
+                            {tab === "services" ? "Acessos & Serviços" : tab === "assessments" ? "Assessments / Devolutivas" : "Contratos & Aceites"}
                           </button>
                         ))}
                       </div>
@@ -702,7 +719,39 @@ export default function UsersManagementPage() {
                                   );
                                })}
                             </div>
-                         </div>
+                        ) : activeTab === "contracts" ? (
+                          <div className="space-y-4">
+                            {loadingContracts ? (
+                              <div className="flex items-center justify-center p-8 text-[var(--text-muted)]">
+                                <Loader2 className="w-6 h-6 animate-spin mr-2" />
+                                Carregando contratos...
+                              </div>
+                            ) : userContracts.length > 0 ? (
+                              userContracts.map((contract: any, idx: number) => (
+                                <div key={idx} className="p-4 rounded-xl border border-[var(--border-primary)] bg-[var(--bg-secondary)] flex items-center justify-between">
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-lg bg-[var(--accent-start)]/10 flex items-center justify-center">
+                                      <FileText className="w-5 h-5 text-[var(--accent-start)]" />
+                                    </div>
+                                    <div>
+                                      <p className="font-medium text-[var(--text-primary)]">ID do Produto: {contract.productId}</p>
+                                      <p className="text-xs text-[var(--text-muted)]">Aceito em: {new Date(contract.timestamp).toLocaleString("pt-BR")}</p>
+                                      <p className="text-[10px] text-[var(--text-muted)] opacity-70">Hash: {contract.documentHash?.substring(0, 16)}...</p>
+                                    </div>
+                                  </div>
+                                  <a href={contract.documentUrl} target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-[var(--bg-tertiary)] hover:bg-[var(--accent-start)]/20 text-[var(--text-primary)] transition-colors">
+                                    <Link2 className="w-4 h-4" />
+                                  </a>
+                                </div>
+                              ))
+                            ) : (
+                              <div className="p-8 text-center text-[var(--text-muted)] border border-dashed border-[var(--border-primary)] rounded-xl">
+                                <FileText className="w-8 h-8 mx-auto mb-3 opacity-20" />
+                                <p>Nenhum contrato assinado por este usuário.</p>
+                              </div>
+                            )}
+                          </div>
+                        ) : null}
                       </div>
                    ) : (
                       <div className="space-y-6">

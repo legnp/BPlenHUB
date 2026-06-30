@@ -8,6 +8,7 @@ import { useAuthContext } from "@/context/AuthContext";
 import { redirect } from "next/navigation";
 
 import { GuidedTourOverlay } from "@/components/shared/GuidedTourOverlay";
+import { ContractGateModal } from "@/components/hub/ContractGateModal";
 
 /**
  * HUB SHELL — O Frame Institucional Client-Side
@@ -26,6 +27,7 @@ export function HubShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className={`min-h-screen flex flex-col transition-colors duration-500 ${theme !== 'light' ? `theme-${theme}` : ''}`}>
+      <ContractGateModal />
       <GuidedTourOverlay 
         userName={user?.displayName?.split(" ")[0] || "Membro"}
       />
