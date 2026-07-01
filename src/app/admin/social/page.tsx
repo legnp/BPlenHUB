@@ -177,10 +177,10 @@ export default function SocialManagementPage() {
         </div>
 
         <div className="flex items-center bg-[var(--bg-primary)]/50 p-1.5 rounded-2xl border border-[var(--input-border)] gap-1 overflow-x-auto">
-          {['all', 'article', 'linkedin', 'instagram', 'tiktok', 'whatsapp'].map((plat) => (
+          {(['all', 'article', 'linkedin', 'instagram', 'tiktok', 'whatsapp'] as const).map((plat) => (
             <button
               key={plat}
-              onClick={() => setPlatformFilter(plat as any)}
+              onClick={() => setPlatformFilter(plat)}
               className={`px-4 py-2 rounded-xl text-[9px] font-bold transition-all uppercase tracking-widest shrink-0 ${platformFilter === plat
                   ? "bg-[var(--accent-start)] text-white shadow-xl shadow-[var(--accent-start)]/20"
                   : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"

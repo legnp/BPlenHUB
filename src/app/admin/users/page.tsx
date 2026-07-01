@@ -395,10 +395,10 @@ export default function UsersManagementPage() {
         </div>
 
         <div className="flex items-center bg-[var(--bg-primary)]/50 p-1.5 rounded-2xl border border-[var(--input-border)] gap-1 overflow-x-auto">
-          {['all', 'admin', 'member', 'visitor', 'suspended'].map((role) => (
+          {(['all', 'admin', 'member', 'visitor', 'suspended'] as const).map((role) => (
             <button
               key={role}
-              onClick={() => setRoleFilter(role as any)}
+              onClick={() => setRoleFilter(role)}
               className={`px-4 py-2 rounded-xl text-[9px] font-bold transition-all uppercase tracking-widest whitespace-nowrap ${roleFilter === role
                   ? role === 'suspended' ? "bg-red-500 text-white shadow-xl shadow-red-500/20" :  "bg-[var(--accent-start)] text-white shadow-xl shadow-[var(--accent-start)]/20"
                   : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
@@ -546,10 +546,10 @@ export default function UsersManagementPage() {
                       <p className="text-[10px] font-bold text-[var(--accent-start)] uppercase tracking-widest">Governança & Mapeamento</p>
                       <h3 className="text-xl font-bold text-[var(--text-primary)]">{selectedUser.name}</h3>
                       <div className="flex gap-4 mt-4">
-                        {["services", "assessments", "contracts"].map((tab) => (
+                        {(["services", "assessments", "contracts"] as const).map((tab) => (
                           <button
                             key={tab}
-                            onClick={() => setActiveTab(tab as any)}
+                            onClick={() => setActiveTab(tab)}
                             className={`text-[9px] font-bold uppercase tracking-[0.2em] pb-2 border-b-2 transition-all ${
                               activeTab === tab 
                               ? "border-[var(--accent-start)] text-[var(--accent-start)]" 

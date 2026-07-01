@@ -7,6 +7,7 @@ import * as LucideIcons from "lucide-react";
 import { useAuthContext } from "@/context/AuthContext";
 import { useJourney } from "@/hooks/useJourney";
 import AtmosphericLoading from "@/components/shared/AtmosphericLoading";
+import { StepStatus } from "@/types/journey";
 
 /**
  * BPlen HUB — Step Journey Dashboard 🧬
@@ -39,7 +40,7 @@ export default function StepJourneyPage() {
   const statusMap = stages.reduce((acc, stage) => {
     acc[stage.id] = getStepStatus(stage.id);
     return acc;
-  }, {} as any);
+  }, {} as Record<string, StepStatus>);
 
   return (
     <div className="max-w-7xl mx-auto px-6 pt-[10px] pb-12">

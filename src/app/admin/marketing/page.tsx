@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { getAdminCouponsList, saveCouponAction } from "@/actions/coupons";
 import { generateCouponBatchAction, getAdminCouponsV2Action } from "@/actions/coupon-v2";
-import { Coupon } from "@/types/marketing";
+import { Coupon, DiscountType } from "@/types/marketing";
 import { 
   Plus, 
   Trash2, 
@@ -400,7 +400,7 @@ export default function MarketingAdminPage() {
                   <select 
                      className="w-full bg-[var(--input-bg)] border border-[var(--input-border)] rounded-2xl p-4.5 text-sm font-bold outline-none focus:border-[var(--accent-start)] appearance-none text-[var(--text-primary)] px-6"
                      value={selectedCoupon.type}
-                     onChange={(e) => setSelectedCoupon({...selectedCoupon, type: e.target.value as any})}
+                     onChange={(e) => setSelectedCoupon({...selectedCoupon, type: e.target.value as DiscountType})}
                   >
                      <option value="percentage">Porcentagem (%)</option>
                      <option value="fixed">Valor Fixo (R$)</option>

@@ -113,10 +113,10 @@ export function SocialFeedView({ posts }: SocialFeedViewProps) {
               <Filter className="w-5 h-5 text-gray-600" />
             </button>
             <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-100 rounded-2xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 p-2">
-              {['all', 'article', 'linkedin', 'instagram', 'tiktok', 'whatsapp'].map((plat) => (
+              {(['all', 'article', 'linkedin', 'instagram', 'tiktok', 'whatsapp'] as const).map((plat) => (
                 <button
                   key={plat}
-                  onClick={() => setPlatformFilter(plat as any)}
+                  onClick={() => setPlatformFilter(plat)}
                   className={`w-full text-left px-4 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider transition-colors ${
                     platformFilter === plat ? "bg-black text-white" : "text-gray-500 hover:bg-gray-50"
                   }`}
