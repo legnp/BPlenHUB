@@ -28,7 +28,7 @@ export interface PartnerData {
     site?: string;
   };
   isActive: boolean;
-  createdAt?: any;
+  createdAt?: FirebaseFirestore.Timestamp;
 }
 
 /**

@@ -7,20 +7,20 @@
  * Converte qualquer variação de data do ecossistema (Timestamp, Date, ISO String) 
  * em um objeto Date nativo do JavaScript de forma segura.
  */
-export function toSafeDate(val: any): Date | null {
+export function toSafeDate(val: unknown): Date | null {
   if (!val) return null;
 
   // 1. Se já for instância de Date
   if (val instanceof Date) return val;
 
   // 2. Se for um Timestamp do Firebase (Client ou Admin) possessing .toDate()
-  if (typeof val === 'object' && typeof val.toDate === 'function') {
-    return val.toDate();
+  if (typeof val === 'object' && typeof (val as { toDate?: unknown }).toDate === 'function') {
+    return (val as { toDate: () => Date }).toDate();
   }
 
   // 3. Se for um objeto estruturado de Timestamp { seconds, nanoseconds }
-  if (typeof val === 'object' && 'seconds' in val && typeof val.seconds === 'number') {
-    return new Date(val.seconds * 1000);
+  if (typeof val === 'object' && val !== null && 'seconds' in val && typeof (val as { seconds: unknown }).seconds === 'number') {
+    return new Date((val as { seconds: number }).seconds * 1000);
   }
 
   // 4. Se for uma string (ISO ou similar)
@@ -40,7 +40,7 @@ export function toSafeDate(val: any): Date | null {
 /**
  * Retorna a representação ISO de uma data, ou null se inválida.
  */
-export function toISOSafe(val: any): string | null {
+export function toISOSafe(val: unknown): string | null {
   const d = toSafeDate(val);
   return d ? d.toISOString() : null;
 }

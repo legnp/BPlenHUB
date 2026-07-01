@@ -11,6 +11,11 @@ import { getErrorMessage } from "@/lib/utils/errors";
  * Busca e consolida dados de membros, profissionais e parceiros para interação.
  */
 
+interface NetworkingContactItem {
+  value: string;
+  visible: boolean;
+}
+
 export interface NetworkingMember {
   id: string; // Matricula
   name: string;
@@ -19,7 +24,7 @@ export interface NetworkingMember {
   hashtags: string[];
   journeyStageId: string;
   isProfessional: boolean;
-  contacts: any;
+  contacts: Record<string, NetworkingContactItem | undefined>;
   cvVisible: boolean;
   portfolioVisible: boolean;
   cvUrl?: string;

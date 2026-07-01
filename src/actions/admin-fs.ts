@@ -107,7 +107,7 @@ export async function getAdminFSAnalytics(): Promise<{
     const now = new Date();
     const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
-    const checkLast24h = (dateVal: any) => {
+    const checkLast24h = (dateVal: unknown) => {
       const d = toSafeDate(dateVal);
       if (d && d >= oneDayAgo) {
         responsesLast24h++;
