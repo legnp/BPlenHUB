@@ -216,7 +216,7 @@ export function DynamicList({ field, value = [], onChange }: DynamicListProps) {
                     {renderLabelAndDesc()}
                     <DynamicList
                       field={subField}
-                      value={(val || []) as Record<string, any>[]}
+                      value={(val || []) as Record<string, unknown>[]}
                       onChange={(newVal) => handleChange(index, subField.id, newVal)}
                     />
                   </div>
