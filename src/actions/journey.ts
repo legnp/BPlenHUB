@@ -212,7 +212,7 @@ export async function getStandaloneStageAction(slug: string): Promise<JourneySte
     const normalizedSlug = slug.toLowerCase().replace(/_/g, '-');
 
     // 1. Busca Direta por ID Normalizado
-    let productDoc: any = await db.collection("products").doc(normalizedSlug).get();
+    let productDoc: FirebaseFirestore.DocumentSnapshot = await db.collection("products").doc(normalizedSlug).get();
     
     // 2. Fallback: Slug ID Original (se for diferente)
     if (!productDoc.exists && normalizedSlug !== slug) {
@@ -577,7 +577,7 @@ export async function assignDynamicSubstepAction(
       const dynamicSubSteps = [...(stepProgress.dynamicSubSteps || [])];
       
       const alreadyExists = dynamicSubSteps.some(
-        (ds: any) => ds.referenceId === subStepConfig.referenceId && ds.parentId === parentSubStepId
+        (ds) => ds.referenceId === subStepConfig.referenceId && ds.parentId === parentSubStepId
       );
       
       if (!alreadyExists) {

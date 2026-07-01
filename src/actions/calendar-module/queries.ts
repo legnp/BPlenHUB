@@ -132,7 +132,7 @@ export async function getUserBookingsAction(matricula: string): Promise<UserBook
         participantDocs: data.participantDocs || [],
         oneToOneData: data.oneToOneData || null
       } as UserBooking;
-    }).sort((a: any, b: any) => {
+    }).sort((a, b) => {
       const startA = a.eventDetail ? new Date(a.eventDetail.start).getTime() : 0;
       const startB = b.eventDetail ? new Date(b.eventDetail.start).getTime() : 0;
       return startB - startA;

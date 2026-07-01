@@ -8,18 +8,28 @@ import { getEventAttendees } from "./queries";
 import { sendAttendanceRegisteredEmail, sendAbsenceRegisteredEmail } from "@/lib/attendance-emails";
 
 
+export interface CloseEventData {
+  lifecycleStatus: EventLifecycleStatus;
+  internalGeneralComment: string;
+  publicGeneralComment: string;
+  meetingMinutesFile: { url: string; fileId: string; fileName: string; uploadedAt: string } | null;
+  updatedBy: string;
+}
+
+export interface CloseAttendeeData {
+  attendanceStatus: AttendanceStatus;
+  participantFeedback: string;
+  participantTasks: string;
+  participantDocs: Array<{ url: string; fileId: string; fileName: string; uploadedAt: string }>;
+  checkedBy: string;
+}
+
 /**
  * Parte 1: Fechamento Geral do Evento 🏁
  */
 export async function closeEventAction(
   eventId: string,
-  data: {
-    lifecycleStatus: EventLifecycleStatus;
-    internalGeneralComment: string;
-    publicGeneralComment: string;
-    meetingMinutesFile: { url: string; fileId: string; fileName: string; uploadedAt: string } | null;
-    updatedBy: string;
-  }
+  data: CloseEventData
 ) {
   try {
     const db = getAdminDb();
@@ -79,13 +89,7 @@ export async function closeAttendeeAction(
   eventId: string,
   userId: string,
   matricula: string,
-  data: {
-    attendanceStatus: AttendanceStatus;
-    participantFeedback: string;
-    participantTasks: string;
-    participantDocs: Array<{ url: string; fileId: string; fileName: string; uploadedAt: string }>;
-    checkedBy: string;
-  }
+  data: CloseAttendeeData
 ) {
   try {
     const db = getAdminDb();

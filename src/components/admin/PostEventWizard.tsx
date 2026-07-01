@@ -47,6 +47,13 @@ const surveyRegistry = surveys as Record<string, SurveyConfig | undefined>;
 import { assignDynamicSubstepToPresentAttendeesAction } from "@/actions/journey";
 import { getErrorMessage } from "@/lib/utils/errors";
 
+interface AttendeeEditState {
+  attendanceStatus: AttendanceStatus;
+  participantFeedback: string;
+  participantTasks: string;
+  participantDocs: Array<{ url: string; fileId: string; fileName: string; uploadedAt: string }>;
+}
+
 interface PostEventWizardProps {
   isOpen: boolean;
   onClose: () => void;
@@ -70,12 +77,7 @@ export default function PostEventWizard({ isOpen, onClose, event, onSuccess }: P
 
   // Parte 2 State (Per Attendee)
   const [selectedAttendeeIndex, setSelectedAttendeeIndex] = useState<number | null>(null);
-  const [attendeeEdits, setAttendeeEdits] = useState<Record<string, {
-    attendanceStatus: AttendanceStatus;
-    participantFeedback: string;
-    participantTasks: string;
-    participantDocs: Array<{ url: string; fileId: string; fileName: string; uploadedAt: string }>;
-  }>>({});
+  const [attendeeEdits, setAttendeeEdits] = useState<Record<string, AttendeeEditState>>({});
 
   // User Search State
   const [isUserSearchOpen, setIsUserSearchOpen] = useState(false);
@@ -110,7 +112,7 @@ export default function PostEventWizard({ isOpen, onClose, event, onSuccess }: P
       setAttendees(data);
       
       // Initialize edits for each attendee
-      const initialEdits: any = {};
+      const initialEdits: Record<string, AttendeeEditState> = {};
       data.forEach(att => {
         initialEdits[att.userId] = {
           attendanceStatus: att.attendanceStatus || "pending",
@@ -525,8 +527,8 @@ export default function PostEventWizard({ isOpen, onClose, event, onSuccess }: P
                            className="w-full p-2.5 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-xl text-[10px] font-bold text-[var(--text-primary)] focus:outline-none"
                         >
                            <option value="">Selecione um Modelo...</option>
-                           {Object.entries(surveys).map(([key, val]: any) => (
-                              <option key={key} value={key}>{val.title || key}</option>
+                           {Object.entries(surveyRegistry).map(([key, val]) => (
+                              <option key={key} value={key}>{val?.title || key}</option>
                            ))}
                         </select>
                         
