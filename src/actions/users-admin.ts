@@ -21,6 +21,7 @@ const ALLOWED_SERVICE_KEYS = [
 ];
 
 import { toISOSafe } from "@/lib/date-utils";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 /**
  * Retorna a lista completa de usuários para o painel administrativo.
@@ -108,9 +109,9 @@ export async function getAdminUsersList(adminToken?: string): Promise<{ success:
 
     return { success: true, data: adminUsers.sort((a, b) => a.name.localeCompare(b.name)) };
 
-  } catch (error: any) {
-    console.error("❌ [Users Admin] Falha ao listar usuários:", error.message);
-    return { success: false, error: error.message || "Falha ao carregar lista de usuários." };
+  } catch (error: unknown) {
+    console.error("❌ [Users Admin] Falha ao listar usuários:", getErrorMessage(error));
+    return { success: false, error: getErrorMessage(error, "Falha ao carregar lista de usuários.") };
   }
 }
 
@@ -195,9 +196,9 @@ export async function updateUserPermissions(
     console.log(`✅ [Governance Admin] Permissões atualizadas para ${targetMatricula} no path: ${permissionsPath}`);
     return { success: true };
 
-  } catch (error: any) {
-    console.error("❌ [Governance Admin] Falha ao atualizar permissões:", error.message);
-    throw new Error(error.message || "Falha ao atualizar governança do usuário.");
+  } catch (error: unknown) {
+    console.error("❌ [Governance Admin] Falha ao atualizar permissões:", getErrorMessage(error));
+    throw new Error(getErrorMessage(error, "Falha ao atualizar governança do usuário."));
   }
 }
 
@@ -226,9 +227,9 @@ export async function forceIdentifyUser(matricula: string, targetUid: string, ad
 
     revalidatePath("/admin/users");
     return { success: true };
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("❌ [forceIdentifyUser] Erro ao vincular manual:", err);
-    return { success: false, error: err.message || "Erro desconhecido ao vincular." };
+    return { success: false, error: getErrorMessage(err, "Erro desconhecido ao vincular.") };
   }
 }
 
@@ -254,9 +255,9 @@ export async function toggleProfessionalStatusAction(matricula: string, status: 
     
     console.log(`✅ [Governance Admin] Status Profissional ${status ? 'ATIVADO' : 'DESATIVADO'} para ${matricula}`);
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ [ToggleProfessional] Erro:", error);
-    return { success: false, error: error.message };
+    return { success: false, error: getErrorMessage(error) };
   }
 }
 
@@ -285,9 +286,9 @@ export async function updateMentoCoachSessionsQuotaAction(matricula: string, lim
     
     console.log(`✅ [Governance Admin] Limite de MentoCoach ajustado para ${limit} na matrícula ${matricula}`);
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ [UpdateMentoCoachQuota] Erro:", error);
-    return { success: false, error: error.message || "Erro ao atualizar cota de MentoCoach." };
+    return { success: false, error: getErrorMessage(error, "Erro ao atualizar cota de MentoCoach.") };
   }
 }
 

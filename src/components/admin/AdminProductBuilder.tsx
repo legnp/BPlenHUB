@@ -311,6 +311,7 @@ function IdentityForm({ product, setProduct }: any) {
 
 import { uploadProductCoverAction } from "@/actions/product-sync";
 import { useAuth } from "@/hooks/use-auth";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 function SheetForm({ product, setProduct }: any) {
    const [isUploading, setIsUploading] = useState(false);
@@ -347,8 +348,8 @@ function SheetForm({ product, setProduct }: any) {
         } else {
            throw new Error(result.error);
         }
-      } catch (err: any) {
-        alert("Erro no upload: " + err.message);
+      } catch (err: unknown) {
+        alert("Erro no upload: " + getErrorMessage(err));
         setUploadStatus("Erro.");
       } finally {
         setIsUploading(false);

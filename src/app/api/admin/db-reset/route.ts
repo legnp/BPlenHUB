@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import admin from "firebase-admin";
 import { headers } from "next/headers";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 /**
  * BPlen HUB — Rota de Emergência para Reset de Base 🛡️
@@ -89,11 +90,11 @@ export async function GET(request: Request) {
       results 
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Erro no reset via API:", error);
     return NextResponse.json({ 
       success: false, 
-      error: error.message 
+      error: getErrorMessage(error) 
     }, { status: 500 });
   }
 }

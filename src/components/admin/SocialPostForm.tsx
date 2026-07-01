@@ -36,6 +36,7 @@ import { uploadSocialThumbnailToDrive, deleteSocialThumbnailFromDrive } from "@/
 import GlassModal from "@/components/ui/GlassModal";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 function slugify(text: string): string {
   return text
@@ -173,8 +174,8 @@ export function SocialPostForm({ post, onClose, onSuccess }: SocialPostFormProps
       }
 
       setFormData(prev => ({ ...prev, thumbnail: result.url }));
-    } catch (err: any) {
-      setError(err.message || "Erro no upload para o Google Drive.");
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Erro no upload para o Google Drive."));
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -199,8 +200,8 @@ export function SocialPostForm({ post, onClose, onSuccess }: SocialPostFormProps
         await createSocialPost(formData, adminToken);
       }
       onSuccess();
-    } catch (err: any) {
-      setError(err.message || "Erro ao salvar postagem.");
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Erro ao salvar postagem."));
     } finally {
       setIsSaving(false);
     }

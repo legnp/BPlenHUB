@@ -7,6 +7,7 @@ import { ensureFolder, uploadFileToDrive, makeFilePublic } from "@/lib/drive-uti
 import { serverEnv } from "@/env";
 import { Readable } from "stream";
 import { revalidatePath } from "next/cache";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 /**
  * BPlen HUB — Admin Partners Actions 🤝🛡️
@@ -51,8 +52,8 @@ export async function getPartnersAction(): Promise<PartnerData[]> {
     });
 
     return partners;
-  } catch (error: any) {
-    console.error("❌ [GetPartners] Erro:", error?.message || error);
+  } catch (error: unknown) {
+    console.error("❌ [GetPartners] Erro:", getErrorMessage(error), error);
     return [];
   }
 }
@@ -116,9 +117,9 @@ export async function upsertPartnerAction(data: PartnerData, base64Image?: strin
     revalidatePath("/admin/partners");
 
     return { success: true, id: partnerId };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ [UpsertPartner] Erro:", error);
-    return { success: false, error: error.message };
+    return { success: false, error: getErrorMessage(error) };
   }
 }
 
@@ -134,7 +135,7 @@ export async function deletePartnerAction(id: string) {
     revalidatePath("/admin/partners");
     
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ [DeletePartner] Erro:", error);
     return { success: false };
   }

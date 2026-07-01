@@ -16,6 +16,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { SocialPost } from "@/types/social";
 import { getSocialPosts } from "@/actions/social";
 import { submitContentFeedback } from "@/actions/feedback";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 interface ContentEvaluationModalProps {
   isOpen: boolean;
@@ -97,8 +98,8 @@ export function ContentEvaluationModal({ isOpen, onClose, uid, matricula }: Cont
         delete next[post.id];
         return next;
       });
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(getErrorMessage(err));
     } finally {
       setSubmittingId(null);
     }

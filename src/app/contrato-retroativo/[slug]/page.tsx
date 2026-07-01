@@ -17,6 +17,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { auth } from "@/lib/firebase";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 export default function RetroactiveContractPage() {
   const { slug } = useParams();
@@ -63,8 +64,8 @@ export default function RetroactiveContractPage() {
         setError(result.error || "Falha ao processar assinatura.");
         setStep("summary");
       }
-    } catch (err: any) {
-      setError(err.message || "Erro inesperado.");
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Erro inesperado."));
       setStep("summary");
     } finally {
       setProcessing(false);

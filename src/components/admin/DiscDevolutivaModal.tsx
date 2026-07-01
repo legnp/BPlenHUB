@@ -8,6 +8,7 @@ import { FormsEngine } from "@/components/forms/FormsEngine";
 import { devolutivaDiscFormConfig } from "@/config/forms/devolutiva-disc";
 import { submitDevolutivaDisc } from "@/actions/submit-devolutiva";
 import { auth } from "@/lib/firebase";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 interface DiscDevolutivaModalProps {
   user: AdminUser;
@@ -46,8 +47,8 @@ export function DiscDevolutivaModal({ user, onClose, onSuccess }: DiscDevolutiva
         onSuccess();
         onClose();
       }
-    } catch (err: any) {
-      alert("❌ Erro ao publicar: " + err.message);
+    } catch (err: unknown) {
+      alert("❌ Erro ao publicar: " + getErrorMessage(err));
     } finally {
       setIsSubmitting(false);
     }

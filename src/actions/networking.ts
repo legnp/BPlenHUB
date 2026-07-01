@@ -4,6 +4,7 @@ import { getAdminDb } from "@/lib/firebase-admin";
 import { requireAuth } from "@/lib/auth-guards";
 import { resolveMatricula } from "./get-user-results";
 import { PartnerData } from "./admin/partners";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 /**
  * BPlen HUB — Networking Engine 🌐🧬
@@ -114,8 +115,8 @@ export async function getNetworkingDataAction(
 
     return { success: true, type: "members", data: users };
 
-  } catch (error: any) {
-    console.error("❌ [NetworkingAction] Erro:", error?.message || error);
-    return { success: false, error: error.message, data: [] };
+  } catch (error: unknown) {
+    console.error("❌ [NetworkingAction] Erro:", getErrorMessage(error), error);
+    return { success: false, error: getErrorMessage(error), data: [] };
   }
 }

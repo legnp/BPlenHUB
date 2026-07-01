@@ -32,6 +32,7 @@ import GlassModal from "@/components/ui/GlassModal";
 import { SocialPostForm } from "@/components/admin/SocialPostForm";
 import { auth } from "@/lib/firebase";
 import Link from "next/link";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 export default function SocialManagementPage() {
   const [posts, setPosts] = useState<SocialPost[]>([]);
@@ -78,8 +79,8 @@ export default function SocialManagementPage() {
         // 2. Apagar documento do Firestore
         await deleteSocialPost(post.id, adminToken);
         fetchPosts();
-      } catch (error: any) {
-        alert(error.message || "Erro ao excluir post.");
+      } catch (error: unknown) {
+        alert(getErrorMessage(error, "Erro ao excluir post."));
       }
     }
   };
@@ -90,8 +91,8 @@ export default function SocialManagementPage() {
 
       await togglePostStatus(id, field, current, adminToken);
       fetchPosts();
-    } catch (error: any) {
-      alert(error.message || "Erro ao atualizar status.");
+    } catch (error: unknown) {
+      alert(getErrorMessage(error, "Erro ao atualizar status."));
     }
   };
 

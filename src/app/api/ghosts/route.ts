@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAdminDb } from "@/lib/firebase-admin";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 export async function GET() {
   try {
@@ -16,7 +17,7 @@ export async function GET() {
     }));
 
     return NextResponse.json(paths);
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 });
   }
 }

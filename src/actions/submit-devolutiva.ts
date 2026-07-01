@@ -4,6 +4,7 @@ import { getAdminDb } from "@/lib/firebase-admin";
 import * as admin from "firebase-admin";
 import { requireAdmin } from "@/lib/auth-guards";
 import { revalidatePath } from "next/cache";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 /**
  * BPlen HUB — Submit DISC Devolutiva (🧬🚀)
@@ -104,8 +105,8 @@ export async function submitDevolutivaDisc(
     
     return { success: true };
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("❌ [SubmitDevolutiva] Falha crítica:", err);
-    throw new Error(err.message || "Erro ao publicar devolutiva DISC.");
+    throw new Error(getErrorMessage(err, "Erro ao publicar devolutiva DISC."));
   }
 }

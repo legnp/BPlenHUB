@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Star, MessageSquare, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { useAuthContext } from "@/context/AuthContext";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 interface DynamicFeedbackFormProps {
   surveyId: string;
@@ -48,8 +49,8 @@ export function DynamicFeedbackForm({ surveyId }: DynamicFeedbackFormProps) {
       }
 
       setIsSuccess(true);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(getErrorMessage(err));
     } finally {
       setIsSubmitting(false);
     }

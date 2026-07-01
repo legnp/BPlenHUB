@@ -5,6 +5,7 @@ import { PRODUCTS_COLLECTION, COUPONS_COLLECTION } from "@/config/collections";
 import { revalidatePath } from "next/cache";
 import fs from "fs";
 import path from "path";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 /**
  * BPlen HUB — Portfolio Command Center 🚀
@@ -109,8 +110,8 @@ export async function syncPortfolioFromFilesAction() {
       message: `Sincronização concluída: ${products.length} produtos ativos.` 
     };
 
-  } catch (error: any) {
-    console.error("[Sync Action] Erro:", error.message);
-    return { success: false, error: error.message };
+  } catch (error: unknown) {
+    console.error("[Sync Action] Erro:", getErrorMessage(error));
+    return { success: false, error: getErrorMessage(error) };
   }
 }

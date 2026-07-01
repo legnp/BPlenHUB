@@ -14,6 +14,7 @@ import {
   CareerGoal
 } from "@/types/career";
 import * as admin from "firebase-admin";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 /**
  * Serializador seguro para evitar quebras do Next.js ao trafegar objetos
@@ -99,9 +100,9 @@ export async function toggleCareerPlanningAccessAction(
 
     console.log(`✅ [Career Action] Modulo de carreira alterado para ${nextStatus} no usuario ${matricula}`);
     return { success: true, active: nextStatus };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ [Career Action] Erro ao alternar acesso do usuario:", error);
-    return { success: false, error: error.message || "Falha ao salvar permissao no servidor." };
+    return { success: false, error: getErrorMessage(error, "Falha ao salvar permissao no servidor.") };
   }
 }
 
@@ -363,9 +364,9 @@ export async function getCareerPlanningDataAction(
         objectives
       })
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(`❌ [Career Action] Falha ao carregar dados para matricula ${matricula}:`, error);
-    return { success: false, error: error.message || "Erro de autorizacao ou conexao com o banco." };
+    return { success: false, error: getErrorMessage(error, "Erro de autorizacao ou conexao com o banco.") };
   }
 }
 
@@ -411,9 +412,9 @@ export async function addCareerTaskAction(
         ...newTask
       })
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ [Career Action] Erro ao adicionar tarefa:", error);
-    return { success: false, error: error.message || "Falha ao gravar tarefa no Firestore." };
+    return { success: false, error: getErrorMessage(error, "Falha ao gravar tarefa no Firestore.") };
   }
 }
 
@@ -460,9 +461,9 @@ export async function updateCareerTaskStatusAction(
     });
 
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ [Career Action] Erro ao atualizar status da tarefa:", error);
-    return { success: false, error: error.message || "Erro ao salvar novo status." };
+    return { success: false, error: getErrorMessage(error, "Erro ao salvar novo status.") };
   }
 }
 
@@ -504,9 +505,9 @@ export async function addCareerTaskCommentAction(
       success: true,
       comment: serializeData(newComment)
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ [Career Action] Erro ao adicionar comentario:", error);
-    return { success: false, error: error.message || "Erro ao gravar comentario." };
+    return { success: false, error: getErrorMessage(error, "Erro ao gravar comentario.") };
   }
 }
 
@@ -528,9 +529,9 @@ export async function deleteCareerTaskAction(
     await taskRef.delete();
 
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ [Career Action] Erro ao deletar tarefa:", error);
-    return { success: false, error: error.message || "Falha ao remover tarefa." };
+    return { success: false, error: getErrorMessage(error, "Falha ao remover tarefa.") };
   }
 }
 
@@ -579,9 +580,9 @@ export async function saveCareerObjectiveAction(
       success: true,
       id: objRef.id
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ [Career Action] Erro ao salvar objetivo:", error);
-    return { success: false, error: error.message || "Falha ao gravar objetivo." };
+    return { success: false, error: getErrorMessage(error, "Falha ao gravar objetivo.") };
   }
 }
 
@@ -649,9 +650,9 @@ export async function updateCareerGoalProgressAction(
     });
 
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ [Career Action] Erro ao atualizar progresso da meta:", error);
-    return { success: false, error: error.message || "Erro ao salvar progresso." };
+    return { success: false, error: getErrorMessage(error, "Erro ao salvar progresso.") };
   }
 }
 
@@ -698,9 +699,9 @@ export async function addCareerFeedbackAction(
         ...newFeedback
       })
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ [Career Action] Erro ao cadastrar feedback:", error);
-    return { success: false, error: error.message || "Falha ao gravar feedback." };
+    return { success: false, error: getErrorMessage(error, "Falha ao gravar feedback.") };
   }
 }
 
@@ -744,9 +745,9 @@ export async function addCareerAtaAction(
         ...newAta
       })
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ [Career Action] Erro ao cadastrar ata:", error);
-    return { success: false, error: error.message || "Falha ao gravar ata." };
+    return { success: false, error: getErrorMessage(error, "Falha ao gravar ata.") };
   }
 }
 
@@ -790,9 +791,9 @@ export async function addCareerSharedDocumentAction(
         ...newDoc
       })
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ [Career Action] Erro ao cadastrar documento compartilhado:", error);
-    return { success: false, error: error.message || "Falha ao gravar documento." };
+    return { success: false, error: getErrorMessage(error, "Falha ao gravar documento.") };
   }
 }
 
@@ -833,9 +834,9 @@ export async function saveCustomResourcesAction(
 
     console.log(`✅ [Career Action] Recursos customizados salvos para o usuário ${matricula}`);
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ [Career Action] Erro ao salvar recursos customizados:", error);
-    return { success: false, error: error.message || "Falha ao salvar recursos customizados no servidor." };
+    return { success: false, error: getErrorMessage(error, "Falha ao salvar recursos customizados no servidor.") };
   }
 }
 

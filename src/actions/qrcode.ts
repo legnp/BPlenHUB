@@ -8,6 +8,7 @@ import { Readable } from "stream";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth-guards";
 import { BPlenQRCode } from "@/types/qrcode";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 const COLLECTION_NAME = "qrcodes";
 
@@ -111,11 +112,11 @@ export async function createQRCodeAction(formData: FormData, adminToken: string)
       id: docRef.id,
       driveUrl: uploadResult.webViewLink,
     };
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Erro critico na criacao do QR Code:", err);
     return {
       success: false,
-      error: err.message || "Erro interno ao processar e salvar o QR Code.",
+      error: getErrorMessage(err, "Erro interno ao processar e salvar o QR Code."),
     };
   }
 }
@@ -149,11 +150,11 @@ export async function getQRCodesAction(adminToken: string) {
     });
 
     return { success: true, qrcodes };
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Erro ao listar os QR Codes:", err);
     return {
       success: false,
-      error: err.message || "Falha ao recuperar a listagem de QR Codes.",
+      error: getErrorMessage(err, "Falha ao recuperar a listagem de QR Codes."),
     };
   }
 }
@@ -188,11 +189,11 @@ export async function deleteQRCodeAction(id: string, driveFileId: string, adminT
     revalidatePath("/admin/qrcodes");
 
     return { success: true };
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Erro critico na exclusao do QR Code:", err);
     return {
       success: false,
-      error: err.message || "Falha ao remover o registro do QR Code.",
+      error: getErrorMessage(err, "Falha ao remover o registro do QR Code."),
     };
   }
 }

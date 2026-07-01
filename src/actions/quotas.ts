@@ -2,6 +2,7 @@
 
 import { getAdminDb } from "@/lib/firebase-admin";
 import { MemberQuotaWallet, MemberQuota } from "@/types/entitlements";
+import { getErrorMessage } from "@/lib/utils/errors";
 import { getProductBySlug } from "./products"; // Se precisarmos buscar cotas do produto
 
 const QUOTAS_COLLECTION = "Member_Quotas";
@@ -136,8 +137,8 @@ export async function consumeQuotaAction(uid: string, eventTypeId: string) {
     });
 
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(`Erro ao consumir cota do membro ${uid}:`, error);
-    return { success: false, error: error.message };
+    return { success: false, error: getErrorMessage(error) };
   }
 }

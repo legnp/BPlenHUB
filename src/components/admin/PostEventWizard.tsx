@@ -40,6 +40,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { surveys } from "@/config/surveys";
 import { assignDynamicSubstepToPresentAttendeesAction } from "@/actions/journey";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 interface PostEventWizardProps {
   isOpen: boolean;
@@ -178,9 +179,9 @@ export default function PostEventWizard({ isOpen, onClose, event, onSuccess }: P
       
       onSuccess?.();
       onClose();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Erro ao gerar resumo final:", error);
-      alert("ATENÇÃO: A planilha de consolidação não pôde ser gerada na pasta do Google Drive. Verifique as permissões de acesso da conta hub@bplen.com ou as variáveis do sistema.\n\n" + (error.message || "Erro desconhecido"));
+      alert("ATENÇÃO: A planilha de consolidação não pôde ser gerada na pasta do Google Drive. Verifique as permissões de acesso da conta hub@bplen.com ou as variáveis do sistema.\n\n" + (getErrorMessage(error, "Erro desconhecido")));
       // Mesmo com erro na planilha, permitimos fechar pois o grosso (atas/presença) já foi salvo.
       onSuccess?.();
       onClose();
@@ -320,9 +321,9 @@ export default function PostEventWizard({ isOpen, onClose, event, onSuccess }: P
       } else {
         alert("Erro ao atribuir: " + res.message);
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e);
-      alert("Erro ao executar acao: " + (e.message || "Erro desconhecido"));
+      alert("Erro ao executar acao: " + (getErrorMessage(e, "Erro desconhecido")));
     } finally {
       setIsAssigningSubstep(false);
     }

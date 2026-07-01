@@ -2,6 +2,7 @@
 
 import { getAdminDb } from "@/lib/firebase-admin";
 import { requireAdmin } from "@/lib/auth-guards";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 /**
  * Serializador seguro para evitar quebras de serializacao do Next.js
@@ -233,11 +234,11 @@ export async function getDevolutivaUserData(
       success: true,
       data: serializeData(rawPayload),
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(`❌ [admin-devolutiva] Erro para matricula ${matricula}:`, error);
     return {
       success: false,
-      error: error.message || "Falha ao carregar informacoes da devolutiva comportamental.",
+      error: getErrorMessage(error, "Falha ao carregar informacoes da devolutiva comportamental."),
     };
   }
 }
