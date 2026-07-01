@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import GlassModal from "@/components/ui/GlassModal";
-import Calendar from "@/components/ui/Calendar";
-import { GoogleCalendarEvent } from "@/types/calendar";
+import Calendar, { CalendarEvent } from "@/components/ui/Calendar";
 import { getProgramacaoForMemberAction } from "@/actions/calendar";
 import { getMemberQuotasAction } from "@/actions/quotas";
 import { useAuthContext } from "@/context/AuthContext";
@@ -12,7 +11,7 @@ import { Loader2, Briefcase, Info } from "lucide-react";
 interface OneToOneBookingModalProps {
   isOpen: boolean;
   onClose: () => void;
-  allEvents: GoogleCalendarEvent[];
+  allEvents: CalendarEvent[];
   onSuccess: () => void;
 }
 
@@ -119,8 +118,8 @@ export default function OneToOneBookingModal({
 
         {/* Calendário de Escolha */}
         <div className="min-h-[500px]">
-           <Calendar 
-              events={oneToOneEvents as any} 
+           <Calendar
+              events={oneToOneEvents}
               onBookingSuccess={() => {
                 onSuccess();
                 onClose();

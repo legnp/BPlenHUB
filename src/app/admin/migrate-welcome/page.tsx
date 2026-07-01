@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
-import { runWelcomeMigration } from "@/actions/migration-welcome";
+import { runWelcomeMigration, WelcomeMigrationResults } from "@/actions/migration-welcome";
 import { Play, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { getErrorMessage } from "@/lib/utils/errors";
 
 export default function MigrateWelcomePage() {
   const [status, setStatus] = useState<"idle" | "running" | "success" | "error">("idle");
-  const [results, setResults] = useState<any>(null);
+  const [results, setResults] = useState<WelcomeMigrationResults | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleStart = async () => {
@@ -70,10 +70,10 @@ export default function MigrateWelcomePage() {
             
             <div className="grid grid-cols-2 gap-4">
                {[
-                 { label: "Total", val: results.total },
-                 { label: "Migrados", val: results.migrated },
-                 { label: "Pulados", val: results.skipped },
-                 { label: "Erros", val: results.errors },
+                 { label: "Total", val: results?.total ?? 0 },
+                 { label: "Migrados", val: results?.migrated ?? 0 },
+                 { label: "Pulados", val: results?.skipped ?? 0 },
+                 { label: "Erros", val: results?.errors ?? 0 },
                ].map(item => (
                  <div key={item.label} className="p-4 bg-white/5 border border-white/10 rounded-2xl text-center">
                     <div className="text-[9px] text-[var(--text-muted)] mb-1 font-bold uppercase tracking-widest">{item.label}</div>

@@ -17,11 +17,11 @@ export interface GoogleCalendarEvent {
   totalCapacity?: number;
   registeredCount?: number;
   mentor?: string;
-  theme?: string;
+  theme?: string | null;
   status?: string;
 
   // Post-event Fields
-  lifecycleStatus?: EventLifecycleStatus;
+  lifecycleStatus?: EventLifecycleStatus | null;
   postEventCompleted?: boolean;
   internalGeneralComment?: string;
   publicGeneralComment?: string;
@@ -44,6 +44,32 @@ export interface GoogleCalendarEvent {
     npsAvg: number;
     reviewsCount: number;
   };
+}
+
+/**
+ * Snapshot leve de um evento para o Datas_Center/Programacao_Registry,
+ * consumido por dashboards de membro e admin sem precisar ler Calendar_Events inteiro.
+ */
+export interface ProgramacaoEntry {
+  id: string;
+  summary: string;
+  start: string;
+  end: string;
+  mentor: string;
+  theme: string | null;
+  statusLabel: "futuro" | "pendente" | "concluido" | "baixado";
+  folderUrl: string | null;
+  htmlLink: string;
+  meetingLink: string;
+  location: string;
+  registeredCount: number;
+  totalCapacity: number;
+  metrics: { presenceCount: number; npsAvg: number; reviewsCount: number };
+  postEventCompleted: boolean;
+  lifecycleStatus: EventLifecycleStatus | null;
+  internalGeneralComment: string;
+  publicGeneralComment: string;
+  meetingMinutesFile: { url: string; fileId: string; fileName: string; uploadedAt: string } | null;
 }
 
 export interface UserBooking {

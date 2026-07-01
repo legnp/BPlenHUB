@@ -9,8 +9,15 @@ import { SurveyResponse, SurveyStatus, SurveyValue } from "@/types/survey";
  * Move dados de User/{mat}.User_Welcome para User/{mat}/Surveys/welcome_survey.
  * Soberania Admin para processamento em lote (Bulk Migration).
  */
+export interface WelcomeMigrationResults {
+  total: number;
+  migrated: number;
+  skipped: number;
+  errors: number;
+}
+
 export async function runWelcomeMigration() {
-  const results = {
+  const results: WelcomeMigrationResults = {
     total: 0,
     migrated: 0,
     skipped: 0,

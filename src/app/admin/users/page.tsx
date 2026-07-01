@@ -35,6 +35,8 @@ import { getAdminProducts } from "@/actions/products";
 import { Product } from "@/types/products";
 import { getMemberQuotasAction, updateMemberQuotasAction } from "@/actions/quotas";
 import { getErrorMessage } from "@/lib/utils/errors";
+import type { UserAssessment } from "@/actions/admin-assessments";
+import type { LegalAudit } from "@/actions/legal";
 
 /**
  * BPlen HUB — Gestão de Usuários e Governança
@@ -61,9 +63,9 @@ export default function UsersManagementPage() {
   // Modal de Serviços e Assessments
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [activeTab, setActiveTab] = useState<"services" | "assessments" | "contracts">("services");
-  const [userAssessments, setUserAssessments] = useState<any[]>([]);
+  const [userAssessments, setUserAssessments] = useState<UserAssessment[]>([]);
   const [loadingAssessments, setLoadingAssessments] = useState(false);
-  const [userContracts, setUserContracts] = useState<any[]>([]);
+  const [userContracts, setUserContracts] = useState<LegalAudit[]>([]);
   const [loadingContracts, setLoadingContracts] = useState(false);
   const [editingQuotas, setEditingQuotas] = useState<Record<string, number>>({});
   const [isLoadingQuotas, setIsLoadingQuotas] = useState(false);
@@ -823,7 +825,7 @@ export default function UsersManagementPage() {
                             Carregando contratos...
                           </div>
                         ) : userContracts.length > 0 ? (
-                          userContracts.map((contract: any, idx: number) => (
+                          userContracts.map((contract, idx: number) => (
                             <div key={idx} className="p-4 rounded-xl border border-[var(--border-primary)] bg-[var(--bg-secondary)] flex items-center justify-between">
                               <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-lg bg-[var(--accent-start)]/10 flex items-center justify-center">

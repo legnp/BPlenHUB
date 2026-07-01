@@ -5,6 +5,7 @@ import admin from "firebase-admin";
 import { requireAuth } from "@/lib/auth-guards";
 import { resolveMatricula } from "./get-user-results";
 import { getErrorMessage } from "@/lib/utils/errors";
+import type { BenefitData } from "@/components/forms/SurveyFields/BenefitsPackage";
 
 /**
  * BPlen HUB — Profile Professional Actions 🧬🏛️
@@ -24,7 +25,7 @@ export interface FileUploadData {
 export interface ProfessionalProfileData {
   // Dados Internos (Survey Sync)
   regime_choice?: string;
-  beneficios_pacote?: Record<string, any>; // Rich BenefitData format from BenefitsPackage
+  beneficios_pacote?: Record<string, BenefitData>;
   cv_upload?: FileUploadData | null;
   portfolio_upload?: FileUploadData | null;
   linkedin_url?: string;
@@ -80,7 +81,7 @@ export async function getProfessionalProfileAction(idToken?: string) {
     // 3. Migração transparente de beneficios_pacote 🛡️
     // Formato legado (survey antiga): string[] ex: ["Salário", "Comissão"]
     // Formato rico (BenefitsPackage): Record<string, BenefitData> ex: { "Salário": { enabled: true, value: "5000", currency: "BRL" } }
-    let beneficiosData: Record<string, any> = {};
+    let beneficiosData: Record<string, BenefitData> = {};
     const rawBeneficios = surveyData?.beneficios_pacote;
     
     if (rawBeneficios) {

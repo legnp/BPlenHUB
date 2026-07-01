@@ -58,7 +58,7 @@ export async function triggerRetroactiveDriveSyncAction(targetMatricula: string,
       const updatedAtStr = data?.updatedAt ? new Date(data.updatedAt).toLocaleDateString('pt-BR') : new Date().toLocaleDateString('pt-BR');
       
       const stages = await getJourneyStagesAction();
-      const rowsData: any[][] = [];
+      const rowsData: (string | number | boolean | null)[][] = [];
 
       stages.forEach(stage => {
         const stageProgress = data?.steps?.[stage.id];

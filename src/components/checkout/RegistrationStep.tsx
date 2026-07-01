@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { FormsEngine } from "@/components/forms/FormsEngine";
+import { FormResponse } from "@/types/forms";
 import { dadosCadastraisForm } from "@/config/forms/definitions/dados-cadastrais";
 import { useAuthContext } from "@/context/AuthContext";
 import { doc, getDoc } from "firebase/firestore";
@@ -19,7 +20,7 @@ interface RegistrationStepProps {
  */
 export function RegistrationStep({ onComplete }: RegistrationStepProps) {
   const { user } = useAuthContext();
-  const [initialData, setInitialData] = useState<any>(null);
+  const [initialData, setInitialData] = useState<FormResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

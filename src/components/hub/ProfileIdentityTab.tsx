@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useCallback, useRef } from "react";
-import Cropper from "react-easy-crop";
+import Cropper, { Area } from "react-easy-crop";
 import { 
   Camera, 
   Upload, 
@@ -34,7 +34,7 @@ export function ProfileIdentityTab() {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   
   const { isActive, steps, currentIndex } = useTourStore();
   const isTourStepActive = isActive && steps[currentIndex]?.targetId === "tour-profile-photo";

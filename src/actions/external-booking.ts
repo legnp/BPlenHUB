@@ -16,6 +16,7 @@ import { bookEventAction } from "./calendar";
 import { Resend } from "resend";
 import { buildSoberanaEmail, EMAIL_STYLES } from "@/lib/emails/soberana-layout";
 import { getTeamProposalNotificationEmail } from "@/lib/email-templates";
+import { GoogleCalendarEvent } from "@/types/calendar";
 
 const resend = new Resend(serverEnv.RESEND_API_KEY);
 
@@ -54,8 +55,8 @@ export async function getPublicSlotsAction(dateStr: string): Promise<PublicSlots
       .orderBy("start", "asc")
       .get();
 
-    const slotsData: any[] = [];
-    const blockerEvents: any[] = [];
+    const slotsData: GoogleCalendarEvent[] = [];
+    const blockerEvents: GoogleCalendarEvent[] = [];
 
     snap.forEach((docSnap) => {
       const data = docSnap.data();
@@ -65,10 +66,10 @@ export async function getPublicSlotsAction(dateStr: string): Promise<PublicSlots
       if (summary.includes("1 to 1")) {
         // Apenas slots que começam HOJE (evita duplicação ao olhar 24h pra trás)
         if (eventStart >= timeMin && eventStart < timeMax) {
-          slotsData.push({ id: docSnap.id, ...data });
+          slotsData.push({ id: docSnap.id, ...data } as GoogleCalendarEvent);
         }
       } else {
-        blockerEvents.push({ id: docSnap.id, ...data });
+        blockerEvents.push({ id: docSnap.id, ...data } as GoogleCalendarEvent);
       }
     });
 
@@ -184,7 +185,7 @@ export async function getPublicAvailableDaysAction(): Promise<string[]> {
       .orderBy("start", "asc")
       .get();
 
-    const eventsByDay: Record<string, any[]> = {};
+    const eventsByDay: Record<string, GoogleCalendarEvent[]> = {};
     const minAllowedTime = addDays(now, CALENDAR_CONFIG.PUBLIC_BOOKING_SETTINGS.minDaysInFuture);
 
     snap.forEach((doc) => {
@@ -196,7 +197,7 @@ export async function getPublicAvailableDaysAction(): Promise<string[]> {
       if (!eventsByDay[dayKey]) {
         eventsByDay[dayKey] = [];
       }
-      eventsByDay[dayKey].push({ id: doc.id, ...data });
+      eventsByDay[dayKey].push({ id: doc.id, ...data } as GoogleCalendarEvent);
     });
 
     const availableDaysSet = new Set<string>();

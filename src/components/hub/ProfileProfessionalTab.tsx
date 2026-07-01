@@ -368,7 +368,7 @@ export function ProfileProfessionalTab() {
                   "Seguro Médico", "Seguro Odontológico", "Seguro de Vida", 
                   "Dayoff", "Home Office", "Expectativa Salarial"
                 ]}
-                value={(data.beneficios_pacote as Record<string, any>) || {}}
+                value={data.beneficios_pacote || {}}
                 onChange={(val) => updateField('beneficios_pacote', val)}
               />
            </div>

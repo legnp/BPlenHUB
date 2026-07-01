@@ -1,19 +1,16 @@
 import React, { useState } from "react";
-import Calendar from "@/components/ui/Calendar";
+import Calendar, { CalendarEvent } from "@/components/ui/Calendar";
 import UserBookings from "@/components/ui/UserBookings";
 import { CalendarCheck, Plus } from "lucide-react";
-import { 
-  getProgramacaoSummaryAction, 
+import {
+  getProgramacaoSummaryAction,
   getEventNpsDetailsAction
 } from "@/actions/calendar";
-import { 
-  GoogleCalendarEvent,
-  EventLifecycleStatus 
-} from "@/types/calendar";
+import { EventLifecycleStatus } from "@/types/calendar";
 import OneToOneBookingModal from "./OneToOneBookingModal";
 
 interface AgendaManagementViewProps {
-  events: GoogleCalendarEvent[];
+  events: CalendarEvent[];
   isLoading: boolean;
   refreshCounter: number;
   setRefreshCounter: React.Dispatch<React.SetStateAction<number>>;
@@ -38,8 +35,8 @@ export default function AgendaManagementView({
       {/* Calendário Principal */}
       {!hideCalendar && (
         <div className="bg-[var(--input-bg)] rounded-[2.5rem] p-4 border border-[var(--border-primary)] shadow-inner">
-          <Calendar 
-            events={events as any} 
+          <Calendar
+            events={events}
             isLoading={isLoading} 
             onMonthChange={(date) => console.log("Mês alterado:", date)}
             onBookingSuccess={() => setRefreshCounter(p => p + 1)}

@@ -3,9 +3,11 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useAuthContext } from "@/context/AuthContext";
 import { useJourney } from "@/hooks/useJourney";
-import { getCareerPlanningDataAction } from "@/actions/career-module";
+import { getCareerPlanningDataAction, CareerPlanningData } from "@/actions/career-module";
 import { getMemberActivityArtifactsAction } from "@/actions/activity-artifacts";
 import { getUserBookingsAction } from "@/actions/calendar";
+import { UserBooking } from "@/types/calendar";
+import { CareerFeedback, CareerAta, CareerSharedDocument } from "@/types/career";
 import Link from "next/link";
 import { 
   CheckCircle2, 
@@ -93,9 +95,9 @@ export default function VisaoGeralPage() {
   const { user } = useAuthContext();
   const { stages, progress, loading: journeyLoading, getStageTelemetry } = useJourney(user?.uid || "guest");
   
-  const [careerData, setCareerData] = useState<any>(null);
-  const [activityArtifacts, setActivityArtifacts] = useState<{ feedbacks: any[]; atas: any[]; sharedDocuments: any[] }>({ feedbacks: [], atas: [], sharedDocuments: [] });
-  const [userBookings, setUserBookings] = useState<any[]>([]);
+  const [careerData, setCareerData] = useState<CareerPlanningData | null>(null);
+  const [activityArtifacts, setActivityArtifacts] = useState<{ feedbacks: CareerFeedback[]; atas: CareerAta[]; sharedDocuments: CareerSharedDocument[] }>({ feedbacks: [], atas: [], sharedDocuments: [] });
+  const [userBookings, setUserBookings] = useState<UserBooking[]>([]);
   const [loadingCareer, setLoadingCareer] = useState(true);
   const [activeDetailItem, setActiveDetailItem] = useState<VisaoGeralActivity | null>(null);
 
@@ -252,19 +254,19 @@ export default function VisaoGeralPage() {
 
         // Se houver feedbacks cadastrados (via activityArtifacts — independente de career_planning)
         if (activityArtifacts.feedbacks.length > 0) {
-          const matchedFb = activityArtifacts.feedbacks.find((f: any) => 
-            isAtaOrFeedbackMatch(friendlyTitle, sub.referenceId, f.sessionTitle || f.title)
+          const matchedFb = activityArtifacts.feedbacks.find((f) =>
+            isAtaOrFeedbackMatch(friendlyTitle, sub.referenceId, f.title)
           );
           if (matchedFb) {
             hasFeedback = true;
-            feedbackText = matchedFb.content || matchedFb.feedbackText || feedbackText;
+            feedbackText = matchedFb.content || feedbackText;
           }
         }
 
         // Se houver documentos compartilhados (via activityArtifacts — independente de career_planning)
         if (activityArtifacts.sharedDocuments.length > 0) {
-          const matchedDoc = activityArtifacts.sharedDocuments.find((d: any) => 
-            isAtaOrFeedbackMatch(friendlyTitle, sub.referenceId, d.name || d.title)
+          const matchedDoc = activityArtifacts.sharedDocuments.find((d) =>
+            isAtaOrFeedbackMatch(friendlyTitle, sub.referenceId, d.title)
           );
           if (matchedDoc && matchedDoc.fileUrl) {
             documentUrl = matchedDoc.fileUrl;
@@ -274,12 +276,12 @@ export default function VisaoGeralPage() {
         // Determinar status de agendamento (bookings)
         let bookingStatus: "not_booked" | "booked_future" | "booked_past" = "not_booked";
         if (sub.type === "meeting" && userBookings.length > 0) {
-          const matchedBooking = userBookings.find(b => 
-            isAtaOrFeedbackMatch(friendlyTitle, sub.referenceId, b.eventTheme || b.eventSummary || "")
+          const matchedBooking = userBookings.find(b =>
+            isAtaOrFeedbackMatch(friendlyTitle, sub.referenceId, b.eventDetail?.theme || b.eventDetail?.summary || "")
           );
-          if (matchedBooking) {
+          if (matchedBooking?.eventDetail?.start) {
             const now = new Date();
-            const eventDate = new Date(matchedBooking.dateTime);
+            const eventDate = new Date(matchedBooking.eventDetail.start);
             bookingStatus = eventDate > now ? "booked_future" : "booked_past";
           }
         }

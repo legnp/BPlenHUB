@@ -128,7 +128,7 @@ export async function getPreviousSurveysDataAction(matricula: string): Promise<R
 /**
  * Recupera de forma consolidada no servidor as respostas das 4 fases do PDI (Fases 1 a 4)
  */
-export async function getPdiSurveysDataAction(matricula: string): Promise<Record<string, any>> {
+export async function getPdiSurveysDataAction(matricula: string): Promise<Record<string, SurveyValue>> {
   try {
     const db: admin.firestore.Firestore = getAdminDb();
     const docRef1 = db.doc(`User/${matricula}/Surveys/survey_pdi_fase1`);
@@ -143,7 +143,7 @@ export async function getPdiSurveysDataAction(matricula: string): Promise<Record
       docRef4.get()
     ]);
 
-    const result: Record<string, any> = {};
+    const result: Record<string, SurveyValue> = {};
 
     if (snap1.exists && snap1.data()?.data) {
       Object.assign(result, snap1.data()?.data);

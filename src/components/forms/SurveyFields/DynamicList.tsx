@@ -8,8 +8,8 @@ import { TextareaGlass } from "@/components/ui/TextareaGlass";
 
 interface DynamicListProps {
   field: SurveyFieldConfig;
-  value: Record<string, any>[];
-  onChange: (value: Record<string, any>[]) => void;
+  value: Record<string, unknown>[];
+  onChange: (value: Record<string, unknown>[]) => void;
 }
 
 // Máscara para MM/AAAA (Mês com 2 dígitos e Ano com 4 dígitos)
@@ -35,7 +35,7 @@ export function DynamicList({ field, value = [], onChange }: DynamicListProps) {
     onChange(newItems);
   };
 
-  const handleChange = (index: number, subFieldId: string, subValue: any) => {
+  const handleChange = (index: number, subFieldId: string, subValue: unknown) => {
     const newItems = [...items];
     if (!newItems[index]) newItems[index] = {};
     newItems[index][subFieldId] = subValue;

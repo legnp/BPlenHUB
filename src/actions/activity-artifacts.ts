@@ -2,6 +2,7 @@
 
 import { getAdminDb } from "@/lib/firebase-admin";
 import { getServerSession } from "@/lib/server-session";
+import { CareerFeedback, CareerAta, CareerSharedDocument } from "@/types/career";
 
 /**
  * getMemberActivityArtifactsAction — BPlen HUB 🧬
@@ -15,7 +16,7 @@ import { getServerSession } from "@/lib/server-session";
  */
 export async function getMemberActivityArtifactsAction(
   matricula: string
-): Promise<{ feedbacks: any[]; atas: any[]; sharedDocuments: any[] }> {
+): Promise<{ feedbacks: CareerFeedback[]; atas: CareerAta[]; sharedDocuments: CareerSharedDocument[] }> {
   try {
     const session = await getServerSession();
     if (!session) {

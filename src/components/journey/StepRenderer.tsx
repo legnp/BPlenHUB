@@ -23,7 +23,7 @@ import { cn } from "@/lib/utils";
 import Calendar from "@/components/ui/Calendar";
 import UserBookings from "@/components/ui/UserBookings";
 import { getSyncedEvents, getUserBookingsAction, submitEvaluationAction } from "@/actions/calendar";
-import { UserBooking } from "@/types/calendar";
+import { UserBooking, GoogleCalendarEvent } from "@/types/calendar";
 import { SurveyEngine } from "@/components/forms/SurveyEngine";
 import { getSurveyConfig } from "@/config/surveys";
 import { useAuthContext } from "@/context/AuthContext";
@@ -112,7 +112,7 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
     );
   }
 
-  const [events, setEvents] = React.useState<any[]>([]);
+  const [events, setEvents] = React.useState<GoogleCalendarEvent[]>([]);
   const [loadingEvents, setLoadingEvents] = React.useState(false);
   const [userBookings, setUserBookings] = React.useState<UserBooking[]>([]);
   const [isEvaluating, setIsEvaluating] = React.useState(false);

@@ -2,6 +2,47 @@
 
 import { getAdminDb } from "@/lib/firebase-admin";
 
+interface ScoreEntry {
+  percentage: number;
+}
+
+interface AssessmentResult<TScores> {
+  surveyId: string;
+  scores: TScores | null;
+  isReleased: boolean;
+  submittedAt: string | null;
+}
+
+export type GestaoTempoResult = AssessmentResult<{
+  importancia?: ScoreEntry;
+  urgencia?: ScoreEntry;
+  circunstancia?: ScoreEntry;
+}>;
+
+export type AprendizadoResult = AssessmentResult<{
+  visual?: ScoreEntry;
+  auditivo?: ScoreEntry;
+  cinestesico?: ScoreEntry;
+  digital?: ScoreEntry;
+}>;
+
+export type ReconhecimentoResult = AssessmentResult<{
+  afirmacao?: ScoreEntry;
+  tempo?: ScoreEntry;
+  presentes?: ScoreEntry;
+  servico?: ScoreEntry;
+  toque?: ScoreEntry;
+}>;
+
+export type PreAnaliseComportamentalResult = AssessmentResult<Record<string, unknown>>;
+
+export type DiscResult = AssessmentResult<{
+  executor?: ScoreEntry;
+  comunicador?: ScoreEntry;
+  planejador?: ScoreEntry;
+  analista?: ScoreEntry;
+}> & { file: string | null };
+
 /**
  * BPlen HUB — Robust Results Connection (🧬🛡️)
  * Este helper garante que o usuário sempre encontre sua matrícula, 
@@ -53,9 +94,7 @@ export async function resolveMatricula(userUid: string, email?: string): Promise
  * Converte Timestamps do Firestore para strings/números simples
  * para evitar erros de serialização no Next.js (Server -> Client).
  */
-function serializeData(data: unknown) {
-  if (!data) return null;
-  
+function serializeData<T>(data: T): T {
   const serialized = JSON.parse(JSON.stringify(data, (key, value) => {
     // Se for um Timestamp do Firestore (objeto com ._seconds ou .seconds)
     if (value && typeof value === 'object' && (value.seconds !== undefined || value._seconds !== undefined)) {
@@ -72,7 +111,7 @@ function serializeData(data: unknown) {
  * Funções de Busca com Resolução Robusta (Mínimo Payload 🛡️)
  */
 
-export async function getGestaoTempoResult(userUid: string, email?: string) {
+export async function getGestaoTempoResult(userUid: string, email?: string): Promise<GestaoTempoResult | null> {
   const matricula = await resolveMatricula(userUid, email);
   if (!matricula) {
     console.warn(`⚠️ [GetResults:GestaoTempo] Matrícula não resolvida para UID: ${userUid}`);
@@ -113,7 +152,7 @@ export async function getGestaoTempoResult(userUid: string, email?: string) {
   }
 }
 
-export async function getAprendizadoResult(userUid: string, userEmail: string) {
+export async function getAprendizadoResult(userUid: string, userEmail: string): Promise<AprendizadoResult | null> {
   const matricula = await resolveMatricula(userUid, userEmail);
   if (!matricula) {
     console.warn(`⚠️ [GetResults:Aprendizado] Matrícula não resolvida para UID: ${userUid}`);
@@ -154,7 +193,7 @@ export async function getAprendizadoResult(userUid: string, userEmail: string) {
   }
 }
 
-export async function getReconhecimentoResult(userUid: string, userEmail: string) {
+export async function getReconhecimentoResult(userUid: string, userEmail: string): Promise<ReconhecimentoResult | null> {
   const matricula = await resolveMatricula(userUid, userEmail);
   if (!matricula) {
     console.warn(`⚠️ [GetResults:Reconhecimento] Matrícula não resolvida para UID: ${userUid}`);
@@ -195,7 +234,7 @@ export async function getReconhecimentoResult(userUid: string, userEmail: string
   }
 }
 
-export async function getPreAnaliseComportamentalResult(userUid: string, email?: string) {
+export async function getPreAnaliseComportamentalResult(userUid: string, email?: string): Promise<PreAnaliseComportamentalResult | null> {
   const matricula = await resolveMatricula(userUid, email);
   if (!matricula) {
     console.warn(`⚠️ [GetResults:PreAnalise] Matrícula não resolvida para UID: ${userUid}`);
@@ -229,7 +268,7 @@ export async function getPreAnaliseComportamentalResult(userUid: string, email?:
   }
 }
 
-export async function getDiscResult(userUid: string, email?: string) {
+export async function getDiscResult(userUid: string, email?: string): Promise<DiscResult | null> {
   const matricula = await resolveMatricula(userUid, email);
   if (!matricula) {
     console.warn(`⚠️ [GetResults:DISC] Matrícula não resolvida para UID: ${userUid}`);

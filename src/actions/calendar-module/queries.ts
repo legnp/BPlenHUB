@@ -7,7 +7,7 @@ import { serverEnv } from "@/env";
 import { formatISO, parseISO, isBefore } from "date-fns";
 import { calendar_v3 } from "googleapis";
 import { safeSerialize } from "@/lib/utils/firestore";
-import { GoogleCalendarEvent, AttendeeData, UserBooking } from "@/types/calendar";
+import { GoogleCalendarEvent, AttendeeData, UserBooking, ProgramacaoEntry } from "@/types/calendar";
 import { toISOSafe } from "@/lib/date-utils";
 
 /**
@@ -206,7 +206,7 @@ export async function getEventAttendees(eventId: string): Promise<AttendeeData[]
 /**
  * REATOR DE DASHBOARD 🛰️ (Versão Datas_Center - Membro)
  */
-export async function getProgramacaoForMemberAction(): Promise<any[]> {
+export async function getProgramacaoForMemberAction(): Promise<ProgramacaoEntry[]> {
   try {
     await requireAuth();
     const db = getAdminDb();
@@ -222,7 +222,7 @@ export async function getProgramacaoForMemberAction(): Promise<any[]> {
 /**
  * REATOR DE DASHBOARD 🛰️ (Versão Datas_Center - Admin)
  */
-export async function getProgramacaoSummaryAction(idToken?: string): Promise<any[]> {
+export async function getProgramacaoSummaryAction(idToken?: string): Promise<ProgramacaoEntry[]> {
   try {
     await requireAdmin(idToken);
     const db = getAdminDb();
