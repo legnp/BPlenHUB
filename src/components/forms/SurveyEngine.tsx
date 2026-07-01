@@ -494,19 +494,20 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
       if (normalizedData[lowerKey] !== undefined && normalizedData[lowerKey] !== "") {
         interpolated = interpolated.replace(original, normalizedData[lowerKey]);
       } else {
-        let resolvedVal: any = undefined;
+        let resolvedVal: unknown = undefined;
         if (keyName.includes(".")) {
           const parts = keyName.split(".");
-          let current: any = combinedData;
+          let current: unknown = combinedData;
           for (const part of parts) {
             if (current === null || current === undefined) {
               resolvedVal = undefined;
               break;
             }
             if (typeof current === "object") {
-              const foundKey = Object.keys(current).find(k => k.toLowerCase() === part.toLowerCase());
+              const currentObj = current as Record<string, unknown>;
+              const foundKey = Object.keys(currentObj).find(k => k.toLowerCase() === part.toLowerCase());
               if (foundKey !== undefined) {
-                current = current[foundKey];
+                current = currentObj[foundKey];
                 resolvedVal = current;
               } else {
                 resolvedVal = undefined;
@@ -584,19 +585,20 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
             expectedValue = trimmedDep.substring(eqIndex + 1);
           }
 
-          let depValue: any = responses[depPath];
+          let depValue: unknown = responses[depPath];
           if (depValue === undefined && depPath.includes(".")) {
             const parts = depPath.split(".");
-            let current: any = { ...userMetadata, ...responses };
+            let current: unknown = { ...userMetadata, ...responses };
             for (const part of parts) {
               if (current === null || current === undefined) {
                 depValue = undefined;
                 break;
               }
               if (typeof current === "object") {
-                const foundKey = Object.keys(current).find(k => k.toLowerCase() === part.toLowerCase());
+                const currentObj = current as Record<string, unknown>;
+                const foundKey = Object.keys(currentObj).find(k => k.toLowerCase() === part.toLowerCase());
                 if (foundKey !== undefined) {
-                  current = current[foundKey];
+                  current = currentObj[foundKey];
                   depValue = current;
                 } else {
                   depValue = undefined;
