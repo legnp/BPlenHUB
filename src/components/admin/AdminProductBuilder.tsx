@@ -141,27 +141,27 @@ export function AdminProductBuilder({ initialProduct }: AdminProductBuilderProps
         <AnimatePresence mode="wait">
            {activeTab === 'identity' && (
               <motion.div key="identity" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}>
-                 <IdentityForm product={product} setProduct={setProduct} />
+                 <IdentityForm product={product as ProductFormData} setProduct={setProduct} />
               </motion.div>
            )}
            {activeTab === 'sheet' && (
               <motion.div key="sheet" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}>
-                 <SheetForm product={product} setProduct={setProduct} />
+                 <SheetForm product={product as ProductFormData} setProduct={setProduct} />
               </motion.div>
            )}
            {activeTab === 'capabilities' && (
               <motion.div key="capabilities" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}>
-                 <CapabilitiesForm product={product} setProduct={setProduct} />
+                 <CapabilitiesForm product={product as ProductFormData} setProduct={setProduct} />
               </motion.div>
            )}
            {activeTab === 'workflow' && (
               <motion.div key="workflow" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}>
-                 <WorkflowForm product={product} setProduct={setProduct} />
+                 <WorkflowForm product={product as ProductFormData} setProduct={setProduct} />
               </motion.div>
            )}
            {activeTab === 'delivery' && (
               <motion.div key="delivery" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}>
-                 <DeliveryStepsForm product={product} setProduct={setProduct} />
+                 <DeliveryStepsForm product={product as ProductFormData} setProduct={setProduct} />
               </motion.div>
            )}
         </AnimatePresence>
@@ -172,9 +172,30 @@ export function AdminProductBuilder({ initialProduct }: AdminProductBuilderProps
 }
 
 // Helpers Components
-function TabButton({ active, onClick, label, icon }: any) {
+interface TabButtonProps {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+  icon: React.ReactNode;
+}
+
+// `product` chega sempre com sheet/capabilities/workflow/deliverySteps inicializados
+// (ver estado inicial em AdminProductBuilder), mas Partial<Product> não garante isso ao TS.
+type ProductFormData = Partial<Product> & {
+  sheet: ProductSheet;
+  capabilities: CapabilityConfig;
+  workflow: WorkflowStep[];
+  deliverySteps: DeliveryStep[];
+};
+
+interface ProductFormProps {
+  product: ProductFormData;
+  setProduct: React.Dispatch<React.SetStateAction<Partial<Product>>>;
+}
+
+function TabButton({ active, onClick, label, icon }: TabButtonProps) {
   return (
-    <button 
+    <button
       onClick={onClick}
       className={`flex-1 flex items-center justify-center gap-2 py-4 text-[9px] font-black uppercase tracking-[0.2em] transition-all border-b-2 ${active ? 'border-[var(--accent-primary)] text-[var(--accent-primary)]' : 'border-transparent text-[var(--text-muted)] opacity-50 hover:opacity-100'}`}
     >
@@ -185,7 +206,7 @@ function TabButton({ active, onClick, label, icon }: any) {
 }
 
 // Sub-forms
-function IdentityForm({ product, setProduct }: any) {
+function IdentityForm({ product, setProduct }: ProductFormProps) {
   return (
     <div className="space-y-10">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -313,7 +334,7 @@ import { uploadProductCoverAction } from "@/actions/product-sync";
 import { useAuth } from "@/hooks/use-auth";
 import { getErrorMessage } from "@/lib/utils/errors";
 
-function SheetForm({ product, setProduct }: any) {
+function SheetForm({ product, setProduct }: ProductFormProps) {
    const [isUploading, setIsUploading] = useState(false);
    const [uploadStatus, setUploadStatus] = useState<string | null>(null);
 
@@ -444,12 +465,12 @@ function SheetForm({ product, setProduct }: any) {
           </div>
 
           <div className="space-y-4">
-             {product.sheet.faq?.map((item: any, idx: number) => (
+             {product.sheet.faq?.map((item, idx: number) => (
                 <div key={idx} className="p-6 bg-white/5 border border-white/5 rounded-2xl space-y-4 group relative">
-                   <button 
+                   <button
                       type="button"
                       onClick={() => {
-                         const newFaq = product.sheet.faq.filter((_: any, i: number) => i !== idx);
+                         const newFaq = product.sheet.faq.filter((_, i: number) => i !== idx);
                          setProduct({ ...product, sheet: { ...product.sheet, faq: newFaq } });
                       }}
                       className="absolute top-4 right-4 p-2 text-red-500/50 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100"
@@ -561,7 +582,7 @@ function SheetForm({ product, setProduct }: any) {
                    <button 
                       type="button"
                       onClick={() => {
-                         const next = product.sheet.deliverables?.filter((_: any, i: number) => i !== idx);
+                         const next = product.sheet.deliverables?.filter((_, i: number) => i !== idx);
                          setProduct({ ...product, sheet: { ...product.sheet, deliverables: next } });
                       }}
                       className="p-2 text-red-500/50 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100"
@@ -582,7 +603,7 @@ function SheetForm({ product, setProduct }: any) {
    );
 }
 
-function CapabilitiesForm({ product, setProduct }: any) {
+function CapabilitiesForm({ product, setProduct }: ProductFormProps) {
   return (
     <div className="space-y-8 max-w-4xl">
        <div className="space-y-4">
@@ -676,7 +697,7 @@ function CapabilitiesForm({ product, setProduct }: any) {
   )
 }
 
-function WorkflowForm({ product, setProduct }: any) {
+function WorkflowForm({ product, setProduct }: ProductFormProps) {
   return (
     <div className="space-y-6">
        <div className="flex items-center justify-between">
@@ -737,7 +758,7 @@ function WorkflowForm({ product, setProduct }: any) {
   )
 }
 
-function DeliveryStepsForm({ product, setProduct }: any) {
+function DeliveryStepsForm({ product, setProduct }: ProductFormProps) {
   // Coletar opções disponíveis
   const availableOptions: { type: 'survey' | 'form' | 'meeting', id: string, title: string }[] = [];
   
