@@ -126,7 +126,7 @@ export async function createPreferenceAction(
 
     // 🎟️ 3. Validar Cupom (se fornecido)
     let appliedDiscount = 0;
-    let couponDocRef: any = null;
+    let couponDocRef: FirebaseFirestore.DocumentReference | null = null;
 
     if (couponCode) {
        const { resolveMatricula } = await import("./get-user-results");
