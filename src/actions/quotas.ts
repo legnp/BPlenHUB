@@ -35,7 +35,15 @@ export async function getMemberQuotasAction(uid: string): Promise<MemberQuotaWal
     const doc = await db.doc(docPath).get();
 
     if (!doc.exists) return null;
-    return doc.data() as MemberQuotaWallet;
+    const wallet = doc.data() as MemberQuotaWallet;
+
+    // Normalização: mentoria_1to1 -> 1-to-1 (mesma regra aplicada em consumeQuotaAction)
+    if (wallet.quotas?.["mentoria_1to1"] && !wallet.quotas["1-to-1"]) {
+      wallet.quotas["1-to-1"] = wallet.quotas["mentoria_1to1"];
+      delete wallet.quotas["mentoria_1to1"];
+    }
+
+    return wallet;
   } catch (error) {
     console.error(`Erro ao buscar cotas do membro ${uid}:`, error);
     return null;
