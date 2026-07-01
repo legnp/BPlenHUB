@@ -204,7 +204,7 @@ export default function UserBookings({
     const c = { todos: bookings.length, agendada: 0, realizada: 0, concluida: 0, cancelada: 0 };
     bookings.forEach(b => {
       const s = getBookingStatus(b);
-      if (s in c) (c as any)[s]++;
+      if (s in c) (c as Record<string, number>)[s]++;
     });
     return c;
   }, [bookings]);
@@ -213,7 +213,7 @@ export default function UserBookings({
     const c = { todos: bookings.length, presente: 0, ausente: 0, pendente: 0 };
     bookings.forEach(b => {
       const p = getPresenceKey(b);
-      if (p in c) (c as any)[p]++;
+      if (p in c) (c as Record<string, number>)[p]++;
     });
     return c;
   }, [bookings]);

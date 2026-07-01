@@ -25,7 +25,7 @@ export function CouponInput({ productSlug, onApply, onRemove }: CouponInputProps
   const [termsText, setTermsText] = useState("");
   const [expiresAfterDays, setExpiresAfterDays] = useState(7);
 
-  const handleValidate = async (e: React.FormEvent, forceCpf?: string, forceAccept?: boolean) => {
+  const handleValidate = async (e: React.FormEvent | null, forceCpf?: string, forceAccept?: boolean) => {
     if (e) e.preventDefault();
     if (!code.trim()) return;
 
@@ -65,7 +65,7 @@ export function CouponInput({ productSlug, onApply, onRemove }: CouponInputProps
   };
 
   const handleAcceptTerms = async (cpf: string) => {
-    await handleValidate(null as any, cpf, true);
+    await handleValidate(null, cpf, true);
   };
 
   const handleRemove = () => {
