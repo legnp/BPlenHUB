@@ -2,15 +2,16 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { 
-  X, 
-  Save, 
-  Loader2, 
-  Share2, 
-  Phone, 
-  Globe, 
-  Type, 
-  Link as LinkIcon, 
-  Image as ImageIcon, 
+  X,
+  Save,
+  Loader2,
+  Linkedin,
+  Instagram,
+  Phone,
+  Globe,
+  Type,
+  Link as LinkIcon,
+  Image as ImageIcon,
   Calendar as CalendarIcon,
   MessageSquare,
   AlertCircle,
@@ -25,7 +26,8 @@ import {
   Quote,
   List,
   ListOrdered,
-  Code
+  Code,
+  LucideIcon
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { auth } from "@/lib/firebase";
@@ -56,10 +58,10 @@ interface SocialPostFormProps {
   onSuccess: () => void;
 }
 
-const PLATFORMS: { id: SocialPlatform; label: string; icon: any }[] = [
+const PLATFORMS: { id: SocialPlatform; label: string; icon: LucideIcon }[] = [
   { id: 'article', label: 'Artigos', icon: FileText },
-  { id: 'linkedin', label: 'LinkedIn', icon: Share2 },
-  { id: 'instagram', label: 'Instagram', icon: Share2 },
+  { id: 'linkedin', label: 'LinkedIn', icon: Linkedin },
+  { id: 'instagram', label: 'Instagram', icon: Instagram },
   { id: 'tiktok', label: 'TikTok', icon: Globe },
   { id: 'whatsapp', label: 'WhatsApp', icon: Phone },
   { id: 'other', label: 'Outro', icon: Type },

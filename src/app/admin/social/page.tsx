@@ -10,9 +10,10 @@ import {
   ExternalLink, 
   Eye, 
   EyeOff, 
-  Star, 
-  Share2, 
-  Phone, 
+  Star,
+  Linkedin,
+  Instagram,
+  Phone,
   Globe, 
   Loader2, 
   Calendar as CalendarIcon,
@@ -99,8 +100,8 @@ export default function SocialManagementPage() {
 
   const platformIcons: Record<SocialPlatform, LucideIcon> = {
     article: FileText,
-    linkedin: Share2,
-    instagram: Share2,
+    linkedin: Linkedin,
+    instagram: Instagram,
     tiktok: Globe,
     whatsapp: Phone,
     other: Search
