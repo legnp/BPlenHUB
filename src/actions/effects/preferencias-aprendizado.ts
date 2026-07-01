@@ -2,7 +2,7 @@
 
 import * as admin from "firebase-admin";
 import { getAdminDb } from "@/lib/firebase-admin";
-import { SurveyValue } from "@/types/survey";
+import { SurveyValue, SurveyMetadata } from "@/types/survey";
 import { syncSurveyToUserDrive } from "@/lib/drive-sync";
 
 /**
@@ -60,7 +60,7 @@ export async function handlePreferenciasAprendizadoEffect(
   const pctC = totalC * 2;
   const pctD = totalD * 2;
 
-  const metadata = (responses.metadata as any) || {};
+  const metadata = (responses.metadata as SurveyMetadata) || {};
 
   // 2. Persistência no Firestore
   const resultRef = db.doc(`User/${matricula}/results/preferencias_aprendizado`);

@@ -39,6 +39,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { surveys } from "@/config/surveys";
+import type { SurveyConfig } from "@/types/survey";
+
+// `surveys` é indexado por IDs literais conhecidos, mas `ref` vem de um <select>
+// dinâmico (pode não corresponder a uma chave real).
+const surveyRegistry = surveys as Record<string, SurveyConfig | undefined>;
 import { assignDynamicSubstepToPresentAttendeesAction } from "@/actions/journey";
 import { getErrorMessage } from "@/lib/utils/errors";
 
@@ -514,7 +519,7 @@ export default function PostEventWizard({ isOpen, onClose, event, onSuccess }: P
                            onChange={(e) => {
                               const ref = e.target.value;
                               setSelectedSubstepRef(ref);
-                              const surveyObj = (surveys as any)[ref];
+                              const surveyObj = surveyRegistry[ref];
                               setSubstepTitle(surveyObj?.title || "");
                            }}
                            className="w-full p-2.5 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-xl text-[10px] font-bold text-[var(--text-primary)] focus:outline-none"

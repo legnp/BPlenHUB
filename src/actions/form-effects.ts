@@ -40,8 +40,8 @@ export async function handleFormSideEffects(config: FormConfig, response: FormRe
       matricula,
       ...Object.values(response).map(v => {
         if (Array.isArray(v)) return v.join(", ");
-        if (v && typeof v === "object" && "url" in v) return (v as any).url;
-        return (v as any) ?? null;
+        if (v && typeof v === "object" && "url" in v) return v.url;
+        return v ?? null;
       })
     ];
 

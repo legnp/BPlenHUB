@@ -207,13 +207,13 @@ const ImageFieldWithModal = ({ field }: { field: SurveyFieldConfig }) => {
  * Mantém a opção "Outro" ou "Outros" sempre no final se existir.
  */
 function shuffleOptions(options: string[] | { label: string; value: string; subOptions?: string[] }[]): typeof options {
-  const otherIndex = (options as any[]).findIndex((opt: any) => {
+  const otherIndex = options.findIndex((opt) => {
     const label = (typeof opt === "string" ? opt : opt.label).toLowerCase();
     return label === "outro" || label === "outros" || label.startsWith("outro ");
   });
 
-  const toShuffle = [...options] as any[];
-  let other: any = null;
+  const toShuffle = [...options];
+  let other: (typeof options)[number] | null = null;
   if (otherIndex > -1) {
     other = toShuffle.splice(otherIndex, 1)[0];
   }
@@ -384,7 +384,7 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
     let senioridade = "";
     const cvFocado = combinedData["cv_focado"];
     if (cvFocado && typeof cvFocado === "object") {
-      senioridade = String((cvFocado as any)["senioridade_pretendida"] || "");
+      senioridade = String((cvFocado as Record<string, unknown>)["senioridade_pretendida"] || "");
     }
     if (!senioridade && combinedData["cv_focado.senioridade_pretendida"]) {
       senioridade = String(combinedData["cv_focado.senioridade_pretendida"]);
@@ -402,12 +402,12 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
                           senioridade.toLowerCase().includes("coordenação") ||
                           senioridade.toLowerCase().includes("gerência");
 
-    const pdiEmpresa = combinedData["cv_focado.pdi_empresa_target"] || 
-                       (cvFocado && typeof cvFocado === "object" ? (cvFocado as any)["pdi_empresa_target"] : "") || 
+    const pdiEmpresa = combinedData["cv_focado.pdi_empresa_target"] ||
+                       (cvFocado && typeof cvFocado === "object" ? (cvFocado as Record<string, unknown>)["pdi_empresa_target"] : "") ||
                        "nova empresa";
 
-    const pdiPosicao = combinedData["cv_focado.pdi_posicao_target"] || 
-                       (cvFocado && typeof cvFocado === "object" ? (cvFocado as any)["pdi_posicao_target"] : "") || 
+    const pdiPosicao = combinedData["cv_focado.pdi_posicao_target"] ||
+                       (cvFocado && typeof cvFocado === "object" ? (cvFocado as Record<string, unknown>)["pdi_posicao_target"] : "") ||
                        "nova posição";
 
     if (isSeniorLider) {
@@ -630,10 +630,10 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
           const excludedVal = responses[field.excludeIfSelectedIn];
           if (excludedVal) {
             const excludedArr = Array.isArray(excludedVal) ? excludedVal : [excludedVal];
-            currentOptions = (currentOptions.filter(opt => {
+            currentOptions = currentOptions.filter(opt => {
               const val = typeof opt === "string" ? opt : opt.value;
               return !excludedArr.includes(val);
-            }) as any);
+            }) as typeof currentOptions;
           }
         }
 
@@ -1038,8 +1038,8 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
         return (
           <DynamicList
             field={field}
-            value={(rawValue as any[]) || []}
-            onChange={(val: any[]) => updateResponse(field.id, val)}
+            value={(rawValue as Record<string, unknown>[]) || []}
+            onChange={(val: Record<string, unknown>[]) => updateResponse(field.id, val)}
           />
         );
 
@@ -1182,7 +1182,7 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
       case "cv_vaga_description_button":
         return (
           <CvVagaDescriptionButton
-            descricaoVaga={(userMetadata?.cv_focado as any)?.descricao_vaga}
+            descricaoVaga={(userMetadata?.cv_focado as Record<string, unknown> | undefined)?.descricao_vaga as string | undefined}
           />
         );
 
@@ -1658,15 +1658,15 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
     }
 
     if (f.type === "cascaded") {
-      const v = (val as any) || {};
+      const v = (val as Record<string, unknown>) || {};
       return !!v.primary && !!v.secondary;
     }
     if (f.type === "currency_group") {
-      const v = (val as any) || {};
-      return !!v.declined || Object.values(v).some((c: any) => !!c.value);
+      const v = (val as Record<string, unknown>) || {};
+      return !!v.declined || Object.values(v).some((c) => !!(c as Record<string, unknown> | undefined)?.value);
     }
     if (f.type === "likert") {
-      const v = (val as any) || {};
+      const v = (val as Record<string, unknown>) || {};
       return !!v.score;
     }
     if (f.type === "likert_group") {

@@ -3,11 +3,16 @@
 import { getAdminDb } from "@/lib/firebase-admin";
 import { Product } from "@/types/products";
 import { JourneyStep, SubStepConfig, JourneyProgress } from "@/types/journey";
+import { SurveyConfig } from "@/types/survey";
 import { surveys } from "@/config/surveys";
 import { JOURNEY_STAGES } from "@/config/journey/steps-registry";
 import { syncJourneyToUserDrive } from "@/lib/drive-sync";
 import { normalizeString } from "@/lib/utils";
 import { getErrorMessage } from "@/lib/utils/errors";
+
+// `surveys` é indexado por IDs literais conhecidos, mas `capabilities.surveys`
+// vem de dados dinâmicos do Firestore (podem não corresponder a uma chave real).
+const surveyRegistry = surveys as Record<string, SurveyConfig | undefined>;
 
 
 /**
@@ -90,7 +95,7 @@ export async function getJourneyStagesAction(): Promise<JourneyStep[]> {
             // Surveys
             if (product.capabilities?.surveys) {
               product.capabilities.surveys.forEach(srvId => {
-                const srv = (surveys as any)[srvId];
+                const srv = surveyRegistry[srvId];
                 productSubsteps.push({
                   id: `ss-srv-${srvId}`,
                   title: srv?.title || `Pesquisa: ${srvId}`,
@@ -260,7 +265,7 @@ export async function getStandaloneStageAction(slug: string): Promise<JourneySte
       // Buscar substeps funcionais (Surveys, Forms, Meetings)
       if (product.capabilities?.surveys) {
         product.capabilities.surveys.forEach(srvId => {
-          const srv = (surveys as any)[srvId];
+          const srv = surveyRegistry[srvId];
           substeps.push({
             id: `ss-srv-${srvId}`,
             title: srv?.title || `Pesquisa: ${srvId}`,
