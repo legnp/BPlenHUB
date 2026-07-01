@@ -4,6 +4,7 @@ import admin, { getAdminDb } from "@/lib/firebase-admin";
 import { requireAuth } from "@/lib/auth-guards";
 import { Product } from "@/types/products";
 import { PRODUCTS_COLLECTION } from "@/config/collections";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 /**
  * BPlen HUB — Delivery Engine (Server Actions) 🏁📡
@@ -89,9 +90,9 @@ export async function getServiceDeliveryDataAction(slug: string, idToken?: strin
       }
     };
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("[Delivery Action Error]:", err);
-    return { success: false, error: err.message };
+    return { success: false, error: getErrorMessage(err) };
   }
 }
 
@@ -144,8 +145,8 @@ export async function getMyActiveServicesAction(idToken: string) {
 
     return { success: true, data: enrichedProducts };
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("❌ [getMyActiveServicesAction Error]:", err);
-    return { success: false, error: err.message };
+    return { success: false, error: getErrorMessage(err) };
   }
 }

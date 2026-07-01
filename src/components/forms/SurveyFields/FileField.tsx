@@ -6,6 +6,7 @@ import { Upload, FileText, Check, AlertCircle, Loader2 } from "lucide-react";
 
 import { uploadToUserDrive } from "@/actions/upload-to-drive";
 import { getAuth } from "firebase/auth";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 interface FileFieldProps {
   id: string;
@@ -62,9 +63,9 @@ export function FileField({ id, label, type = "CV", matricula, value, onChange, 
         } else {
             setError(res.error || "Erro desconhecido no servidor.");
         }
-    } catch (err: any) {
+    } catch (err: unknown) {
         console.error("❌ Erro no FileField:", err);
-        setError(err.message || "Erro ao processar o upload.");
+        setError(getErrorMessage(err, "Erro ao processar o upload."));
     } finally {
         setUploading(false);
     }

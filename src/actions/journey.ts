@@ -7,6 +7,7 @@ import { surveys } from "@/config/surveys";
 import { JOURNEY_STAGES } from "@/config/journey/steps-registry";
 import { syncJourneyToUserDrive } from "@/lib/drive-sync";
 import { normalizeString } from "@/lib/utils";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 
 /**
@@ -623,9 +624,9 @@ export async function assignDynamicSubstepAction(
     });
     
     return { success: true, message: "Subcheckpoint atribuido com sucesso." };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Erro ao atribuir subcheckpoint:", error);
-    return { success: false, message: error.message || "Erro desconhecido" };
+    return { success: false, message: getErrorMessage(error, "Erro desconhecido") };
   }
 }
 
@@ -704,9 +705,9 @@ export async function assignDynamicSubstepToPresentAttendeesAction(
       success: true,
       message: `Subcheckpoint atribuido com sucesso a ${successCount} participantes. Falhas: ${failedCount}.`
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Erro ao atribuir subcheckpoints em lote:", error);
-    return { success: false, message: error.message || "Erro desconhecido" };
+    return { success: false, message: getErrorMessage(error, "Erro desconhecido") };
   }
 }
 

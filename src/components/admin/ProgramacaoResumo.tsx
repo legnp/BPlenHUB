@@ -50,6 +50,7 @@ import { useAuthContext } from "@/context/AuthContext";
 import PostEventWizard from "./PostEventWizard";
 import GlassModal from "@/components/ui/GlassModal";
 import { motion, AnimatePresence } from "framer-motion";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 
 interface EventSummary {
@@ -248,8 +249,8 @@ export default function ProgramacaoResumo() {
       } else {
         alert("Erro ao reagendar: " + res.message);
       }
-    } catch (err: any) {
-      alert("Erro inesperado: " + err.message);
+    } catch (err: unknown) {
+      alert("Erro inesperado: " + getErrorMessage(err));
     } finally {
       setIsRescheduling(false);
     }
@@ -669,8 +670,8 @@ export default function ProgramacaoResumo() {
                                       alert("Erro ao baixar evento: " + res.message);
                                     }
                                   }
-                                } catch (err: any) {
-                                  alert("Erro inesperado: " + err.message);
+                                } catch (err: unknown) {
+                                  alert("Erro inesperado: " + getErrorMessage(err));
                                 }
                               }
                             }}

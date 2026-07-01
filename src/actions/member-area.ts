@@ -1,6 +1,7 @@
 "use server";
 
 import { requireMemberAccess } from "@/lib/auth-guards";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 /**
  * BPlen HUB — Member Area Actions (Acesso Restrito 🔒)
@@ -14,8 +15,8 @@ export async function validateMemberAreaAccess(idToken?: string) {
     await requireMemberAccess(idToken);
     
     return { authorized: true };
-  } catch (error: any) {
-    console.error("❌ [Member Action] Falha na validação server-side:", error.message);
-    return { authorized: false, error: error.message };
+  } catch (error: unknown) {
+    console.error("❌ [Member Action] Falha na validação server-side:", getErrorMessage(error));
+    return { authorized: false, error: getErrorMessage(error) };
   }
 }

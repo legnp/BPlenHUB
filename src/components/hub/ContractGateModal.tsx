@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { getPendingContracts, generateContractPdf } from "@/actions/legal";
 import { useAuthContext } from "@/context/AuthContext";
 import { Loader2, FileText, CheckCircle } from "lucide-react";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 export function ContractGateModal() {
   const { user } = useAuthContext();
@@ -39,8 +40,8 @@ export function ContractGateModal() {
       } else {
         alert("Erro ao processar aceite: " + res.error);
       }
-    } catch (e: any) {
-      alert("Erro ao processar aceite: " + e.message);
+    } catch (e: unknown) {
+      alert("Erro ao processar aceite: " + getErrorMessage(e));
     }
     setIsProcessing(false);
   }

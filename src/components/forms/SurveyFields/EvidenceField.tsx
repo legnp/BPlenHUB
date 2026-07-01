@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Upload, Check, AlertCircle, Loader2, Image as ImageIcon } from "lucide-react";
 import { uploadToUserDrive } from "@/actions/upload-to-drive";
 import { getAuth } from "firebase/auth";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 interface EvidenceFieldProps {
   id: string;
@@ -61,9 +62,9 @@ export function EvidenceField({ id, label, matricula, value, onChange, maxSizeMB
       } else {
           setError(res.error || "Erro desconhecido no servidor.");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
         console.error("❌ Erro no EvidenceField:", err);
-        setError(err.message || "Erro ao processar o upload.");
+        setError(getErrorMessage(err, "Erro ao processar o upload."));
     } finally {
         setUploading(false);
     }

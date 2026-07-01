@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { runWelcomeMigration } from "@/actions/migration-welcome";
 import { Play, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 export default function MigrateWelcomePage() {
   const [status, setStatus] = useState<"idle" | "running" | "success" | "error">("idle");
@@ -17,8 +18,8 @@ export default function MigrateWelcomePage() {
       const res = await runWelcomeMigration();
       setResults(res.results);
       setStatus("success");
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(getErrorMessage(err));
       setStatus("error");
     }
   };

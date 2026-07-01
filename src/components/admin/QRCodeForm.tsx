@@ -15,6 +15,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { auth } from "@/lib/firebase";
 import { QRCodeCanvas } from "qrcode.react";
 import { createQRCodeAction } from "@/actions/qrcode";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 interface QRCodeFormProps {
   onSuccess: () => void;
@@ -120,15 +121,15 @@ export default function QRCodeForm({ onSuccess, onClose }: QRCodeFormProps) {
             onSuccess();
             onClose();
           }, 1500);
-        } catch (actionErr: any) {
-          setError(actionErr.message || "Falha ao registrar QR Code.");
+        } catch (actionErr: unknown) {
+          setError(getErrorMessage(actionErr, "Falha ao registrar QR Code."));
           setLoading(false);
         }
       }, "image/png");
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Erro no fluxo de salvamento:", err);
-      setError(err.message || "Erro inesperado ao salvar.");
+      setError(getErrorMessage(err, "Erro inesperado ao salvar."));
       setLoading(false);
     }
   };

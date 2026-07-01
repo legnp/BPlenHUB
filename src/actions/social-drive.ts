@@ -5,6 +5,7 @@ import { ensureFolder } from "@/lib/drive-utils";
 import { serverEnv } from "@/env";
 import { Readable } from "stream";
 import { requireAdmin } from "@/lib/auth-guards";
+import { getErrorMessage, getErrorCode } from "@/lib/utils/errors";
 
 /**
  * BPlen HUB — Social Drive Engine 📁🧬
@@ -77,13 +78,13 @@ export async function uploadSocialThumbnailToDrive(formData: FormData, adminToke
     console.log(`[Drive] Upload concluído com sucesso. URL: ${directUrl}`);
     return { success: true, url: directUrl, fileId: fileId };
 
-  } catch (error: any) {
-    console.error("❌ Erro no upload para o Drive:", error?.message || error);
+  } catch (error: unknown) {
+    console.error("❌ Erro no upload para o Drive:", getErrorMessage(error), error);
     // Se for erro de permissão ou 404, logar detalhes para diagnóstico
-    if (error?.code === 404) {
+    if (getErrorCode(error) === 404) {
       console.error("[Drive Debug] Erro 404 pode indicar que o Service Account não tem acesso à pasta pai.");
     }
-    throw new Error(error?.message || "Erro ao processar upload para o Google Drive.");
+    throw new Error(getErrorMessage(error, "Erro ao processar upload para o Google Drive."));
   }
 }
 
@@ -112,14 +113,14 @@ export async function deleteSocialThumbnailFromDrive(urlOrId: string, adminToken
     });
     
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Se o arquivo já não existir, ignoramos o erro (limpeza silenciosa)
-    if (error?.code === 404) {
+    if (getErrorCode(error) === 404) {
       console.warn(`[Drive] Arquivo ${urlOrId} já não existia para remoção.`);
       return { success: true };
     }
     console.error("❌ Erro ao deletar do Drive:", error);
-    return { success: false, error: error.message };
+    return { success: false, error: getErrorMessage(error) };
   }
 }
 
@@ -182,9 +183,9 @@ export async function syncContentPostToDriveBackup(
 
     console.log(`[SocialBackup] Backup concluido com sucesso no Google Drive.`);
     return { success: true };
-  } catch (err: any) {
+  } catch (err: unknown) {
     // Fail-soft para não impedir a gravação no banco principal
     console.error(`❌ [SocialBackup] Falha ao sincronizar backup no Drive:`, err);
-    return { success: false, error: err.message };
+    return { success: false, error: getErrorMessage(err) };
   }
 }

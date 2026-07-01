@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 interface ProductDiffAdded {
   slug: string;
@@ -197,8 +198,8 @@ export default function PortfolioCommandCenter() {
       } else {
         setDryRunError(result.error || "Erro na sincronização via repositório.");
       }
-    } catch (err: any) {
-      setDryRunError(err.message);
+    } catch (err: unknown) {
+      setDryRunError(getErrorMessage(err));
     } finally {
       setGitSyncLoading(false);
     }

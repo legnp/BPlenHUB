@@ -7,6 +7,7 @@ import { serverEnv } from "@/env";
 import PDFDocument from "pdfkit";
 import path from "path";
 import crypto from "crypto";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 export async function getPendingContracts(userId: string) {
   try {
@@ -37,7 +38,7 @@ export async function getPendingContracts(userId: string) {
     }
     
     return { success: true, pendingProducts };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ [Pending Contracts] Erro:", error);
     return { success: false, pendingProducts: [] };
   }
@@ -49,7 +50,7 @@ export async function getUserLegalAudits(userId: string) {
     const auditsSnap = await db.collection("User").doc(userId).collection("Legal_Audits").orderBy("timestamp", "desc").get();
     const audits = auditsSnap.docs.map(d => d.data());
     return { success: true, audits };
-  } catch (e: any) {
+  } catch (e: unknown) {
     return { success: false, audits: [] };
   }
 }
@@ -140,9 +141,9 @@ export async function generateContractPdf(userId: string, productId: string, ord
     
     return { success: true, url: result.webViewLink, hash };
     
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ [Contract Generator] Erro:", error);
-    return { success: false, error: error.message };
+    return { success: false, error: getErrorMessage(error) };
   }
 }
 

@@ -47,7 +47,7 @@ export async function GET(
       },
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ [Media Proxy] Falha ao carregar mídia:", error);
     return new NextResponse("Falha ao carregar mídia.", { status: 500 });
   }

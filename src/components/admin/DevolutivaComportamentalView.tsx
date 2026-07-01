@@ -45,6 +45,7 @@ import { TriadVennChart } from "@/components/hub/TriadVennChart";
 import { StackedBarChart } from "@/components/hub/StackedBarChart";
 import { SURVEY_REGISTRY } from "@/config/surveys";
 import { FORMS_REGISTRY } from "@/config/forms";
+import { getErrorMessage } from "@/lib/utils/errors";
 const GLOBAL_COMBUSTIVEIS = [
   "Capacidade de comunicação e persuasão",
   "Alto nível de organização e planejamento",
@@ -235,7 +236,7 @@ export function DevolutivaComportamentalView({
       } else {
         alert(res.error || "Erro ao atualizar permissao de carreira.");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Erro ao alternar acesso:", err);
       alert("Erro ao salvar alteracao no servidor.");
     } finally {
@@ -274,8 +275,8 @@ export function DevolutivaComportamentalView({
       } else {
         alert(res.error || "Falha ao registrar ata.");
       }
-    } catch (err: any) {
-      alert("Erro ao salvar ata: " + (err.message || "Erro desconhecido"));
+    } catch (err: unknown) {
+      alert("Erro ao salvar ata: " + (getErrorMessage(err, "Erro desconhecido")));
     } finally {
       setSubmittingAta(false);
     }
@@ -312,8 +313,8 @@ export function DevolutivaComportamentalView({
       } else {
         alert(res.error || "Falha ao registrar documento.");
       }
-    } catch (err: any) {
-      alert("Erro ao salvar documento: " + (err.message || "Erro desconhecido"));
+    } catch (err: unknown) {
+      alert("Erro ao salvar documento: " + (getErrorMessage(err, "Erro desconhecido")));
     } finally {
       setSubmittingDoc(false);
     }
@@ -348,8 +349,8 @@ export function DevolutivaComportamentalView({
       } else {
         alert(res.error || "Falha ao registrar feedback.");
       }
-    } catch (err: any) {
-      alert("Erro ao salvar feedback: " + (err.message || "Erro desconhecido"));
+    } catch (err: unknown) {
+      alert("Erro ao salvar feedback: " + (getErrorMessage(err, "Erro desconhecido")));
     } finally {
       setSubmittingFb(false);
     }
@@ -510,9 +511,9 @@ export function DevolutivaComportamentalView({
       } else {
         alert(res.error || "Erro ao salvar Configuração C3.");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Erro ao salvar Configuração C3:", err);
-      alert("Erro ao salvar Configuração C3: " + (err.message || "Erro desconhecido"));
+      alert("Erro ao salvar Configuração C3: " + (getErrorMessage(err, "Erro desconhecido")));
     } finally {
       setSavingC3(false);
     }

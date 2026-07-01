@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { submitThemeSuggestion } from "@/actions/feedback";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 interface ThemeSuggestionModalProps {
   isOpen: boolean;
@@ -75,8 +76,8 @@ export function ThemeSuggestionModal({ isOpen, onClose, uid, matricula }: ThemeS
         matricula
       });
       setIsSuccess(true);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(getErrorMessage(err));
     } finally {
       setIsSubmitting(false);
     }

@@ -6,6 +6,7 @@ import { ensureFolder, uploadFileToDrive, getEventDriveFolder } from "@/lib/driv
 import { serverEnv } from "@/env";
 import { Readable } from "stream";
 import { getEventStandardSlug } from "@/lib/utils";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 /**
  * BPlen HUB — Server Action: Upload Direto ao Google Drive 📡
@@ -72,9 +73,9 @@ export async function uploadToUserDrive(formData: FormData) {
       fileId: result.id,
       fileName: file.name
     };
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("❌ [Upload Drive] Crítico:", err);
-    return { success: false, error: err.message || "Erro interno no processamento do arquivo." };
+    return { success: false, error: getErrorMessage(err, "Erro interno no processamento do arquivo.") };
   }
 }
 
@@ -165,9 +166,9 @@ export async function uploadPostEventDocAction(formData: FormData) {
       fileName: file.name,
       uploadedAt: new Date().toISOString()
     };
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("❌ [PostEvent Upload] Crítico:", err);
-    return { success: false, error: err.message || "Erro interno no upload de pós-evento." };
+    return { success: false, error: getErrorMessage(err, "Erro interno no upload de pós-evento.") };
   }
 }
 

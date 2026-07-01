@@ -4,6 +4,7 @@ import { getAdminDb } from "@/lib/firebase-admin";
 import admin from "firebase-admin";
 import { requireAuth } from "@/lib/auth-guards";
 import { resolveMatricula } from "./get-user-results";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 /**
  * BPlen HUB — Profile Professional Actions 🧬🏛️
@@ -128,9 +129,9 @@ export async function getProfessionalProfileAction(idToken?: string) {
     };
 
     return { success: true, data: profile, matricula };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ [GetProfessionalProfile] Erro:", error);
-    return { success: false, error: error.message };
+    return { success: false, error: getErrorMessage(error) };
   }
 }
 
@@ -200,8 +201,8 @@ export async function updateProfessionalProfileAction(data: ProfessionalProfileD
     await batch.commit();
 
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ [UpdateProfessionalProfile] Erro:", error);
-    return { success: false, error: error.message };
+    return { success: false, error: getErrorMessage(error) };
   }
 }

@@ -6,6 +6,7 @@ import { SocialPost } from "@/types/social";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth-guards";
 import { syncContentPostToDriveBackup } from "@/actions/social-drive";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 const COLLECTION_NAME = "content_posts";
 
@@ -203,9 +204,9 @@ export async function createSocialPost(data: Omit<SocialPost, "id" | "createdAt"
     }, adminToken).catch(console.error);
 
     return { success: true, id: docRef.id };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Erro ao criar post social:", error);
-    throw new Error(error.message || "Falha ao salvar postagem.");
+    throw new Error(getErrorMessage(error, "Falha ao salvar postagem."));
   }
 }
 
@@ -250,9 +251,9 @@ export async function updateSocialPost(id: string, data: Partial<SocialPost>, ad
     }, adminToken).catch(console.error);
 
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Erro ao atualizar post social:", error);
-    throw new Error(error.message || "Falha ao atualizar postagem.");
+    throw new Error(getErrorMessage(error, "Falha ao atualizar postagem."));
   }
 }
 
@@ -278,9 +279,9 @@ export async function deleteSocialPost(id: string, adminToken?: string) {
     }, adminToken).catch(console.error);
 
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Erro ao deletar post social:", error);
-    throw new Error(error.message || "Falha ao remover postagem.");
+    throw new Error(getErrorMessage(error, "Falha ao remover postagem."));
   }
 }
 
@@ -309,8 +310,8 @@ export async function togglePostStatus(id: string, field: "isActive" | "isFeatur
     }, adminToken).catch(console.error);
 
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Erro ao alternar status do post:", error);
-    throw new Error(error.message || "Falha ao alterar visibilidade/destaque.");
+    throw new Error(getErrorMessage(error, "Falha ao alterar visibilidade/destaque."));
   }
 }

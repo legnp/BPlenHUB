@@ -19,6 +19,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { auth } from "@/lib/firebase";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 export default function CheckoutPage() {
   const { slug } = useParams();
@@ -63,8 +64,8 @@ export default function CheckoutPage() {
       } else {
         setCouponError(result.message || "Cupom inválido.");
       }
-    } catch (err: any) {
-      setCouponError(err.message);
+    } catch (err: unknown) {
+      setCouponError(getErrorMessage(err));
     } finally {
       setCouponLoading(false);
     }
@@ -93,8 +94,8 @@ export default function CheckoutPage() {
         setError(result.error || "Falha ao processar ativação.");
         setStep("summary");
       }
-    } catch (err: any) {
-      setError(err.message || "Erro inesperado.");
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Erro inesperado."));
       setStep("summary");
     } finally {
       setProcessing(false);

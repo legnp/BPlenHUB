@@ -61,7 +61,7 @@ export async function GET(
       },
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ [Docs Proxy] Crítico:", error);
     return new NextResponse("Falha ao processar o documento.", { status: 500 });
   }

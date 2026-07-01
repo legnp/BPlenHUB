@@ -40,6 +40,7 @@ import {
 } from "@/actions/career-module";
 import { getUserBookingsAction, getUserOneToOneQuotaAction } from "@/actions/calendar-module/queries";
 import { CareerTask, CareerTaskStatus, CareerObjective, CareerGoal } from "@/types/career";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 function extractGoogleDriveFileId(url: string): string | null {
   if (!url) return null;
@@ -167,8 +168,8 @@ export default function GestaoCarreiraPage() {
       } else {
         alert(res.error || "Erro ao adicionar tarefa.");
       }
-    } catch (err: any) {
-      alert("Erro de conexao: " + err.message);
+    } catch (err: unknown) {
+      alert("Erro de conexao: " + getErrorMessage(err));
     } finally {
       setSubmittingTask(false);
     }
@@ -200,8 +201,8 @@ export default function GestaoCarreiraPage() {
       } else {
         alert(res.error || "Erro ao atualizar status da tarefa.");
       }
-    } catch (err: any) {
-      alert("Erro ao alterar status: " + err.message);
+    } catch (err: unknown) {
+      alert("Erro ao alterar status: " + getErrorMessage(err));
     }
   };
 
@@ -221,8 +222,8 @@ export default function GestaoCarreiraPage() {
       } else {
         alert(res.error || "Erro ao remover tarefa.");
       }
-    } catch (err: any) {
-      alert("Erro ao remover tarefa: " + err.message);
+    } catch (err: unknown) {
+      alert("Erro ao remover tarefa: " + getErrorMessage(err));
     }
   };
 
@@ -254,8 +255,8 @@ export default function GestaoCarreiraPage() {
       } else {
         alert(res.error || "Erro ao registrar comentario.");
       }
-    } catch (err: any) {
-      alert("Erro: " + err.message);
+    } catch (err: unknown) {
+      alert("Erro: " + getErrorMessage(err));
     } finally {
       setSubmittingComment(prev => ({ ...prev, [taskId]: false }));
     }
@@ -306,8 +307,8 @@ export default function GestaoCarreiraPage() {
       } else {
         alert(res.error || "Falha ao gravar objetivo estratégico.");
       }
-    } catch (err: any) {
-      alert("Erro: " + err.message);
+    } catch (err: unknown) {
+      alert("Erro: " + getErrorMessage(err));
     } finally {
       setSubmittingObj(false);
     }
@@ -361,8 +362,8 @@ export default function GestaoCarreiraPage() {
       } else {
         alert(res.error || "Erro ao salvar progresso.");
       }
-    } catch (err: any) {
-      alert("Erro de conexao: " + err.message);
+    } catch (err: unknown) {
+      alert("Erro de conexao: " + getErrorMessage(err));
     }
   };
 

@@ -2,6 +2,7 @@
 
 import admin, { getAdminDb } from "@/lib/firebase-admin";
 import { requireAdmin } from "@/lib/auth-guards";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 /**
  * BPlen HUB — One-to-One Settings Actions
@@ -41,8 +42,8 @@ export async function updateOneToOneTypes(types: string[], idToken?: string) {
     }, { merge: true });
     
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Erro ao atualizar tipos 1-to-1:", error);
-    return { success: false, message: error.message || "Erro ao salvar configurações." };
+    return { success: false, message: getErrorMessage(error, "Erro ao salvar configurações.") };
   }
 }

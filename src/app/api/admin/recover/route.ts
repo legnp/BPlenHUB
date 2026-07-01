@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAdminDb, getAdminAuth } from "@/lib/firebase-admin";
 import * as admin from "firebase-admin";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 /**
  * Rota de Emergência para Recuperação de Conta Admin 🛡️
@@ -69,12 +70,12 @@ export async function GET(request: Request) {
       message: `Conta ${email} recuperada com sucesso! Você já pode acessar a área Admin.` 
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Erro na recuperação:", error);
     return NextResponse.json({ 
       success: false, 
       message: "Falha na recuperação.", 
-      error: error.message 
+      error: getErrorMessage(error) 
     }, { status: 500 });
   }
 }

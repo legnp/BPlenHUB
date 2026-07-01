@@ -66,7 +66,7 @@ export default function FAQContactModal({ productName, productSlug }: FAQContact
       } else {
         setError(res.error || "Ocorreu um erro ao enviar sua dúvida. Tente novamente.");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError("Erro de conexão. Por favor, tente novamente.");
     } finally {
       setLoading(false);

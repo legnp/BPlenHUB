@@ -19,6 +19,7 @@ import GlassModal from "@/components/ui/GlassModal";
 import QRCodeForm from "@/components/admin/QRCodeForm";
 import { auth } from "@/lib/firebase";
 import { QRCodeCanvas } from "qrcode.react";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 export default function QRCodesManagementPage() {
   const [qrcodes, setQrcodes] = useState<BPlenQRCode[]>([]);
@@ -91,8 +92,8 @@ export default function QRCodesManagementPage() {
         } else {
           alert(res.error || "Erro ao remover QR Code.");
         }
-      } catch (err: any) {
-        alert(err.message || "Falha na exclusao.");
+      } catch (err: unknown) {
+        alert(getErrorMessage(err, "Falha na exclusao."));
       }
     }
   };

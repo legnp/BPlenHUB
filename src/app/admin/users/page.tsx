@@ -34,6 +34,7 @@ import { DiscDevolutivaModal } from "@/components/admin/DiscDevolutivaModal";
 import { getAdminProducts } from "@/actions/products";
 import { Product } from "@/types/products";
 import { getMemberQuotasAction, updateMemberQuotasAction } from "@/actions/quotas";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 /**
  * BPlen HUB — Gestão de Usuários e Governança
@@ -84,7 +85,7 @@ export default function UsersManagementPage() {
       }
       setProducts(productsResult);
       setError(null);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Fetch Error:", err);
       setError("Erro ao sincronizar dados administrativos.");
     } finally {
@@ -178,8 +179,8 @@ export default function UsersManagementPage() {
       if (selectedUser?.matricula === targetMatricula) {
         setSelectedUser(prev => prev ? { ...prev, role: newRole, isAdmin: newRole === 'admin' } : null);
       }
-    } catch (err: any) {
-      alert(err.message || "Erro ao atualizar perfil.");
+    } catch (err: unknown) {
+      alert(getErrorMessage(err, "Erro ao atualizar perfil."));
     } finally {
       setProcessingUser(null);
     }
@@ -200,8 +201,8 @@ export default function UsersManagementPage() {
       } else {
         alert(res.error || "Erro ao atualizar limite");
       }
-    } catch (err: any) {
-      alert(err.message || "Erro ao atualizar limite");
+    } catch (err: unknown) {
+      alert(getErrorMessage(err, "Erro ao atualizar limite"));
     } finally {
       setProcessingUser(null);
     }
@@ -231,8 +232,8 @@ export default function UsersManagementPage() {
         u.matricula === targetMatricula ? { ...u, services } : u
       ));
       setSelectedUser(null);
-    } catch (err: any) {
-      alert(err.message || "Erro ao atualizar serviços.");
+    } catch (err: unknown) {
+      alert(getErrorMessage(err, "Erro ao atualizar serviços."));
     } finally {
       setProcessingUser(null);
     }
@@ -276,8 +277,8 @@ export default function UsersManagementPage() {
       setSelectedUser(prev => prev ? { ...prev, metadata: { ...prev.metadata, disc_link: discLinkInput } } : null);
       
       alert("Link DISC salvo com sucesso!");
-    } catch (err: any) {
-      alert(err.message || "Erro ao salvar link DISC.");
+    } catch (err: unknown) {
+      alert(getErrorMessage(err, "Erro ao salvar link DISC."));
     } finally {
       setSavingDisc(false);
     }
@@ -299,8 +300,8 @@ export default function UsersManagementPage() {
       } else {
         alert(res.error || "Erro ao atualizar status profissional.");
       }
-    } catch (err: any) {
-      alert(err.message || "Erro crítico na governança profissional.");
+    } catch (err: unknown) {
+      alert(getErrorMessage(err, "Erro crítico na governança profissional."));
     } finally {
       setProcessingUser(null);
     }
@@ -340,8 +341,8 @@ export default function UsersManagementPage() {
                 } else {
                   alert(`Falha na migração de dados.`);
                 }
-              } catch (err: any) {
-                alert(`Erro crítico: ${err.message}`);
+              } catch (err: unknown) {
+                alert(`Erro crítico: ${getErrorMessage(err)}`);
               }
             }}
             className="flex items-center gap-2 px-6 py-3 bg-[var(--accent-start)] text-white rounded-full text-[9px] font-bold uppercase tracking-widest hover:bg-[var(--accent-end)] transition-all group shadow-lg shadow-[var(--accent-start)]/20"

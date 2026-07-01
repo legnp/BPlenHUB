@@ -7,6 +7,7 @@ import { SurveyResponse } from "@/types/survey";
 import { FormRecord } from "@/types/forms";
 import { toSafeDate } from "@/lib/date-utils";
 import { requireAdmin } from "@/lib/auth-guards";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 export interface FSRegistrySummary {
   id: string;
@@ -145,11 +146,11 @@ export async function getAdminFSAnalytics(): Promise<{
       stats,
       items: items.sort((a, b) => b.totalResponses - a.totalResponses), // Ordena por popularidade
     };
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("❌ [getAdminFSAnalytics] Erro crítico:", err);
     return {
       success: false,
-      error: err.message || "Falha ao processar estatísticas unificadas.",
+      error: getErrorMessage(err, "Falha ao processar estatísticas unificadas."),
     };
   }
 }
@@ -291,11 +292,11 @@ export async function getFSItemDetails(
       success: true,
       details,
     };
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error(`❌ [getFSItemDetails] Erro para ${type} ID ${id}:`, err);
     return {
       success: false,
-      error: err.message || "Falha ao processar detalhes da estrutura selecionada.",
+      error: getErrorMessage(err, "Falha ao processar detalhes da estrutura selecionada."),
     };
   }
 }
