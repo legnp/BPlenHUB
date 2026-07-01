@@ -29,6 +29,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { getDevolutivaUserData, DevolutivaUserData } from "@/actions/admin-devolutiva";
 import { getAdminUsersList, updateUserPermissions } from "@/actions/users-admin";
+import { AdminUser } from "@/types/users";
 import { toggleAssessmentRelease } from "@/actions/admin-assessments";
 import { 
   getCareerPlanningDataAction, 
@@ -36,7 +37,8 @@ import {
   addCareerAtaAction,
   addCareerSharedDocumentAction,
   addCareerFeedbackAction,
-  saveCustomResourcesAction
+  saveCustomResourcesAction,
+  CareerPlanningData
 } from "@/actions/career-module";
 import { DiscDevolutivaModal } from "@/components/admin/DiscDevolutivaModal";
 import { DiscChart } from "@/components/hub/DiscChart";
@@ -46,6 +48,12 @@ import { StackedBarChart } from "@/components/hub/StackedBarChart";
 import { SURVEY_REGISTRY } from "@/config/surveys";
 import { FORMS_REGISTRY } from "@/config/forms";
 import { getErrorMessage } from "@/lib/utils/errors";
+import {
+  GestaoTempoResult,
+  AprendizadoResult,
+  ReconhecimentoResult,
+  DiscResult
+} from "@/actions/get-user-results";
 const GLOBAL_COMBUSTIVEIS = [
   "Capacidade de comunicação e persuasão",
   "Alto nível de organização e planejamento",
@@ -106,7 +114,7 @@ export function DevolutivaComportamentalView({
   const [loadingData, setLoadingData] = useState<boolean>(false);
   
   // Users list state for dropdown selection
-  const [usersList, setUsersList] = useState<any[]>([]);
+  const [usersList, setUsersList] = useState<AdminUser[]>([]);
   const [loadingUsers, setLoadingUsers] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isDropdownOpen, setIsUserDropdownOpen] = useState<boolean>(false);
@@ -124,7 +132,7 @@ export function DevolutivaComportamentalView({
   const [expandedAccordions, setExpandedAccordions] = useState<Record<string, boolean>>({});
 
   // Career Module states
-  const [careerData, setCareerData] = useState<any>(null);
+  const [careerData, setCareerData] = useState<CareerPlanningData | null>(null);
   const [loadingCareer, setLoadingCareer] = useState<boolean>(false);
   const [togglingAccess, setTogglingAccess] = useState<boolean>(false);
   
@@ -370,7 +378,7 @@ export function DevolutivaComportamentalView({
             results: {
               ...prev.results,
               [resultId]: {
-                ...prev.results[resultId],
+                ...(prev.results[resultId] as Record<string, unknown> | undefined),
                 isReleased: !currentStatus
               }
             }
@@ -536,14 +544,14 @@ export function DevolutivaComportamentalView({
   const selectedUserDisplay = usersList.find(u => u.matricula === selectedMatricula);
 
   // Formulate structures arrays for display
-  const gestaoResult = userData?.results?.gestao_tempo;
+  const gestaoResult = userData?.results?.gestao_tempo as GestaoTempoResult | undefined;
   const triadData = gestaoResult?.scores ? [
     { label: "Importancia", percentage: gestaoResult.scores.importancia?.percentage || 0, color: "#10b981" },
     { label: "Urgencia", percentage: gestaoResult.scores.urgencia?.percentage || 0, color: "#facc15" },
     { label: "Circunstancia", percentage: gestaoResult.scores.circunstancia?.percentage || 0, color: "#ef4444" },
   ] : [];
 
-  const aprendizadoResult = userData?.results?.preferencias_aprendizado;
+  const aprendizadoResult = userData?.results?.preferencias_aprendizado as AprendizadoResult | undefined;
   const vacdData = aprendizadoResult?.scores ? [
     { label: "Visual", percentage: aprendizadoResult.scores.visual?.percentage || 0, color: "#ec4899" },
     { label: "Auditivo", percentage: aprendizadoResult.scores.auditivo?.percentage || 0, color: "#3b82f6" },
@@ -551,7 +559,7 @@ export function DevolutivaComportamentalView({
     { label: "Digital", percentage: aprendizadoResult.scores.digital?.percentage || 0, color: "#f59e0b" },
   ] : [];
 
-  const reconhecimentoResult = userData?.results?.preferencias_reconhecimento;
+  const reconhecimentoResult = userData?.results?.preferencias_reconhecimento as ReconhecimentoResult | undefined;
   const reconhecimentoData = reconhecimentoResult?.scores ? [
     { label: "Palavras de Afirmação", percentage: reconhecimentoResult.scores.afirmacao?.percentage || 0, color: "#ef4444" },
     { label: "Tempo de Qualidade", percentage: reconhecimentoResult.scores.tempo?.percentage || 0, color: "#3b82f6" },
@@ -560,7 +568,7 @@ export function DevolutivaComportamentalView({
     { label: "Toque Físico", percentage: reconhecimentoResult.scores.toque?.percentage || 0, color: "#ec4899" },
   ] : [];
 
-  const discResult = userData?.results?.disc;
+  const discResult = userData?.results?.disc as DiscResult | undefined;
   const discData = discResult?.scores ? [
     { label: "Executor", percentage: discResult.scores.executor?.percentage || 0, color: "#3b82f6" },
     { label: "Comunicador", percentage: discResult.scores.comunicador?.percentage || 0, color: "#facc15" },
@@ -1559,7 +1567,7 @@ export function DevolutivaComportamentalView({
                   {allSubmissionsList.length > 0 ? (
                     <div className="border border-[var(--border-primary)]/40 rounded-[2rem] overflow-hidden bg-[var(--bg-primary)]/10 divide-y divide-[var(--border-primary)]/30">
                       {allSubmissionsList.map((sub) => {
-                        const id = sub.type === "survey" ? sub.surveyId : sub.formId;
+                        const id = (sub.type === "survey" ? sub.surveyId : sub.formId) || "";
                         const isOpen = !!expandedAccordions[id];
                         const title = getSubmissionTitle(sub);
                         const renderableFields = getRenderableFields(sub);

@@ -3,7 +3,7 @@ import { requireAdmin } from "@/lib/auth-guards";
 import { parseISO, isBefore, format } from "date-fns";
 import { getSheetsClient, getDriveClient } from "@/lib/google-auth";
 import { ensureFolder, createSpreadsheet, renameFile, getEventDriveFolder, syncDataToSheet } from "@/lib/drive-utils";
-import { GoogleCalendarEvent, EventLifecycleStatus, AttendanceStatus } from "@/types/calendar";
+import { GoogleCalendarEvent, EventLifecycleStatus, AttendanceStatus, ProgramacaoEntry } from "@/types/calendar";
 import { getEventAttendees } from "./queries";
 import { sendAttendanceRegisteredEmail, sendAbsenceRegisteredEmail } from "@/lib/attendance-emails";
 
@@ -342,7 +342,7 @@ export async function updateGlobalProgramacaoRegistryAction() {
         publicGeneralComment: data.publicGeneralComment || "",
         meetingMinutesFile: data.meetingMinutesFile || null
       };
-    }).filter(Boolean) as any[];
+    }).filter(Boolean) as ProgramacaoEntry[];
 
     await db.collection("Datas_Center").doc("Programacao_Registry").set({
       lastUpdated: admin.firestore.FieldValue.serverTimestamp(),

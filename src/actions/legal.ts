@@ -9,6 +9,17 @@ import path from "path";
 import crypto from "crypto";
 import { getErrorMessage } from "@/lib/utils/errors";
 
+export interface LegalAudit {
+  auditId: string;
+  userId: string;
+  productId: string;
+  orderId: string | null;
+  timestamp: string;
+  ipAddress: string;
+  documentUrl: string;
+  documentHash: string;
+}
+
 export async function getPendingContracts(userId: string) {
   try {
     const db = getAdminDb();
@@ -48,10 +59,10 @@ export async function getUserLegalAudits(userId: string) {
   try {
     const db = getAdminDb();
     const auditsSnap = await db.collection("User").doc(userId).collection("Legal_Audits").orderBy("timestamp", "desc").get();
-    const audits = auditsSnap.docs.map(d => d.data());
+    const audits = auditsSnap.docs.map(d => d.data() as LegalAudit);
     return { success: true, audits };
   } catch (e: unknown) {
-    return { success: false, audits: [] };
+    return { success: false, audits: [] as LegalAudit[] };
   }
 }
 

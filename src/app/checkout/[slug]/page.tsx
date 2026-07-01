@@ -6,6 +6,7 @@ import { getProductBySlug } from "@/actions/products";
 import { processServicePurchaseAction } from "@/actions/checkout";
 import { validateCouponAction } from "@/actions/coupons";
 import { Product } from "@/types/products";
+import { CouponValidationResult } from "@/types/marketing";
 import { 
   ShieldCheck, 
   CreditCard, 
@@ -32,7 +33,7 @@ export default function CheckoutPage() {
   
   // Marketing / Cupons
   const [couponInput, setCouponInput] = useState("");
-  const [couponData, setCouponData] = useState<any>(null);
+  const [couponData, setCouponData] = useState<CouponValidationResult | null>(null);
   const [couponLoading, setCouponLoading] = useState(false);
   const [couponError, setCouponError] = useState<string | null>(null);
 
@@ -176,7 +177,7 @@ export default function CheckoutPage() {
                           
                           {couponData && (
                              <div className="flex justify-between text-sm font-bold text-emerald-500 animate-pulse">
-                                <span>Cupom Aplicado ({couponData.coupon.code})</span>
+                                <span>Cupom Aplicado ({couponData.coupon?.code})</span>
                                 <span>- R$ {couponData.discountAmount.toLocaleString('pt-BR')}</span>
                              </div>
                           )}
@@ -208,7 +209,7 @@ export default function CheckoutPage() {
                           </button>
                        </div>
                        {couponError && <p className="text-[10px] text-red-500 font-bold px-2">{couponError}</p>}
-                       {couponData && <p className="text-[10px] text-emerald-500 font-bold px-2">Cupom '{couponData.coupon.code}' aplicado com sucesso!</p>}
+                       {couponData && <p className="text-[10px] text-emerald-500 font-bold px-2">Cupom '{couponData.coupon?.code}' aplicado com sucesso!</p>}
                     </div>
                  </div>
 

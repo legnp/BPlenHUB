@@ -57,7 +57,7 @@ export interface CalendarEvent {
   totalCapacity?: number;
   registeredCount?: number;
   mentor?: string;
-  theme?: string;
+  theme?: string | null;
 }
 
 interface CalendarProps {

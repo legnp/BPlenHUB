@@ -8,11 +8,15 @@ import { DiscChart } from "@/components/hub/DiscChart";
 import { MemberJourneyHero } from "@/components/hub/MemberJourneyHero";
 import { GuidedTourOverlay } from "@/components/shared/GuidedTourOverlay";
 import { memberOnboardingSteps } from "@/config/tour/member-onboarding";
-import { 
-  getGestaoTempoResult, 
-  getAprendizadoResult, 
+import {
+  getGestaoTempoResult,
+  getAprendizadoResult,
   getReconhecimentoResult,
-  getDiscResult
+  getDiscResult,
+  GestaoTempoResult,
+  AprendizadoResult,
+  ReconhecimentoResult,
+  DiscResult
 } from "@/actions/get-user-results";
 import { getUserBookingsAction } from "@/actions/calendar";
 import { UserBooking } from "@/types/calendar";
@@ -39,7 +43,7 @@ import { parseISO, isBefore, isAfter, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { BookingDetailModal } from "@/components/ui/UserBookings";
 import { submitEvaluationAction } from "@/actions/calendar";
-import { getCareerPlanningDataAction } from "@/actions/career-module";
+import { getCareerPlanningDataAction, CareerPlanningData } from "@/actions/career-module";
 import { useJourney } from "@/hooks/useJourney";
 import { CareerTask } from "@/types/career";
 import Link from "next/link";
@@ -51,10 +55,10 @@ import AtmosphericLoading from "@/components/shared/AtmosphericLoading";
  */
 export default function MemberDashboardView() {
   const { user, matricula, services } = useAuthContext();
-  const [gestaoResult, setGestaoResult] = useState<any>(null);
-  const [aprendizadoResult, setAprendizadoResult] = useState<any>(null);
-  const [reconhecimentoResult, setReconhecimentoResult] = useState<any>(null);
-  const [discResult, setDiscResult] = useState<any>(null);
+  const [gestaoResult, setGestaoResult] = useState<GestaoTempoResult | null>(null);
+  const [aprendizadoResult, setAprendizadoResult] = useState<AprendizadoResult | null>(null);
+  const [reconhecimentoResult, setReconhecimentoResult] = useState<ReconhecimentoResult | null>(null);
+  const [discResult, setDiscResult] = useState<DiscResult | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Histórico de Mentorias
@@ -66,7 +70,7 @@ export default function MemberDashboardView() {
   const [isEvaluating_Dashboard, setIsEvaluating_Dashboard] = useState<string | null>(null);
 
   // Career Module State
-  const [careerData, setCareerData] = useState<any>(null);
+  const [careerData, setCareerData] = useState<CareerPlanningData | null>(null);
   const [loadingCareer, setLoadingCareer] = useState(false);
   const { stages, progress } = useJourney(user?.uid || "guest");
 
@@ -109,22 +113,17 @@ export default function MemberDashboardView() {
     
     async function loadResults() {
       try {
-        const results = await Promise.allSettled([
+        const [gestaoRes, aprendizadoRes, reconhecimentoRes, discRes] = await Promise.allSettled([
           getGestaoTempoResult(user!.uid, user!.email || ''),
           getAprendizadoResult(user!.uid, user!.email || ''),
           getReconhecimentoResult(user!.uid, user!.email || ''),
           getDiscResult(user!.uid, user!.email || '')
         ]);
 
-        results.forEach((res, index) => {
-          if (res.status === "fulfilled") {
-            const data = res.value;
-            if (index === 0) setGestaoResult(data);
-            if (index === 1) setAprendizadoResult(data);
-            if (index === 2) setReconhecimentoResult(data);
-            if (index === 3) setDiscResult(data);
-          }
-        });
+        if (gestaoRes.status === "fulfilled") setGestaoResult(gestaoRes.value);
+        if (aprendizadoRes.status === "fulfilled") setAprendizadoResult(aprendizadoRes.value);
+        if (reconhecimentoRes.status === "fulfilled") setReconhecimentoResult(reconhecimentoRes.value);
+        if (discRes.status === "fulfilled") setDiscResult(discRes.value);
       } catch (error) {
         console.error("🚨 [MemberDashboard] Erro inesperado:", error);
       } finally {
@@ -158,7 +157,7 @@ export default function MemberDashboardView() {
       setLoadingCareer(true);
       try {
         const res = await getCareerPlanningDataAction(matricula!);
-        if (res.success) setCareerData(res.data);
+        if (res.success) setCareerData(res.data ?? null);
       } catch (err) {
         console.error("Erro ao carregar dados de carreira no dashboard:", err);
       } finally {

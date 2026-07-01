@@ -36,9 +36,11 @@ import {
   addCareerTaskCommentAction,
   deleteCareerTaskAction,
   saveCareerObjectiveAction,
-  updateCareerGoalProgressAction
+  updateCareerGoalProgressAction,
+  CareerPlanningData
 } from "@/actions/career-module";
 import { getUserBookingsAction, getUserOneToOneQuotaAction } from "@/actions/calendar-module/queries";
+import { UserBooking } from "@/types/calendar";
 import { CareerTask, CareerTaskStatus, CareerObjective, CareerGoal } from "@/types/career";
 import { getErrorMessage } from "@/lib/utils/errors";
 
@@ -67,13 +69,13 @@ export default function GestaoCarreiraPage() {
   const { stages, progress, loading: journeyLoading } = useJourney(user?.uid || "guest");
 
   // Career module states
-  const [careerData, setCareerData] = useState<any>(null);
+  const [careerData, setCareerData] = useState<CareerPlanningData | null>(null);
   const [loadingCareer, setLoadingCareer] = useState<boolean>(true);
   const [activeAccordion, setActiveAccordion] = useState<string | null>(null);
 
   // Mentoring states
   const [mentoringQuotaTotal, setMentoringQuotaTotal] = useState<number | null>(null);
-  const [mentoringBookings, setMentoringBookings] = useState<any[]>([]);
+  const [mentoringBookings, setMentoringBookings] = useState<UserBooking[]>([]);
 
   // New task state
   const [newTaskTitle, setNewTaskTitle] = useState<string>("");

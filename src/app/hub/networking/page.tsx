@@ -13,7 +13,8 @@ import {
 import { cn } from "@/lib/utils";
 import { NetworkingCard } from "@/components/hub/NetworkingCard";
 import { NetworkingFilters } from "@/components/hub/NetworkingFilters";
-import { getNetworkingDataAction, NetworkingTab } from "@/actions/networking";
+import { getNetworkingDataAction, NetworkingMember, NetworkingTab } from "@/actions/networking";
+import { PartnerData } from "@/actions/admin/partners";
 
 /**
  * BPlen HUB — Networking Space 🌐🚀✨
@@ -24,7 +25,7 @@ export default function NetworkingPage() {
   const [search, setSearch] = useState("");
   const [stageFilter, setStageFilter] = useState("Todos");
   const [serviceFilter, setServiceFilter] = useState("Todos");
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<(NetworkingMember | PartnerData)[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Abas Horizontais Estilo Profile 🦴
@@ -55,7 +56,7 @@ export default function NetworkingPage() {
   // Ramos de Atuação Únicos (Derivados dos Dados de Parceiros)
   const availableServices = useMemo(() => {
     if (activeTab !== "parceiros") return [];
-    return Array.from(new Set(data.map((p: any) => p.serviceType))).filter(Boolean) as string[];
+    return Array.from(new Set((data as PartnerData[]).map((p) => p.serviceType))).filter(Boolean) as string[];
   }, [data, activeTab]);
 
   return (

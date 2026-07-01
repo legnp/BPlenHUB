@@ -110,7 +110,7 @@ export async function bookEventAction(
         dateStr: formatDateInBR(result.eventData.start),
         timeStr: formatTimeInBR(result.eventData.start),
         mentor: result.eventData.mentor,
-        theme: result.eventData.theme,
+        theme: result.eventData.theme || undefined,
         htmlLink: result.eventData.htmlLink || "",
         cancelLink: "https://hub.bplen.com/hub/membro/dashboard",
         oneToOneInfo: oneToOneData ? `<p><b>Tipo:</b> ${oneToOneData.type}<br/><b>Expectativas:</b> ${oneToOneData.expectations}</p>` : undefined
@@ -146,7 +146,7 @@ export async function bookEventAction(
           dateStr: formatDateInBR(result.eventData.start),
           timeStr: formatTimeInBR(result.eventData.start),
           mentor: result.eventData.mentor,
-          theme: result.eventData.theme,
+          theme: result.eventData.theme || undefined,
           oneToOneInfo: oneToOneData ? `<p><b>Tipo:</b> ${oneToOneData.type}<br/><b>Expectativas:</b> ${oneToOneData.expectations}</p>` : undefined,
           isLead: !!leadInfo
         });

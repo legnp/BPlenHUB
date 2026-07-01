@@ -18,7 +18,8 @@ import {
   Calendar as CalendarIcon,
   LayoutDashboard,
   ArrowRight,
-  FileText
+  FileText,
+  LucideIcon
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { SocialPost, SocialPlatform } from "@/types/social";
@@ -96,7 +97,7 @@ export default function SocialManagementPage() {
     }
   };
 
-  const platformIcons: Record<SocialPlatform, any> = {
+  const platformIcons: Record<SocialPlatform, LucideIcon> = {
     article: FileText,
     linkedin: Share2,
     instagram: Share2,

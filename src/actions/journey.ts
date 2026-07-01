@@ -480,7 +480,7 @@ export async function updateJourneySubStepAction(
     try {
       getJourneyStagesAction().then(stages => {
         const updatedAtStr = new Date().toLocaleDateString('pt-BR');
-        const rowsData: any[][] = [];
+        const rowsData: (string | number | boolean | null)[][] = [];
 
         stages.forEach(stage => {
           const stageProgress = finalProgressTyped.steps[stage.id];

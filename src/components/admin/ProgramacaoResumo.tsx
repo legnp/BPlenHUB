@@ -11,9 +11,11 @@ import {
 } from "@/actions/calendar";
 import { getAdminUsersList } from "@/actions/users-admin";
 import { AdminUser } from "@/types/users";
-import { 
+import {
   GoogleCalendarEvent,
-  EventLifecycleStatus 
+  EventLifecycleStatus,
+  AttendeeData,
+  ProgramacaoEntry
 } from "@/types/calendar";
 import { 
   FileText, 
@@ -53,32 +55,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { getErrorMessage } from "@/lib/utils/errors";
 
 
-interface EventSummary {
-  id: string;
-  summary: string;
-  start: string;
-  end: string;
-  mentor: string;
-  theme?: string;
-  statusLabel: "futuro" | "pendente" | "concluido" | "baixado";
-  folderUrl: string | null;
-  htmlLink: string;
-  registeredCount: number;
-  totalCapacity: number;
-  metrics: {
-    presenceCount: number;
-    npsAvg: number;
-    reviewsCount: number;
-  };
-  meetingLink?: string;
-  location?: string;
-  // Post-event fields (kept for PostEventWizard pre-population)
-  postEventCompleted?: boolean;
-  lifecycleStatus?: EventLifecycleStatus;
-  internalGeneralComment?: string;
-  publicGeneralComment?: string;
-  meetingMinutesFile?: { url: string; fileId: string; fileName: string; uploadedAt: string } | null;
-}
+// EventSummary é o mesmo shape retornado por getProgramacaoSummaryAction/getProgramacaoForMemberAction.
+type EventSummary = ProgramacaoEntry;
 
 type SortField = "date" | "name" | "nps" | "presence" | "capacity";
 type SortDirection = "asc" | "desc";
@@ -135,7 +113,7 @@ export default function ProgramacaoResumo() {
 
   // Attendees Modal State
   const [attendeesModalEvent, setAttendeesModalEvent] = useState<EventSummary | null>(null);
-  const [attendeesData, setAttendeesData] = useState<any[]>([]);
+  const [attendeesData, setAttendeesData] = useState<AttendeeData[]>([]);
   const [isLoadingAttendees, setIsLoadingAttendees] = useState(false);
 
   // User Search State for manual inclusion inside the list of attendees modal
@@ -822,17 +800,9 @@ export default function ProgramacaoResumo() {
                       {/* Avatar */}
                       <div className="relative shrink-0">
                         <div className="w-12 h-12 rounded-full border border-[var(--border-primary)]/40 overflow-hidden flex items-center justify-center bg-gradient-to-br from-[var(--accent-start)] to-[var(--accent-end)] shadow-md">
-                          {attendee.photoUrl ? (
-                            <img 
-                              src={attendee.photoUrl} 
-                              alt={attendee.nickname} 
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <span className="text-sm font-black text-white">
-                              {initials}
-                            </span>
-                          )}
+                          <span className="text-sm font-black text-white">
+                            {initials}
+                          </span>
                         </div>
                       </div>
 

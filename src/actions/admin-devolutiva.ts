@@ -8,8 +8,7 @@ import { getErrorMessage } from "@/lib/utils/errors";
  * Serializador seguro para evitar quebras de serializacao do Next.js
  * de objetos complexos (ex: Firestore Timestamps).
  */
-function serializeData(data: any): any {
-  if (!data) return null;
+function serializeData<T>(data: T): T {
   return JSON.parse(
     JSON.stringify(data, (key, value) => {
       if (
@@ -23,6 +22,19 @@ function serializeData(data: any): any {
       return value;
     })
   );
+}
+
+/**
+ * Envelope comum de um documento de Survey ou Form completado.
+ * O conteudo de `data` varia por survey/form (ver SURVEY_REGISTRY/FORMS_REGISTRY),
+ * por isso permanece dinamico.
+ */
+export interface AssessmentSubmission {
+  surveyId?: string;
+  formId?: string;
+  status?: string;
+  submittedAt?: string | number | null;
+  data?: Record<string, unknown>;
 }
 
 export interface DevolutivaUserData {
@@ -47,9 +59,9 @@ export interface DevolutivaUserData {
     currentStep: string;
     overallProgress: number;
   } | null;
-  results: Record<string, any>;
-  surveys: Record<string, any>;
-  forms: Record<string, any>;
+  results: Record<string, unknown>;
+  surveys: Record<string, AssessmentSubmission>;
+  forms: Record<string, AssessmentSubmission>;
 }
 
 /**
@@ -144,21 +156,21 @@ export async function getDevolutivaUserData(
 
     // 5. Carregar resultados de assessments
     const resultsSnap = await db.collection(`User/${matricula}/results`).get();
-    const results: Record<string, any> = {};
+    const results: Record<string, unknown> = {};
     resultsSnap.forEach((doc) => {
       results[doc.id] = doc.data();
     });
 
     // 6. Carregar Surveys completadas
     const surveysSnap = await db.collection(`User/${matricula}/Surveys`).get();
-    const surveys: Record<string, any> = {};
+    const surveys: Record<string, Record<string, unknown>> = {};
     surveysSnap.forEach((doc) => {
       surveys[doc.id] = doc.data();
     });
 
     // 7. Carregar Forms completados
     const formsSnap = await db.collection(`User/${matricula}/Forms`).get();
-    const forms: Record<string, any> = {};
+    const forms: Record<string, Record<string, unknown>> = {};
     formsSnap.forEach((doc) => {
       forms[doc.id] = doc.data();
     });

@@ -5,7 +5,7 @@ import { useAuthContext } from "@/context/AuthContext";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { getProgramacaoForMemberAction } from "@/actions/calendar";
-import { GoogleCalendarEvent } from "@/types/calendar";
+import { ProgramacaoEntry } from "@/types/calendar";
 import AgendaManagementView from "@/components/shared/AgendaManagementView";
 
 /**
@@ -14,7 +14,7 @@ import AgendaManagementView from "@/components/shared/AgendaManagementView";
  */
 export default function GestaoAgendaPage() {
   const { user } = useAuthContext();
-  const [events, setEvents] = useState<GoogleCalendarEvent[]>([]);
+  const [events, setEvents] = useState<ProgramacaoEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshCounter, setRefreshCounter] = useState(0);
 

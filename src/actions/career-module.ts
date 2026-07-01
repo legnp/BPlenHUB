@@ -16,12 +16,20 @@ import {
 import * as admin from "firebase-admin";
 import { getErrorMessage } from "@/lib/utils/errors";
 
+export interface CareerPlanningData {
+  isCareerPlanningReleased: boolean;
+  backlog: CareerTask[];
+  feedbacks: CareerFeedback[];
+  atas: CareerAta[];
+  sharedDocuments: CareerSharedDocument[];
+  objectives: CareerObjective[];
+}
+
 /**
  * Serializador seguro para evitar quebras do Next.js ao trafegar objetos
  * complexos (como Timestamps do Firestore) de volta para o cliente.
  */
-function serializeData(data: any): any {
-  if (!data) return null;
+function serializeData<T>(data: T): T {
   return JSON.parse(
     JSON.stringify(data, (key, value) => {
       if (
@@ -113,7 +121,7 @@ export async function toggleCareerPlanningAccessAction(
 export async function getCareerPlanningDataAction(
   matricula: string,
   idToken?: string
-): Promise<{ success: boolean; data?: any; error?: string }> {
+): Promise<{ success: boolean; data?: CareerPlanningData | null; error?: string }> {
   try {
     const { db } = await checkAuthAndGetDb(matricula, idToken);
 
