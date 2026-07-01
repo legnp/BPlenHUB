@@ -6,7 +6,7 @@ import { ptBR } from "date-fns/locale";
 import { Resend } from "resend";
 import { CALENDAR_CONFIG } from "@/config/calendarConfig";
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
-import { GoogleCalendarEvent } from "@/types/calendar";
+import { GoogleCalendarEvent, AttendeeData } from "@/types/calendar";
 import { updateGlobalProgramacaoRegistryAction, recalculateEventMetrics } from "./post-event";
 import { getBookingConfirmationEmail, getAdminInclusionEmail, getCancellationEmail, getRescheduleEmail, getTeamBookingNotificationEmail, getTeamCancellationNotificationEmail, getTeamInclusionNotificationEmail, getTeamRescheduleNotificationEmail } from "@/lib/email-templates";
 import { formatDateInBR, formatTimeInBR } from "@/lib/timezone";
@@ -16,6 +16,22 @@ import { bookingEvaluationSurveyConfig } from "@/config/surveys/booking-evaluati
 
 const resend = new Resend(serverEnv.RESEND_API_KEY);
 const OFFICIAL_SENDER = `BPlen HUB <hub@bplen.com>`;
+
+// Doc de attendee legado pode carregar `displayName`/`oneToOneData` aninhado além
+// dos campos flat (`type`/`expectations`) já modelados em AttendeeData (comportamento
+// preservado, ver Onda 3 de limpeza de `any`).
+type LegacyAttendeeDoc = AttendeeData & {
+  displayName?: string;
+  oneToOneData?: { type: string; expectations: string } | null;
+};
+
+// Documento raiz `User/{matricula}` — nomenclatura legada Pascal_Snake.
+interface RawUserDoc {
+  User_Nickname?: string;
+  User_Welcome?: { User_Nickname?: string };
+  Authentication_Name?: string;
+  User_Name?: string;
+}
 
 /**
  * Reserva de Vaga em Evento (BPlen HUB 🛡️)
@@ -468,14 +484,14 @@ export async function rescheduleAttendeeAction(
 
       const oldEventData = oldEventDoc.data() as GoogleCalendarEvent;
       const newEventData = newEventDoc.data() as GoogleCalendarEvent;
-      const attendeeData = attendeeDoc.data() as any;
+      const attendeeData = attendeeDoc.data() as LegacyAttendeeDoc;
 
-      let userData: any = null;
+      let userData: RawUserDoc | null = null;
       if (attendeeData.matricula) {
         const userRef = db.collection("User").doc(attendeeData.matricula);
         const userDoc = await transaction.get(userRef);
         if (userDoc.exists) {
-          userData = userDoc.data();
+          userData = userDoc.data() as RawUserDoc;
         }
       }
 
