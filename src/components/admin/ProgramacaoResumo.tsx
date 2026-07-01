@@ -193,10 +193,10 @@ export default function ProgramacaoResumo() {
 
   // Reschedule State
   const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
-  const [reschedulingAttendee, setReschedulingAttendee] = useState<any | null>(null);
+  const [reschedulingAttendee, setReschedulingAttendee] = useState<AttendeeData | null>(null);
   const [isRescheduling, setIsRescheduling] = useState(false);
 
-  const openRescheduleModal = (attendee: any) => {
+  const openRescheduleModal = (attendee: AttendeeData) => {
     setReschedulingAttendee(attendee);
     setIsRescheduleModalOpen(true);
   };
