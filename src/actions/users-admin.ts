@@ -46,7 +46,7 @@ export async function getAdminUsersList(adminToken?: string): Promise<{ success:
       admin?: boolean;
       metadata?: {
         disc_link?: string;
-        [key: string]: any;
+        [key: string]: unknown;
       };
     }
     
@@ -144,7 +144,7 @@ export async function updateUserPermissions(
        role?: UserRole;
        admin?: boolean;
        services?: UserServices;
-       metadata?: { disc_link?: string; [key: string]: any };
+       metadata?: { disc_link?: string; [key: string]: unknown };
     } = {
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       updatedBy: `ADMIN:${session.email || session.uid}`
