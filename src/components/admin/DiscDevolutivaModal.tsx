@@ -9,6 +9,7 @@ import { devolutivaDiscFormConfig } from "@/config/forms/devolutiva-disc";
 import { submitDevolutivaDisc } from "@/actions/submit-devolutiva";
 import { auth } from "@/lib/firebase";
 import { getErrorMessage } from "@/lib/utils/errors";
+import type { FormResponse } from "@/types/forms";
 
 interface DiscDevolutivaModalProps {
   user: AdminUser;
@@ -19,11 +20,13 @@ interface DiscDevolutivaModalProps {
 export function DiscDevolutivaModal({ user, onClose, onSuccess }: DiscDevolutivaModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleCustomSubmit = async (responses: any) => {
+  const handleCustomSubmit = async (responses: FormResponse) => {
     setIsSubmitting(true);
     try {
       const token = await auth.currentUser?.getIdToken();
-      
+      const resultFile = responses.result_file;
+      const resultFileObj = resultFile && typeof resultFile === "object" && !Array.isArray(resultFile) ? resultFile : undefined;
+
       // Mapeamento de FormResponse para o contrato do submitDevolutivaDisc
       const payload = {
         executor: Number(responses.executor),
@@ -31,9 +34,9 @@ export function DiscDevolutivaModal({ user, onClose, onSuccess }: DiscDevolutiva
         planejador: Number(responses.planejador),
         analista: Number(responses.analista),
         result_file: {
-          url: responses.result_file?.url || "",
-          fileName: responses.result_file?.fileName || "resultado.pdf",
-          size: 0 
+          url: resultFileObj?.url || "",
+          fileName: resultFileObj?.fileName || "resultado.pdf",
+          size: 0
         }
       };
 

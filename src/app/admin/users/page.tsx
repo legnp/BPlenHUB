@@ -22,7 +22,8 @@ import {
   Link2,
   Trophy,
   FileText,
-  Copy
+  Copy,
+  type LucideIcon
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AdminUser, UserRole, UserServices } from "@/types/users";
@@ -43,7 +44,7 @@ import type { LegalAudit } from "@/actions/legal";
  * Fundação para controle de papéis e produtos/serviços granulares.
  */
 
-const ROLE_OPTIONS: { id: UserRole; label: string; icon: any }[] = [
+const ROLE_OPTIONS: { id: UserRole; label: string; icon: LucideIcon }[] = [
   { id: "admin", label: "Administrador", icon: ShieldCheck },
   { id: "member", label: "Membro", icon: Users },
   { id: "visitor", label: "Visitante", icon: UserCircle },
