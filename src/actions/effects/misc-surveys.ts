@@ -3,6 +3,18 @@
 import { SurveyValue } from "@/types/survey";
 import { syncSurveyToUserDrive } from "@/lib/drive-sync";
 
+// Valor emitido pelo campo "cascaded" (CascadedSelect.tsx) — tipo local não exportado lá.
+interface CascadedFieldValue {
+  primary?: string;
+}
+
+// Valor de upload de arquivo (mesmo shape de FileUploadData em profile-professional.ts,
+// campos opcionais aqui porque a origem é SurveyValue, um union amplo).
+interface UploadFieldValue {
+  url?: string;
+  fileName?: string;
+}
+
 /**
  * EFEITO: Check-in BPlen 📊
  * Coleta objetivos, desafios e links iniciais de carreira.
@@ -24,12 +36,12 @@ export async function handleCheckInEffect(
       rowData: [
         new Date().toLocaleString("pt-BR"),
         matricula,
-        String((responses.nicho_cascata as any)?.primary || "N/A"),
+        String((responses.nicho_cascata as CascadedFieldValue)?.primary || "N/A"),
         Array.isArray(responses.desafios_multi) ? responses.desafios_multi.join(", ") : "N/A",
         String(responses.objetivos_timeline || "N/A"),
         String(responses.regime_choice || "N/A"),
-        (responses.cv_upload as any)?.url || "N/A",
-        (responses.portfolio_upload as any)?.url || "N/A",
+        (responses.cv_upload as UploadFieldValue)?.url || "N/A",
+        (responses.portfolio_upload as UploadFieldValue)?.url || "N/A",
         String(responses.linkedin_url || "N/A"),
         String(responses.instagram_url || "N/A"),
         `${responses.web_url || ""} | ${responses.portfolio_url || ""}`,

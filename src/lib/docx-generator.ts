@@ -12,7 +12,7 @@ export async function generateMasterCvDocx(responses: Record<string, SurveyValue
   const getStr = (id: string) => (responses[id] ? String(responses[id]) : "");
   const getArr = (id: string) => {
     const val = responses[id];
-    if (Array.isArray(val)) return val as any[];
+    if (Array.isArray(val)) return val;
     if (typeof val === "string") {
       return val.split(",").map(s => s.trim()).filter(Boolean);
     }
@@ -501,15 +501,42 @@ export async function generatePdiDocx(responses: Record<string, SurveyValue>, us
   saveAs(blob, `PDI_${userName.replace(/\s+/g, '_')}.docx`);
 }
 
+// Formas produzidas pelos filtros de CV Focado (CvContactFilter/CvExperienceFilter/
+// CvEducationFilter) — tipos internos não exportados por esses componentes.
+interface FilteredContactField {
+  value?: string;
+  visible?: boolean;
+}
+interface ContatoFiltradoRaw {
+  nome_completo?: FilteredContactField;
+  localizacao?: FilteredContactField;
+  telefone?: FilteredContactField;
+  email_profissional?: FilteredContactField;
+  linkedin?: FilteredContactField;
+  portfolio?: FilteredContactField;
+}
+interface ExperienciaFiltradaRaw {
+  cargo?: string;
+  empresa?: string;
+  periodo?: string;
+  contexto?: string;
+  visible?: boolean;
+  conquistas?: { conquista?: string; visible?: boolean }[];
+}
+interface EducacaoFiltradaRaw {
+  formacoes?: Record<string, unknown>[];
+  certificacoes_projetos?: Record<string, unknown>[];
+}
+
 /**
  * Utilitário para gerar e exportar o CV Focado em formato Word (.docx).
  * Respeita estritamente os filtros de visibilidade selecionados na survey cv_focado.
  */
 export async function generateCvFocadoDocx(responses: Record<string, SurveyValue>, userName: string) {
   const getStr = (id: string) => (responses[id] ? String(responses[id]) : "");
-  
+
   // 1. Extrair e filtrar Contatos
-  const contatoRaw = responses["contato_filtrado"] as any || {};
+  const contatoRaw = (responses["contato_filtrado"] as ContatoFiltradoRaw) || {};
   const contactParts: string[] = [];
   
   if (contatoRaw.nome_completo?.visible && contatoRaw.nome_completo?.value) {
@@ -535,11 +562,11 @@ export async function generateCvFocadoDocx(responses: Record<string, SurveyValue
   const resumoText = getStr("resumo_focado");
 
   // 3. Extrair e filtrar Experiências
-  const experienciasRaw = responses["experiencias_filtradas"] as any[] || [];
+  const experienciasRaw = (responses["experiencias_filtradas"] as ExperienciaFiltradaRaw[]) || [];
   const experiencias = experienciasRaw.filter(exp => exp && exp.visible);
 
   // 4. Extrair e filtrar Educação
-  const educacaoRaw = responses["educacao_projetos_filtrados"] as any || {};
+  const educacaoRaw = (responses["educacao_projetos_filtrados"] as EducacaoFiltradaRaw) || {};
   const formacoes = (educacaoRaw.formacoes || []).filter((f: any) => f && f.visible);
   const certificacoes = (educacaoRaw.certificacoes_projetos || []).filter((c: any) => c && c.visible);
 

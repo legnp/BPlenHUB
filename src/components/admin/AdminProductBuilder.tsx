@@ -236,13 +236,13 @@ function IdentityForm({ product, setProduct }: any) {
         <div className="space-y-6">
            <label className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)]">Público-Alvo (Segmentação)</label>
            <div className="grid grid-cols-1 gap-3">
-              {[
+              {([
                 { id: 'people', label: 'Pessoas (Individual)', icon: <Users size={14} /> },
                 { id: 'companies', label: 'Empresas (Corporativo)', icon: <Layout size={14} /> },
                 { id: 'partners', label: 'Parceiros (Agências/Mestres)', icon: <Handshake size={14} /> },
                 { id: 'internal', label: 'Uso Interno (Privado)', icon: <ShieldCheck size={14} /> }
-              ].map((audience) => {
-                const isSelected = product.targetAudiences?.includes(audience.id as any);
+              ] as const).map((audience) => {
+                const isSelected = product.targetAudiences?.includes(audience.id);
                 return (
                   <button 
                     key={audience.id}
@@ -812,7 +812,7 @@ function DeliveryStepsForm({ product, setProduct }: any) {
                         onChange={(e) => {
                           const [type, refId] = e.target.value.split(':');
                           const newSteps = [...product.deliverySteps];
-                          newSteps[idx].type = type as any;
+                          newSteps[idx].type = type as DeliveryStep['type'];
                           newSteps[idx].referenceId = refId;
                           setProduct({ ...product, deliverySteps: newSteps });
                         }}

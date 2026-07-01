@@ -19,7 +19,7 @@ interface StageOverviewCardProps {
 export function StageOverviewCard({ stage, className }: StageOverviewCardProps) {
   // Renderização segura do ícone
   const IconName = stage.icon as keyof typeof LucideIcons;
-  const IconComponent = (LucideIcons[IconName] as any) || LucideIcons.Circle;
+  const IconComponent = (LucideIcons[IconName] as typeof LucideIcons.Circle) || LucideIcons.Circle;
 
   return (
     <motion.div

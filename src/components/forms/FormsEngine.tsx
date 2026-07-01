@@ -321,7 +321,7 @@ export function FormsEngine({ config, userUid, matricula: explicitMatricula, onC
             label={field.label}
             type="Portfolio" // Genérico para forms operacionais
             matricula={matricula}
-            value={(rawValue as any) || null}
+            value={(rawValue as { url: string; fileName: string } | null) || null}
             maxSizeMB={(field.metadata?.maxSizeMB as number) || 5}
             onChange={(val) => updateResponse(field.id, val, field)}
           />

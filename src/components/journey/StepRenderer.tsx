@@ -29,6 +29,7 @@ import { getSurveyConfig } from "@/config/surveys";
 import { useAuthContext } from "@/context/AuthContext";
 import { BPLEN_NOMENCLATURE } from "@/config/nomenclature";
 import { checkSurveyCompletedAction } from "@/actions/submit-survey";
+import { SurveyValue } from "@/types/survey";
 
 /**
  * Helper para remover acentuação e diacríticos de strings para comparação resiliente 🧬
@@ -88,7 +89,7 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
   const { user, matricula, nickname } = useAuthContext();
 
   const DynamicIcon = ({ name, size = 18, className }: { name?: string, size?: number, className?: string }) => {
-    const IconComponent = name ? (LucideIcons as any)[name] : null;
+    const IconComponent = name ? (LucideIcons[name as keyof typeof LucideIcons] as typeof LucideIcons.Circle) : null;
     if (!IconComponent) return <LucideIcons.Sparkles size={size} className={className} />;
     return <IconComponent size={size} className={className} />;
   };
@@ -202,7 +203,7 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
     try {
       const { getPreviousSurveysDataAction } = await import("@/actions/submit-survey");
       const responses = await getPreviousSurveysDataAction(matricula);
-      const masterCvResponses = responses["master_cv"] as any;
+      const masterCvResponses = responses["master_cv"] as Record<string, SurveyValue> | undefined;
       if (!masterCvResponses) {
         alert("Não foi possível encontrar as respostas do seu Master CV.");
         return;
@@ -223,7 +224,7 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
     try {
       const { getPreviousSurveysDataAction } = await import("@/actions/submit-survey");
       const responses = await getPreviousSurveysDataAction(matricula);
-      const cvFocadoResponses = responses["cv_focado"] as any;
+      const cvFocadoResponses = responses["cv_focado"] as Record<string, SurveyValue> | undefined;
       if (!cvFocadoResponses) {
         alert("Não foi possível encontrar as respostas do seu CV Focado.");
         return;

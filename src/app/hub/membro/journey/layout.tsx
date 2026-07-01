@@ -8,6 +8,7 @@ import { usePathname } from "next/navigation";
 import AtmosphericLoading from "@/components/shared/AtmosphericLoading";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { StepStatus } from "@/types/journey";
 
 /**
  * BPlen HUB — Journey Layout 🧬🛡️
@@ -29,7 +30,7 @@ export default function JourneyLayout({ children }: { children: React.ReactNode 
   const statusMap = stages.reduce((acc, stage) => {
     acc[stage.id] = getStepStatus(stage.id);
     return acc;
-  }, {} as any);
+  }, {} as Record<string, StepStatus>);
 
   return (
     <section className="min-h-screen pt-[10px] pb-24 px-4 sm:px-8 bg-[var(--bg-primary)] animate-in fade-in duration-700">

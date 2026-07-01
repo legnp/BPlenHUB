@@ -2,7 +2,7 @@
 
 import * as admin from "firebase-admin";
 import { getAdminDb } from "@/lib/firebase-admin";
-import { SurveyValue } from "@/types/survey";
+import { SurveyValue, SurveyMetadata } from "@/types/survey";
 import { syncSurveyToUserDrive } from "@/lib/drive-sync";
 
 /**
@@ -16,7 +16,7 @@ export async function handlePreAnaliseComportamentalEffect(
   const db = getAdminDb();
   console.log(`📡 [Effects:PreAnalise] Processando resultados: ${matricula}`);
   
-  const metadata = (responses.metadata as any) || {};
+  const metadata = (responses.metadata as SurveyMetadata) || {};
 
   // 1. Persistência no Firestore
   const resultRef = db.doc(`User/${matricula}/results/pre_analise_comportamental`);
@@ -52,14 +52,14 @@ export async function handlePreAnaliseComportamentalEffect(
         resAfirmacoes["É o caráter que molda o destino"] || "N/A",
         resAfirmacoes["Eu confio nas opiniões de outras pessoas"] || "N/A",
         resAfirmacoes["Eu vivo da forma como eu quero"] || "N/A",
-        responses.conflito || "N/A",
-        responses.conflito_other || "N/A",
-        responses.frases_vida || "N/A",
-        responses.referencia_humana || "N/A",
-        responses.reflexao_tempo || "N/A",
-        responses.autodescricao_3p || "N/A",
-        responses.qualidades_outros || "N/A",
-        responses.resumo_pessoa || "N/A"
+        String(responses.conflito || "N/A"),
+        String(responses.conflito_other || "N/A"),
+        String(responses.frases_vida || "N/A"),
+        String(responses.referencia_humana || "N/A"),
+        String(responses.reflexao_tempo || "N/A"),
+        String(responses.autodescricao_3p || "N/A"),
+        String(responses.qualidades_outros || "N/A"),
+        String(responses.resumo_pessoa || "N/A")
       ]
     });
   } catch (driveErr) {

@@ -2,7 +2,7 @@
 
 import * as admin from "firebase-admin";
 import { getAdminDb } from "@/lib/firebase-admin";
-import { SurveyValue } from "@/types/survey";
+import { SurveyValue, SurveyMetadata } from "@/types/survey";
 import { syncSurveyToUserDrive } from "@/lib/drive-sync";
 
 /**
@@ -29,7 +29,7 @@ export async function handleGestaoTempoEffect(
   const pctUrgencia = totalGeral > 0 ? Math.round((totalUrgencia / totalGeral) * 100) : 0;
   const pctCircunstancia = totalGeral > 0 ? Math.round((totalCircunstancia / totalGeral) * 100) : 0;
 
-  const metadata = (responses.metadata as any) || {};
+  const metadata = (responses.metadata as SurveyMetadata) || {};
 
   // 2. Persistência no Firestore
   const resultRef = db.doc(`User/${matricula}/results/gestao_tempo`);

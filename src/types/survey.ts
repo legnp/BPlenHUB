@@ -102,6 +102,15 @@ export interface SurveyConfig {
 
 export type SurveyValue = string | string[] | number | boolean | null | Record<string, unknown> | Record<string, unknown>[];
 
+// Metadados de sessão anexados ao payload de resposta (SurveyEngine.tsx),
+// armazenados na chave "metadata" de Record<string, SurveyValue>.
+export interface SurveyMetadata {
+  startTime?: number;
+  endTime?: number;
+  durationSeconds?: number;
+  [key: string]: unknown;
+}
+
 export interface SurveyResponse {
   surveyId: string;
   matricula: string;

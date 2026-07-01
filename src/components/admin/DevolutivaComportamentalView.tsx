@@ -1461,7 +1461,7 @@ export function DevolutivaComportamentalView({
                             <label className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)]">Categoria</label>
                             <select
                               value={docCategory}
-                              onChange={(e) => setDocCategory(e.target.value as any)}
+                              onChange={(e) => setDocCategory(e.target.value as "Plano de Carreira" | "Relatório" | "Outros")}
                               className="w-full bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-xl px-4 py-3 text-xs text-[var(--text-primary)] focus:border-[var(--accent-start)]/50 outline-none transition-all"
                             >
                               <option value="Plano de Carreira">Plano de Carreira</option>

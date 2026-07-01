@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDriveClient } from "@/lib/google-auth";
+import type { Readable } from "stream";
 
 /**
  * BPlen HUB — Media Proxy API 📸
@@ -30,12 +31,12 @@ export async function GET(
     );
 
     // 4. Converter Stream do Node para Web Stream (Next.js compatible)
-    const stream = response.data as any;
+    const stream = response.data as unknown as Readable;
     const webStream = new ReadableStream({
       start(controller) {
-        stream.on("data", (chunk: any) => controller.enqueue(chunk));
+        stream.on("data", (chunk: Buffer) => controller.enqueue(chunk));
         stream.on("end", () => controller.close());
-        stream.on("error", (err: any) => controller.error(err));
+        stream.on("error", (err: Error) => controller.error(err));
       },
     });
 

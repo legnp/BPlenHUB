@@ -8,6 +8,8 @@ import PDFDocument from "pdfkit";
 import path from "path";
 import crypto from "crypto";
 import { getErrorMessage } from "@/lib/utils/errors";
+import { safeSerialize } from "@/lib/utils/firestore";
+import { Product, ProductSheet } from "@/types/products";
 
 export interface LegalAudit {
   auditId: string;
@@ -20,6 +22,29 @@ export interface LegalAudit {
   documentHash: string;
 }
 
+// Subcoleção legada `User/{uid}/Orders` — sem escritor conhecido no código atual,
+// distinta da coleção raiz `User_Orders` (ver src/actions/orders.ts). Campos
+// opcionais porque o schema real não é garantido.
+interface LegacyOrderDoc {
+  productId?: string;
+  totalAmount?: number;
+  paymentMethod?: string;
+}
+
+// Documento raiz `User/{uid}` legado (nomenclatura Pascal_Snake, distinta de
+// AdminUser/WelcomeSurveyData que modelam outras visões do usuário).
+interface RawUserDoc {
+  User_Nickname?: string;
+  User_Name?: string;
+}
+
+// `product.sheet` no Firestore carrega campos além do schema atual de ProductSheet
+// (débito legado, preservado sem alteração de comportamento).
+type ProductSheetWithLegacyFields = ProductSheet & {
+  rules?: string;
+  methodologyLink?: string;
+};
+
 export async function getPendingContracts(userId: string) {
   try {
     const db = getAdminDb();
@@ -30,13 +55,13 @@ export async function getPendingContracts(userId: string) {
     const pendingProducts: { productId: string, orderId: string, title: string }[] = [];
     
     for (const doc of ordersSnap.docs) {
-      const order = doc.data() as any;
+      const order = doc.data() as LegacyOrderDoc;
       const pId = order.productId;
       if (pId && !signedProductIds.has(pId)) {
          // Check if product exists and if it requires SLA (we can just assume yes for now if it's an order)
          const pDoc = await db.collection("Products").doc(pId).get();
          if (pDoc.exists) {
-            const pData = pDoc.data() as any;
+            const pData = safeSerialize<Product>({ ...pDoc.data(), id: pDoc.id });
             if (pData.price !== 0) { // Or any logic to determine SLA
                pendingProducts.push({
                  productId: pId,
@@ -73,17 +98,19 @@ export async function generateContractPdf(userId: string, productId: string, ord
     // Fetch Product
     const productDoc = await db.collection("Products").doc(productId).get();
     if (!productDoc.exists) throw new Error("Produto não encontrado.");
-    const product = productDoc.data() as any;
-    
+    const product = safeSerialize<Product>({ ...productDoc.data(), id: productDoc.id });
+
     // Fetch User
     const userDoc = await db.collection("User").doc(userId).get();
     if (!userDoc.exists) throw new Error("Usuário não encontrado.");
-    const user = userDoc.data() as any;
+    const user = userDoc.data() as RawUserDoc;
     const matricula = user.User_Nickname || userId;
     
     // Fetch Dados Cadastrais
     const dadosCadastraisDoc = await db.collection("User").doc(userId).collection("forms").doc("dados-cadastrais").get();
-    const dados = dadosCadastraisDoc.exists ? dadosCadastraisDoc.data() : { fullName: user.User_Name || "", cpf: "", address: "" };
+    const dados = dadosCadastraisDoc.exists
+      ? (dadosCadastraisDoc.data() as { fullName?: string; cpf?: string; address?: string })
+      : { fullName: user.User_Name || "", cpf: "", address: "" };
     
     // Fetch Order (if provided)
     let orderAmount = "Valor registrado na contratação";
@@ -91,7 +118,7 @@ export async function generateContractPdf(userId: string, productId: string, ord
     if (orderId) {
       const orderDoc = await db.collection("User").doc(userId).collection("Orders").doc(orderId).get();
       if (orderDoc.exists) {
-         const order = orderDoc.data() as any;
+         const order = orderDoc.data() as LegacyOrderDoc;
          if (order.totalAmount !== undefined) {
             orderAmount = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(order.totalAmount);
          }
@@ -158,10 +185,22 @@ export async function generateContractPdf(userId: string, productId: string, ord
   }
 }
 
-function createContractBuffer(data: any): Promise<Buffer> {
+interface ContractBufferData {
+  product: Product;
+  dados: { fullName?: string; cpf?: string; address?: string };
+  matricula: string;
+  orderAmount: string;
+  orderMethod: string;
+}
+
+function createContractBuffer(data: ContractBufferData): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     try {
       const { product, dados, matricula, orderAmount, orderMethod } = data;
+      // `sheet`/`quotas` legados: campos que existem no Firestore mas não no
+      // schema atual de Product/ProductSheet (comportamento preservado, ver Onda 3).
+      const sheet = product.sheet as ProductSheetWithLegacyFields | undefined;
+      const legacyQuotas = (product as Product & { quotas?: Record<string, { total: number }> }).quotas;
       const doc = new PDFDocument({ margin: 50 });
       const buffers: Buffer[] = [];
       doc.on("data", buffers.push.bind(buffers));
@@ -201,8 +240,8 @@ function createContractBuffer(data: any): Promise<Buffer> {
       doc.moveDown(0.5);
       doc.font("Helvetica").fontSize(11).fillColor(textColor).text(
         `O Serviço compreende as seguintes etapas, objetivos e entregáveis metodológicos:\n\n` +
-        `${product.sheet?.description || "Descrição padrão do serviço."}\n\nEtapas da Jornada:\n` +
-        (product.workflow?.map((w: any) => `- ${w.title}`).join("\n") || "- Etapas detalhadas na plataforma.")
+        `${sheet?.description || "Descrição padrão do serviço."}\n\nEtapas da Jornada:\n` +
+        (product.workflow?.map((w) => `- ${w.title}`).join("\n") || "- Etapas detalhadas na plataforma.")
       );
       doc.moveDown(1);
 
@@ -211,14 +250,14 @@ function createContractBuffer(data: any): Promise<Buffer> {
       doc.moveDown(0.5);
       
       let sessionsText = "- Acesso contínuo à plataforma HUB\n";
-      if (product.quotas) {
-         sessionsText += Object.entries(product.quotas).map(([k, v]: any) => `- ${v.total}x ${k.replace(/-/g, " ")}`).join("\n");
+      if (legacyQuotas) {
+         sessionsText += Object.entries(legacyQuotas).map(([k, v]) => `- ${v.total}x ${k.replace(/-/g, " ")}`).join("\n");
       }
 
       doc.font("Helvetica").fontSize(11).fillColor(textColor).text(
         `A prestação do Serviço obedecerá aos seguintes limites e tipos de sessão/eventos (conforme cadastro do produto):\n` +
         sessionsText +
-        `\n\n${product.sheet?.rules || "Regras de reagendamento regidas pelos Termos de Uso gerais da plataforma."}`
+        `\n\n${sheet?.rules || "Regras de reagendamento regidas pelos Termos de Uso gerais da plataforma."}`
       );
       doc.moveDown(1);
 
@@ -242,7 +281,7 @@ function createContractBuffer(data: any): Promise<Buffer> {
       doc.fontSize(12).font("Helvetica-Bold").fillColor(primaryColor).text("Cláusula 6 - Da Metodologia Aplicada");
       doc.moveDown(0.5);
       doc.font("Helvetica").fontSize(11).fillColor(textColor).text(
-        `A metodologia e as ferramentas aplicadas pela BPlen fundamentam-se em referenciais bibliográficos consolidados nas áreas de psicologia, gestão e comportamento organizacional, cujas diretrizes teóricas podem ser livremente consultadas no endereço eletrônico ${product.sheet?.methodologyLink || "disponibilizado na plataforma institucional"}. Ao formalizar este contrato, o CONTRATANTE declara ter plena consciência da natureza científica e estrutural dos métodos, submetendo-se voluntariamente às suas dinâmicas propostas.`
+        `A metodologia e as ferramentas aplicadas pela BPlen fundamentam-se em referenciais bibliográficos consolidados nas áreas de psicologia, gestão e comportamento organizacional, cujas diretrizes teóricas podem ser livremente consultadas no endereço eletrônico ${sheet?.methodologyLink || "disponibilizado na plataforma institucional"}. Ao formalizar este contrato, o CONTRATANTE declara ter plena consciência da natureza científica e estrutural dos métodos, submetendo-se voluntariamente às suas dinâmicas propostas.`
       );
       doc.moveDown(1);
 

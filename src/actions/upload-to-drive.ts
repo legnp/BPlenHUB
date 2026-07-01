@@ -7,6 +7,7 @@ import { serverEnv } from "@/env";
 import { Readable } from "stream";
 import { getEventStandardSlug } from "@/lib/utils";
 import { getErrorMessage } from "@/lib/utils/errors";
+import { GoogleCalendarEvent } from "@/types/calendar";
 
 /**
  * BPlen HUB — Server Action: Upload Direto ao Google Drive 📡
@@ -113,7 +114,7 @@ export async function uploadPostEventDocAction(formData: FormData) {
     // Buscar Dados do Evento para Nomenclatura Padrão
     const eventSnap = await db.collection("Calendar_Events").doc(eventId).get();
     if (!eventSnap.exists) throw new Error("Evento não encontrado para upload.");
-    const eventData = eventSnap.data() as any;
+    const eventData = eventSnap.data() as GoogleCalendarEvent;
     const standardSlug = eventData.slug || getEventStandardSlug(eventData.summary, eventData.start, eventId);
 
     let targetFolderId: string;

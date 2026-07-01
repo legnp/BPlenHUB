@@ -22,13 +22,13 @@ export function CvAudioRecorder() {
   useEffect(() => {
     // Detect initial permission status and load devices if already granted
     if (navigator.permissions && navigator.permissions.query) {
-      navigator.permissions.query({ name: "microphone" as any }).then((result) => {
-        setPermissionState(result.state as any);
+      navigator.permissions.query({ name: "microphone" }).then((result) => {
+        setPermissionState(result.state);
         if (result.state === "granted") {
           loadAudioDevices();
         }
         result.onchange = () => {
-          setPermissionState(result.state as any);
+          setPermissionState(result.state);
           if (result.state === "granted") {
             loadAudioDevices();
           }

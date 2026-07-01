@@ -3,6 +3,12 @@
 import React from "react";
 import { NarrativeReveal } from "@/components/ui/NarrativeReveal";
 
+// `parseNarrativeBlocks` produz "p-normal", mas o variant aceito por NarrativeReveal
+// é "h2"|"h3"|"p"|"p-muted" (não inclui "p-normal") — mismatch pré-existente que faz
+// parágrafos normais perderem o estilo pretendido. Comportamento preservado (ver Onda 3);
+// pendência de correção registrada separadamente.
+type NarrativeRevealVariant = "h2" | "h3" | "p" | "p-muted";
+
 interface NarrativeContentProps {
   text: string;
   onComplete?: () => void;
@@ -37,7 +43,7 @@ export function NarrativeContent({ text, onComplete, speed = 25 }: NarrativeCont
           <div key={i} className={isQueued ? "opacity-0 select-none pointer-events-none" : "opacity-100"}>
              <NarrativeReveal
                 text={block.content}
-                variant={block.type as any}
+                variant={block.type as NarrativeRevealVariant}
                 speed={speed}
                 active={reached}
                 onComplete={() => handleBlockComplete(i)}
@@ -77,7 +83,7 @@ export function NarrativeBlock({ text }: { text: string }) {
   return (
     <div className="space-y-4">
       {blocks.map((b, i) => (
-        <NarrativeReveal key={i} text={b.content} variant={b.type as any} active={true} speed={0} />
+        <NarrativeReveal key={i} text={b.content} variant={b.type as NarrativeRevealVariant} active={true} speed={0} />
       ))}
     </div>
   );
