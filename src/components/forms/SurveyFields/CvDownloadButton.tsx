@@ -2,9 +2,10 @@
 
 import React, { useState } from "react";
 import { Download, FileText, Check } from "lucide-react";
+import type { SurveyValue } from "@/types/survey";
 
 interface CvDownloadButtonProps {
-  masterCvData: any;
+  masterCvData: Record<string, SurveyValue> | null | undefined;
   userNickname: string;
 }
 

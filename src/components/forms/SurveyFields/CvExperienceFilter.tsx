@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { ChevronDown, ChevronUp, CheckSquare, Square, ToggleLeft, ToggleRight, AlertCircle } from "lucide-react";
+import type { SurveyValue } from "@/types/survey";
 
 interface ConquistaItem {
   conquista: string;
@@ -18,8 +19,8 @@ interface ExperienciaFiltrada {
 }
 
 interface CvExperienceFilterProps {
-  value: any;
-  masterCvData: any;
+  value: SurveyValue;
+  masterCvData: Record<string, SurveyValue> | null | undefined;
   targetPositionDescription: string;
   targetPositionName: string;
   targetEmpresaName: string;
@@ -47,28 +48,29 @@ export function CvExperienceFilter({
 
   useEffect(() => {
     if (value && Array.isArray(value) && value.length > 0) {
-      setExperiences(value);
+      setExperiences(value as unknown as ExperienciaFiltrada[]);
     } else if (masterCvData && masterCvData.experiencias && Array.isArray(masterCvData.experiencias)) {
-      const initial: ExperienciaFiltrada[] = masterCvData.experiencias.map((exp: any) => {
+      const initial: ExperienciaFiltrada[] = (masterCvData.experiencias as Record<string, unknown>[]).map((exp) => {
         const conquistasRaw = exp.conquistas || [];
         const conquistas: ConquistaItem[] = [];
 
         // Conquistas podem vir como string ou como array de objetos dependendo de como foram salvas
         if (Array.isArray(conquistasRaw)) {
-          conquistasRaw.forEach((c: any) => {
+          conquistasRaw.forEach((c: unknown) => {
             if (typeof c === "string") {
               conquistas.push({ conquista: c, visible: true });
             } else if (c && typeof c === "object") {
-              conquistas.push({ conquista: c.conquista || c.value || "", visible: true });
+              const co = c as Record<string, unknown>;
+              conquistas.push({ conquista: String(co.conquista || co.value || ""), visible: true });
             }
           });
         }
 
         return {
-          cargo: exp.cargo || "",
-          empresa: exp.empresa || "",
-          periodo: exp.periodo || "",
-          contexto: exp.contexto || "",
+          cargo: String(exp.cargo || ""),
+          empresa: String(exp.empresa || ""),
+          periodo: String(exp.periodo || ""),
+          contexto: String(exp.contexto || ""),
           visible: true,
           conquistas
         };

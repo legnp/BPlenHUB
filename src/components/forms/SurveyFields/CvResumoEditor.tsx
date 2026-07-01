@@ -2,10 +2,11 @@
 
 import React, { useEffect, useState } from "react";
 import { TextareaGlass } from "@/components/ui/TextareaGlass";
+import type { SurveyValue } from "@/types/survey";
 
 interface CvResumoEditorProps {
-  value: any;
-  masterCvData: any;
+  value: SurveyValue;
+  masterCvData: Record<string, SurveyValue> | null | undefined;
   onChange: (val: string) => void;
 }
 
@@ -14,7 +15,7 @@ export function CvResumoEditor({ value, masterCvData, onChange }: CvResumoEditor
     if (typeof value === "string" && value.length > 0) {
       return value;
     }
-    return masterCvData?.resumo_profissional || "";
+    return String(masterCvData?.resumo_profissional || "");
   });
 
   const handleTextChange = (newVal: string) => {
@@ -23,8 +24,8 @@ export function CvResumoEditor({ value, masterCvData, onChange }: CvResumoEditor
   };
 
   useEffect(() => {
-    if (masterCvData && (!value || value.length === 0)) {
-      const initial = masterCvData.resumo_profissional || "";
+    if (masterCvData && (!value || (typeof value === "string" && value.length === 0))) {
+      const initial = String(masterCvData.resumo_profissional || "");
       setText(initial);
       onChange(initial);
     }

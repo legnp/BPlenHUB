@@ -2,15 +2,16 @@
 
 import React, { useState } from "react";
 import { Copy, Check } from "lucide-react";
+import type { SurveyValue } from "@/types/survey";
 
 interface CvResumoCopierProps {
-  cvFocadoData: any;
+  cvFocadoData: Record<string, SurveyValue> | null | undefined;
 }
 
 export function CvResumoCopier({ cvFocadoData }: CvResumoCopierProps) {
   const [copied, setCopied] = useState(false);
 
-  const resumo = cvFocadoData?.resumo_focado || "Nenhum resumo encontrado no CV Focado.";
+  const resumo = String(cvFocadoData?.resumo_focado || "Nenhum resumo encontrado no CV Focado.");
 
   const handleCopy = async () => {
     try {

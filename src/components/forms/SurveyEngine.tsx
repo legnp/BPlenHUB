@@ -41,7 +41,7 @@ import { CvAudioRecorder } from "./SurveyFields/CvAudioRecorder";
 import { CvDownloadButton } from "./SurveyFields/CvDownloadButton";
 import { CvVagaDescriptionButton } from "./SurveyFields/CvVagaDescriptionButton";
 import { CvLisContactButton } from "./SurveyFields/CvLisContactButton";
-import { CvBusinessCardGenerator } from "./SurveyFields/CvBusinessCardGenerator";
+import { CvBusinessCardGenerator, BusinessCardData } from "./SurveyFields/CvBusinessCardGenerator";
 import { resolveUserIdentity, getUserMetadata } from "@/actions/survey-effects";
 import { getPreviousSurveysDataAction } from "@/actions/submit-survey";
 import Calendar, { CalendarEvent } from "@/components/ui/Calendar";
@@ -813,6 +813,8 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
   // Renderizador de Átomos Narrativos (Extendido)
   const renderField = (field: SurveyFieldConfig) => {
     const rawValue = responses[field.id];
+    const masterCvData = userMetadata?.master_cv as Record<string, SurveyValue> | null | undefined;
+    const cvFocadoData = userMetadata?.cv_focado as Record<string, SurveyValue> | null | undefined;
 
     switch (field.type) {
       case "buttons":
@@ -1047,8 +1049,8 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
         return (
           <CvContactFilter
             value={rawValue}
-            masterCvData={userMetadata?.master_cv}
-            onChange={(val: any) => updateResponse(field.id, val)}
+            masterCvData={masterCvData}
+            onChange={(val) => updateResponse(field.id, val as unknown as SurveyValue)}
           />
         );
 
@@ -1056,8 +1058,8 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
         return (
           <CvResumoEditor
             value={rawValue}
-            masterCvData={userMetadata?.master_cv}
-            onChange={(val: any) => updateResponse(field.id, val)}
+            masterCvData={masterCvData}
+            onChange={(val) => updateResponse(field.id, val)}
           />
         );
 
@@ -1065,12 +1067,12 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
         return (
           <CvExperienceFilter
             value={rawValue}
-            masterCvData={userMetadata?.master_cv}
+            masterCvData={masterCvData}
             targetPositionDescription={responses["descricao_vaga"] as string}
             targetPositionName={responses["pdi_posicao_target"] as string}
             targetEmpresaName={responses["pdi_empresa_target"] as string}
             senioridadePretendida={responses["senioridade_pretendida"] as string}
-            onChange={(val: any) => updateResponse(field.id, val)}
+            onChange={(val) => updateResponse(field.id, val as unknown as SurveyValue)}
           />
         );
 
@@ -1078,10 +1080,10 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
         return (
           <CvEducationFilter
             value={rawValue}
-            masterCvData={userMetadata?.master_cv}
+            masterCvData={masterCvData}
             targetPositionName={responses["pdi_posicao_target"] as string}
             targetEmpresaName={responses["pdi_empresa_target"] as string}
-            onChange={(val: any) => updateResponse(field.id, val)}
+            onChange={(val) => updateResponse(field.id, val as unknown as SurveyValue)}
           />
         );
 
@@ -1125,8 +1127,8 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
       case "cv_headline_copier":
         return (
           <CvHeadlineCopier
-            cvFocadoData={userMetadata?.cv_focado}
-            masterCvData={userMetadata?.master_cv}
+            cvFocadoData={cvFocadoData}
+            masterCvData={masterCvData}
           />
         );
 
@@ -1138,21 +1140,21 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
       case "cv_resumo_copier":
         return (
           <CvResumoCopier
-            cvFocadoData={userMetadata?.cv_focado}
+            cvFocadoData={cvFocadoData}
           />
         );
 
       case "cv_keywords_copier":
         return (
           <CvKeywordsCopier
-            masterCvData={userMetadata?.master_cv}
+            masterCvData={masterCvData}
           />
         );
 
       case "cv_focado_exporter":
         return (
           <CvFocadoExporter
-            cvFocadoData={userMetadata?.cv_focado}
+            cvFocadoData={cvFocadoData}
             userNickname={userNickname || "Profissional"}
             options={field.options as string[]}
             label={field.label}
@@ -1174,7 +1176,7 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
       case "cv_download_button":
         return (
           <CvDownloadButton
-            masterCvData={userMetadata?.master_cv}
+            masterCvData={masterCvData}
             userNickname={userNickname || "Membro"}
           />
         );
@@ -1182,7 +1184,7 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
       case "cv_vaga_description_button":
         return (
           <CvVagaDescriptionButton
-            descricaoVaga={(userMetadata?.cv_focado as Record<string, unknown> | undefined)?.descricao_vaga as string | undefined}
+            descricaoVaga={cvFocadoData?.descricao_vaga as string | undefined}
           />
         );
 
@@ -1194,9 +1196,9 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
       case "cv_business_card_generator":
         return (
           <CvBusinessCardGenerator
-            value={rawValue}
-            masterCvData={userMetadata?.master_cv}
-            onChange={(val) => updateResponse(field.id, val)}
+            value={rawValue as unknown as BusinessCardData | null | undefined}
+            masterCvData={masterCvData}
+            onChange={(val) => updateResponse(field.id, val as unknown as SurveyValue)}
           />
         );
 

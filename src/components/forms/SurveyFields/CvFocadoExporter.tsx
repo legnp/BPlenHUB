@@ -2,9 +2,10 @@
 
 import React, { useState } from "react";
 import { FileText, Download, Check, HelpCircle } from "lucide-react";
+import type { SurveyValue } from "@/types/survey";
 
 interface CvFocadoExporterProps {
-  cvFocadoData: any;
+  cvFocadoData: Record<string, SurveyValue> | null | undefined;
   userNickname: string;
   options?: string[];
   label?: string;

@@ -3,11 +3,31 @@
 import React, { useState, useEffect } from "react";
 import { Eye, EyeOff, Palette, QrCode, User, Phone, Mail, Linkedin, Globe, Check } from "lucide-react";
 import { BusinessCardEngine } from "@/components/ui/BusinessCardEngine";
+import type { SurveyValue } from "@/types/survey";
+
+export interface BusinessCardData {
+  skipCard?: boolean;
+  name?: string;
+  pitch?: string;
+  phone?: string;
+  email?: string;
+  linkedin?: string;
+  website?: string;
+  visibleFields?: {
+    name: boolean;
+    phone: boolean;
+    email: boolean;
+    linkedin: boolean;
+    website: boolean;
+  };
+  theme?: "light" | "dark" | "blue" | "grey" | "green";
+  qrTarget?: "whatsapp" | "linkedin" | "website";
+}
 
 interface CvBusinessCardGeneratorProps {
-  value: any;
-  masterCvData: any;
-  onChange: (val: any) => void;
+  value: BusinessCardData | null | undefined;
+  masterCvData: Record<string, SurveyValue> | null | undefined;
+  onChange: (val: BusinessCardData) => void;
 }
 
 export function CvBusinessCardGenerator({ value, masterCvData, onChange }: CvBusinessCardGeneratorProps) {
@@ -49,16 +69,16 @@ export function CvBusinessCardGenerator({ value, masterCvData, onChange }: CvBus
       setTheme(value.theme || "light");
       setQrTarget(value.qrTarget || "linkedin");
     } else if (masterCvData) {
-      setName(masterCvData.nome_completo || "");
-      setPhone(masterCvData.telefone || "");
-      setEmail(masterCvData.email_profissional || "");
-      setLinkedin(masterCvData.linkedin || "");
-      setWebsite(masterCvData.portfolio || "");
+      setName(String(masterCvData.nome_completo || ""));
+      setPhone(String(masterCvData.telefone || ""));
+      setEmail(String(masterCvData.email_profissional || ""));
+      setLinkedin(String(masterCvData.linkedin || ""));
+      setWebsite(String(masterCvData.portfolio || ""));
     }
   }, [value, masterCvData]);
 
   // Propaga mudancas de volta para o SurveyEngine
-  const triggerChange = (updates: any) => {
+  const triggerChange = (updates: Partial<BusinessCardData>) => {
     const nextVal = {
       skipCard,
       name,
