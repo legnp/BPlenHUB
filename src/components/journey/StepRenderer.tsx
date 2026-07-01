@@ -89,7 +89,7 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
   const { user, matricula, nickname } = useAuthContext();
 
   const DynamicIcon = ({ name, size = 18, className }: { name?: string, size?: number, className?: string }) => {
-    const IconComponent = name ? (LucideIcons as any)[name] : null;
+    const IconComponent = name ? (LucideIcons[name as keyof typeof LucideIcons] as typeof LucideIcons.Circle) : null;
     if (!IconComponent) return <LucideIcons.Sparkles size={size} className={className} />;
     return <IconComponent size={size} className={className} />;
   };

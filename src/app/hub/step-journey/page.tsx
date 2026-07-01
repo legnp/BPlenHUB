@@ -34,7 +34,7 @@ export default function StepJourneyPage() {
 
   // Renderização segura do ícone
   const IconName = currentStep.icon as keyof typeof LucideIcons;
-  const IconComponent = (LucideIcons[IconName] as any) || LucideIcons.Circle;
+  const IconComponent = (LucideIcons[IconName] as typeof LucideIcons.Circle) || LucideIcons.Circle;
 
   // Pre-calculate status map for Navigator
   const statusMap = stages.reduce((acc, stage) => {
