@@ -1,31 +1,13 @@
 /**
- * BPlen HUB — Entitlements & Access Control 🛡️
- * Define quem tem acesso ao que, e qual o progresso.
+ * BPlen HUB — Tipos de Cotas do Membro
+ *
+ * Nota: o tipo `UserEntitlement` e a coleção órfã `entitlements` (com a action
+ * `entitlements.ts`) foram removidos na Fase 0 (F0-04) por serem código morto —
+ * o acesso real do produto é resolvido via `User_Permissions/access.services` +
+ * `grantServiceEntitlement` (`@/lib/checkout`). Este arquivo permanece porque
+ * hospeda os tipos de cota ativos (`MemberQuota`/`MemberQuotaWallet`), usados por
+ * `quotas.ts` e `useJourney.ts`.
  */
-
-export type EntitlementStatus = 'active' | 'completed' | 'expired' | 'suspended';
-
-export interface UserEntitlement {
-  id: string;
-  uid: string;
-  productId: string;
-  
-  status: EntitlementStatus;
-  
-  // Metadados de Aquisição
-  acquiredAt: string;
-  expiresAt?: string;
-  
-  // Progresso granular no serviço
-  progress: {
-    completedSubSteps: string[];
-    lastAccessedAt: string;
-    overallPercentage: number;
-  };
-
-  // Histórico de transação (Opcional, link para faturamento)
-  transactionId?: string;
-}
 
 /**
  * Carteira de Cotas do Membro
