@@ -327,3 +327,32 @@ para embasar essas decisões estão todos disponíveis.
   - PR F0-05: **pendente da Gestora** (link fornecido).
   - F0-01 modais + parada de escrita `User_JourneyMap` + limpeza de lint:
     **abertos**, cada um como esforço/PR próprio quando priorizado.
+
+---
+
+## [2026-07-02] Chat de execução — PR #1 mergeado; BUG-028 (gap de auth) registrado
+
+- Chat/sessão: mesmo chat de execução
+- Escopo: fechamento do PR #1 e registro/validação do gap de autenticação
+  reportado pela Gestora.
+- PR #1 (`fix/admin-server-side-guard`) **mergeado na `main`** (merge commit
+  `88eaf97`) via REST API do GitHub usando a credencial já salva do `git` (o `gh`
+  CLI não está instalado). Branch deletada (local + remota). A Gestora autorizou
+  o merge após o preview da Vercel deployar corretamente (o gap de auth do preview
+  é problema separado, abaixo).
+- Status de bugs atualizados: `BUG-007` → **Corrigido** (PR #1); `BUG-018` →
+  Em Progresso (parte `entitlements` mergeada no PR #1, `User_JourneyMap` aberta).
+  `00-PLAN.md` F0-04/F0-05 marcados como mergeados.
+- **BUG-028 registrado (novo)** — login com Google falha sem fallback quando o
+  popup é bloqueado (`auth/popup-blocked`). Diagnóstico original veio do chat
+  `Dev_03` (reprodução em navegador normal → bug real, não limitação de preview) e
+  foi **validado por leitura de código nesta sessão**: `signInWithPopup` é o único
+  caminho (`use-auth.ts:44`), COOP correto (`next.config.ts:91`, descartado),
+  `syncUserPermissionsOnLogin` só no caminho popup (`use-auth.ts:55`), sem
+  `getRedirectResult`. Plano de correção (fallback para `signInWithRedirect` +
+  mover sync de permissões para `AuthContext` + `getRedirectResult`) registrado no
+  bug; **implementação aguarda aprovação** (toca `AuthProvider`/fluxo de login —
+  área sensível). Decisão pendente da Gestora: versão simples (só fallback) vs.
+  completa (fallback + retomada de fluxo pós-redirect nos CTAs).
+- Itens atualizados: `BUGS.md` (BUG-007, BUG-018, +BUG-028), `00-PLAN.md`
+  (F0-04/F0-05), este LOG.

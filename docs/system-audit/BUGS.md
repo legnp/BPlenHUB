@@ -138,9 +138,9 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   server-side antes de enviar o HTML/JS inicial. Mitigado se toda Server Action
   chamada pelas páginas admin tiver `requireAdmin` próprio, mas isso não foi
   confirmado página a página nesta rodada.
-- Status: Em Progresso — corrigido na branch `fix/admin-server-side-guard`, aguardando review/merge
+- Status: **Corrigido** — PR #1 mergeado na `main` em 2026-07-02
 - Decisão de execução: Plano apresentado e **aprovado pela Gestora (2026-07-02)**. **[2026-07-02 / F0-05]** Implementado: `src/app/admin/layout.tsx` virou Server Component async chamando `getServerSession()` + `redirect("/")` se sessão ausente / suspenso / não-admin, espelhando `requireAdmin`; guard client mantido como 2ª camada. Validado por `tsc --noEmit` e `next build` (ambos limpos). Ver `F0-DECISIONS.md#f0-05`.
-- Commit/PR: branch `fix/admin-server-side-guard` (PR aberto)
+- Commit/PR: https://github.com/legnp/BPlenHUB/pull/1 (mergeado)
 
 ### BUG-008 Chave de cota "1-to-1" com capitalização inconsistente
 
@@ -296,7 +296,7 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   mantido; remoção cirúrgica. Validado por type-check + build. **Pendente/gated**:
   parar escrita de `User_JourneyMap` em `welcome-survey.ts`/`survey-effects.ts`
   (god file) = PR próprio com plano+aprovação. Ver `F0-DECISIONS.md#f0-04`.
-- Commit/PR: branch `fix/admin-server-side-guard` (remoção de `entitlements`)
+- Commit/PR: https://github.com/legnp/BPlenHUB/pull/1 (mergeado — remoção de `entitlements`); parte `User_JourneyMap` ainda aberta
 
 ### BUG-019 `updateProfileImageAction`/`deleteProfileImageAction` sem qualquer guard — IDOR confirmado
 
@@ -463,6 +463,48 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Status: Aberto
 - Decisão de execução: Ajuste pequeno e localizado — remoção segura quando
   alguém tocar o arquivo
+- Commit/PR: —
+
+### BUG-028 Login com Google falha sem fallback quando o popup é bloqueado (`auth/popup-blocked`)
+
+- Severidade: Alto
+- Área/fase onde foi achado: Reportado pela Gestora (gap de auth no preview/produção);
+  validado por leitura de código nesta sessão. Diagnóstico original no chat `Dev_03`.
+- Arquivo(s) afetado(s): `src/hooks/use-auth.ts:44` (`signInWithGoogle` →
+  `signInWithPopup`), `src/context/AuthContext.tsx` (`onAuthStateChanged`),
+  `next.config.ts:91` (COOP — descartado como causa)
+- Cenário de falha: o login federado usa **apenas** `signInWithPopup`, sem
+  fallback. Em navegadores/configurações que bloqueiam ou fecham o popup OAuth
+  (extensões de privacidade, políticas do Chrome/Edge), o Firebase lança
+  `auth/popup-blocked` (também `auth/popup-closed-by-user`/
+  `auth/cancelled-popup-request`) e o login **não acontece** — o usuário fica sem
+  entrar. Reproduzido em navegador normal (não só na ferramenta de preview
+  automatizada), o que caracteriza bug de código real, não limitação de ambiente.
+- Validação nesta sessão (confirma o diagnóstico do `Dev_03`):
+  - `signInWithPopup` é o único caminho de login (`use-auth.ts:44`); sem
+    `signInWithRedirect` nem `getRedirectResult`.
+  - `Cross-Origin-Opener-Policy: unsafe-none` está correto (`next.config.ts:91`) —
+    causa comum de "popup abre e fecha" já descartada.
+  - `syncUserPermissionsOnLogin` só roda no caminho popup (`use-auth.ts:55`); o
+    cookie de sessão já é criado no `onAuthStateChanged` (funciona para os dois
+    caminhos), mas o sync de permissões, não — por isso um fallback via redirect
+    exige mover esse sync para o `AuthContext`.
+- Plano de correção proposto (validado, aguardando aprovação — toca
+  identidade/sessão): manter `signInWithPopup` como caminho primário e cair para
+  `signInWithRedirect` nos erros conhecidos de bloqueio; mover
+  `syncUserPermissionsOnLogin` para dentro do `onAuthStateChanged`
+  (`AuthContext.tsx`), junto da criação de cookie que já roda ali; adicionar
+  `getRedirectResult(auth)` no `AuthContext` para capturar/logar erros do fluxo de
+  redirect. Efeito colateral aceito: componentes que fazem
+  `await signInWithGoogle()` para retomar um fluxo (ex.: `InvitationSurvey.tsx`,
+  `FloatingCTAs.tsx`) não retomam automaticamente no caminho redirect (a página
+  recarrega) — melhoria líquida para quem hoje não loga, mas a retomada perfeita
+  pós-redirect seria escopo maior (tocaria esses componentes de CTA).
+- Status: Aberto
+- Decisão de execução: Precisa plano+aprovação (identidade/sessão — `AuthProvider`
+  e fluxo de login, área sensível do `CLAUDE.md`). Plano acima já apresentado à
+  Gestora; aguardando decisão entre versão simples (fallback) e versão completa
+  (fallback + retomada de fluxo pós-redirect).
 - Commit/PR: —
 
 ---
