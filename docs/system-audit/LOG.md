@@ -356,3 +356,32 @@ para embasar essas decisões estão todos disponíveis.
   completa (fallback + retomada de fluxo pós-redirect nos CTAs).
 - Itens atualizados: `BUGS.md` (BUG-007, BUG-018, +BUG-028), `00-PLAN.md`
   (F0-04/F0-05), este LOG.
+
+---
+
+## [2026-07-02] Chat de execução — investigação do authDomain (BUG-029), gate do BUG-028
+
+- Chat/sessão: mesmo chat de execução; a Gestora escolheu a versão **completa** do
+  fix (BUG-028) e a opção **B** (validar/ajustar authDomain antes de codar).
+- Investigação (por leitura de código, automatizada):
+  - Mapeados os 5 consumidores de `signInWithGoogle` (google-login-button,
+    GlobalFooter, FloatingCTAs x2 + AuthRequiredHandler, InvitationSurvey) — base
+    para a retomada de fluxo da versão completa.
+  - **Achado que redefine a causa raiz (BUG-029)**: `next.config.ts:44-55` já tem
+    o reverse-proxy first-party de `/__/auth/*` e `/__/firebase/*` para
+    `bplenhub.firebaseapp.com`, MAS `firebase.ts:12-14` força o `authDomain` de
+    `bplen.com` de volta para `firebaseapp.com`, fazendo o SDK ignorar o proxy e
+    operar cross-domain (sujeito ao bloqueio de cookies de terceiros). Provável
+    causa raiz do gap em produção. Preview (`*.vercel.app`) tem agravante
+    estrutural (domínio efêmero != authDomain fixo).
+- Decisões/registro:
+  - **BUG-029 registrado** (override de authDomain anula o proxy) como
+    bloqueador do BUG-028, com protocolo de validação (execução humana) e correção
+    provável (condicionar o override só a preview/domínios não autorizados,
+    permitindo `authDomain=bplen.com` em produção).
+  - BUG-028 marcado como **bloqueado por BUG-029**; versão escolhida = completa.
+  - Nenhuma mudança de código de auth feita (opção B: validar primeiro; além de
+    ser área sensível que exige plano+aprovação).
+- Próximo passo: Gestora executa o protocolo de validação do BUG-029 (env de prod,
+  authorized domains, teste em navegador real, experimento com `authDomain=bplen.com`).
+- Itens atualizados: `BUGS.md` (BUG-028 gate + BUG-029 novo), este LOG.
