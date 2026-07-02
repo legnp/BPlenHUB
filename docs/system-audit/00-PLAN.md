@@ -148,7 +148,7 @@ evita "consertar" uma página para um padrão que será mudado depois.
   checkout, data de última atualização em `/privacidade`) avaliados contra
   esse guia
 - Modo de validação: Requer execução humana (ratificação) — rascunho de guia embasado por análise de copy (feito); tom institucional é decisão de marca da Gestora
-- Status: Proposta de guia + achados registrados; aguardando ratificação da Gestora
+- Status: **Ratificado pela Gestora (2026-07-02)** — guia canônico. Tom formal-acolhedor ("membro"/"você"); títulos em caixa alta + tracking; data de vigência de `/privacidade` a extrair para config (única ação de código). Ver ratificação em `F0-DECISIONS.md#f0-06`
 - Resultado: Rascunho de guia de estilo redigido (idioma, títulos/subtítulos, CTAs consistentes, termos canônicos de marca, fronteira "pode ficar hardcoded" vs "deve vir de config") — ver protocolo de ratificação em `F0-DECISIONS.md#f0-06`. Achados de copy reavaliados: "Resgate via Faturamento Interno"/"Garantia BPlen" (`/checkout/[slug]:228/238`) = rótulo de marca, pode ficar hardcoded; `lastUpdated="21 de junho de 2026"` (`/privacidade:20`) = data de vigência legal, DEVE sair para config (risco compliance/T-06). CORREÇÃO DE MAPA: o achado "preço/garantia fixos em /servicos/[audience]/[slug]" é impreciso — verificado que o preço vem de `product.price` (config, não hardcoded) e não há texto de garantia nessa rota; a copy hardcoded está em `/checkout/[slug]`.
 - Bug(s) vinculado(s): — (achado da data de vigência será tratado na revisão de copy da Fase 1 / T-06)
 - Log: [2026-07-02] decidido/rascunhado nesta sessão — ver `LOG.md`

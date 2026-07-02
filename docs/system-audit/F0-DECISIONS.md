@@ -308,16 +308,25 @@ que o plano original listou):
 risco já previsto no escopo de F0-06; será tratado na revisão de copy da Fase 1 /
 Track T-06, não precisa de linha própria em `BUGS.md`).
 
-**Status:** Proposta de guia + achados registrados. **Aguardando ratificação da
-Gestora** (tom institucional é decisão de marca).
+**Status:** **RATIFICADO pela Gestora (Victor) em 2026-07-02.** O guia acima é a
+referência canônica de copy para a Fase 1.
 
-### Protocolo guiado para Victor (ratificação)
+### Ratificação (2026-07-02)
 
-1. Ler o "Rascunho de guia de estilo" acima e confirmar/ajustar: (a) tratamento
-   ("membro"/"você"), (b) uso de caixa alta em títulos, (c) lista de termos
-   canônicos de marca, (d) a fronteira "pode ficar hardcoded" vs "deve vir de
-   config".
-2. Confirmar a decisão do item 2 (extrair a data de vigência de `/privacidade`
-   para config) — é a única ação de código sugerida por este item.
-3. Responder no chat de execução com os ajustes; o guia ratificado passa a ser a
-   referência objetiva da revisão de copy da Fase 1 (critério de aceite comum).
+Decisões confirmadas por Victor:
+
+1. **Tom/tratamento:** **Formal-acolhedor — trata por "membro"/"você"**, tom
+   institucional porém caloroso. Confirma o padrão já predominante na interface
+   (menor retrabalho). Descartadas as opções "informal" e "corporativo formal".
+2. **Títulos:** **Caixa alta + `tracking` largo é o padrão oficial de título** da
+   área logada (canoniza o que já existe no hub/admin). Telas novas devem seguir;
+   telas atuais não precisam mudar por causa desta decisão.
+3. **Data de vigência de `/privacidade`:** **Extrair para config** (não deixar a
+   string `"21 de junho de 2026"` solta no JSX). É a única ação de código gerada
+   por F0-06 — tratada como tarefa pequena de baixo risco (branch + PR próprios,
+   ou dobrada na revisão de copy da Fase 1).
+
+Itens não alterados na ratificação (aceitos como rascunhados): idioma pt-BR sem
+emoji, CTAs com rótulo consistente por ação, termos canônicos de marca
+("BPlen HUB"/"membro"/"jornada"/"matrícula"), e a fronteira "pode ficar
+hardcoded" (rótulo de marca) vs "deve vir de config" (dado de negócio variável).

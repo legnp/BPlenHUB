@@ -262,3 +262,29 @@ para embasar essas decisões estão todos disponíveis.
   para não misturar escopo com a correção de segurança.
 - Itens atualizados: `00-PLAN.md` F0-05 (Status → Implementado), `BUGS.md` BUG-007
   (Status → Em Progresso, com detalhe da correção), este LOG.
+
+---
+
+## [2026-07-02] Chat de execução — F0-06 ratificado; Fase 0 fechada
+
+- Chat/sessão: mesmo chat de execução
+- Escopo: ratificação do guia de tom de voz (F0-06) pela Gestora, fechando a
+  Fase 0.
+- Decisões ratificadas por Victor:
+  1. Tom formal-acolhedor, tratamento por "membro"/"você" (padrão já predominante).
+  2. Caixa alta + tracking largo como padrão oficial de título da área logada.
+  3. Extrair a data de vigência de `/privacidade` (`"21 de junho de 2026"`) para
+     config — única ação de código gerada por F0-06.
+- Estado da Fase 0: **completa.** F0-01/02/03/04 decididos; F0-05 decidido e
+  implementado (branch `fix/admin-server-side-guard`); F0-06 ratificado. Os
+  padrões canônicos agora existem para embasar a Fase 1.
+- Pendências que sobram da Fase 0 (não bloqueiam a Fase 1):
+  - Abrir/mergear o PR do F0-05 (branch pushed; `gh` CLI indisponível na máquina,
+    PR a abrir pelo link do GitHub).
+  - Implementações gated ainda por fazer, cada uma em PR próprio quando priorizada:
+    convergência de modais (F0-01), limpeza de `entitlements`/parada de escrita de
+    `User_JourneyMap` (F0-04), extração da data de `/privacidade` (F0-06).
+  - Esforço próprio de limpeza de lint (192 erros pré-existentes) para destravar
+    `npm run check`.
+- Itens atualizados: `00-PLAN.md` F0-06 (Status → Ratificado),
+  `F0-DECISIONS.md#f0-06` (seção de ratificação), este LOG.
