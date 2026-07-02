@@ -8,6 +8,7 @@ import { serverEnv } from "@/env";
 import { Readable } from "stream";
 import { revalidatePath } from "next/cache";
 import { getErrorMessage } from "@/lib/utils/errors";
+import { safeSerialize } from "@/lib/utils/firestore";
 
 /**
  * BPlen HUB — Admin Partners Actions 🤝🛡️
@@ -28,7 +29,7 @@ export interface PartnerData {
     site?: string;
   };
   isActive: boolean;
-  createdAt?: FirebaseFirestore.Timestamp;
+  createdAt?: string;
 }
 
 /**
@@ -39,19 +40,19 @@ export async function getPartnersAction(): Promise<PartnerData[]> {
     const db = getAdminDb();
     const snapshot = await db.collection("Partners").get();
 
-    const partners = snapshot.docs.map(doc => ({
+    const rawPartners = snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
-    })) as PartnerData[];
+    })) as (Omit<PartnerData, "createdAt"> & { createdAt?: FirebaseFirestore.Timestamp })[];
 
     // Ordenação client-side (evita necessidade de índice no Firestore)
-    partners.sort((a, b) => {
-      const dateA = a.createdAt?.toDate?.() || a.createdAt?.seconds ? new Date(a.createdAt.seconds * 1000) : new Date(0);
-      const dateB = b.createdAt?.toDate?.() || b.createdAt?.seconds ? new Date(b.createdAt.seconds * 1000) : new Date(0);
+    rawPartners.sort((a, b) => {
+      const dateA = a.createdAt?.toDate?.() || new Date(0);
+      const dateB = b.createdAt?.toDate?.() || new Date(0);
       return dateB.getTime() - dateA.getTime();
     });
 
-    return partners;
+    return safeSerialize<PartnerData[]>(rawPartners);
   } catch (error: unknown) {
     console.error("❌ [GetPartners] Erro:", getErrorMessage(error), error);
     return [];

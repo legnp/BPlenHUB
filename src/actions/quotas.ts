@@ -3,6 +3,7 @@
 import { getAdminDb } from "@/lib/firebase-admin";
 import { MemberQuotaWallet, MemberQuota } from "@/types/entitlements";
 import { getErrorMessage } from "@/lib/utils/errors";
+import { safeSerialize } from "@/lib/utils/firestore";
 import { getProductBySlug } from "./products"; // Se precisarmos buscar cotas do produto
 
 const QUOTAS_COLLECTION = "Member_Quotas";
@@ -35,7 +36,7 @@ export async function getMemberQuotasAction(uid: string): Promise<MemberQuotaWal
     const doc = await db.doc(docPath).get();
 
     if (!doc.exists) return null;
-    const wallet = doc.data() as MemberQuotaWallet;
+    const wallet = safeSerialize<MemberQuotaWallet>(doc.data());
 
     // Normalização: mentoria_1to1 -> 1-to-1 (mesma regra aplicada em consumeQuotaAction)
     if (wallet.quotas?.["mentoria_1to1"] && !wallet.quotas["1-to-1"]) {
