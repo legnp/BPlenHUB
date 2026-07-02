@@ -3,10 +3,6 @@
 import React from "react";
 import { NarrativeReveal } from "@/components/ui/NarrativeReveal";
 
-// `parseNarrativeBlocks` produz "p-normal", mas o variant aceito por NarrativeReveal
-// é "h2"|"h3"|"p"|"p-muted" (não inclui "p-normal") — mismatch pré-existente que faz
-// parágrafos normais perderem o estilo pretendido. Comportamento preservado (ver Onda 3);
-// pendência de correção registrada separadamente.
 type NarrativeRevealVariant = "h2" | "h3" | "p" | "p-muted";
 
 interface NarrativeContentProps {
@@ -43,7 +39,7 @@ export function NarrativeContent({ text, onComplete, speed = 25 }: NarrativeCont
           <div key={i} className={isQueued ? "opacity-0 select-none pointer-events-none" : "opacity-100"}>
              <NarrativeReveal
                 text={block.content}
-                variant={block.type as NarrativeRevealVariant}
+                variant={block.type}
                 speed={speed}
                 active={reached}
                 onComplete={() => handleBlockComplete(i)}
@@ -58,7 +54,7 @@ export function NarrativeContent({ text, onComplete, speed = 25 }: NarrativeCont
 // Auxiliares de Parsing mantidos para compatibilidade gramatical 🧬
 
 interface NarrativeBlockData {
-  type: "h3" | "p-muted" | "p-normal";
+  type: NarrativeRevealVariant;
   content: string;
 }
 
@@ -70,7 +66,7 @@ function parseNarrativeBlocks(text: string): NarrativeBlockData[] {
     if (p.includes('•') || p.toLowerCase().includes('instruções') || p.toLowerCase().includes('importante')) {
       return { type: "p-muted", content: p };
     }
-    return { type: "p-normal", content: p };
+    return { type: "p", content: p };
   });
 }
 
@@ -83,7 +79,7 @@ export function NarrativeBlock({ text }: { text: string }) {
   return (
     <div className="space-y-4">
       {blocks.map((b, i) => (
-        <NarrativeReveal key={i} text={b.content} variant={b.type as NarrativeRevealVariant} active={true} speed={0} />
+        <NarrativeReveal key={i} text={b.content} variant={b.type} active={true} speed={0} />
       ))}
     </div>
   );
