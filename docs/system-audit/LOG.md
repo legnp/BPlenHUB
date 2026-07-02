@@ -153,3 +153,19 @@ Nenhum bug foi corrigido nesta sessão (chat de planejamento não implementa).
 ### Estado final: os 5 mapas estão completos. Próximo passo é iniciar a Fase 0
 do `00-PLAN.md` (decisões de padrão canônico) com a Gestora, já que os dados
 para embasar essas decisões estão todos disponíveis.
+
+---
+
+## [2026-07-02] Chat de planejamento — adição de F0-06 (tom de voz/copy)
+
+- Chat/sessão: continuação da mesma sessão, a pedido do Gestor após revisar o
+  plano no painel visual
+- Escopo: o Gestor identificou que validação de textos/títulos/subtítulos
+  (um dos objetivos originais do processo) não tinha item dedicado no plano —
+  só apareciam como achados pontuais de copy hardcoded nos mapas
+- Achados: nenhum novo (edição de escopo do plano, não de código)
+- Decisões: adicionado `[F0-06] Padrão canônico de tom de voz e nomenclatura`
+  na Fase 0, e o critério de aceite comum da Fase 1 foi enriquecido para
+  exigir revisão de títulos/subtítulos/CTAs contra o guia definido em F0-06
+- Itens do `00-PLAN.md` atualizados: novo item `F0-06`; critério comum da
+  Fase 1; linha de Usabilidade na checagem ISO 25010

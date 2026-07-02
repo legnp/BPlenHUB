@@ -59,7 +59,7 @@ completo de como os mapas foram fechados em 2 sessões.
 | Característica | Onde é endereçada no plano abaixo |
 |---|---|
 | Adequação funcional | Fase 1 (por página), Fase 2 (features transversais), Fase 3 (regras de negócio), Fase 4 (jornadas e2e) |
-| Usabilidade | Fase 0 (padrão canônico de design/UX via Mapa 5), Fase 1 (critério de aceite de cada página inclui usabilidade) |
+| Usabilidade | Fase 0 (padrão canônico de design/UX via Mapa 5; tom de voz/copy via F0-06), Fase 1 (critério de aceite de cada página inclui usabilidade e revisão de texto/títulos) |
 | Eficiência de desempenho | Track adicional "Não-funcional / Performance" (full scans sem paginação já achados — `BUG-017`) |
 | Confiabilidade | Track adicional "Concorrência/Transactions" + Fase 4 (regressão e2e); transações do Firestore em booking/quotas já usam `runTransaction` corretamente na maioria dos casos mapeados |
 | Segurança | Track adicional "Segurança sistemática" (matriz de guards do Mapa 4) + `BUG-003/005/006/007` já achados |
@@ -138,14 +138,31 @@ evita "consertar" uma página para um padrão que será mudado depois.
 - Bug(s) vinculado(s): BUG-007
 - Log: —
 
+### [F0-06] Padrão canônico de tom de voz e nomenclatura (textos, títulos, subtítulos)
+- Categoria(s) de qualidade: Usabilidade / Manutenibilidade
+- Critério de aceite: guia de estilo definido (tom institucional, padrão de
+  título/subtítulo, o que pode permanecer hardcoded vs. o que deve vir de
+  config) e usado como referência objetiva para a revisão de copy da Fase 1;
+  achados pontuais de copy hardcoded já mapeados (preço/garantia fixos em
+  `/servicos/[audience]/[slug]`, texto "Resgate via Faturamento Interno" no
+  checkout, data de última atualização em `/privacidade`) avaliados contra
+  esse guia
+- Modo de validação: PENDENTE
+- Status: Não iniciado
+- Resultado: —
+- Bug(s) vinculado(s): —
+- Log: —
+
 ---
 
 ### Fase 1 — Validação por página (Mapa 2)
 
 Critério de aceite comum a todo item desta fase, salvo exceção anotada:
 página renderiza sem erro no console/preview, guard de acesso funciona como
-documentado no Mapa 2, responsivo em mobile/tablet/desktop, e nenhum dado
-sensível vaza para um papel que não deveria vê-lo.
+documentado no Mapa 2, responsivo em mobile/tablet/desktop, nenhum dado
+sensível vaza para um papel que não deveria vê-lo, e títulos/subtítulos/CTAs
+revisados contra o guia de tom de voz definido no F0-06 (sem erro de texto,
+sem copy hardcoded fora do que o guia permitir).
 
 ### [F1-01] Páginas públicas de marketing (home, /servicos, /profissionais, /conteudo)
 - Categoria(s) de qualidade: Adequação funcional / Usabilidade / Compatibilidade
