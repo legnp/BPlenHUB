@@ -7,6 +7,7 @@ import { serverEnv } from "@/env";
 import PDFDocument from "pdfkit";
 import path from "path";
 import crypto from "crypto";
+import fs from "fs";
 import { getErrorMessage } from "@/lib/utils/errors";
 import { safeSerialize } from "@/lib/utils/firestore";
 import { Product, ProductSheet } from "@/types/products";
@@ -197,10 +198,10 @@ function createContractBuffer(data: ContractBufferData): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     try {
       const { product, dados, matricula, orderAmount, orderMethod } = data;
-      // `sheet`/`quotas` legados: campos que existem no Firestore mas não no
-      // schema atual de Product/ProductSheet (comportamento preservado, ver Onda 3).
+      // `sheet` legado: campos que existem no Firestore mas não no
+      // schema atual de ProductSheet (comportamento preservado, ver Onda 3).
       const sheet = product.sheet as ProductSheetWithLegacyFields | undefined;
-      const legacyQuotas = (product as Product & { quotas?: Record<string, { total: number }> }).quotas;
+      const grantedQuotas = product.grantedQuotas;
       const doc = new PDFDocument({ margin: 50 });
       const buffers: Buffer[] = [];
       doc.on("data", buffers.push.bind(buffers));
@@ -212,7 +213,7 @@ function createContractBuffer(data: ContractBufferData): Promise<Buffer> {
       
       const logoPath = path.join(process.cwd(), "public", "logo_bplen", "logo.png");
       
-      if (require("fs").existsSync(logoPath)) {
+      if (fs.existsSync(logoPath)) {
         doc.image(logoPath, { width: 150 });
         doc.moveDown(1);
       } else {
@@ -250,8 +251,10 @@ function createContractBuffer(data: ContractBufferData): Promise<Buffer> {
       doc.moveDown(0.5);
       
       let sessionsText = "- Acesso contínuo à plataforma HUB\n";
-      if (legacyQuotas) {
-         sessionsText += Object.entries(legacyQuotas).map(([k, v]) => `- ${v.total}x ${k.replace(/-/g, " ")}`).join("\n");
+      if (grantedQuotas) {
+         sessionsText += Object.entries(grantedQuotas)
+           .filter(([, qty]) => qty > 0)
+           .map(([k, qty]) => `- ${qty}x ${k.replace(/-/g, " ")}`).join("\n");
       }
 
       doc.font("Helvetica").fontSize(11).fillColor(textColor).text(
