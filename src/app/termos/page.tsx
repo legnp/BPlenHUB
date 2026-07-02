@@ -1,6 +1,7 @@
 import React from "react";
 import { Metadata } from "next";
 import { LegalPageShell } from "@/components/layout/LegalPageShell";
+import { LEGAL_PAGES_LAST_UPDATED } from "@/config/legal-pages";
 import { Info, Lightbulb } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -17,7 +18,7 @@ export default function TermosPage() {
     <LegalPageShell
       title="Termos de Uso"
       subtitle="Regras, diretrizes e condicoes de uso do nosso ecossistema de desenvolvimento profissional."
-      lastUpdated="21 de junho de 2026"
+      lastUpdated={LEGAL_PAGES_LAST_UPDATED.terms}
       type="terms"
     >
       <div className="space-y-10 text-[var(--text-secondary)]">
