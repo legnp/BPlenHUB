@@ -172,15 +172,18 @@ onboarding — implementação gated).
 **Decisão:** ambas são **arquivadas como legado documentado**, não reativadas.
 Nenhuma tem consumidor real (Mapa 4 — BUG-018):
 
-- **`entitlements` (raiz)** + `src/actions/entitlements.ts` + `src/types/entitlements.ts`:
-  sistema de acesso paralelo nunca conectado. O acesso real do produto é feito
-  por `User/{matricula}/User_Permissions/access.services` +
-  `grantServiceEntitlement` (`@/lib/checkout`). Decisão: **marcar como código
-  morto a remover**. `entitlements.ts` já é 100% órfã (sem callers, confirmado no
-  Mapa 4c), então a remoção do arquivo + tipo é de baixo risco e pode ser feita
-  como limpeza localizada quando alguém tocar a área — **mas** como cria uma
-  coleção real no Firestore, confirmar antes que nenhum documento `entitlements`
-  em produção é lido por relatório/export externo.
+- **`entitlements` (raiz)** + `src/actions/entitlements.ts` + tipo
+  `UserEntitlement`: sistema de acesso paralelo nunca conectado. O acesso real do
+  produto é feito por `User/{matricula}/User_Permissions/access.services` +
+  `grantServiceEntitlement` (`@/lib/checkout`). **REMOVIDO (2026-07-02)**:
+  `src/actions/entitlements.ts` (ação órfã, zero callers) e os tipos
+  `UserEntitlement`/`EntitlementStatus` (zero uso externo) foram removidos.
+  **Correção de impacto vs. a suposição inicial**: `src/types/entitlements.ts`
+  **NÃO** é órfão e foi **mantido** — ele hospeda `MemberQuota`/`MemberQuotaWallet`,
+  usados por `quotas.ts` e `useJourney.ts`. A remoção foi cirúrgica (só a ação +
+  os 2 tipos mortos), não o arquivo inteiro. Documentos `entitlements` que já
+  existam em produção ficam órfãos no banco (nenhum leitor) — sem impacto de
+  runtime; limpeza de dados no Firestore, se desejada, é passo separado manual.
 - **`User_JourneyMap/progress`** (escrita só por
   `src/actions/effects/welcome-survey.ts`, sem leitor confirmado): é uma segunda
   modelagem de jornada (funil atracao/qualificacao/venda/pos_venda) abandonada.
@@ -322,9 +325,11 @@ Decisões confirmadas por Victor:
    área logada (canoniza o que já existe no hub/admin). Telas novas devem seguir;
    telas atuais não precisam mudar por causa desta decisão.
 3. **Data de vigência de `/privacidade`:** **Extrair para config** (não deixar a
-   string `"21 de junho de 2026"` solta no JSX). É a única ação de código gerada
-   por F0-06 — tratada como tarefa pequena de baixo risco (branch + PR próprios,
-   ou dobrada na revisão de copy da Fase 1).
+   string `"21 de junho de 2026"` solta no JSX). **FEITO (2026-07-02)**: criado
+   `src/config/legal-pages.ts` (`LEGAL_PAGES_LAST_UPDATED`) como fonte única;
+   `/privacidade` e `/termos` (que tinham a mesma data hardcoded) passam a
+   consumir de lá. Validado por type-check + build (ambas as páginas seguem
+   estáticas).
 
 Itens não alterados na ratificação (aceitos como rascunhados): idioma pt-BR sem
 emoji, CTAs com rótulo consistente por ação, termos canônicos de marca

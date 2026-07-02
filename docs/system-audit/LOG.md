@@ -288,3 +288,42 @@ para embasar essas decisões estão todos disponíveis.
     `npm run check`.
 - Itens atualizados: `00-PLAN.md` F0-06 (Status → Ratificado),
   `F0-DECISIONS.md#f0-06` (seção de ratificação), este LOG.
+
+---
+
+## [2026-07-02] Chat de execução — limpezas seguras de Fase 0 (F0-06 data + F0-04 órfãs)
+
+- Chat/sessão: mesmo chat de execução; a Gestora pediu para resolver o que fosse
+  seguro dos 3 pontos residuais da Fase 0.
+- Triagem honesta dos 3 pontos residuais:
+  - PR do F0-05: **ação da Gestora** (abrir/mergear no GitHub; `gh` CLI ausente).
+  - Implementações gated: F0-06 data e F0-04 (remoção órfã) = seguras, feitas
+    agora; F0-01 (modais) = esforço multi-lote de design, NÃO feito; parada de
+    escrita de `User_JourneyMap` = gated, NÃO feito.
+  - Limpeza de lint (192 erros): esforço transversal próprio, NÃO feito.
+- Feito nesta sessão (na mesma branch `fix/admin-server-side-guard`):
+  1. **F0-06**: extraída a data de vigência hardcoded (`"21 de junho de 2026"`)
+     de `/privacidade` **e** `/termos` (ambas tinham a mesma) para
+     `src/config/legal-pages.ts` (`LEGAL_PAGES_LAST_UPDATED`). Commit
+     `refactor(legal): ...`.
+  2. **F0-04**: removidos `src/actions/entitlements.ts` (ação órfã, zero callers)
+     e os tipos `UserEntitlement`/`EntitlementStatus` (zero uso externo). Commit
+     `refactor(entitlements): ...`.
+- **Correção de um erro meu no doc** (importante): eu havia escrito em
+  `F0-DECISIONS.md` que "remover o arquivo + tipo de `entitlements` é baixo
+  risco". Verificação direta antes de remover mostrou que
+  `src/types/entitlements.ts` **NÃO** é órfão — ele hospeda
+  `MemberQuota`/`MemberQuotaWallet`, importados por `quotas.ts` e `useJourney.ts`.
+  Portanto o arquivo de tipos foi **mantido**; só a ação e os 2 tipos mortos
+  saíram. Doc corrigido.
+- Validação: ESLint dos arquivos tocados limpo; `tsc --noEmit` limpo (confirma que
+  a remoção não quebrou nada); `next build` exit 0, com `/privacidade` e `/termos`
+  seguindo estáticas. Os logs `❌ [Server Session]` no build são efeito esperado do
+  F0-05 (rotas `/admin/*` agora dinâmicas por lerem `cookies()`), não erro.
+- Itens atualizados: `00-PLAN.md` F0-04 (Parcialmente implementado) e F0-06 (ação
+  de código implementada); `BUGS.md` BUG-018 (Em Progresso); `F0-DECISIONS.md`
+  F0-04 (correção de impacto) e F0-06 (data feita); este LOG.
+- Estado dos 3 pontos residuais após esta sessão:
+  - PR F0-05: **pendente da Gestora** (link fornecido).
+  - F0-01 modais + parada de escrita `User_JourneyMap` + limpeza de lint:
+    **abertos**, cada um como esforço/PR próprio quando priorizado.

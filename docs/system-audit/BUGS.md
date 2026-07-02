@@ -287,14 +287,16 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   consumidor confirmado)
 - Cenário de falha: nenhum ativo — são sistemas paralelos sem uso real
   (débito técnico / código morto), mas continuam sendo escritos/mantidos.
-- Status: Aberto (decisão de Fase 0 tomada — ver F0-04)
-- Decisão de execução: Precisa avaliação de impacto antes de remover (regra do
-  CLAUDE.md sobre código legado hardcoded/preservado). **[2026-07-02 / F0-04]**
-  Decidido: arquivar ambas como legado. `entitlements.ts`/tipo = remoção
-  oportunística de baixo risco (100% órfã), após confirmar que nenhum export
-  externo lê a coleção. `User_JourneyMap` = parar escrita nova em onboarding
-  (gated: `welcome-survey.ts`/`survey-effects.ts`). Ver `F0-DECISIONS.md#f0-04`.
-- Commit/PR: —
+- Status: Em Progresso — `entitlements` removida (branch `fix/admin-server-side-guard`); `User_JourneyMap` pendente (gated)
+- Decisão de execução: **[2026-07-02 / F0-04]** Avaliação de impacto feita e
+  executada em parte. **REMOVIDO**: `src/actions/entitlements.ts` (ação órfã) +
+  tipos `UserEntitlement`/`EntitlementStatus` (zero uso externo). Correção da
+  suposição inicial: `src/types/entitlements.ts` NÃO era órfão (hospeda
+  `MemberQuota`/`MemberQuotaWallet`, usados por `quotas.ts`/`useJourney.ts`) —
+  mantido; remoção cirúrgica. Validado por type-check + build. **Pendente/gated**:
+  parar escrita de `User_JourneyMap` em `welcome-survey.ts`/`survey-effects.ts`
+  (god file) = PR próprio com plano+aprovação. Ver `F0-DECISIONS.md#f0-04`.
+- Commit/PR: branch `fix/admin-server-side-guard` (remoção de `entitlements`)
 
 ### BUG-019 `updateProfileImageAction`/`deleteProfileImageAction` sem qualquer guard — IDOR confirmado
 

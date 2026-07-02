@@ -123,10 +123,10 @@ evita "consertar" uma página para um padrão que será mudado depois.
 - Critério de aceite: decidido se são removidas, arquivadas como legado
   documentado, ou reativadas com propósito claro
 - Modo de validação: Automatizado (decisão documental; parada de escrita de `User_JourneyMap` toca onboarding/god file — implementação gated)
-- Status: Decidido — arquivar ambas como legado; execução da limpeza gated onde toca onboarding
-- Resultado: Nenhuma tem consumidor real. `entitlements` (+ `entitlements.ts`/`types`) = 100% órfã (sem callers, Mapa 4c); remoção de baixo risco como limpeza oportunística, após confirmar que nenhum export/relatório externo lê a coleção em produção. `User_JourneyMap/progress` (escrito só por `welcome-survey.ts`, sem leitor) = modelagem de jornada abandonada; decisão de parar a escrita em onboarding novo exige plano+aprovação (`welcome-survey.ts`/`survey-effects.ts` = efeito de onboarding + god file do CLAUDE.md). Detalhe em `F0-DECISIONS.md#f0-04`.
-- Bug(s) vinculado(s): BUG-018 (Aberto, agora com decisão de destino)
-- Log: [2026-07-02] decidido nesta sessão — ver `LOG.md`
+- Status: **Parcialmente implementado** — `entitlements` (ação + tipos mortos) removida na branch `fix/admin-server-side-guard`; parada de escrita de `User_JourneyMap` continua gated
+- Resultado: **REMOVIDO**: `src/actions/entitlements.ts` (ação órfã, zero callers) + tipos `UserEntitlement`/`EntitlementStatus` (zero uso externo). CORREÇÃO de impacto vs. suposição inicial: `src/types/entitlements.ts` NÃO é órfão — hospeda `MemberQuota`/`MemberQuotaWallet` (usados por `quotas.ts`/`useJourney.ts`), então foi mantido; a remoção foi cirúrgica. Validado por type-check + build. `User_JourneyMap/progress` (escrito só por `welcome-survey.ts`, sem leitor) permanece a tratar em PR próprio gated (god file do CLAUDE.md). Detalhe em `F0-DECISIONS.md#f0-04`.
+- Bug(s) vinculado(s): BUG-018 (Em Progresso — `entitlements` removida; `User_JourneyMap` pendente)
+- Log: [2026-07-02] decidido e parcialmente implementado nesta sessão — ver `LOG.md`
 
 ### [F0-05] Paridade de guard servidor entre `/hub` e `/admin`
 - Categoria(s) de qualidade: Segurança
@@ -148,7 +148,7 @@ evita "consertar" uma página para um padrão que será mudado depois.
   checkout, data de última atualização em `/privacidade`) avaliados contra
   esse guia
 - Modo de validação: Requer execução humana (ratificação) — rascunho de guia embasado por análise de copy (feito); tom institucional é decisão de marca da Gestora
-- Status: **Ratificado pela Gestora (2026-07-02)** — guia canônico. Tom formal-acolhedor ("membro"/"você"); títulos em caixa alta + tracking; data de vigência de `/privacidade` a extrair para config (única ação de código). Ver ratificação em `F0-DECISIONS.md#f0-06`
+- Status: **Ratificado pela Gestora (2026-07-02)** — guia canônico. Tom formal-acolhedor ("membro"/"você"); títulos em caixa alta + tracking. Ação de código gerada por F0-06 (extrair data de vigência de `/privacidade` e `/termos` para config) **implementada** em `src/config/legal-pages.ts` na branch `fix/admin-server-side-guard`. Ver `F0-DECISIONS.md#f0-06`
 - Resultado: Rascunho de guia de estilo redigido (idioma, títulos/subtítulos, CTAs consistentes, termos canônicos de marca, fronteira "pode ficar hardcoded" vs "deve vir de config") — ver protocolo de ratificação em `F0-DECISIONS.md#f0-06`. Achados de copy reavaliados: "Resgate via Faturamento Interno"/"Garantia BPlen" (`/checkout/[slug]:228/238`) = rótulo de marca, pode ficar hardcoded; `lastUpdated="21 de junho de 2026"` (`/privacidade:20`) = data de vigência legal, DEVE sair para config (risco compliance/T-06). CORREÇÃO DE MAPA: o achado "preço/garantia fixos em /servicos/[audience]/[slug]" é impreciso — verificado que o preço vem de `product.price` (config, não hardcoded) e não há texto de garantia nessa rota; a copy hardcoded está em `/checkout/[slug]`.
 - Bug(s) vinculado(s): — (achado da data de vigência será tratado na revisão de copy da Fase 1 / T-06)
 - Log: [2026-07-02] decidido/rascunhado nesta sessão — ver `LOG.md`
