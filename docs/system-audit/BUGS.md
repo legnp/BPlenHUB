@@ -138,9 +138,9 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   server-side antes de enviar o HTML/JS inicial. Mitigado se toda Server Action
   chamada pelas páginas admin tiver `requireAdmin` próprio, mas isso não foi
   confirmado página a página nesta rodada.
-- Status: Em Progresso — corrigido na branch `fix/admin-server-side-guard`, aguardando review/merge
+- Status: **Corrigido** — PR #1 mergeado na `main` em 2026-07-02
 - Decisão de execução: Plano apresentado e **aprovado pela Gestora (2026-07-02)**. **[2026-07-02 / F0-05]** Implementado: `src/app/admin/layout.tsx` virou Server Component async chamando `getServerSession()` + `redirect("/")` se sessão ausente / suspenso / não-admin, espelhando `requireAdmin`; guard client mantido como 2ª camada. Validado por `tsc --noEmit` e `next build` (ambos limpos). Ver `F0-DECISIONS.md#f0-05`.
-- Commit/PR: branch `fix/admin-server-side-guard` (PR aberto)
+- Commit/PR: https://github.com/legnp/BPlenHUB/pull/1 (mergeado)
 
 ### BUG-008 Chave de cota "1-to-1" com capitalização inconsistente
 
@@ -296,7 +296,7 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   mantido; remoção cirúrgica. Validado por type-check + build. **Pendente/gated**:
   parar escrita de `User_JourneyMap` em `welcome-survey.ts`/`survey-effects.ts`
   (god file) = PR próprio com plano+aprovação. Ver `F0-DECISIONS.md#f0-04`.
-- Commit/PR: branch `fix/admin-server-side-guard` (remoção de `entitlements`)
+- Commit/PR: https://github.com/legnp/BPlenHUB/pull/1 (mergeado — remoção de `entitlements`); parte `User_JourneyMap` ainda aberta
 
 ### BUG-019 `updateProfileImageAction`/`deleteProfileImageAction` sem qualquer guard — IDOR confirmado
 
@@ -463,6 +463,142 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Status: Aberto
 - Decisão de execução: Ajuste pequeno e localizado — remoção segura quando
   alguém tocar o arquivo
+- Commit/PR: —
+
+### BUG-028 Login com Google falha sem fallback quando o popup é bloqueado (`auth/popup-blocked`)
+
+- Severidade: ~~Alto~~ **Baixo** (rebaixado 2026-07-02 após validação — ver
+  "Reclassificação" ao final do item; produção loga normalmente, o gap real era
+  preview-only)
+- Área/fase onde foi achado: Reportado pela Gestora (gap de auth no preview/produção);
+  validado por leitura de código nesta sessão. Diagnóstico original no chat `Dev_03`.
+- Arquivo(s) afetado(s): `src/hooks/use-auth.ts:44` (`signInWithGoogle` →
+  `signInWithPopup`), `src/context/AuthContext.tsx` (`onAuthStateChanged`),
+  `next.config.ts:91` (COOP — descartado como causa)
+- Cenário de falha: o login federado usa **apenas** `signInWithPopup`, sem
+  fallback. Em navegadores/configurações que bloqueiam ou fecham o popup OAuth
+  (extensões de privacidade, políticas do Chrome/Edge), o Firebase lança
+  `auth/popup-blocked` (também `auth/popup-closed-by-user`/
+  `auth/cancelled-popup-request`) e o login **não acontece** — o usuário fica sem
+  entrar. Reproduzido em navegador normal (não só na ferramenta de preview
+  automatizada), o que caracteriza bug de código real, não limitação de ambiente.
+- Validação nesta sessão (confirma o diagnóstico do `Dev_03`):
+  - `signInWithPopup` é o único caminho de login (`use-auth.ts:44`); sem
+    `signInWithRedirect` nem `getRedirectResult`.
+  - `Cross-Origin-Opener-Policy: unsafe-none` está correto (`next.config.ts:91`) —
+    causa comum de "popup abre e fecha" já descartada.
+  - `syncUserPermissionsOnLogin` só roda no caminho popup (`use-auth.ts:55`); o
+    cookie de sessão já é criado no `onAuthStateChanged` (funciona para os dois
+    caminhos), mas o sync de permissões, não — por isso um fallback via redirect
+    exige mover esse sync para o `AuthContext`.
+- Plano de correção proposto (validado, aguardando aprovação — toca
+  identidade/sessão): manter `signInWithPopup` como caminho primário e cair para
+  `signInWithRedirect` nos erros conhecidos de bloqueio; mover
+  `syncUserPermissionsOnLogin` para dentro do `onAuthStateChanged`
+  (`AuthContext.tsx`), junto da criação de cookie que já roda ali; adicionar
+  `getRedirectResult(auth)` no `AuthContext` para capturar/logar erros do fluxo de
+  redirect. Efeito colateral aceito: componentes que fazem
+  `await signInWithGoogle()` para retomar um fluxo (ex.: `InvitationSurvey.tsx`,
+  `FloatingCTAs.tsx`) não retomam automaticamente no caminho redirect (a página
+  recarrega) — melhoria líquida para quem hoje não loga, mas a retomada perfeita
+  pós-redirect seria escopo maior (tocaria esses componentes de CTA).
+- **Reclassificação (2026-07-02, após validação da Gestora — opção B):** os dados
+  de validação mostraram que **o login funciona normalmente em produção**
+  (`bplen.com`) via popup; o erro ocorre **apenas no preview** (`*.vercel.app`).
+  Logo, o problema real **não** é a ausência de fallback popup→redirect (produção
+  não precisa dele), e sim o gap de auth no preview (ver `BUG-030`). O fallback +
+  retomada de fluxo continua sendo uma melhoria de **robustez** válida (protege o
+  subconjunto raro de usuários com popup bloqueado por extensão), mas deixa de ser
+  urgente e **não deve ser implementado agora**: seria um refactor grande em
+  ~6 arquivos sensíveis do fluxo de auth para endurecer um caminho que hoje
+  funciona em produção — risco desproporcional ao benefício. Reavaliar sob demanda
+  (ex.: se surgirem relatos reais de usuários de produção sem conseguir logar).
+- Status: Aberto — **rebaixado para robustez/baixa prioridade**; implementação
+  adiada (não é a causa do gap reportado). Diagnóstico e plano preservados acima
+  para retomada futura, se necessário.
+- Decisão de execução: Adiado (motivo: produção não afetada; mudança tocaria área
+  sensível sem necessidade atual). Se retomado, segue precisando plano+aprovação.
+- Commit/PR: —
+
+### BUG-029 Override de `authDomain` anula o proxy first-party de `/__/auth` (força fluxo cross-domain)
+
+- Severidade: ~~Alto~~ **Baixo** (rebaixado 2026-07-02 — a validação mostrou que
+  produção loga normalmente apesar do override; é débito de config confuso, não
+  defeito ativo)
+- Área/fase onde foi achado: Investigação do gap de auth (BUG-028), nesta sessão
+- Arquivo(s) afetado(s): `src/lib/firebase.ts:11-14` (override), `next.config.ts:44-55`
+  (proxy que fica inutilizado), `src/env.ts` (`NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`)
+- Cenário de falha: `next.config.ts` já define um reverse-proxy que serve o auth
+  handler do Firebase **first-party** no domínio do app
+  (`/__/auth/:path* → bplenhub.firebaseapp.com/__/auth/:path*`), o que tornaria os
+  cookies de auth de primeira parte e destravaria popup **e** redirect em
+  navegadores que bloqueiam cookies de terceiros. **Porém** `firebase.ts` força
+  `authDomain` de `bplen.com`/`www.bplen.com` de volta para
+  `bplenhub.firebaseapp.com`, fazendo o SDK falar direto com o domínio do Firebase
+  e **ignorar o proxy** — o fluxo continua cross-domain e sujeito ao bloqueio de
+  terceiros. É a provável causa raiz do gap de auth em produção; em preview
+  (`*.vercel.app`) há um agravante estrutural (ver abaixo).
+- Nuance de ambiente:
+  - **Produção (`bplen.com`):** remover o override (deixar `authDomain=bplen.com`)
+    deve ativar o proxy já existente → auth first-party → popup e redirect
+    robustos. Hipótese a validar.
+  - **Preview (`*.vercel.app`):** o domínio servido é efêmero e nunca igual ao
+    `authDomain` fixo, então o fluxo é cross-domain por natureza — limitação
+    conhecida de Firebase Auth + preview da Vercel, provavelmente não 100%
+    solucionável só por config. Foco do fix é produção.
+- Protocolo de validação (Requer execução humana — Gestora):
+  1. Confirmar o valor de `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` no ambiente de
+     produção da Vercel (esperado: `bplen.com` ou `www.bplen.com`).
+  2. Confirmar no Firebase Console → Authentication → Authorized domains que
+     `bplen.com` está autorizado.
+  3. Em navegador real afetado, em produção (`bplen.com`), reproduzir o login
+     atual e anotar o erro exato.
+  4. Experimento controlado (em branch/preview dedicado ou toggle): remover o
+     override de `firebase.ts` para `authDomain=bplen.com` e testar se o proxy
+     `/__/auth/` resolve o popup/redirect em produção.
+- **Validação (2026-07-02):** env de produção `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
+  bplen.com` (confirmado), `bplen.com` autorizado no Firebase (confirmado), e
+  **login funciona em produção** apesar do override forçar `firebaseapp.com`.
+  Portanto o override **não é a causa de nenhum gap ativo** — a hipótese inicial
+  de que ele quebrava produção foi refutada. O proxy de `/__/auth/` fica ocioso,
+  mas inofensivo. **Não mexer sem causa**: o override provavelmente foi adicionado
+  para resolver um 404 real de popup no passado; removê-lo às cegas poderia
+  regredir produção, que hoje funciona.
+- Status: Aberto — **rebaixado**; débito de config a limpar com cuidado (não
+  urgente). Só reavaliar se o fluxo de auth for refatorado (junto de `BUG-028`).
+- Decisão de execução: Adiado (produção não afetada; risco de regressão sem
+  benefício claro). Se tocado, precisa plano+aprovação (infra de identidade).
+- Commit/PR: —
+
+### BUG-030 Autenticação Google não funciona nos previews da Vercel (`*.vercel.app` não autorizado)
+
+- Severidade: Baixo (afeta apenas ambiente de preview/QA; produção não é impactada)
+- Área/fase onde foi achado: Investigação do gap de auth (BUG-028/029),
+  confirmado pela validação da Gestora (2026-07-02)
+- Arquivo(s)/config afetado(s): configuração de "Authorized domains" do Firebase
+  Auth; domínios efêmeros de preview da Vercel (`*.vercel.app`); `firebase.ts`
+  (`authDomain` fixo)
+- Cenário de falha: nos deploys de **preview** da Vercel, o app é servido em um
+  domínio efêmero `*.vercel.app` que (a) **não** está na lista de Authorized
+  Domains do Firebase Auth e (b) nunca coincide com o `authDomain` fixo. O login
+  com Google falha só nesse ambiente — enquanto produção (`bplen.com`, autorizado)
+  funciona. É a **causa real** do "gap de auth no preview" reportado pela Gestora,
+  e é uma **limitação conhecida** de Firebase Auth + preview da Vercel (URLs
+  dinâmicas), não um defeito de código do app.
+- Opções de tratamento (nenhuma é código de app crítico):
+  1. **Aceitar como limitação documentada** (recomendado se o preview é só para
+     inspeção visual): testar fluxos de login em produção ou num staging estável.
+  2. **Staging com domínio próprio**: criar um subdomínio estável (ex.:
+     `staging.bplen.com`) apontado ao deploy de preview/staging, adicioná-lo aos
+     Authorized Domains do Firebase e usá-lo como `authDomain` nesse ambiente —
+     aí o login passa a funcionar no staging. Exige configuração de DNS/Vercel/
+     Firebase (fora de código de app, decisão da Gestora).
+- Status: **Aceito como limitação conhecida** (Gestora escolheu a opção 1 em
+  2026-07-02) — não será corrigido; fluxos que exigem login são testados em
+  produção, não no preview.
+- Decisão de execução: Aceito como risco/limitação documentada (ver "Riscos
+  Aceitos" no `00-PLAN.md`). Reabrir só se surgir necessidade recorrente de QA de
+  telas logadas antes de produção (aí, avaliar staging com domínio próprio).
 - Commit/PR: —
 
 ---

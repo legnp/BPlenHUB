@@ -123,7 +123,7 @@ evita "consertar" uma página para um padrão que será mudado depois.
 - Critério de aceite: decidido se são removidas, arquivadas como legado
   documentado, ou reativadas com propósito claro
 - Modo de validação: Automatizado (decisão documental; parada de escrita de `User_JourneyMap` toca onboarding/god file — implementação gated)
-- Status: **Parcialmente implementado** — `entitlements` (ação + tipos mortos) removida na branch `fix/admin-server-side-guard`; parada de escrita de `User_JourneyMap` continua gated
+- Status: **Parcialmente implementado (mergeado)** — `entitlements` (ação + tipos mortos) removida via PR #1 na `main`; parada de escrita de `User_JourneyMap` continua gated
 - Resultado: **REMOVIDO**: `src/actions/entitlements.ts` (ação órfã, zero callers) + tipos `UserEntitlement`/`EntitlementStatus` (zero uso externo). CORREÇÃO de impacto vs. suposição inicial: `src/types/entitlements.ts` NÃO é órfão — hospeda `MemberQuota`/`MemberQuotaWallet` (usados por `quotas.ts`/`useJourney.ts`), então foi mantido; a remoção foi cirúrgica. Validado por type-check + build. `User_JourneyMap/progress` (escrito só por `welcome-survey.ts`, sem leitor) permanece a tratar em PR próprio gated (god file do CLAUDE.md). Detalhe em `F0-DECISIONS.md#f0-04`.
 - Bug(s) vinculado(s): BUG-018 (Em Progresso — `entitlements` removida; `User_JourneyMap` pendente)
 - Log: [2026-07-02] decidido e parcialmente implementado nesta sessão — ver `LOG.md`
@@ -133,7 +133,7 @@ evita "consertar" uma página para um padrão que será mudado depois.
 - Critério de aceite: decidido se `/admin` deve ganhar verificação server-side
   equivalente à de `src/app/hub/layout.tsx` (hoje é só client-side)
 - Modo de validação: Automatizado para a análise/recomendação (código confirmado); implementação gated — segurança/identidade → plano + aprovação antes de codar
-- Status: **Implementado** na branch `fix/admin-server-side-guard` (aprovado pela Gestora em 2026-07-02), aguardando review/merge do PR
+- Status: **Corrigido e mergeado** — PR #1 na `main` (2026-07-02)
 - Resultado: Confirmado por leitura direta: `src/app/hub/layout.tsx` (Server Component) chama `verifySignedSession()` antes de renderizar; `src/app/admin/layout.tsx` era Server Component mas NÃO verificava nada — só renderizava `<AdminLayoutClient>` (guard 100% client via `useAuthContext`). **Implementado**: `admin/layout.tsx` agora é async e chama `getServerSession()` (traz `isAdmin`, diferente de `verifySignedSession()` que só traz `uid/email`), com `redirect("/")` no servidor se sessão ausente / `role==="suspended"` / `!isAdmin` — espelhando `requireAdmin`. Guard client mantido como 2ª camada. `type-check` e `next build` limpos (o lint pré-existente da `main` tem 192 erros não relacionados — ver LOG). Nota: isto protege o RENDER da página; guards de Server Action (BUG-020/T-02) são esforço separado e igualmente necessário. Detalhe em `F0-DECISIONS.md#f0-05`.
 - Bug(s) vinculado(s): BUG-007 (Em Progresso — corrigido na branch `fix/admin-server-side-guard`)
 - Log: [2026-07-02] decidido e implementado nesta sessão — ver `LOG.md`
@@ -441,6 +441,15 @@ Pontos que este processo **não cobre por limite estrutural**, não por omissão
 4. **Sign-off multi-stakeholder** — aqui a aprovação é feita pela Gestora única
    (Victor), o que é adequado ao porte do projeto, mas não equivale a um
    processo corporativo com múltiplos aprovadores formais de diferentes áreas.
+
+5. **Autenticação Google nos previews da Vercel** (`BUG-030`) — os deploys de
+   preview rodam em domínios efêmeros `*.vercel.app`, que não são domínios
+   autorizados no Firebase Auth e nunca coincidem com o `authDomain` fixo, então o
+   login com Google não funciona no preview. Produção (`bplen.com`) não é afetada.
+   Limitação estrutural conhecida de Firebase Auth + preview da Vercel; aceita
+   pela Gestora (2026-07-02) — fluxos logados são validados em produção. Reabrir
+   só se QA de telas logadas em preview virar necessidade recorrente (aí avaliar
+   staging com domínio próprio).
 
 Esses pontos ficam registrados como risco aceito e conhecido, não como pendência
 esquecida.

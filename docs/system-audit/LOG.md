@@ -327,3 +327,94 @@ para embasar essas decisões estão todos disponíveis.
   - PR F0-05: **pendente da Gestora** (link fornecido).
   - F0-01 modais + parada de escrita `User_JourneyMap` + limpeza de lint:
     **abertos**, cada um como esforço/PR próprio quando priorizado.
+
+---
+
+## [2026-07-02] Chat de execução — PR #1 mergeado; BUG-028 (gap de auth) registrado
+
+- Chat/sessão: mesmo chat de execução
+- Escopo: fechamento do PR #1 e registro/validação do gap de autenticação
+  reportado pela Gestora.
+- PR #1 (`fix/admin-server-side-guard`) **mergeado na `main`** (merge commit
+  `88eaf97`) via REST API do GitHub usando a credencial já salva do `git` (o `gh`
+  CLI não está instalado). Branch deletada (local + remota). A Gestora autorizou
+  o merge após o preview da Vercel deployar corretamente (o gap de auth do preview
+  é problema separado, abaixo).
+- Status de bugs atualizados: `BUG-007` → **Corrigido** (PR #1); `BUG-018` →
+  Em Progresso (parte `entitlements` mergeada no PR #1, `User_JourneyMap` aberta).
+  `00-PLAN.md` F0-04/F0-05 marcados como mergeados.
+- **BUG-028 registrado (novo)** — login com Google falha sem fallback quando o
+  popup é bloqueado (`auth/popup-blocked`). Diagnóstico original veio do chat
+  `Dev_03` (reprodução em navegador normal → bug real, não limitação de preview) e
+  foi **validado por leitura de código nesta sessão**: `signInWithPopup` é o único
+  caminho (`use-auth.ts:44`), COOP correto (`next.config.ts:91`, descartado),
+  `syncUserPermissionsOnLogin` só no caminho popup (`use-auth.ts:55`), sem
+  `getRedirectResult`. Plano de correção (fallback para `signInWithRedirect` +
+  mover sync de permissões para `AuthContext` + `getRedirectResult`) registrado no
+  bug; **implementação aguarda aprovação** (toca `AuthProvider`/fluxo de login —
+  área sensível). Decisão pendente da Gestora: versão simples (só fallback) vs.
+  completa (fallback + retomada de fluxo pós-redirect nos CTAs).
+- Itens atualizados: `BUGS.md` (BUG-007, BUG-018, +BUG-028), `00-PLAN.md`
+  (F0-04/F0-05), este LOG.
+
+---
+
+## [2026-07-02] Chat de execução — investigação do authDomain (BUG-029), gate do BUG-028
+
+- Chat/sessão: mesmo chat de execução; a Gestora escolheu a versão **completa** do
+  fix (BUG-028) e a opção **B** (validar/ajustar authDomain antes de codar).
+- Investigação (por leitura de código, automatizada):
+  - Mapeados os 5 consumidores de `signInWithGoogle` (google-login-button,
+    GlobalFooter, FloatingCTAs x2 + AuthRequiredHandler, InvitationSurvey) — base
+    para a retomada de fluxo da versão completa.
+  - **Achado que redefine a causa raiz (BUG-029)**: `next.config.ts:44-55` já tem
+    o reverse-proxy first-party de `/__/auth/*` e `/__/firebase/*` para
+    `bplenhub.firebaseapp.com`, MAS `firebase.ts:12-14` força o `authDomain` de
+    `bplen.com` de volta para `firebaseapp.com`, fazendo o SDK ignorar o proxy e
+    operar cross-domain (sujeito ao bloqueio de cookies de terceiros). Provável
+    causa raiz do gap em produção. Preview (`*.vercel.app`) tem agravante
+    estrutural (domínio efêmero != authDomain fixo).
+- Decisões/registro:
+  - **BUG-029 registrado** (override de authDomain anula o proxy) como
+    bloqueador do BUG-028, com protocolo de validação (execução humana) e correção
+    provável (condicionar o override só a preview/domínios não autorizados,
+    permitindo `authDomain=bplen.com` em produção).
+  - BUG-028 marcado como **bloqueado por BUG-029**; versão escolhida = completa.
+  - Nenhuma mudança de código de auth feita (opção B: validar primeiro; além de
+    ser área sensível que exige plano+aprovação).
+- Próximo passo: Gestora executa o protocolo de validação do BUG-029 (env de prod,
+  authorized domains, teste em navegador real, experimento com `authDomain=bplen.com`).
+- Itens atualizados: `BUGS.md` (BUG-028 gate + BUG-029 novo), este LOG.
+
+---
+
+## [2026-07-02] Chat de execução — validação inverte o diagnóstico: gap é preview-only (BUG-030)
+
+- Chat/sessão: mesmo chat de execução
+- Validação executada pela Gestora (opção B):
+  1. `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` (prod) = `bplen.com`.
+  2. `bplen.com` está nos Authorized Domains do Firebase = sim.
+  3. **Sem erro de login em produção; erro só no preview.**
+- Conclusão (inverte a hipótese anterior):
+  - **Produção loga normalmente** via popup, mesmo com o override forçando
+    `authDomain=firebaseapp.com`. Logo o override (BUG-029) **não** é a causa de
+    nenhum gap ativo, e o fallback popup→redirect (BUG-028) **não** é necessário
+    para produção. Ambos rebaixados.
+  - O gap real é **preview-only**: `*.vercel.app` não é domínio autorizado no
+    Firebase e nunca coincide com o `authDomain` fixo → login falha só no preview.
+    Limitação conhecida de Firebase Auth + preview da Vercel, não defeito de
+    código. Registrado como **BUG-030** (Baixo).
+- Reclassificações:
+  - **BUG-028**: Alto → Baixo; implementação do fallback+retomada **adiada** (não
+    destabilizar um fluxo de auth que funciona em produção por um problema que é
+    de preview). Diagnóstico/plano preservados para retomada sob demanda.
+  - **BUG-029**: Alto → Baixo; não mexer sem causa (produção funciona; remover o
+    override às cegas poderia regredir o motivo pelo qual foi criado).
+  - **BUG-030 (novo)**: gap de auth no preview; decisão de infra da Gestora
+    (aceitar limitação vs. montar staging com domínio próprio).
+- Aprendizado de processo: a opção B (validar antes de codar) evitou um refactor
+  grande e arriscado no fluxo de login para um problema que não existe em
+  produção. Registrar como reforço de "validar premissa antes de implementar em
+  área sensível".
+- Itens atualizados: `BUGS.md` (BUG-028/029 rebaixados, +BUG-030), este LOG.
+- Nenhuma mudança de código de auth feita.
