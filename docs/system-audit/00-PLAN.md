@@ -442,5 +442,14 @@ Pontos que este processo **não cobre por limite estrutural**, não por omissão
    (Victor), o que é adequado ao porte do projeto, mas não equivale a um
    processo corporativo com múltiplos aprovadores formais de diferentes áreas.
 
+5. **Autenticação Google nos previews da Vercel** (`BUG-030`) — os deploys de
+   preview rodam em domínios efêmeros `*.vercel.app`, que não são domínios
+   autorizados no Firebase Auth e nunca coincidem com o `authDomain` fixo, então o
+   login com Google não funciona no preview. Produção (`bplen.com`) não é afetada.
+   Limitação estrutural conhecida de Firebase Auth + preview da Vercel; aceita
+   pela Gestora (2026-07-02) — fluxos logados são validados em produção. Reabrir
+   só se QA de telas logadas em preview virar necessidade recorrente (aí avaliar
+   staging com domínio próprio).
+
 Esses pontos ficam registrados como risco aceito e conhecido, não como pendência
 esquecida.

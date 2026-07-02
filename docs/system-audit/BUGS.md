@@ -593,9 +593,12 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
      Authorized Domains do Firebase e usá-lo como `authDomain` nesse ambiente —
      aí o login passa a funcionar no staging. Exige configuração de DNS/Vercel/
      Firebase (fora de código de app, decisão da Gestora).
-- Status: Aberto
-- Decisão de execução: Requer decisão de infra da Gestora (aceitar limitação vs.
-  montar staging com domínio próprio). Não é correção de código de produto.
+- Status: **Aceito como limitação conhecida** (Gestora escolheu a opção 1 em
+  2026-07-02) — não será corrigido; fluxos que exigem login são testados em
+  produção, não no preview.
+- Decisão de execução: Aceito como risco/limitação documentada (ver "Riscos
+  Aceitos" no `00-PLAN.md`). Reabrir só se surgir necessidade recorrente de QA de
+  telas logadas antes de produção (aí, avaliar staging com domínio próprio).
 - Commit/PR: —
 
 ---
