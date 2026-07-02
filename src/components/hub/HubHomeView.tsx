@@ -26,7 +26,8 @@ import {
   Search,
   Clock,
   Calendar,
-  Activity
+  Activity,
+  type LucideIcon
 } from "lucide-react";
 import { MOCK_SERVICES, MOCK_TOOLS } from "@/config/hub-data";
 import { useTheme } from "@/context/ThemeContext";
@@ -46,18 +47,29 @@ import * as LucideIcons from "lucide-react";
  */
 
 
-function ActivityCard({ 
-  kicker, 
-  activity, 
-  fallbackText, 
-  iconColor, 
-  icon: Icon 
-}: { 
-  kicker: string; 
-  activity: any; 
-  fallbackText: string; 
-  iconColor: string; 
-  icon: any; 
+interface HubActivity {
+  id: string;
+  title: string;
+  stageName: string;
+  stageId: string;
+  type: string;
+  status: "completed" | "in_progress" | "pending";
+  url: string;
+  completionDate?: string;
+}
+
+function ActivityCard({
+  kicker,
+  activity,
+  fallbackText,
+  iconColor,
+  icon: Icon
+}: {
+  kicker: string;
+  activity: HubActivity | undefined;
+  fallbackText: string;
+  iconColor: string;
+  icon: LucideIcon;
 }) {
   if (!activity) {
     return (

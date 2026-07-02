@@ -38,7 +38,7 @@ export function useJourney(uid: string) {
       const mergedSubsteps: SubStepConfig[] = [];
       stage.substeps.forEach(sub => {
         mergedSubsteps.push(sub);
-        const children = dynamicSubsteps.filter((ds: any) => ds.parentId === sub.id);
+        const children = dynamicSubsteps.filter((ds) => ds.parentId === sub.id);
         mergedSubsteps.push(...children);
       });
       return {

@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     
     // Ler o body de forma segura (uma única vez)
-    let bodyData: any = {};
+    let bodyData: { type?: string; data?: { id?: string } } = {};
     try {
       bodyData = await req.json();
     } catch (e) {

@@ -100,55 +100,61 @@ export async function generateMasterCvDocx(responses: Record<string, SurveyValue
 
           // HISTÓRICO PROFISSIONAL
           new Paragraph({ text: "HISTÓRICO PROFISSIONAL", heading: HeadingLevel.HEADING_2 }),
-          ...experiencias.flatMap((exp: any) => [
+          ...experiencias.flatMap((exp) => {
+            const e = exp as Record<string, unknown>;
+            return [
             new Paragraph({
               heading: HeadingLevel.HEADING_3,
               children: [
-                new TextRun({ text: `${exp.cargo || ""} - ${exp.empresa || ""}`, bold: true }),
+                new TextRun({ text: `${e.cargo || ""} - ${e.empresa || ""}`, bold: true }),
               ],
             }),
-            new Paragraph({ text: `Período: ${exp.periodo || ""}` }),
+            new Paragraph({ text: `Período: ${e.periodo || ""}` }),
             new Paragraph({
               children: [
                 new TextRun({ text: "Contexto: ", bold: true }),
-                new TextRun(exp.contexto || ""),
+                new TextRun(String(e.contexto || "")),
               ],
             }),
             new Paragraph({
               children: [
                 new TextRun({ text: "Conquistas: ", bold: true }),
-                new TextRun(exp.conquistas || ""),
+                new TextRun(String(e.conquistas || "")),
               ],
             }),
-          ]),
+          ];}),
 
           // EDUCAÇÃO FORMAL
           new Paragraph({ text: "FORMAÇÃO ACADÊMICA", heading: HeadingLevel.HEADING_2 }),
-          ...formacoes.flatMap((form: any) => [
+          ...formacoes.flatMap((form) => {
+            const f = form as Record<string, unknown>;
+            return [
             new Paragraph({
               heading: HeadingLevel.HEADING_3,
               children: [
-                new TextRun({ text: `${form.grau || ""} em ${form.curso || ""}`, bold: true }),
+                new TextRun({ text: `${f.grau || ""} em ${f.curso || ""}`, bold: true }),
               ],
             }),
-            new Paragraph({ text: `${form.instituicao || ""} | Conclusão: ${form.ano_conclusao || ""}` }),
-            form.destaques ? new Paragraph({ text: `Destaques: ${form.destaques}` }) : new Paragraph(""),
-          ]),
+            new Paragraph({ text: `${f.instituicao || ""} | Conclusão: ${f.ano_conclusao || ""}` }),
+            f.destaques ? new Paragraph({ text: `Destaques: ${f.destaques}` }) : new Paragraph(""),
+          ];}),
 
           // CERTIFICAÇÕES
           ...(certificacoes.length > 0 ? [
             new Paragraph({ text: "CERTIFICAÇÕES E PROJETOS EXTRAS", heading: HeadingLevel.HEADING_2 }),
-            ...certificacoes.flatMap((cert: any) => [
+            ...certificacoes.flatMap((cert) => {
+              const c = cert as Record<string, unknown>;
+              return [
               new Paragraph({
                 heading: HeadingLevel.HEADING_3,
                 children: [
-                  new TextRun({ text: `${cert.nome || ""} - ${cert.instituicao || ""}`, bold: true }),
+                  new TextRun({ text: `${c.nome || ""} - ${c.instituicao || ""}`, bold: true }),
                 ],
               }),
-              new Paragraph({ text: `Data: ${cert.data || ""}` }),
-              new Paragraph({ text: cert.objetivo || "" }),
-              cert.conquistas ? new Paragraph({ text: `Conquistas: ${cert.conquistas}` }) : new Paragraph(""),
-            ])
+              new Paragraph({ text: `Data: ${c.data || ""}` }),
+              new Paragraph({ text: String(c.objetivo || "") }),
+              c.conquistas ? new Paragraph({ text: `Conquistas: ${c.conquistas}` }) : new Paragraph(""),
+            ];})
           ] : [])
         ],
       },
@@ -567,8 +573,8 @@ export async function generateCvFocadoDocx(responses: Record<string, SurveyValue
 
   // 4. Extrair e filtrar Educação
   const educacaoRaw = (responses["educacao_projetos_filtrados"] as EducacaoFiltradaRaw) || {};
-  const formacoes = (educacaoRaw.formacoes || []).filter((f: any) => f && f.visible);
-  const certificacoes = (educacaoRaw.certificacoes_projetos || []).filter((c: any) => c && c.visible);
+  const formacoes = (educacaoRaw.formacoes || []).filter((f) => f && f.visible);
+  const certificacoes = (educacaoRaw.certificacoes_projetos || []).filter((c) => c && c.visible);
 
   // 5. Construir o documento Word
   const paragraphs: Paragraph[] = [];
@@ -674,14 +680,14 @@ export async function generateCvFocadoDocx(responses: Record<string, SurveyValue
       }
 
       // Conquistas filtradas
-      const conquistasVisiveis = (exp.conquistas || []).filter((c: any) => c && c.visible);
+      const conquistasVisiveis = (exp.conquistas || []).filter((c) => c && c.visible);
       if (conquistasVisiveis.length > 0) {
-        conquistasVisiveis.forEach((ac: any) => {
+        conquistasVisiveis.forEach((ac) => {
           paragraphs.push(
             new Paragraph({
               children: [
                 new TextRun({ text: "•  ", bold: true }),
-                new TextRun(ac.conquista),
+                new TextRun(ac.conquista || ""),
               ],
               spacing: { before: 40, after: 40 },
             })
@@ -701,7 +707,7 @@ export async function generateCvFocadoDocx(responses: Record<string, SurveyValue
       })
     );
 
-    formacoes.forEach((form: any) => {
+    formacoes.forEach((form) => {
       paragraphs.push(
         new Paragraph({
           heading: HeadingLevel.HEADING_3,
@@ -725,7 +731,7 @@ export async function generateCvFocadoDocx(responses: Record<string, SurveyValue
           new Paragraph({
             children: [
               new TextRun({ text: "Destaques: ", bold: true }),
-              new TextRun(form.destaques),
+              new TextRun(form.destaques || ""),
             ],
             spacing: { after: 120 },
           })
@@ -744,12 +750,12 @@ export async function generateCvFocadoDocx(responses: Record<string, SurveyValue
       })
     );
 
-    certificacoes.forEach((cert: any) => {
+    certificacoes.forEach((cert) => {
       paragraphs.push(
         new Paragraph({
           heading: HeadingLevel.HEADING_3,
           children: [
-            new TextRun({ text: cert.nome || "", bold: true }),
+            new TextRun({ text: String(cert.nome || ""), bold: true }),
             new TextRun({ text: ` — ${cert.instituicao || ""}`, bold: false }),
           ],
           spacing: { before: 120, after: 60 },

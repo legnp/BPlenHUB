@@ -237,10 +237,10 @@ export function DevolutivaComportamentalView({
     try {
       const res = await toggleCareerPlanningAccessAction(selectedMatricula, currentStatus);
       if (res.success) {
-        setCareerData((prev: any) => ({
+        setCareerData((prev) => prev ? ({
           ...prev,
           isCareerPlanningReleased: !currentStatus
-        }));
+        }) : prev);
       } else {
         alert(res.error || "Erro ao atualizar permissao de carreira.");
       }
@@ -587,7 +587,7 @@ export function DevolutivaComportamentalView({
   }) : [];
 
   // Helper to obtain question title and answer formatting
-  const getRenderableFields = (submission: any) => {
+  const getRenderableFields = (submission: (typeof allSubmissionsList)[number]) => {
     const data = submission.data || {};
     const fields: Array<{ label: string; value: string }> = [];
 
@@ -638,20 +638,21 @@ export function DevolutivaComportamentalView({
     return fields;
   };
 
-  const formatAnswerValue = (val: any): string => {
+  const formatAnswerValue = (val: unknown): string => {
     if (val === null || val === undefined) return "—";
     if (typeof val === "boolean") return val ? "Sim" : "Não";
     if (Array.isArray(val)) return val.map(item => formatAnswerValue(item)).join(", ");
     if (typeof val === "object") {
-      if (val.url) return val.url; // File links
-      return Object.entries(val)
+      const obj = val as Record<string, unknown>;
+      if (obj.url) return String(obj.url); // File links
+      return Object.entries(obj)
         .map(([k, v]) => `${k.replace(/_/g, " ")}: ${v}`)
         .join(" | ");
     }
     return String(val);
   };
 
-  const getSubmissionTitle = (submission: any): string => {
+  const getSubmissionTitle = (submission: (typeof allSubmissionsList)[number]): string => {
     if (submission.type === "survey") {
       const config = SURVEY_REGISTRY.find(s => s.id === submission.surveyId);
       return config?.title || `Pesquisa: ${submission.surveyId}`;
@@ -1343,7 +1344,7 @@ export function DevolutivaComportamentalView({
                           <span className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)]">Backlog de Carreira recente</span>
                           {careerData?.backlog && careerData.backlog.length > 0 ? (
                             <div className="space-y-2 max-h-[220px] overflow-y-auto custom-scrollbar pr-1">
-                              {careerData.backlog.slice(0, 5).map((task: any) => (
+                              {careerData.backlog.slice(0, 5).map((task) => (
                                 <div key={task.id} className="p-3 bg-[var(--bg-primary)]/40 border border-[var(--border-primary)]/40 rounded-xl flex items-center justify-between">
                                   <div className="flex flex-col gap-0.5 text-left max-w-[70%]">
                                     <span className="text-[10px] font-bold text-[var(--text-primary)] truncate">{task.title}</span>

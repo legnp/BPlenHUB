@@ -6,6 +6,7 @@ import { getFormConfig } from "@/config/forms";
 import { FormsEngine } from "@/components/forms/FormsEngine";
 import { ChevronLeft, Eye, FlaskConical, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import type { FormResponse } from "@/types/forms";
 
 /**
  * BPlen HUB — Admin Form Preview (Sandbox)
@@ -39,7 +40,7 @@ export default function FormPreviewPage() {
     );
   }
 
-  const handleMockSubmit = async (responses: any) => {
+  const handleMockSubmit = async (responses: FormResponse) => {
     console.log("[PREVIEW SUBMIT]:", responses);
     // Simula delay de rede
     await new Promise(resolve => setTimeout(resolve, 1500));

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { ToggleLeft, ToggleRight, GraduationCap, Award } from "lucide-react";
+import type { SurveyValue } from "@/types/survey";
 
 interface FormacaoFiltrada {
   grau: string;
@@ -17,7 +18,7 @@ interface CertificacaoFiltrada {
   instituicao: string;
   data: string;
   objetivo: string;
-  conquistas: any;
+  conquistas: unknown;
   visible: boolean;
 }
 
@@ -27,8 +28,8 @@ interface FilteredEducationState {
 }
 
 interface CvEducationFilterProps {
-  value: any;
-  masterCvData: any;
+  value: SurveyValue;
+  masterCvData: Record<string, SurveyValue> | null | undefined;
   targetPositionName: string;
   targetEmpresaName: string;
   onChange: (val: FilteredEducationState) => void;
@@ -44,26 +45,29 @@ export function CvEducationFilter({
   const [state, setState] = useState<FilteredEducationState>({ formacoes: [], certificacoes_projetos: [] });
 
   useEffect(() => {
-    if (value && typeof value === "object" && (Array.isArray(value.formacoes) || Array.isArray(value.certificacoes_projetos))) {
+    const valueObj = value as Record<string, unknown> | null | undefined;
+    if (valueObj && typeof valueObj === "object" && (Array.isArray(valueObj.formacoes) || Array.isArray(valueObj.certificacoes_projetos))) {
       setState({
-        formacoes: value.formacoes || [],
-        certificacoes_projetos: value.certificacoes_projetos || []
+        formacoes: (valueObj.formacoes as FormacaoFiltrada[]) || [],
+        certificacoes_projetos: (valueObj.certificacoes_projetos as CertificacaoFiltrada[]) || []
       });
     } else if (masterCvData) {
-      const formacoes: FormacaoFiltrada[] = (masterCvData.formacoes || []).map((form: any) => ({
-        grau: form.grau || "",
-        curso: form.curso || "",
-        instituicao: form.instituicao || "",
-        ano_conclusao: form.ano_conclusao || "",
-        destaques: form.destaques || "",
+      const masterFormacoes = (masterCvData.formacoes as Record<string, unknown>[] | undefined) || [];
+      const formacoes: FormacaoFiltrada[] = masterFormacoes.map((form) => ({
+        grau: String(form.grau || ""),
+        curso: String(form.curso || ""),
+        instituicao: String(form.instituicao || ""),
+        ano_conclusao: String(form.ano_conclusao || ""),
+        destaques: String(form.destaques || ""),
         visible: true
       }));
 
-      const certificacoes_projetos: CertificacaoFiltrada[] = (masterCvData.certificacoes_projetos || []).map((cert: any) => ({
-        nome: cert.nome || "",
-        instituicao: cert.instituicao || "",
-        data: cert.data || "",
-        objetivo: cert.objetivo || "",
+      const masterCertificacoes = (masterCvData.certificacoes_projetos as Record<string, unknown>[] | undefined) || [];
+      const certificacoes_projetos: CertificacaoFiltrada[] = masterCertificacoes.map((cert) => ({
+        nome: String(cert.nome || ""),
+        instituicao: String(cert.instituicao || ""),
+        data: String(cert.data || ""),
+        objetivo: String(cert.objetivo || ""),
         conquistas: cert.conquistas || [],
         visible: true
       }));

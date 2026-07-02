@@ -71,11 +71,11 @@ export async function submitEvaluationAction(matricula: string, bookingId: strin
 
 // --- Post-Event ---
 
-export async function closeEventAction(eventId: string, data: any) {
+export async function closeEventAction(eventId: string, data: PostEvent.CloseEventData) {
   return PostEvent.closeEventAction(eventId, data);
 }
 
-export async function closeAttendeeAction(eventId: string, userId: string, matricula: string, data: any) {
+export async function closeAttendeeAction(eventId: string, userId: string, matricula: string, data: PostEvent.CloseAttendeeData) {
   return PostEvent.closeAttendeeAction(eventId, userId, matricula, data);
 }
 

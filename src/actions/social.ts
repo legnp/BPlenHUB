@@ -14,13 +14,13 @@ const COLLECTION_NAME = "content_posts";
  * Auxiliar para converter instâncias de Timestamp do Firestore (tanto Admin quanto Cliente)
  * em strings ISO simples, que são 100% serializáveis pelo Next.js (RSC).
  */
-function serializeTimestamp(timestamp: any): string | null {
+function serializeTimestamp(timestamp: unknown): string | null {
   if (!timestamp) return null;
-  if (typeof timestamp.toDate === "function") {
-    return timestamp.toDate().toISOString();
+  if (typeof timestamp === "object" && typeof (timestamp as { toDate?: unknown }).toDate === "function") {
+    return (timestamp as { toDate: () => Date }).toDate().toISOString();
   }
-  if (typeof timestamp.seconds === "number") {
-    return new Date(timestamp.seconds * 1000).toISOString();
+  if (typeof timestamp === "object" && timestamp !== null && typeof (timestamp as { seconds?: unknown }).seconds === "number") {
+    return new Date((timestamp as { seconds: number }).seconds * 1000).toISOString();
   }
   if (timestamp instanceof Date) {
     return timestamp.toISOString();

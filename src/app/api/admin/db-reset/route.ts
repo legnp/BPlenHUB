@@ -47,7 +47,7 @@ export async function GET(request: Request) {
   }
 
   const db = admin.firestore();
-  const results: any = {};
+  const results: Record<string, { deleted: number; preserved: number }> = {};
 
   try {
     for (const colName of COLLECTIONS) {

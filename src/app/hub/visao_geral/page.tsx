@@ -242,7 +242,7 @@ export default function VisaoGeralPage() {
 
         // Se houver atas de reunioes (via activityArtifacts — independente de career_planning)
         if (sub.type === "meeting" && activityArtifacts.atas.length > 0) {
-          const matchedAta = activityArtifacts.atas.find((a: any) => 
+          const matchedAta = activityArtifacts.atas.find((a) => 
             isAtaOrFeedbackMatch(friendlyTitle, sub.referenceId, a.title)
           );
           if (matchedAta) {
@@ -313,11 +313,15 @@ export default function VisaoGeralPage() {
     // 3. Incluir tarefas de carreira (se a Gestao de Carreira estiver habilitada)
     const hasGdcAccess = stages.find(s => s.id === "gestao-e-desenvolvimento")?.id;
     if (hasGdcAccess && careerData?.backlog && careerData.backlog.length > 0) {
-      careerData.backlog.forEach((task: any) => {
+      careerData.backlog.forEach((task) => {
+        // Comparações abaixo preservadas como estavam (código morto: "Em Andamento"/"Concluida" sem
+        // acento não existem em CareerTaskStatus; feedback/notes/completedAt/updatedAt não existem em
+        // CareerTask). Ver Onda 4 de limpeza de `any` — comportamento intencionalmente preservado.
+        const taskExtra = task as unknown as Record<string, unknown>;
         let status: "completed" | "in_progress" | "pending" = "pending";
-        if (task.status === "Concluida" || task.status === "Concluída") {
+        if ((task.status as string) === "Concluida" || task.status === "Concluída") {
           status = "completed";
-        } else if (task.status === "Em Andamento") {
+        } else if ((task.status as string) === "Em Andamento") {
           status = "in_progress";
         }
 
@@ -332,8 +336,8 @@ export default function VisaoGeralPage() {
           url: "/hub/membro/gestao_carreira",
           hasTaskDetail: true,
           taskStatus: task.status,
-          feedbackText: task.feedback || task.notes,
-          completionDate: task.completedAt || task.updatedAt || undefined,
+          feedbackText: (taskExtra.feedback || taskExtra.notes) as string | undefined,
+          completionDate: (taskExtra.completedAt || taskExtra.updatedAt || undefined) as string | undefined,
           stageOrder: 5,
           isSequenceLocked: false,
           isSubstepLocked: false,
@@ -344,9 +348,13 @@ export default function VisaoGeralPage() {
 
     // 4. Incluir metas estrategicas
     if (hasGdcAccess && careerData?.objectives && careerData.objectives.length > 0) {
-      careerData.objectives.forEach((obj: any) => {
+      careerData.objectives.forEach((obj) => {
+        // Comparações abaixo preservadas como estavam (código morto: "Concluido"/"Concluído" não
+        // existem em CareerObjective["status"]; completedAt/updatedAt não existem em CareerObjective).
+        // Ver Onda 4 de limpeza de `any` — comportamento intencionalmente preservado.
+        const objExtra = obj as unknown as Record<string, unknown>;
         let status: "completed" | "in_progress" | "pending" = "pending";
-        if (obj.status === "Concluido" || obj.status === "Concluído") {
+        if ((obj.status as string) === "Concluido" || (obj.status as string) === "Concluído") {
           status = "completed";
         } else if (obj.status === "Em Andamento") {
           status = "in_progress";
@@ -364,7 +372,7 @@ export default function VisaoGeralPage() {
           hasTaskDetail: true,
           taskStatus: obj.status,
           feedbackText: obj.description,
-          completionDate: obj.completedAt || obj.updatedAt || undefined,
+          completionDate: (objExtra.completedAt || objExtra.updatedAt || undefined) as string | undefined,
           stageOrder: 5,
           isSequenceLocked: false,
           isSubstepLocked: false,
@@ -490,7 +498,7 @@ export default function VisaoGeralPage() {
             <div className="flex items-center gap-2">
               <select
                 value={sortPendentes}
-                onChange={(e: any) => setSortPendentes(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSortPendentes(e.target.value as "service" | "title-asc" | "title-desc")}
                 className="bg-[var(--input-bg)] border border-[var(--border-primary)] text-[9px] font-bold text-[var(--text-muted)] rounded-lg px-2 py-1 outline-none cursor-pointer focus:border-[var(--accent-start)]/30"
               >
                 <option value="service">Servico</option>
@@ -526,7 +534,7 @@ export default function VisaoGeralPage() {
             <div className="flex items-center gap-2">
               <select
                 value={sortEmAndamento}
-                onChange={(e: any) => setSortEmAndamento(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSortEmAndamento(e.target.value as "service" | "title-asc" | "title-desc")}
                 className="bg-[var(--input-bg)] border border-[var(--border-primary)] text-[9px] font-bold text-[var(--text-muted)] rounded-lg px-2 py-1 outline-none cursor-pointer focus:border-[var(--accent-start)]/30"
               >
                 <option value="service">Servico</option>
@@ -562,7 +570,7 @@ export default function VisaoGeralPage() {
             <div className="flex items-center gap-2">
               <select
                 value={sortConcluidas}
-                onChange={(e: any) => setSortConcluidas(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSortConcluidas(e.target.value as "service" | "title-asc" | "title-desc" | "date-desc" | "date-asc")}
                 className="bg-[var(--input-bg)] border border-[var(--border-primary)] text-[9px] font-bold text-[var(--text-muted)] rounded-lg px-2 py-1 outline-none cursor-pointer focus:border-[var(--accent-start)]/30"
               >
                 <option value="service">Servico</option>

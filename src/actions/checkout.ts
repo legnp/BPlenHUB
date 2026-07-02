@@ -50,7 +50,7 @@ export async function processServicePurchaseAction(
     
     // 🎟️ 2.1 Validar Cupom (se fornecido)
     let appliedDiscount = 0;
-    let couponDocRef: any = null;
+    let couponDocRef: FirebaseFirestore.DocumentReference | null = null;
 
     if (couponCode) {
        const matricula = await resolveMatricula(session.uid, session.email || "");

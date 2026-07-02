@@ -27,7 +27,7 @@ interface PageProps {
   }>;
 }
 
-const audienceMap: Record<string, { id: 'people' | 'companies' | 'partners', title: string, kicker: string, description: string, icon: any }> = {
+const audienceMap: Record<string, { id: 'people' | 'companies' | 'partners', title: string, kicker: string, description: string, icon: React.ReactNode }> = {
   "pessoas": { 
     id: 'people', 
     title: "Para Pessoas", 

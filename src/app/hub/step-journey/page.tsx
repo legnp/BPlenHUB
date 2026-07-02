@@ -111,7 +111,7 @@ export default function StepJourneyPage() {
 
                {/* Atividades do Step */}
                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {currentStep.substeps.map((sub: any, ridx: number) => (
+                {currentStep.substeps.map((sub, ridx: number) => (
                   <div 
                     key={ridx} 
                     onClick={() => {

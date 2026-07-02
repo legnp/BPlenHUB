@@ -22,6 +22,7 @@ export interface SubStepConfig {
   description?: string;
   order?: string; // Ordem do checkpoint (ex: 1, 2, 5.1, 5.2)
   allowReview?: boolean; // Se verdadeiro, exibe o botão de revisão após conclusão
+  parentId?: string; // ID do substep pai, para substeps dinâmicos aninhados (ver journey.ts)
 }
 
 import { WorkflowStep } from "./products";

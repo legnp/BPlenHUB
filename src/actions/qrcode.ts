@@ -16,13 +16,13 @@ const COLLECTION_NAME = "qrcodes";
  * Auxiliar para converter instâncias de Timestamp do Firestore em strings ISO,
  * garantindo que sejam 100% serializáveis pelo Next.js (RSC/Client).
  */
-function serializeTimestamp(timestamp: any): string {
+function serializeTimestamp(timestamp: unknown): string {
   if (!timestamp) return new Date().toISOString();
-  if (typeof timestamp.toDate === "function") {
-    return timestamp.toDate().toISOString();
+  if (typeof timestamp === "object" && typeof (timestamp as { toDate?: unknown }).toDate === "function") {
+    return (timestamp as { toDate: () => Date }).toDate().toISOString();
   }
-  if (typeof timestamp.seconds === "number") {
-    return new Date(timestamp.seconds * 1000).toISOString();
+  if (typeof timestamp === "object" && timestamp !== null && typeof (timestamp as { seconds?: unknown }).seconds === "number") {
+    return new Date((timestamp as { seconds: number }).seconds * 1000).toISOString();
   }
   if (timestamp instanceof Date) {
     return timestamp.toISOString();

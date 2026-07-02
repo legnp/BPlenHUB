@@ -2,18 +2,21 @@
 
 import React, { useState } from "react";
 import { Copy, Check } from "lucide-react";
+import type { SurveyValue } from "@/types/survey";
 
 interface CvHeadlineCopierProps {
-  cvFocadoData: any;
-  masterCvData: any;
+  cvFocadoData: Record<string, SurveyValue> | null | undefined;
+  masterCvData: Record<string, SurveyValue> | null | undefined;
 }
 
 export function CvHeadlineCopier({ cvFocadoData, masterCvData }: CvHeadlineCopierProps) {
   const [copied, setCopied] = useState(false);
 
-  const cargo = cvFocadoData?.pdi_posicao_target || "Posicao Target";
-  const skill1 = masterCvData?.hard_skills?.[0] || "";
-  const skill2 = masterCvData?.metodologias?.[0] || masterCvData?.hard_skills?.[1] || "";
+  const hardSkills = masterCvData?.hard_skills;
+  const metodologias = masterCvData?.metodologias;
+  const cargo = String(cvFocadoData?.pdi_posicao_target || "Posicao Target");
+  const skill1 = String((Array.isArray(hardSkills) ? hardSkills[0] : "") || "");
+  const skill2 = String((Array.isArray(metodologias) ? metodologias[0] : "") || (Array.isArray(hardSkills) ? hardSkills[1] : "") || "");
 
   const parts = [cargo, skill1, skill2].filter(Boolean);
   const headline = parts.join(" | ");

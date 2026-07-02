@@ -2,17 +2,20 @@
 
 import React, { useState } from "react";
 import { Copy, Check } from "lucide-react";
+import type { SurveyValue } from "@/types/survey";
 
 interface CvKeywordsCopierProps {
-  masterCvData: any;
+  masterCvData: Record<string, SurveyValue> | null | undefined;
 }
 
 export function CvKeywordsCopier({ masterCvData }: CvKeywordsCopierProps) {
   const [copied, setCopied] = useState(false);
 
-  const hardSkills = masterCvData?.hard_skills || [];
-  const metodologias = masterCvData?.metodologias || [];
-  const allKeywords = [...hardSkills, ...metodologias].filter(Boolean);
+  const hardSkillsRaw = masterCvData?.hard_skills;
+  const metodologiasRaw = masterCvData?.metodologias;
+  const hardSkills = Array.isArray(hardSkillsRaw) ? hardSkillsRaw : [];
+  const metodologias = Array.isArray(metodologiasRaw) ? metodologiasRaw : [];
+  const allKeywords = [...hardSkills, ...metodologias].filter(Boolean).map((kw) => String(kw));
 
   const keywordsString = allKeywords.join(", ");
 

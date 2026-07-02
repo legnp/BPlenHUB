@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import type { SurveyValue } from "@/types/survey";
 
 interface ContactItem {
   value: string;
@@ -9,8 +10,8 @@ interface ContactItem {
 }
 
 interface CvContactFilterProps {
-  value: any;
-  masterCvData: any;
+  value: SurveyValue;
+  masterCvData: Record<string, SurveyValue> | null | undefined;
   onChange: (val: Record<string, ContactItem>) => void;
 }
 
@@ -26,16 +27,16 @@ const FIELD_LABELS: Record<string, string> = {
 export function CvContactFilter({ value, masterCvData, onChange }: CvContactFilterProps) {
   const [data, setData] = useState<Record<string, ContactItem>>(() => {
     if (value && typeof value === "object" && Object.keys(value).length > 0) {
-      return value;
+      return value as Record<string, ContactItem>;
     }
     const master = masterCvData || {};
     return {
-      nome_completo: { value: master.nome_completo || "", visible: true },
-      email_profissional: { value: master.email_profissional || "", visible: true },
-      telefone: { value: master.telefone || "", visible: true },
-      linkedin: { value: master.linkedin || "", visible: true },
-      portfolio: { value: master.portfolio || "nd", visible: true },
-      localizacao: { value: master.localizacao || "", visible: true }
+      nome_completo: { value: String(master.nome_completo || ""), visible: true },
+      email_profissional: { value: String(master.email_profissional || ""), visible: true },
+      telefone: { value: String(master.telefone || ""), visible: true },
+      linkedin: { value: String(master.linkedin || ""), visible: true },
+      portfolio: { value: String(master.portfolio || "nd"), visible: true },
+      localizacao: { value: String(master.localizacao || ""), visible: true }
     };
   });
 
@@ -54,12 +55,12 @@ export function CvContactFilter({ value, masterCvData, onChange }: CvContactFilt
   useEffect(() => {
     if (masterCvData && (!value || Object.keys(value).length === 0)) {
       const initial = {
-        nome_completo: { value: masterCvData.nome_completo || "", visible: true },
-        email_profissional: { value: masterCvData.email_profissional || "", visible: true },
-        telefone: { value: masterCvData.telefone || "", visible: true },
-        linkedin: { value: masterCvData.linkedin || "", visible: true },
-        portfolio: { value: masterCvData.portfolio || "nd", visible: true },
-        localizacao: { value: masterCvData.localizacao || "", visible: true }
+        nome_completo: { value: String(masterCvData.nome_completo || ""), visible: true },
+        email_profissional: { value: String(masterCvData.email_profissional || ""), visible: true },
+        telefone: { value: String(masterCvData.telefone || ""), visible: true },
+        linkedin: { value: String(masterCvData.linkedin || ""), visible: true },
+        portfolio: { value: String(masterCvData.portfolio || "nd"), visible: true },
+        localizacao: { value: String(masterCvData.localizacao || ""), visible: true }
       };
       setData(initial);
       onChange(initial);

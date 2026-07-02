@@ -183,7 +183,7 @@ export default function GestaoCarreiraPage() {
     try {
       const res = await updateCareerTaskStatusAction(matricula, taskId, newStatus);
       if (res.success) {
-        setCareerData((prev: any) => {
+        setCareerData((prev) => {
           if (!prev) return null;
           const updatedBacklog = prev.backlog.map((task: CareerTask) => {
             if (task.id === taskId) {
@@ -214,7 +214,7 @@ export default function GestaoCarreiraPage() {
     try {
       const res = await deleteCareerTaskAction(matricula, taskId);
       if (res.success) {
-        setCareerData((prev: any) => {
+        setCareerData((prev) => {
           if (!prev) return null;
           return {
             ...prev,
@@ -241,7 +241,7 @@ export default function GestaoCarreiraPage() {
         // Clear input
         setCommentInputs(prev => ({ ...prev, [taskId]: "" }));
         // Add locally
-        setCareerData((prev: any) => {
+        setCareerData((prev) => {
           if (!prev) return null;
           const updatedBacklog = prev.backlog.map((task: CareerTask) => {
             if (task.id === taskId) {
@@ -323,7 +323,7 @@ export default function GestaoCarreiraPage() {
       const res = await updateCareerGoalProgressAction(matricula, objectiveId, goalId, value);
       if (res.success) {
         // Optimistic UI updates
-        setCareerData((prev: any) => {
+        setCareerData((prev) => {
           if (!prev) return null;
           const updatedObjectives = prev.objectives.map((obj: CareerObjective) => {
             if (obj.id === objectiveId) {
@@ -681,7 +681,7 @@ export default function GestaoCarreiraPage() {
                   <div className="p-8 space-y-4 bg-[var(--bg-primary)]/10">
                     {careerData?.feedbacks && careerData.feedbacks.length > 0 ? (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {careerData.feedbacks.map((fb: any) => (
+                        {careerData.feedbacks.map((fb) => (
                           <div key={fb.id} className="p-6 bg-[var(--bg-primary)] border border-[var(--border-primary)]/60 rounded-3xl space-y-4 text-left shadow-inner">
                             <div className="flex items-center justify-between">
                               <span className="text-[9px] font-black uppercase tracking-widest text-[var(--accent-start)]">{fb.author}</span>
@@ -734,7 +734,7 @@ export default function GestaoCarreiraPage() {
                   <div className="p-8 space-y-4 bg-[var(--bg-primary)]/10">
                     {careerData?.atas && careerData.atas.length > 0 ? (
                       <div className="space-y-3">
-                        {careerData.atas.map((ata: any) => (
+                        {careerData.atas.map((ata) => (
                           <div key={ata.id} className="p-4 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-2xl flex items-center justify-between">
                             <div className="space-y-1 text-left max-w-[70%]">
                               <h5 className="text-xs font-black text-[var(--text-primary)]">{ata.title}</h5>
@@ -797,7 +797,7 @@ export default function GestaoCarreiraPage() {
                   <div className="p-8 space-y-4 bg-[var(--bg-primary)]/10">
                     {careerData?.sharedDocuments && careerData.sharedDocuments.length > 0 ? (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {careerData.sharedDocuments.map((doc: any) => (
+                        {careerData.sharedDocuments.map((doc) => (
                           <div key={doc.id} className="p-4 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-2xl flex items-center justify-between">
                             <div className="space-y-1 text-left max-w-[65%]">
                               <span className="text-[8px] font-black uppercase tracking-widest text-[var(--accent-start)]">{doc.category}</span>

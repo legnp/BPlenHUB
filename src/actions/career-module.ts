@@ -158,7 +158,7 @@ export async function getCareerPlanningDataAction(
         let operationsCount = 0;
 
         // Buscar todos os eventos agendados em lote para capturar os titulos reais
-        const eventMap = new Map<string, any>();
+        const eventMap = new Map<string, Record<string, unknown>>();
         const eventIds = bookingsSnap.docs.map(doc => doc.data().eventId || doc.id).filter(Boolean);
         const eventRefs = Array.from(new Set(eventIds)).map(id => db.collection("Calendar_Events").doc(id));
 
@@ -167,7 +167,7 @@ export async function getCareerPlanningDataAction(
             const eventSnaps = await db.getAll(...eventRefs);
             eventSnaps.forEach(snap => {
               if (snap.exists) {
-                eventMap.set(snap.id, snap.data());
+                eventMap.set(snap.id, snap.data() || {});
               }
             });
           } catch (err) {
@@ -220,7 +220,7 @@ export async function getCareerPlanningDataAction(
 
           // 3. Documentos compartilhados legados
           if (bookingData.participantDocs && Array.isArray(bookingData.participantDocs) && bookingData.participantDocs.length > 0) {
-            bookingData.participantDocs.forEach((docItem: any, idx: number) => {
+            bookingData.participantDocs.forEach((docItem: { url: string; fileId?: string; fileName?: string; uploadedAt?: string }, idx: number) => {
               const docId = `booking-${eventId}-doc-${idx}`;
               const docRef = db.collection("User").doc(matricula).collection("Shared_Documents").doc(docId);
               batch.set(docRef, {
@@ -665,7 +665,7 @@ export async function updateCareerGoalProgressAction(
 }
 
 // Helper robusto para comparar IDs (comporta numeros ou strings)
-function docMatchId(id1: any, id2: any): boolean {
+function docMatchId(id1: unknown, id2: unknown): boolean {
   return String(id1) === String(id2);
 }
 

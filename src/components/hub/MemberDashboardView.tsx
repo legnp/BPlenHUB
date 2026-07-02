@@ -538,8 +538,25 @@ export default function MemberDashboardView() {
   );
 }
 
-function MiniCard({ title, subtitle, data, icon, isReleased, submittedAt, chart, hideLegend }: any) {
-  const formattedDate = submittedAt ? new Date(submittedAt.seconds ? submittedAt.seconds * 1000 : submittedAt).toLocaleDateString("pt-BR") : null;
+interface MiniCardChartDatum {
+  label: string;
+  percentage: number;
+  color: string;
+}
+
+interface MiniCardProps {
+  title: string;
+  subtitle: string;
+  data: MiniCardChartDatum[];
+  icon: React.ReactNode;
+  isReleased: boolean;
+  submittedAt?: string | number | { seconds: number } | null;
+  chart: React.ReactNode;
+  hideLegend?: boolean;
+}
+
+function MiniCard({ title, subtitle, data, icon, isReleased, submittedAt, chart, hideLegend }: MiniCardProps) {
+  const formattedDate = submittedAt ? new Date(typeof submittedAt === "object" && submittedAt.seconds ? submittedAt.seconds * 1000 : submittedAt as string | number).toLocaleDateString("pt-BR") : null;
 
   return (
     <section className={`p-8 bg-[var(--input-bg)]/20 border border-[var(--border-primary)] rounded-[2.5rem] space-y-4 transition-all relative overflow-hidden group/card ${!isReleased ? 'opacity-70 grayscale-[0.5]' : 'hover:bg-[var(--input-bg)]/40 hover:border-blue-500/20'}`}>
@@ -565,7 +582,7 @@ function MiniCard({ title, subtitle, data, icon, isReleased, submittedAt, chart,
 
       {isReleased && data.length > 0 && !hideLegend && (
          <div className="flex flex-wrap justify-center gap-x-3 gap-y-1.5 px-4 opacity-70 group-hover/card:opacity-100 transition-opacity">
-            {data.map((item: any) => (
+            {data.map((item) => (
                <div key={item.label} className="flex items-center gap-1.5">
                   <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: item.color }} />
                   <span className="text-[7.5px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)]">{item.label}</span>
