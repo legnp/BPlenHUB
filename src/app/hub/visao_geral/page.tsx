@@ -314,16 +314,15 @@ export default function VisaoGeralPage() {
     const hasGdcAccess = stages.find(s => s.id === "gestao-e-desenvolvimento")?.id;
     if (hasGdcAccess && careerData?.backlog && careerData.backlog.length > 0) {
       careerData.backlog.forEach((task) => {
-        // Comparações abaixo preservadas como estavam (código morto: "Em Andamento"/"Concluida" sem
-        // acento não existem em CareerTaskStatus; feedback/notes/completedAt/updatedAt não existem em
-        // CareerTask). Ver Onda 4 de limpeza de `any` — comportamento intencionalmente preservado.
-        const taskExtra = task as unknown as Record<string, unknown>;
         let status: "completed" | "in_progress" | "pending" = "pending";
-        if ((task.status as string) === "Concluida" || task.status === "Concluída") {
+        if (task.status === "Concluída") {
           status = "completed";
-        } else if ((task.status as string) === "Em Andamento") {
+        } else if (task.status === "Sprint atual") {
           status = "in_progress";
         }
+
+        const completedHistoryEntry = task.statusHistory?.find(h => h.status === "Concluída");
+        const lastAdminComment = task.comments?.filter(c => c.author === "admin").slice(-1)[0];
 
         list.push({
           id: task.id || `task-${task.title}`,
@@ -336,8 +335,8 @@ export default function VisaoGeralPage() {
           url: "/hub/membro/gestao_carreira",
           hasTaskDetail: true,
           taskStatus: task.status,
-          feedbackText: (taskExtra.feedback || taskExtra.notes) as string | undefined,
-          completionDate: (taskExtra.completedAt || taskExtra.updatedAt || undefined) as string | undefined,
+          feedbackText: lastAdminComment?.text,
+          completionDate: completedHistoryEntry?.changedAt,
           stageOrder: 5,
           isSequenceLocked: false,
           isSubstepLocked: false,
@@ -349,12 +348,8 @@ export default function VisaoGeralPage() {
     // 4. Incluir metas estrategicas
     if (hasGdcAccess && careerData?.objectives && careerData.objectives.length > 0) {
       careerData.objectives.forEach((obj) => {
-        // Comparações abaixo preservadas como estavam (código morto: "Concluido"/"Concluído" não
-        // existem em CareerObjective["status"]; completedAt/updatedAt não existem em CareerObjective).
-        // Ver Onda 4 de limpeza de `any` — comportamento intencionalmente preservado.
-        const objExtra = obj as unknown as Record<string, unknown>;
         let status: "completed" | "in_progress" | "pending" = "pending";
-        if ((obj.status as string) === "Concluido" || (obj.status as string) === "Concluído") {
+        if (obj.status === "Alcançado") {
           status = "completed";
         } else if (obj.status === "Em Andamento") {
           status = "in_progress";
@@ -372,7 +367,8 @@ export default function VisaoGeralPage() {
           hasTaskDetail: true,
           taskStatus: obj.status,
           feedbackText: obj.description,
-          completionDate: (objExtra.completedAt || objExtra.updatedAt || undefined) as string | undefined,
+          // CareerObjective não rastreia histórico de status (sem completedAt real) — sem data de conclusão.
+          completionDate: undefined,
           stageOrder: 5,
           isSequenceLocked: false,
           isSubstepLocked: false,
