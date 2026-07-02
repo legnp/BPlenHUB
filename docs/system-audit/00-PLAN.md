@@ -87,11 +87,11 @@ evita "consertar" uma página para um padrão que será mudado depois.
   (Mapa 5 já levantou o inventário completo com veredito: só 2 de 13 modais
   de fato estendem `GlassModal`) — decisão de negócio/design pendente, não
   mais de pesquisa
-- Modo de validação: PENDENTE
-- Status: Não iniciado (dados completos disponíveis em `05-map-design-system.md`, decisão em aberto)
-- Resultado: —
-- Bug(s) vinculado(s): BUG-026, BUG-027
-- Log: —
+- Modo de validação: Automatizado (decisão de padrão embasada por Mapa 5; implementação da convergência é gated — sistema de design)
+- Status: Decidido — padrão + plano de convergência registrados; implementação pendente de plano+aprovação por lote
+- Resultado: `GlassModal` confirmado como modal-base único oficial (já é o mais completo: portal, motion, ESC, variantes; 2 de 13 modais já o estendem). Plano de convergência dos 11 restantes em 3 lotes, começando por unificar a escala de z-index (6 valores não coordenados hoje — risco real de empilhamento errado ContractGateModal vs UpsellServiceModal). Detalhe em `F0-DECISIONS.md#f0-01`.
+- Bug(s) vinculado(s): BUG-026 (Aberto, agora com plano), BUG-027 (remoção segura)
+- Log: [2026-07-02] decidido nesta sessão — ver `LOG.md`
 
 ### [F0-02] Padrão canônico de Timestamp no Firestore
 - Categoria(s) de qualidade: Manutenibilidade / Confiabilidade
@@ -99,11 +99,11 @@ evita "consertar" uma página para um padrão que será mudado depois.
   `FieldValue.serverTimestamp()` (recomendado) vs. string ISO; documentado como
   débito técnico intencional os pontos já mistos (achados no Mapa 4: `products`,
   `marketing_coupons`, `SocialPost`, `Invitation_Events/Tokens`, `_AuthMap`)
-- Modo de validação: PENDENTE
-- Status: Não iniciado
-- Resultado: —
-- Bug(s) vinculado(s): —
-- Log: —
+- Modo de validação: Automatizado (decisão de melhor prática técnica)
+- Status: Decidido
+- Resultado: Padrão daqui pra frente = `FieldValue.serverTimestamp()` (Admin SDK) na escrita + serialização (`serializeTimestamp`/`serializeDoc`) na leitura; proibido gravar `Date` nativo ou string ISO manual em campos novos. Tipo TS reflete a forma serializada, não `Timestamp` do SDK client. Pontos mistos existentes (`products`, `marketing_coupons`, `User.lastPhotoUpdate`, `Booking_Proposals`, `Invitation_Events`, `_AuthMap`) aceitos como legado documentado (não migrar à força). BUG-009 (`UserBooking.timestamp`) é defeito de nome de campo, não questão de tipo — segue rastreado. Detalhe em `F0-DECISIONS.md#f0-02`.
+- Bug(s) vinculado(s): BUG-009 (único defeito ativo relacionado)
+- Log: [2026-07-02] decidido nesta sessão — ver `LOG.md`
 
 ### [F0-03] Padrão canônico de identidade/nome de usuário
 - Categoria(s) de qualidade: Manutenibilidade / Adequação funcional
@@ -112,31 +112,31 @@ evita "consertar" uma página para um padrão que será mudado depois.
   `Authentication_Name`, `User_Nickname`, `nickname`, `User_Welcome.User_Nickname`,
   `User_Name`, `User_Email`) — documentado plano de convergência gradual (não
   migração forçada, dado que é dado legado)
-- Modo de validação: PENDENTE
-- Status: Não iniciado
-- Resultado: —
+- Modo de validação: Automatizado (decisão técnica de fonte de verdade)
+- Status: Decidido — padrão + plano de convergência gradual registrados
+- Resultado: Precedência canônica definida. Display name: `User_Nickname` → `Authentication_Name` → `profile.fullName` → `"Membro"`. Nome legal (contrato/cobrança): `profile.fullName` → `Authentication_Name` → `User_Nickname`. E-mail: `User_Email` → `email`. Campos `nickname` solto / `User_Name` / `User_Welcome.User_Nickname` = legado somente-leitura, nunca escrever em código novo. Já existe resolver parcial (`src/lib/user-identity.ts:resolveUserNickname`) a ser promovido a helper canônico único; convergência é de leitura (todos leem pela mesma precedência) e de escrita nova (todos escrevem nos mesmos 3 campos), sem migração de dados em massa. Detalhe em `F0-DECISIONS.md#f0-03`.
 - Bug(s) vinculado(s): —
-- Log: —
+- Log: [2026-07-02] decidido nesta sessão — ver `LOG.md`
 
 ### [F0-04] Destino das coleções órfãs (`entitlements`, `User_JourneyMap`)
 - Categoria(s) de qualidade: Manutenibilidade
 - Critério de aceite: decidido se são removidas, arquivadas como legado
   documentado, ou reativadas com propósito claro
-- Modo de validação: PENDENTE
-- Status: Não iniciado
-- Resultado: —
-- Bug(s) vinculado(s): BUG-018
-- Log: —
+- Modo de validação: Automatizado (decisão documental; parada de escrita de `User_JourneyMap` toca onboarding/god file — implementação gated)
+- Status: Decidido — arquivar ambas como legado; execução da limpeza gated onde toca onboarding
+- Resultado: Nenhuma tem consumidor real. `entitlements` (+ `entitlements.ts`/`types`) = 100% órfã (sem callers, Mapa 4c); remoção de baixo risco como limpeza oportunística, após confirmar que nenhum export/relatório externo lê a coleção em produção. `User_JourneyMap/progress` (escrito só por `welcome-survey.ts`, sem leitor) = modelagem de jornada abandonada; decisão de parar a escrita em onboarding novo exige plano+aprovação (`welcome-survey.ts`/`survey-effects.ts` = efeito de onboarding + god file do CLAUDE.md). Detalhe em `F0-DECISIONS.md#f0-04`.
+- Bug(s) vinculado(s): BUG-018 (Aberto, agora com decisão de destino)
+- Log: [2026-07-02] decidido nesta sessão — ver `LOG.md`
 
 ### [F0-05] Paridade de guard servidor entre `/hub` e `/admin`
 - Categoria(s) de qualidade: Segurança
 - Critério de aceite: decidido se `/admin` deve ganhar verificação server-side
   equivalente à de `src/app/hub/layout.tsx` (hoje é só client-side)
-- Modo de validação: PENDENTE
-- Status: Não iniciado
-- Resultado: —
-- Bug(s) vinculado(s): BUG-007
-- Log: —
+- Modo de validação: Automatizado para a análise/recomendação (código confirmado); implementação gated — segurança/identidade → plano + aprovação antes de codar
+- Status: **Implementado** na branch `fix/admin-server-side-guard` (aprovado pela Gestora em 2026-07-02), aguardando review/merge do PR
+- Resultado: Confirmado por leitura direta: `src/app/hub/layout.tsx` (Server Component) chama `verifySignedSession()` antes de renderizar; `src/app/admin/layout.tsx` era Server Component mas NÃO verificava nada — só renderizava `<AdminLayoutClient>` (guard 100% client via `useAuthContext`). **Implementado**: `admin/layout.tsx` agora é async e chama `getServerSession()` (traz `isAdmin`, diferente de `verifySignedSession()` que só traz `uid/email`), com `redirect("/")` no servidor se sessão ausente / `role==="suspended"` / `!isAdmin` — espelhando `requireAdmin`. Guard client mantido como 2ª camada. `type-check` e `next build` limpos (o lint pré-existente da `main` tem 192 erros não relacionados — ver LOG). Nota: isto protege o RENDER da página; guards de Server Action (BUG-020/T-02) são esforço separado e igualmente necessário. Detalhe em `F0-DECISIONS.md#f0-05`.
+- Bug(s) vinculado(s): BUG-007 (Em Progresso — corrigido na branch `fix/admin-server-side-guard`)
+- Log: [2026-07-02] decidido e implementado nesta sessão — ver `LOG.md`
 
 ### [F0-06] Padrão canônico de tom de voz e nomenclatura (textos, títulos, subtítulos)
 - Categoria(s) de qualidade: Usabilidade / Manutenibilidade
@@ -147,11 +147,11 @@ evita "consertar" uma página para um padrão que será mudado depois.
   `/servicos/[audience]/[slug]`, texto "Resgate via Faturamento Interno" no
   checkout, data de última atualização em `/privacidade`) avaliados contra
   esse guia
-- Modo de validação: PENDENTE
-- Status: Não iniciado
-- Resultado: —
-- Bug(s) vinculado(s): —
-- Log: —
+- Modo de validação: Requer execução humana (ratificação) — rascunho de guia embasado por análise de copy (feito); tom institucional é decisão de marca da Gestora
+- Status: Proposta de guia + achados registrados; aguardando ratificação da Gestora
+- Resultado: Rascunho de guia de estilo redigido (idioma, títulos/subtítulos, CTAs consistentes, termos canônicos de marca, fronteira "pode ficar hardcoded" vs "deve vir de config") — ver protocolo de ratificação em `F0-DECISIONS.md#f0-06`. Achados de copy reavaliados: "Resgate via Faturamento Interno"/"Garantia BPlen" (`/checkout/[slug]:228/238`) = rótulo de marca, pode ficar hardcoded; `lastUpdated="21 de junho de 2026"` (`/privacidade:20`) = data de vigência legal, DEVE sair para config (risco compliance/T-06). CORREÇÃO DE MAPA: o achado "preço/garantia fixos em /servicos/[audience]/[slug]" é impreciso — verificado que o preço vem de `product.price` (config, não hardcoded) e não há texto de garantia nessa rota; a copy hardcoded está em `/checkout/[slug]`.
+- Bug(s) vinculado(s): — (achado da data de vigência será tratado na revisão de copy da Fase 1 / T-06)
+- Log: [2026-07-02] decidido/rascunhado nesta sessão — ver `LOG.md`
 
 ---
 
