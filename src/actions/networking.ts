@@ -5,6 +5,7 @@ import { requireAuth } from "@/lib/auth-guards";
 import { resolveMatricula } from "./get-user-results";
 import { PartnerData } from "./admin/partners";
 import { getErrorMessage } from "@/lib/utils/errors";
+import { safeSerialize } from "@/lib/utils/firestore";
 
 /**
  * BPlen HUB — Networking Engine 🌐🧬
@@ -50,7 +51,7 @@ export async function getNetworkingDataAction(
       // Busca simples sem compound queries (evita necessidade de índice)
       const snapshot = await db.collection("Partners").get();
       let results = snapshot.docs
-        .map(doc => ({ id: doc.id, ...doc.data() } as PartnerData))
+        .map(doc => safeSerialize<PartnerData>({ id: doc.id, ...doc.data() }))
         .filter(p => p.isActive === true); // Filtra client-side
 
       // Filtro de ramo de atuação
