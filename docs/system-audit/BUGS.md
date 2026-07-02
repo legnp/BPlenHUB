@@ -467,7 +467,9 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 
 ### BUG-028 Login com Google falha sem fallback quando o popup é bloqueado (`auth/popup-blocked`)
 
-- Severidade: Alto
+- Severidade: ~~Alto~~ **Baixo** (rebaixado 2026-07-02 após validação — ver
+  "Reclassificação" ao final do item; produção loga normalmente, o gap real era
+  preview-only)
 - Área/fase onde foi achado: Reportado pela Gestora (gap de auth no preview/produção);
   validado por leitura de código nesta sessão. Diagnóstico original no chat `Dev_03`.
 - Arquivo(s) afetado(s): `src/hooks/use-auth.ts:44` (`signInWithGoogle` →
@@ -500,23 +502,29 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   `FloatingCTAs.tsx`) não retomam automaticamente no caminho redirect (a página
   recarrega) — melhoria líquida para quem hoje não loga, mas a retomada perfeita
   pós-redirect seria escopo maior (tocaria esses componentes de CTA).
-- **Dependência crítica (authDomain):** a viabilidade do fallback via
-  `signInWithRedirect` depende de resolver `BUG-029` primeiro — com o `authDomain`
-  atual (`firebaseapp.com`, cross-domain) o redirect pode falhar pelos mesmos
-  bloqueios de cookie de terceiros que fecham o popup. Decisão da Gestora
-  (2026-07-02): **validar/ajustar o authDomain antes de implementar o código**
-  (opção B). Portanto a implementação da versão completa fica pendente de
-  `BUG-029`.
-- Status: Aberto (bloqueado por `BUG-029` — validação de authDomain primeiro)
-- Decisão de execução: Precisa plano+aprovação (identidade/sessão — `AuthProvider`
-  e fluxo de login, área sensível do `CLAUDE.md`). Versão escolhida: **completa**
-  (fallback + retomada de fluxo pós-redirect nos CTAs). Implementação só começa
-  após `BUG-029` validado/corrigido.
+- **Reclassificação (2026-07-02, após validação da Gestora — opção B):** os dados
+  de validação mostraram que **o login funciona normalmente em produção**
+  (`bplen.com`) via popup; o erro ocorre **apenas no preview** (`*.vercel.app`).
+  Logo, o problema real **não** é a ausência de fallback popup→redirect (produção
+  não precisa dele), e sim o gap de auth no preview (ver `BUG-030`). O fallback +
+  retomada de fluxo continua sendo uma melhoria de **robustez** válida (protege o
+  subconjunto raro de usuários com popup bloqueado por extensão), mas deixa de ser
+  urgente e **não deve ser implementado agora**: seria um refactor grande em
+  ~6 arquivos sensíveis do fluxo de auth para endurecer um caminho que hoje
+  funciona em produção — risco desproporcional ao benefício. Reavaliar sob demanda
+  (ex.: se surgirem relatos reais de usuários de produção sem conseguir logar).
+- Status: Aberto — **rebaixado para robustez/baixa prioridade**; implementação
+  adiada (não é a causa do gap reportado). Diagnóstico e plano preservados acima
+  para retomada futura, se necessário.
+- Decisão de execução: Adiado (motivo: produção não afetada; mudança tocaria área
+  sensível sem necessidade atual). Se retomado, segue precisando plano+aprovação.
 - Commit/PR: —
 
 ### BUG-029 Override de `authDomain` anula o proxy first-party de `/__/auth` (força fluxo cross-domain)
 
-- Severidade: Alto
+- Severidade: ~~Alto~~ **Baixo** (rebaixado 2026-07-02 — a validação mostrou que
+  produção loga normalmente apesar do override; é débito de config confuso, não
+  defeito ativo)
 - Área/fase onde foi achado: Investigação do gap de auth (BUG-028), nesta sessão
 - Arquivo(s) afetado(s): `src/lib/firebase.ts:11-14` (override), `next.config.ts:44-55`
   (proxy que fica inutilizado), `src/env.ts` (`NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`)
@@ -548,11 +556,46 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   4. Experimento controlado (em branch/preview dedicado ou toggle): remover o
      override de `firebase.ts` para `authDomain=bplen.com` e testar se o proxy
      `/__/auth/` resolve o popup/redirect em produção.
+- **Validação (2026-07-02):** env de produção `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
+  bplen.com` (confirmado), `bplen.com` autorizado no Firebase (confirmado), e
+  **login funciona em produção** apesar do override forçar `firebaseapp.com`.
+  Portanto o override **não é a causa de nenhum gap ativo** — a hipótese inicial
+  de que ele quebrava produção foi refutada. O proxy de `/__/auth/` fica ocioso,
+  mas inofensivo. **Não mexer sem causa**: o override provavelmente foi adicionado
+  para resolver um 404 real de popup no passado; removê-lo às cegas poderia
+  regredir produção, que hoje funciona.
+- Status: Aberto — **rebaixado**; débito de config a limpar com cuidado (não
+  urgente). Só reavaliar se o fluxo de auth for refatorado (junto de `BUG-028`).
+- Decisão de execução: Adiado (produção não afetada; risco de regressão sem
+  benefício claro). Se tocado, precisa plano+aprovação (infra de identidade).
+- Commit/PR: —
+
+### BUG-030 Autenticação Google não funciona nos previews da Vercel (`*.vercel.app` não autorizado)
+
+- Severidade: Baixo (afeta apenas ambiente de preview/QA; produção não é impactada)
+- Área/fase onde foi achado: Investigação do gap de auth (BUG-028/029),
+  confirmado pela validação da Gestora (2026-07-02)
+- Arquivo(s)/config afetado(s): configuração de "Authorized domains" do Firebase
+  Auth; domínios efêmeros de preview da Vercel (`*.vercel.app`); `firebase.ts`
+  (`authDomain` fixo)
+- Cenário de falha: nos deploys de **preview** da Vercel, o app é servido em um
+  domínio efêmero `*.vercel.app` que (a) **não** está na lista de Authorized
+  Domains do Firebase Auth e (b) nunca coincide com o `authDomain` fixo. O login
+  com Google falha só nesse ambiente — enquanto produção (`bplen.com`, autorizado)
+  funciona. É a **causa real** do "gap de auth no preview" reportado pela Gestora,
+  e é uma **limitação conhecida** de Firebase Auth + preview da Vercel (URLs
+  dinâmicas), não um defeito de código do app.
+- Opções de tratamento (nenhuma é código de app crítico):
+  1. **Aceitar como limitação documentada** (recomendado se o preview é só para
+     inspeção visual): testar fluxos de login em produção ou num staging estável.
+  2. **Staging com domínio próprio**: criar um subdomínio estável (ex.:
+     `staging.bplen.com`) apontado ao deploy de preview/staging, adicioná-lo aos
+     Authorized Domains do Firebase e usá-lo como `authDomain` nesse ambiente —
+     aí o login passa a funcionar no staging. Exige configuração de DNS/Vercel/
+     Firebase (fora de código de app, decisão da Gestora).
 - Status: Aberto
-- Decisão de execução: Precisa plano+aprovação (infra de identidade —
-  `firebase.ts` + comportamento de `authDomain`). Bloqueia `BUG-028`. Correção
-  provável: condicionar o override apenas ao que de fato precisa dele (ex.: só
-  preview/domínios não autorizados), permitindo `authDomain=bplen.com` em produção.
+- Decisão de execução: Requer decisão de infra da Gestora (aceitar limitação vs.
+  montar staging com domínio próprio). Não é correção de código de produto.
 - Commit/PR: —
 
 ---

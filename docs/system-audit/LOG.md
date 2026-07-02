@@ -385,3 +385,36 @@ para embasar essas decisões estão todos disponíveis.
 - Próximo passo: Gestora executa o protocolo de validação do BUG-029 (env de prod,
   authorized domains, teste em navegador real, experimento com `authDomain=bplen.com`).
 - Itens atualizados: `BUGS.md` (BUG-028 gate + BUG-029 novo), este LOG.
+
+---
+
+## [2026-07-02] Chat de execução — validação inverte o diagnóstico: gap é preview-only (BUG-030)
+
+- Chat/sessão: mesmo chat de execução
+- Validação executada pela Gestora (opção B):
+  1. `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` (prod) = `bplen.com`.
+  2. `bplen.com` está nos Authorized Domains do Firebase = sim.
+  3. **Sem erro de login em produção; erro só no preview.**
+- Conclusão (inverte a hipótese anterior):
+  - **Produção loga normalmente** via popup, mesmo com o override forçando
+    `authDomain=firebaseapp.com`. Logo o override (BUG-029) **não** é a causa de
+    nenhum gap ativo, e o fallback popup→redirect (BUG-028) **não** é necessário
+    para produção. Ambos rebaixados.
+  - O gap real é **preview-only**: `*.vercel.app` não é domínio autorizado no
+    Firebase e nunca coincide com o `authDomain` fixo → login falha só no preview.
+    Limitação conhecida de Firebase Auth + preview da Vercel, não defeito de
+    código. Registrado como **BUG-030** (Baixo).
+- Reclassificações:
+  - **BUG-028**: Alto → Baixo; implementação do fallback+retomada **adiada** (não
+    destabilizar um fluxo de auth que funciona em produção por um problema que é
+    de preview). Diagnóstico/plano preservados para retomada sob demanda.
+  - **BUG-029**: Alto → Baixo; não mexer sem causa (produção funciona; remover o
+    override às cegas poderia regredir o motivo pelo qual foi criado).
+  - **BUG-030 (novo)**: gap de auth no preview; decisão de infra da Gestora
+    (aceitar limitação vs. montar staging com domínio próprio).
+- Aprendizado de processo: a opção B (validar antes de codar) evitou um refactor
+  grande e arriscado no fluxo de login para um problema que não existe em
+  produção. Registrar como reforço de "validar premissa antes de implementar em
+  área sensível".
+- Itens atualizados: `BUGS.md` (BUG-028/029 rebaixados, +BUG-030), este LOG.
+- Nenhuma mudança de código de auth feita.
