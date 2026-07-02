@@ -138,9 +138,9 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   server-side antes de enviar o HTML/JS inicial. Mitigado se toda Server Action
   chamada pelas páginas admin tiver `requireAdmin` próprio, mas isso não foi
   confirmado página a página nesta rodada.
-- Status: Aberto
-- Decisão de execução: Precisa plano+aprovação (identidade/sessão)
-- Commit/PR: —
+- Status: Em Progresso — corrigido na branch `fix/admin-server-side-guard`, aguardando review/merge
+- Decisão de execução: Plano apresentado e **aprovado pela Gestora (2026-07-02)**. **[2026-07-02 / F0-05]** Implementado: `src/app/admin/layout.tsx` virou Server Component async chamando `getServerSession()` + `redirect("/")` se sessão ausente / suspenso / não-admin, espelhando `requireAdmin`; guard client mantido como 2ª camada. Validado por `tsc --noEmit` e `next build` (ambos limpos). Ver `F0-DECISIONS.md#f0-05`.
+- Commit/PR: branch `fix/admin-server-side-guard` (PR aberto)
 
 ### BUG-008 Chave de cota "1-to-1" com capitalização inconsistente
 
@@ -287,10 +287,16 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   consumidor confirmado)
 - Cenário de falha: nenhum ativo — são sistemas paralelos sem uso real
   (débito técnico / código morto), mas continuam sendo escritos/mantidos.
-- Status: Aberto
-- Decisão de execução: Precisa avaliação de impacto antes de remover (regra do
-  CLAUDE.md sobre código legado hardcoded/preservado)
-- Commit/PR: —
+- Status: Em Progresso — `entitlements` removida (branch `fix/admin-server-side-guard`); `User_JourneyMap` pendente (gated)
+- Decisão de execução: **[2026-07-02 / F0-04]** Avaliação de impacto feita e
+  executada em parte. **REMOVIDO**: `src/actions/entitlements.ts` (ação órfã) +
+  tipos `UserEntitlement`/`EntitlementStatus` (zero uso externo). Correção da
+  suposição inicial: `src/types/entitlements.ts` NÃO era órfão (hospeda
+  `MemberQuota`/`MemberQuotaWallet`, usados por `quotas.ts`/`useJourney.ts`) —
+  mantido; remoção cirúrgica. Validado por type-check + build. **Pendente/gated**:
+  parar escrita de `User_JourneyMap` em `welcome-survey.ts`/`survey-effects.ts`
+  (god file) = PR próprio com plano+aprovação. Ver `F0-DECISIONS.md#f0-04`.
+- Commit/PR: branch `fix/admin-server-side-guard` (remoção de `entitlements`)
 
 ### BUG-019 `updateProfileImageAction`/`deleteProfileImageAction` sem qualquer guard — IDOR confirmado
 
@@ -440,8 +446,8 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   coordenados (`50`, `300`, `500`, `1000`, `9999`, `99999`) criam risco real de
   um modal aparecer atrás de outro se dois dispararem ao mesmo tempo (ex.:
   `ContractGateModal` global vs. `UpsellServiceModal` da jornada).
-- Status: Aberto
-- Decisão de execução: Precisa plano+aprovação (sistema de design — Fase 0)
+- Status: Aberto (decisão de Fase 0 tomada — ver F0-01)
+- Decisão de execução: Precisa plano+aprovação (sistema de design — Fase 0). **[2026-07-02 / F0-01]** Decidido: `GlassModal` é o modal-base único oficial; converger os 11 modais divergentes em 3 lotes, começando por unificar a escala de z-index (correção prioritária: risco ContractGateModal vs UpsellServiceModal). Implementação gated por lote. Ver `F0-DECISIONS.md#f0-01`.
 - Commit/PR: —
 
 ### BUG-027 `ThemeSelector.tsx` é componente órfão (não é o seletor de tema real)

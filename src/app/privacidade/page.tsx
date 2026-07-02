@@ -1,6 +1,7 @@
 import React from "react";
 import { Metadata } from "next";
 import { LegalPageShell } from "@/components/layout/LegalPageShell";
+import { LEGAL_PAGES_LAST_UPDATED } from "@/config/legal-pages";
 import { Info, HelpCircle, ShieldAlert } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -17,7 +18,7 @@ export default function PrivacidadePage() {
     <LegalPageShell
       title="Politica de Privacidade"
       subtitle="Como cuidamos, processamos e protegemos as suas informacoes pessoais de acordo com a LGPD."
-      lastUpdated="21 de junho de 2026"
+      lastUpdated={LEGAL_PAGES_LAST_UPDATED.privacy}
       type="privacy"
     >
       <div className="space-y-10 text-[var(--text-secondary)]">
