@@ -1,5 +1,5 @@
 import { getAdminAuth } from "./firebase-admin";
-import { fetchUserPermissionsStatus } from "@/actions/auth-permissions";
+import { resolveUserPermissions } from "./user-permissions";
 import { UserRole, UserServices } from "@/types/users";
 import { verifySignedSession } from "@/actions/auth-session";
 
@@ -42,7 +42,9 @@ export async function getServerSession(idToken?: string): Promise<Session | null
     if (!uid) return null;
 
     // 3. Resolver o Papel (Role), Serviços e Matrícula do Usuário via Admin SDK/Firestore
-    const { isAdmin, role, services, matricula } = await fetchUserPermissionsStatus(uid);
+    // Usa o resolvedor cru (identidade ja verificada acima) para evitar recursao
+    // com o guard de dono do action `fetchUserPermissionsStatus`.
+    const { isAdmin, role, services, matricula } = await resolveUserPermissions(uid);
 
     return {
       uid,
