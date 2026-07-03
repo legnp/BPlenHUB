@@ -3,6 +3,8 @@
 import { getAdminDb } from "@/lib/firebase-admin";
 import * as admin from "firebase-admin";
 import { UserRole, UserServices } from "@/types/users";
+import { verifySignedSession } from "@/actions/auth-session";
+import { resolveUserPermissions } from "@/lib/user-permissions";
 
 /**
  * BPlen HUB — Auth Permissions Action (Segurança 🛡️)
@@ -21,9 +23,20 @@ const MASTER_EMAILS = [
 ];
 
 export async function syncUserPermissionsOnLogin(uid: string, email: string | null) {
-  if (!email) return { isAdmin: false, role: "visitor", services: {} };
-
   try {
+    // 🛡️ Guard anti-escalacao (BUG-032): nao confiar nos parametros. O cookie de
+    // sessao assinado ja existe neste ponto do login (criado por
+    // createSignedSessionCookie antes desta chamada). Exigimos que o chamador seja
+    // o proprio uid e usamos o e-mail VERIFICADO do cookie para o teste de master —
+    // caso contrario qualquer membro poderia passar um e-mail master e se autoconceder admin.
+    const caller = await verifySignedSession();
+    if (!caller || caller.uid !== uid) {
+      console.error("❌ [Auth Sync] Chamador nao corresponde ao uid informado. Sincronizacao negada.");
+      return { isAdmin: false, role: "visitor", services: {} };
+    }
+    email = caller.email ?? null;
+    if (!email) return { isAdmin: false, role: "visitor", services: {} };
+
     const isMasterEmail = MASTER_EMAILS.includes(email.toLowerCase());
 
 
@@ -157,37 +170,13 @@ export async function syncUserPermissionsOnLogin(uid: string, email: string | nu
  * Busca o Status de Permissão (Server Authority 🛡️)
  */
 export async function fetchUserPermissionsStatus(uid: string): Promise<{ isAdmin: boolean; role: UserRole; services: UserServices; matricula: string | null }> {
-    try {
-      const uidMapRef = getAdminDb().collection("_AuthMap").doc(uid);
-      const uidMapSnap = await uidMapRef.get();
-
-      if (!uidMapSnap.exists) {
-        console.warn(`⚠️ [Auth Status] UID ${uid} não encontrado no _AuthMap.`);
-        return { isAdmin: false, role: "visitor", services: {}, matricula: null };
-      }
-
-      const matricula = uidMapSnap.data()?.matricula || null;
-      const permissionsPath = `User/${matricula}/User_Permissions/access`;
-      const permissionsRef = getAdminDb().doc(permissionsPath);
-      const permSnap = await permissionsRef.get();
-
-      console.log(`🔍 [Auth Trace] UID: ${uid} | Matrícula Resolvida: ${matricula} | Path: ${permissionsPath}`);
-
-      if (!permSnap.exists) {
-        return { isAdmin: false, role: "member", services: {}, matricula };
-      }
-
-      const data = permSnap.data();
-      
-      return {
-        isAdmin: data?.admin === true,
-        role: (data?.role || (data?.admin ? "admin" : "member")) as UserRole,
-        services: (data?.services || {}) as UserServices,
-        matricula
-      };
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      console.error("❌ [Auth Status] Falha ao buscar permissões do servidor:", errorMessage);
+    // 🛡️ Guard de dono (BUG-020): esta e a porta exposta na rede. Um chamador so
+    // pode ler as proprias permissoes. A resolucao crua vive em
+    // `@/lib/user-permissions` e e usada por `getServerSession` (identidade ja
+    // verificada la), evitando recursao com o guard de sessao.
+    const caller = await verifySignedSession();
+    if (!caller || caller.uid !== uid) {
       return { isAdmin: false, role: "visitor", services: {}, matricula: null };
     }
+    return resolveUserPermissions(uid);
 }
