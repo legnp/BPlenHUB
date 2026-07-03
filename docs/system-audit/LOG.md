@@ -446,3 +446,28 @@ para embasar essas decisões estão todos disponíveis.
   MP sem HMAC) continuam abertos — não tratados aqui (trigger-sync pode ser cron
   real e precisa de shared secret, não remoção; webhook é fluxo financeiro).
 - Itens atualizados: `BUGS.md` (BUG-003, BUG-023 → Corrigido), este LOG.
+
+---
+
+## [2026-07-02] Chat de execução — BUG-003/023 mergeados + verificação em prod; BUG-019 corrigido
+
+- Chat/sessão: mesmo chat de execução
+- **PR #3 mergeado** (`ca6b0aa`) e verificado em produção: `/api/admin/recover`,
+  `/api/ghosts`, `/api/liandra` retornam **404** (seguindo o redirect apex→www);
+  `/api/trigger-sync` segue 200 (sanity). Auditoria (`scripts/audit-admins.js`)
+  rodada: **1 admin legítimo** (`SYSTEM_MASTER_AUTO_GRANT` por legnp@bplen.com),
+  **sem sinal de exploração** da rota removida.
+  - Nota honesta: a rota usada no sanity (`/api/trigger-sync`) **não é read-only**
+    — meu GET disparou `updateGlobalProgramacaoRegistryAction` (rewrite idempotente
+    do registro de programação). Sem dano esperado, mas reforça o `BUG-024`
+    (rota sem guard, publicamente acionável, retorna 200) — próximo candidato de
+    segurança (precisa de shared secret, não remoção).
+- **BUG-019 (IDOR em `profile.ts`) corrigido** — branch `security/fix-profile-idor`.
+  `updateProfileImageAction`/`deleteProfileImageAction` recebiam `matricula` sem
+  guard. Adicionado `requireAuth()` (sessão via cookie assinado) + trava de dono
+  (`session.matricula !== matricula && !isAdmin`). Único caller
+  (`ProfileIdentityTab`, autoatendimento) não muda; erro cai no try/catch e volta
+  como `{success:false,error}`. Validado por eslint + tsc + build.
+- Itens atualizados: `BUGS.md` (BUG-003/023 mergeados, BUG-019 → Corrigido), este LOG.
+- Trilha de segurança restante: BUG-020 (dezenas de actions sem guard — T-02),
+  BUG-024 (`trigger-sync` sem shared secret), BUG-025 (webhook MP sem HMAC).
