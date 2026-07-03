@@ -1,5 +1,5 @@
 import admin, { getAdminDb } from "@/lib/firebase-admin";
-import { requireAuth, requireAdmin } from "@/lib/auth-guards";
+import { requireAuth, requireAdmin, AuthorizationError } from "@/lib/auth-guards";
 import { serverEnv } from "@/env";
 import { format, getISOWeek, getYear, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -46,6 +46,17 @@ export async function bookEventAction(
   leadInfo?: { name?: string; phone?: string }
 ) {
   try {
+    // Guard de sessao: fluxo de membro exige sessao propria (ou admin); funil de
+    // lead publico (sem matricula, com leadInfo) permanece aberto como hoje.
+    if (matricula) {
+      const session = await requireAuth();
+      if (session.matricula !== matricula && !session.isAdmin) {
+        throw new AuthorizationError("Voce nao pode agendar em nome de outro membro.");
+      }
+    } else if (!leadInfo) {
+      throw new AuthorizationError("Requisicao de agendamento invalida.");
+    }
+
     const rateLimit = await checkRateLimit({
       action: "BOOKING",
       uid: userUid,
@@ -196,6 +207,11 @@ export async function cancelBookingAction(
   userUid: string
 ) {
   try {
+    const session = await requireAuth();
+    if (session.matricula !== matricula && !session.isAdmin) {
+      throw new AuthorizationError("Voce nao pode cancelar o agendamento de outro membro.");
+    }
+
     const db = getAdminDb();
     const eventRef = db.collection("Calendar_Events").doc(eventId);
     const userBookingInEventRef = eventRef.collection("attendees").doc(userUid);
@@ -405,8 +421,13 @@ export async function submitEvaluationAction(
   userUid: string
 ) {
   try {
+    const session = await requireAuth();
+    if (session.matricula !== matricula && !session.isAdmin) {
+      throw new AuthorizationError("Voce nao pode avaliar o agendamento de outro membro.");
+    }
+
     const db = getAdminDb();
-    const eventId = bookingId; 
+    const eventId = bookingId;
 
     const userBookingRef = db.collection("User").doc(matricula).collection("User_Bookings").doc(eventId);
     await userBookingRef.update({
