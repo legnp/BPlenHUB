@@ -471,3 +471,31 @@ para embasar essas decisões estão todos disponíveis.
 - Itens atualizados: `BUGS.md` (BUG-003/023 mergeados, BUG-019 → Corrigido), este LOG.
 - Trilha de segurança restante: BUG-020 (dezenas de actions sem guard — T-02),
   BUG-024 (`trigger-sync` sem shared secret), BUG-025 (webhook MP sem HMAC).
+
+---
+
+## [2026-07-03] Chat de execução — BUG-024 removida (rota órfã) + BUG-031 registrado
+
+- Chat/sessão: mesmo chat de execução
+- Investigação da hipótese da Gestora (a rota poderia ser parte do fluxo de
+  agendamento / prevenção de concorrência de horários):
+  - **Refutada por código.** `/api/trigger-sync` tem zero callers de aplicação
+    (busca exaustiva no repo inteiro); nenhuma lib de cron no `package.json`;
+    `firebase.json` sem funções agendadas; `.github` sem cron na URL. A Gestora
+    confirmou não haver agendador externo.
+  - A prevenção de double-booking é feita por **transação atômica** em
+    `booking.ts` (`runTransaction` + checagem `registeredCount >= capacity`),
+    independente dessa rota.
+  - O refresh que a Gestora usa é o botão "Sincronizar Agora" do painel
+    (`syncCalendarToFirestore`, autenticado pelo login), que **não** é essa rota.
+- Decisão (aprovada pela Gestora): **remover** `/api/trigger-sync` (BUG-024) em vez
+  de gatear — é código morto confirmado. A função interna
+  `updateGlobalProgramacaoRegistryAction` permanece (chamada por booking/pós-evento);
+  só a casca HTTP pública some. Reversível via git se um chamador externo
+  invisível aparecer.
+- **BUG-031 registrado** (melhoria de usabilidade, priorizada pela Gestora):
+  "Sincronizar Agora" puxa eventos do Google mas não reconstrói o
+  `Programacao_Registry` (lista vista pelos membros) — considerar chamar
+  `updateGlobalProgramacaoRegistryAction` ao final de `syncCalendarToFirestore`.
+- Itens atualizados: `BUGS.md` (BUG-024 → Corrigido, +BUG-031), este LOG.
+- Trilha de segurança restante: BUG-020 (T-02), BUG-025 (webhook MP sem HMAC).
