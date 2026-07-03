@@ -3,6 +3,7 @@
 import { getAdminDb } from "@/lib/firebase-admin";
 import { SURVEY_REGISTRY } from "@/config/surveys";
 import { SurveyResponse, SurveyStatus } from "@/types/survey";
+import { requireAdmin } from "@/lib/auth-guards";
 
 export interface SurveyAnalyticsSummary {
   id: string;
@@ -29,8 +30,9 @@ export async function getAdminSurveysAnalytics(): Promise<{
   stats: GlobalSurveyStats;
 }> {
   try {
+    await requireAdmin();
     const db = getAdminDb();
-    
+
     // 1. Buscar todas as respostas via Collection Group (Caminho Hierárquico: User/*/Surveys/*)
     const surveysSnapshot = await db.collectionGroup("Surveys").get();
     
