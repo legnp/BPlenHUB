@@ -1,6 +1,7 @@
 "use server";
 
 import { getAdminDb } from "@/lib/firebase-admin";
+import { requireAdmin } from "@/lib/auth-guards";
 import { PRODUCTS_COLLECTION, COUPONS_COLLECTION } from "@/config/collections";
 import { revalidatePath } from "next/cache";
 import fs from "fs";
@@ -14,6 +15,7 @@ import { getErrorMessage } from "@/lib/utils/errors";
 
 export async function syncPortfolioFromFilesAction() {
   try {
+    await requireAdmin();
     const db = getAdminDb();
     const workspaceRoot = process.cwd();
     

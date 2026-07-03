@@ -1,6 +1,7 @@
 "use server";
 
 import { getAdminDb } from "@/lib/firebase-admin";
+import { requireAdmin } from "@/lib/auth-guards";
 import * as admin from "firebase-admin";
 import { SurveyResponse, SurveyStatus, SurveyValue } from "@/types/survey";
 
@@ -25,6 +26,7 @@ export async function runWelcomeMigration() {
   };
 
   try {
+    await requireAdmin();
     const db = getAdminDb();
     const usersSnap = await db.collection("User").get();
     results.total = usersSnap.size;
