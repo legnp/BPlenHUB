@@ -83,9 +83,12 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   concede `admin: true` ao e-mail passado via query string — **nenhum
   `requireAdmin` nem checagem de sessão** antes de gravar `User_Permissions/access`.
   Se a rota estiver acessível publicamente, é escalação de privilégio trivial.
-- Status: Aberto
-- Decisão de execução: Precisa plano+aprovação (identidade/sessão + segurança)
-- Commit/PR: —
+- Status: **Corrigido** — rota removida (2026-07-02); capacidade de recuperação
+  preservada em `scripts/recover-admin.js` (admin SDK, execução local, exige
+  service account). Plano aprovado pela Gestora (opção "remover + script local").
+- Decisão de execução: Corrigido via branch `security/remove-unauthed-api-routes`
+  (validado por `tsc --noEmit` + `next build`).
+- Commit/PR: branch `security/remove-unauthed-api-routes` (PR aberto)
 
 ### BUG-004 Vazamento de path interno do Firestore em resposta de produção
 
@@ -397,11 +400,13 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   qualquer requisição `GET` não autenticada retorna dados de um usuário
   específico. `/api/ghosts` roda uma query hardcoded (`surveyId=="check_in" &&
   status=="completed"`) sem filtro de autorização.
-- Status: Aberto
-- Decisão de execução: Precisa plano+aprovação (exposição de dado de
-  identidade/survey) — remoção provavelmente segura, mas confirmar que
-  nenhuma automação externa depende dessas rotas antes
-- Commit/PR: —
+- Status: **Corrigido** — ambas as rotas removidas (2026-07-02). Zero callers no
+  `src/` (confirmado); só retornavam dados (não mutavam), então a remoção apenas
+  estanca o vazamento.
+- Decisão de execução: Corrigido via branch `security/remove-unauthed-api-routes`
+  (validado por `tsc --noEmit` + `next build`). Assumido que nenhuma automação
+  externa dependia dessas rotas de debug (queries hardcoded).
+- Commit/PR: branch `security/remove-unauthed-api-routes` (PR aberto)
 
 ### BUG-024 `/api/trigger-sync` sem guard e sem caller conhecido
 
