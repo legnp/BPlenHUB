@@ -369,8 +369,12 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
     `src/actions/admin-assessments.ts` (`getUserAssessments`/
     `toggleAssessmentRelease`). Callers 100% admin; `getPartnersAction` não afeta
     a vitrine de parceiros do membro (via separada, `getNetworkingDataAction`).
-  - Lotes restantes (abertos): forms/surveys analytics
-    (`admin-forms.ts:getAdminFormsAnalytics`, `admin-surveys.ts:getAdminSurveysAnalytics`),
+  - **Lote 3 (analytics admin)** — `requireAdmin()` em
+    `src/actions/admin-forms.ts:getAdminFormsAnalytics` e
+    `src/actions/admin-surveys.ts:getAdminSurveysAnalytics` (leituras agregadas
+    via `collectionGroup` que expunham contagem/timestamps de respostas de todos
+    os usuários). Callers 100% admin (`admin/fs/forms`, `admin/fs/surveys`).
+  - Lotes restantes (abertos):
     journey (`assignDynamicSubstep*`), queries (`getEventAttendees`,
     `getUserBookingsAction`, `getUserOneToOneQuotaAction`, `fetchCalendarEvents`,
     guards condicionais frágeis `getSyncedEvents`/`getEventNpsDetailsAction`),
@@ -380,7 +384,7 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   + `tsc --noEmit` + `next build`; assinaturas inalteradas (sessão pelo cookie
   assinado, como no BUG-019). Plano+aprovação da Gestora antes de cada lote.
 - Commit/PR: **lote 1** — PR #8 (`6610167`, squash); **lote 2** — PR #9
-  (`70d418e`, squash). Demais lotes pendentes.
+  (`70d418e`, squash); **lote 3** — PR #10 (`34c3c21`, squash). Demais lotes pendentes.
 
 ### BUG-021 Guard "ad-hoc" divergente do padrão em `upload-to-drive.ts`
 

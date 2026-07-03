@@ -684,3 +684,33 @@ para embasar essas decisões estão todos disponíveis.
 - Trilha restante no T-02: BUG-020 lotes seguintes (forms/surveys analytics,
   journey `assignDynamicSubstep*`, queries do calendário, upload/portfólio,
   `auth-permissions`), BUG-004, BUG-005, BUG-006, BUG-021, BUG-025 (webhook HMAC).
+
+---
+
+## [2026-07-03] Chat de execução — BUG-020 lote 3 (analytics admin) mergeado
+
+- Chat/sessão: mesmo chat de execução, na sequência do lote 2
+- Escopo: 3º lote do BUG-020 — leituras agregadas de analytics admin sem guard.
+  Plano+risco apresentados e **aprovados pela Gestora** antes de codar. Arquivos:
+  `src/actions/admin-forms.ts` e `src/actions/admin-surveys.ts`.
+- Achados (por leitura direta): `getAdminFormsAnalytics` e `getAdminSurveysAnalytics`
+  fazem `collectionGroup("Forms"/"Surveys").get()` — leem contagem/timestamps de
+  respostas de **todos** os usuários — sem nenhum guard. Grep confirmou callers
+  100% admin (`admin/fs/forms/page.tsx`, `admin/fs/surveys/page.tsx`).
+- Mudança: `requireAdmin()` como 1ª linha do `try` de cada action. Chamador
+  não-admin cai no catch existente → shape vazio seguro já tratado pelos callers
+  (`{forms:[],stats:{...0}}` / `{surveys:[],stats:{...0}}`). Sessão pelo cookie
+  assinado; **assinaturas inalteradas**.
+- Validação: eslint nos 2 arquivos (0 erros/warnings), `tsc --noEmit` limpo,
+  `next build` **exit 0** (confirmado com captura do exit code real).
+- Entrega: branch `security/admin-analytics-guards` → **PR #10 mergeado**
+  (`34c3c21`, squash) via REST API do GitHub. Branch deletada (local+remota).
+- Contabilidade: BUG-020 segue **Em Progresso** (3 lotes de vários). T-02 de
+  ~5,7 para **~5,8/11** (fracionário honesto, precedente BUG-018/T-03).
+- Itens atualizados: `BUGS.md` (BUG-020, +lote 3/PR #10), `00-PLAN.md` (T-02
+  Execução/Resultado, Triagem, Índice), `DASHBOARD.md` (T-02 ~5,8/11, data),
+  este LOG.
+- Trilha restante no T-02: BUG-020 lotes seguintes (queries do calendário — o
+  mais nuançado, mistura callers de membro e admin + guards condicionais; journey
+  `assignDynamicSubstep*`; upload/portfólio; `auth-permissions`), BUG-004,
+  BUG-005, BUG-006, BUG-021, BUG-025 (webhook HMAC).
