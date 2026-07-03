@@ -124,17 +124,15 @@ ativa furando a ordem das fases.
 
 | Bug | Severidade | Onde se conecta | Por que ainda não fechou |
 |---|---|---|---|
-| BUG-032 | Crítico | T-02 | **Novo (2026-07-03)** — escalação de privilégio: `syncUserPermissionsOnLogin` concede admin a partir de e-mail não-verificado. Correção proposta (gated, identidade), aguardando aprovação; fura a fila por severidade |
-| BUG-020 | Alto | T-02 | **Em Progresso** — 5 lotes mergeados: 1/booking (PR #8, 2 IDORs) + 2/CRUD admin (PR #9) + 3/analytics admin (PR #10) + 4/queries do calendário (PR #11, +2 IDORs) + 5/journey (PR #12, +2 IDORs); faltam 2 lotes (upload/portfólio, auth-permissions) para fechar |
 | BUG-010 | Alto | T-03 | **[HIPÓTESE]** precisa confirmar se a implementação duplicada em `post-event.ts` é código morto antes de decidir remoção |
 | BUG-008 | Alto | F2-04, T-03 | Requer plano+aprovação (toca fluxo financeiro/cotas) |
 | BUG-004 | Alto | T-02 | Requer avaliação de exposição além do painel admin antes de corrigir |
 | BUG-001 | Alto | T-06 | Requer plano+aprovação (dado sensível/PII, regra explícita do `CLAUDE.md`) |
 
-Há **1 `Crítico` aberto**: `BUG-032` (escalação de privilégio via
-`syncUserPermissionsOnLogin`), registrado em 2026-07-03 com correção proposta
-aguardando aprovação (identidade/gated). O `BUG-003` (o outro Crítico já
-registrado) foi corrigido e mergeado (PR #3).
+Nenhum `Crítico` aberto no momento. Os dois Críticos registrados no processo
+(`BUG-003` recover sem auth, PR #3; `BUG-032` escalação de privilégio no login,
+PR #14) foram corrigidos e mergeados. `BUG-020` (Alto, sistêmico) também foi
+fechado (7 lotes, PRs #8–#14) e saiu desta fila.
 
 ---
 
@@ -533,33 +531,21 @@ O mapeamento das jornadas abaixo é entregável desta fase (não pré-existente)
 - Decisão: — (padrão de guard canônico já emergiu na prática —
   `requireAuth() + checagem dono-ou-admin` — formalizar como referência
   explícita quando o lote do BUG-020 for endereçado)
-- Execução: Em andamento — **~6,9/11 (~63%)** (ver `DASHBOARD.md`). BUG-021
-  **Corrigido** (PR #13, guard ad-hoc de upload unificado — conta como unidade
-  inteira). BUG-020 é sistêmico e feito em lotes: **lotes 1 (booking, PR #8)**,
-  **2 (CRUD admin, PR #9)**, **3 (analytics admin, PR #10)**, **4 (queries do
-  calendário, PR #11)**, **5 (journey, PR #12)** e **6 (upload/portfólio, PR #13)**
-  mergeados — contam fracionado no numerador (bug inteiro segue Em Progresso, mesma
-  contabilidade do BUG-018/T-03). Falta 1 lote (`auth-permissions`) para o bug fechar.
+- Execução: Em andamento — **8/12 (~67%)** (ver `DASHBOARD.md`). **BUG-020 Corrigido**
+  (7 lotes, PRs #8–#14 — todos os módulos do Mapa 4b padronizados com o guard
+  canônico). **BUG-021 Corrigido** (PR #13). **BUG-032 Corrigido** (PR #14, novo
+  Crítico de escalação de privilégio achado no lote 7; entra no denominador do track,
+  que sobe de 11 para 12). Nenhum Crítico aberto.
 - Resultado: ✓ Corrigidos/mergeados: BUG-003 (recover sem auth, PR #3), BUG-007
   (guard admin server-side = F0-05, PR #1), BUG-019 (IDOR de foto de perfil, PR
   #4), BUG-023 (rotas de debug órfãs, PR #3), BUG-024 (`trigger-sync` removido,
-  PR #5), BUG-021 (guard ad-hoc de upload unificado, PR #13). ◐ Parcial: BUG-020 —
-  lote 1/booking (PR #8): 2 IDORs fechados
-  (`cancelBookingAction`/`submitEvaluationAction`) + `bookEventAction` com guard
-  condicional que preserva o funil de lead; lote 2/CRUD admin (PR #9):
-  `requireAdmin()` em `partners.ts` + `admin-assessments.ts`; lote 3/analytics
-  admin (PR #10): `requireAdmin()` em `getAdminFormsAnalytics`/
-  `getAdminSurveysAnalytics`; lote 4/queries do calendário (PR #11): +2 IDORs de
-  leitura fechados (`getUserBookingsAction`/`getUserOneToOneQuotaAction`) +
-  `requireAdmin()`/`requireAuth()` nas demais queries; lote 5/journey (PR #12):
-  +2 IDORs por uid fechados (`getJourneyProgressAction`/`updateJourneySubStepAction`)
-  + `requireAdmin()` nos `assignDynamicSubstep*` + `requireAuth()` nas leituras de
-  catálogo; lote 6/upload+portfólio (PR #13): `requireAdmin()` em 5 actions admin
-  (migração/sync/upload) + `requireAuth()`+dono-ou-admin em `uploadToUserDrive`
-  (1 IDOR) — este lote também fechou o BUG-021. Lote restante (`auth-permissions`)
-  aberto. ○ Restantes: BUG-004 (vazamento de path, precisa avaliação de
-  exposição), BUG-005, BUG-006, BUG-025 (webhook HMAC).
-- Bug(s) vinculado(s): BUG-003, BUG-004, BUG-005, BUG-006, BUG-007, BUG-019, BUG-020, BUG-021, BUG-023, BUG-024, BUG-025
+  PR #5), BUG-021 (guard ad-hoc de upload unificado, PR #13), **BUG-020** (guards
+  sistemáticos em Server Actions — 7 lotes, PRs #8–#14: booking/CRUD admin/
+  analytics/queries/journey/upload/auth-permissions; 8 IDORs + priv-esc fechados),
+  **BUG-032** (escalação de privilégio no login, PR #14). ○ Restantes: BUG-004
+  (vazamento de path, precisa avaliação de exposição), BUG-005, BUG-006, BUG-025
+  (webhook HMAC).
+- Bug(s) vinculado(s): BUG-003, BUG-004, BUG-005, BUG-006, BUG-007, BUG-019, BUG-020, BUG-021, BUG-023, BUG-024, BUG-025, BUG-032
 - Log: entradas de 2026-07-02 e 2026-07-03 no `LOG.md`
 
 ### [T-03] Integridade e migração de dados
@@ -653,7 +639,7 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-017 | Médio | Aberto | T-01 |
 | BUG-018 | Baixo | Em Progresso (parcial) | F0-04, T-03 |
 | BUG-019 | Alto | Corrigido (PR #4) | T-02 |
-| BUG-020 | Alto | Em Progresso (6 lotes mergeados: PR #8/#9/#10/#11/#12/#13; falta só auth-permissions) | T-02 |
+| BUG-020 | Alto | Corrigido (7 lotes: PR #8/#9/#10/#11/#12/#13/#14) | T-02 |
 | BUG-021 | Baixo | Corrigido (PR #13) | T-02 |
 | BUG-022 | Médio | Aberto | F3-03 *(recém-linkado)* — **[HIPÓTESE]** |
 | BUG-023 | Alto | Corrigido (PR #3) | F1-06, T-02, T-06 |
@@ -665,7 +651,7 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-029 | Baixo (rebaixado) | Aberto (adiado) | fora do escopo original — cluster de auth, ver `LOG.md` 2026-07-02 |
 | BUG-030 | Baixo | Aceito | Riscos Aceitos (item 5, abaixo) |
 | BUG-031 | Baixo | Aberto | fora do escopo original — melhoria de usabilidade, ainda sem track (candidato a T-05 ou item novo de Fase 2 quando priorizado) |
-| BUG-032 | Crítico | Aberto | T-02 — escalação de privilégio (novo, achado no lote 7); correção proposta aguardando aprovação |
+| BUG-032 | Crítico | Corrigido (PR #14) | T-02 — escalação de privilégio (novo, achado no lote 7) |
 
 ---
 

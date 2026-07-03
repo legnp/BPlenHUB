@@ -356,7 +356,8 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   inclui mutações reais (criar/editar/excluir parceiro, liberar assessment,
   fechar evento, cancelar/avaliar agendamento de qualquer usuário passando
   `matricula`/`userUid` arbitrários).
-- Status: **Em Progresso** — 2 lotes mergeados (2026-07-03).
+- Status: **Corrigido** — 7 lotes mergeados (2026-07-03), padrão canônico do T-02
+  aplicado em todos os módulos identificados no Mapa 4b.
   - **Lote 1 (booking)** em `src/actions/calendar-module/booking.ts`:
     `cancelBookingAction` e `submitEvaluationAction` ganharam `requireAuth()` +
     checagem dono-ou-admin (fecha 2 IDORs confirmados); `bookEventAction` ganhou
@@ -402,7 +403,13 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
     `upload-to-drive.ts:uploadToUserDrive` ganhou `requireAuth(idToken)` +
     dono-ou-admin (fecha IDOR: token válido de qualquer membro permitia upload na
     pasta Drive de outra matrícula).
-  - Lote restante (aberto): `auth-permissions.ts:fetchUserPermissionsStatus`.
+  - **Lote 7 (auth-permissions)** em `src/actions/auth-permissions.ts` +
+    `src/lib/server-session.ts` + novo `src/lib/user-permissions.ts`:
+    `fetchUserPermissionsStatus` virou wrapper guardado (`verifySignedSession()` +
+    `caller.uid === uid`) delegando a `resolveUserPermissions` (resolvedor cru
+    extraído para lib, usado por `getServerSession` sem recursão). Fecha o IDOR de
+    leitura de permissões por uid. Este lote também fechou o **BUG-032** (escalação
+    de privilégio em `syncUserPermissionsOnLogin`).
 - Decisão de execução: Padronização em lotes por módulo (padrão canônico do T-02:
   `requireAuth()`/`requireAdmin()` + dono-ou-admin). Cada lote validado por eslint
   + `tsc --noEmit` + `next build`; assinaturas inalteradas (sessão pelo cookie
@@ -410,7 +417,7 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Commit/PR: **lote 1** — PR #8 (`6610167`, squash); **lote 2** — PR #9
   (`70d418e`, squash); **lote 3** — PR #10 (`34c3c21`, squash); **lote 4** — PR #11
   (`e4d7fb9`, squash); **lote 5** — PR #12 (`ddbcc49`, squash); **lote 6** — PR #13
-  (`bfc15b8`, squash). Falta 1 lote (auth-permissions) para o bug fechar.
+  (`bfc15b8`, squash); **lote 7** — PR #14 (`fa79e49`, squash). **BUG-020 fechado.**
 
 ### BUG-021 Guard "ad-hoc" divergente do padrão em `upload-to-drive.ts`
 
@@ -729,11 +736,15 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   exigir `caller.uid === uid`, e usar o **e-mail verificado do cookie** (não o
   parâmetro) para o teste `MASTER_EMAILS`. Assim um atacante não consegue reivindicar
   um e-mail master que não possui.
-- Status: **Aberto** (registrado 2026-07-03; correção proposta, aguardando aprovação)
-- Decisão de execução: Precisa plano+aprovação (identidade/privilégio — gating do
-  `CLAUDE.md`). Furar a fila por severidade (Protocolo item 6). Proposto tratar no
-  mesmo lote 7 do BUG-020 (mesmo arquivo `auth-permissions.ts`).
-- Commit/PR: —
+- Status: **Corrigido** — 2026-07-03 (mesmo lote 7 do BUG-020). Plano aprovado pela
+  Gestora. `syncUserPermissionsOnLogin` passou a verificar o chamador via
+  `verifySignedSession()` (`caller.uid === uid`) e a usar o **e-mail verificado do
+  cookie** para o teste `MASTER_EMAILS`, em vez do parâmetro não-confiável — um
+  atacante não consegue mais reivindicar um e-mail master que não possui. O cookie
+  de sessão já existe neste ponto do login (`createSignedSessionCookie` roda antes).
+- Decisão de execução: Corrigido via branch `security/auth-permissions-guards`
+  (validado por eslint + `tsc --noEmit` + `next build`).
+- Commit/PR: **mergeado** — PR #14 (`fa79e49`, squash).
 
 ---
 

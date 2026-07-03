@@ -832,3 +832,48 @@ para embasar essas decisões estão todos disponíveis.
 - Reta final do BUG-020: **único lote restante** é
   `auth-permissions.ts:fetchUserPermissionsStatus` (IDOR de leitura de permissões
   por uid). Ao fechar, BUG-020 vira Corrigido e o T-02 salta para ~7/11 (~64%).
+
+---
+
+## [2026-07-03] Chat de execução — BUG-020 FECHADO (lote 7) + BUG-032 Crítico corrigido
+
+- Chat/sessão: mesmo chat de execução, lote final do BUG-020
+- Escopo: 7º e último lote do BUG-020 (`auth-permissions`) — que destravou **um
+  achado Crítico novo**. Plano+risco apresentados e **aprovados pela Gestora**
+  (área de identidade/sessão, gating forte) antes de codar.
+- Achados na investigação (por leitura, antes de codar):
+  1. `fetchUserPermissionsStatus` é chamada **dentro** de `getServerSession`
+     (`server-session.ts:45`). Guardá-la com `requireAuth`/`requireAdmin` (que
+     dependem de `getServerSession`) causaria **recursão infinita** — quebraria
+     toda a auth. Exigia refactor, não guard simples.
+  2. **BUG-032 (Crítico, novo):** `syncUserPermissionsOnLogin(uid, email)` recebia
+     `email` como parâmetro **não-verificado** e concedia `admin:true` se o e-mail
+     estivesse em `MASTER_EMAILS` → qualquer membro podia chamar a action com um
+     e-mail master e **se autopromover a admin** (mesma classe do BUG-003). Não
+     estava no escopo original do BUG-020. Registrado no `BUGS.md` antes de decidir
+     (protocolo) e commitado à parte (`ed693af`).
+- Correção (branch `security/auth-permissions-guards`, PR #14 `fa79e49`):
+  - Novo `src/lib/user-permissions.ts:resolveUserPermissions(uid)` — resolvedor cru
+    (corpo antigo de `fetchUserPermissionsStatus`), sem guard.
+  - `server-session.ts` passa a usar o resolvedor cru (identidade já verificada
+    antes) — sem recursão, comportamento idêntico.
+  - `fetchUserPermissionsStatus` vira wrapper guardado (`verifySignedSession()` +
+    `caller.uid === uid`) → fecha o IDOR (BUG-020).
+  - `syncUserPermissionsOnLogin` verifica o chamador e usa o **e-mail verificado do
+    cookie** (não o parâmetro) para o teste master → fecha o BUG-032. O cookie já
+    existe neste ponto do login (`createSignedSessionCookie` roda antes, confirmado
+    em `use-auth.ts`).
+  - `verifySignedSession()` só lê o cookie assinado ({uid,email}); sem recursão.
+- Validação: eslint (0 erros), `tsc --noEmit` limpo, `next build` **exit 0**.
+  Login/telas logadas não autenticam no preview (BUG-030); validado por tsc+build.
+- Marco: **BUG-020 → Corrigido** (7 lotes, PRs #8–#14; 8 IDORs + 1 priv-esc
+  fechados no total). **BUG-032 → Corrigido.** T-02 sobe para **8/12 (~67%)**
+  (BUG-032 entra no denominador). **Nenhum Crítico aberto.**
+- Itens atualizados: `BUGS.md` (BUG-020 → Corrigido, BUG-032 → Corrigido),
+  `00-PLAN.md` (T-02 Execução/Resultado, triagem por severidade limpa, índice,
+  bugs vinculados +BUG-032), `DASHBOARD.md` (T-02 8/12, BUG-020/032 nos mergeados,
+  data), este LOG.
+- Trilha restante no T-02: BUG-004 (vazamento de path em `admin-fs.ts` — requer
+  avaliação de exposição), BUG-005, BUG-006 (ambos Médios, checkout/networking),
+  BUG-025 (webhook MP sem HMAC, Médio). Nenhum sistêmico; o grande item do track
+  (BUG-020) está encerrado.
