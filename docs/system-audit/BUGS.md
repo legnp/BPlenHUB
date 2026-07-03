@@ -421,11 +421,18 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   `updateGlobalProgramacaoRegistryAction()` (reescreve o registro global de
   programação). Presumivelmente pensada para cron externo, mas sem segredo
   compartilhado/token — qualquer requisição pode disparar a sincronização.
-- Status: Aberto
-- Decisão de execução: Precisa plano+aprovação (se for usada por cron real,
-  precisa de shared secret antes de qualquer mudança; se não for usada,
-  remover)
-- Commit/PR: —
+- Status: **Corrigido** — rota removida (2026-07-03). Confirmado órfã por busca
+  exaustiva: zero callers de aplicação, nenhuma lib de cron/agendamento no
+  `package.json`, `firebase.json` sem funções agendadas, `.github` sem cron na
+  URL, e a Gestora confirmou não haver agendador externo (único externo é a API
+  do Google Calendar, que não chama de volta). A capacidade em si permanece: a
+  função `updateGlobalProgramacaoRegistryAction` continua sendo chamada
+  internamente por `booking.ts` e pelas ações de pós-evento — só a casca HTTP
+  pública foi removida.
+- Decisão de execução: Removida via branch `security/remove-trigger-sync-route`
+  (plano/risco apresentados e aprovados pela Gestora; reversível via git se algum
+  chamador externo invisível aparecer). Ver `BUG-031` para a melhoria relacionada.
+- Commit/PR: branch `security/remove-trigger-sync-route` (PR aberto)
 
 ### BUG-025 Webhook do Mercado Pago sem validação de assinatura/segredo
 
@@ -608,6 +615,34 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Decisão de execução: Aceito como risco/limitação documentada (ver "Riscos
   Aceitos" no `00-PLAN.md`). Reabrir só se surgir necessidade recorrente de QA de
   telas logadas antes de produção (aí, avaliar staging com domínio próprio).
+- Commit/PR: —
+
+### BUG-031 "Sincronizar Agora" não reconstrói a lista de programação dos membros (melhoria de usabilidade)
+
+- Severidade: Baixo (melhoria de usabilidade / consistência de dados)
+- Área/fase onde foi achado: Investigação do BUG-024 (rota `trigger-sync`),
+  2026-07-03
+- Arquivo(s) afetado(s): `src/actions/calendar-module/sync.ts:syncCalendarToFirestore`,
+  `src/app/admin/agenda/page.tsx` (botão "Sincronizar Agora"),
+  `updateGlobalProgramacaoRegistryAction` (post-event.ts)
+- Cenário: o botão "Sincronizar Agora" do painel admin puxa os eventos do Google
+  Calendar para `Calendar_Events`, mas **não** chama
+  `updateGlobalProgramacaoRegistryAction`, ou seja, **não reconstrói o
+  `Datas_Center/Programacao_Registry`** — a lista denormalizada que os membros
+  veem via `getProgramacaoForMemberAction` (usada em `SurveyEngine` e
+  `OneToOneBookingModal`). Hoje essa lista só é reconstruída em ações de
+  booking/pós-evento. Resultado: após um sync de agenda, a lista do membro pode
+  ficar defasada até acontecer um agendamento — sensação de "precisa forçar um
+  refresh". (A antiga rota `/api/trigger-sync` era um jeito manual de forçar isso;
+  removida no BUG-024.)
+- Melhoria proposta: ao final de `syncCalendarToFirestore`, chamar
+  `updateGlobalProgramacaoRegistryAction()` para que a lista do membro reflita os
+  eventos recém-sincronizados sem depender de um booking posterior. Toca módulo de
+  calendário (avaliar impacto/área sensível antes de implementar).
+- Status: Aberto (pendência de melhoria)
+- Decisão de execução: Pendente — melhoria de usabilidade priorizada pela Gestora
+  (2026-07-03); implementar quando a fila de segurança abrir. Precisa avaliação
+  (toca `sync.ts` do módulo de calendário).
 - Commit/PR: —
 
 ---
