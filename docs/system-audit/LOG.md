@@ -752,3 +752,45 @@ para embasar essas decisões estão todos disponíveis.
 - Trilha restante no T-02: BUG-020 lotes finais (journey `assignDynamicSubstep*`,
   upload/portfólio, `auth-permissions`), BUG-004, BUG-005, BUG-006, BUG-021,
   BUG-025 (webhook HMAC).
+
+---
+
+## [2026-07-03] Chat de execução — BUG-020 lote 5 (journey) mergeado
+
+- Chat/sessão: mesmo chat de execução, na sequência do lote 4
+- Escopo: 5º lote do BUG-020 — as 6 server actions de `src/actions/journey.ts`
+  (o BUG-020 citava só `assignDynamicSubstep*`, mas o arquivo inteiro estava sem
+  guard). Plano+risco apresentados e **aprovados pela Gestora** (com explicação
+  "para leigo") antes de codar.
+- Mapa de callers (por grep + leitura, antes de codar):
+  - `getJourneyProgressAction`/`updateJourneySubStepAction` (uid): caller único
+    `useJourney` (membro, próprio uid) → **IDOR** → `requireAuth()` + dono-ou-admin
+    (`session.uid !== uid`). A 1ª também faz lazy-write, reforçando a necessidade.
+  - `assignDynamicSubstepAction`/`assignDynamicSubstepToPresentAttendeesAction`:
+    admin (PostEventWizard + interno) → `requireAdmin()`.
+  - `getJourneyStagesAction`/`getStandaloneStageAction`: catálogo; callers 100%
+    autenticados (useJourney, admin/sync-tools, interno) → `requireAuth()`.
+- Ponto crítico resolvido por leitura: `useJourney` só dispara com uid real
+  (`useEffect` linha 116 `uid !== "guest"`; `updateSubStep` linha 124 early-return),
+  então nunca chega "guest" no servidor e o owner-check compara `session.uid` com
+  o uid do próprio membro logado. Chamadas aninhadas (4 actions →
+  `getJourneyStagesAction`/`getStandaloneStageAction`) rodam no mesmo request
+  autenticado (membro ou admin), passam sem duplo-throw. `applyCrossCompletionSweep`
+  é helper interno não-exportado, sem guard.
+- Achado de lint: 2 `prefer-const` **pré-existentes** (baseline) apareceram no
+  eslint do arquivo (`newCompletionDates`/`newDates`, só mutação de propriedade).
+  Corrigidos let→const explicitamente (auto-fixáveis; o hook faria de qualquer
+  forma) para manter a validação limpa. Registrado como bundle no commit.
+- Validação: eslint (0 erros), `tsc --noEmit` limpo, `next build` **exit 0**.
+  Telas logadas não autenticam no preview (BUG-030); validado por tsc+build.
+- Entrega: branch `security/journey-guards` → **PR #12 mergeado** (`ddbcc49`,
+  squash) via REST API do GitHub. Branch deletada (local+remota).
+- Contabilidade: BUG-020 segue **Em Progresso** (5 lotes; faltam 2). T-02 de
+  ~5,9 para **~5,95/11** (fracionário honesto, precedente BUG-018/T-03).
+- Itens atualizados: `BUGS.md` (BUG-020, +lote 5/PR #12), `00-PLAN.md` (T-02
+  Execução/Resultado, Triagem, Índice), `DASHBOARD.md` (T-02 ~5,95/11, data),
+  este LOG.
+- Reta final do BUG-020: só **upload/portfólio** (`migration-welcome`,
+  `portfolio-commands`, `product-sync`, `upload-to-drive` — este é também o
+  BUG-021) e **`auth-permissions.ts:fetchUserPermissionsStatus`**. Quando esses 2
+  fecharem, BUG-020 vira Corrigido e o T-02 dá salto real na %.

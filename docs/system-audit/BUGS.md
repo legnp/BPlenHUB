@@ -383,8 +383,17 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
     `fetchCalendarEvents` ganharam `requireAuth()` (membro e admin listam eventos).
     A chamada aninhada `getUserBookingsAction`→`getSyncedEvents` roda no mesmo
     request autenticado, passa sem duplo-throw.
-  - Lotes restantes (abertos):
-    journey (`assignDynamicSubstep*`), migração/portfólio/upload,
+  - **Lote 5 (journey)** em `src/actions/journey.ts` (as 6 server actions do
+    arquivo estavam sem guard): `getJourneyProgressAction`/`updateJourneySubStepAction`
+    ganharam `requireAuth()` + dono-ou-admin (`session.uid !== uid`) — fecham
+    IDOR de leitura+lazy-write / mutação de progresso de qualquer membro por uid;
+    `assignDynamicSubstepAction`/`assignDynamicSubstepToPresentAttendeesAction`
+    (as citadas originalmente aqui) ganharam `requireAdmin()`;
+    `getJourneyStagesAction`/`getStandaloneStageAction` ganharam `requireAuth()`
+    (catálogo, callers 100% autenticados). `useJourney` só chama com uid real
+    (nunca "guest", confirmado por leitura). `applyCrossCompletionSweep` é helper
+    interno não-exportado, sem guard.
+  - Lotes restantes (abertos): migração/portfólio/upload,
     `auth-permissions.ts:fetchUserPermissionsStatus`.
 - Decisão de execução: Padronização em lotes por módulo (padrão canônico do T-02:
   `requireAuth()`/`requireAdmin()` + dono-ou-admin). Cada lote validado por eslint
@@ -392,7 +401,8 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   assinado, como no BUG-019). Plano+aprovação da Gestora antes de cada lote.
 - Commit/PR: **lote 1** — PR #8 (`6610167`, squash); **lote 2** — PR #9
   (`70d418e`, squash); **lote 3** — PR #10 (`34c3c21`, squash); **lote 4** — PR #11
-  (`e4d7fb9`, squash). Demais lotes pendentes.
+  (`e4d7fb9`, squash); **lote 5** — PR #12 (`ddbcc49`, squash). Faltam 2 lotes
+  (upload/portfólio, auth-permissions) para o bug fechar.
 
 ### BUG-021 Guard "ad-hoc" divergente do padrão em `upload-to-drive.ts`
 

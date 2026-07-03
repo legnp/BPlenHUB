@@ -12,9 +12,10 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-03 (chat de execução — BUG-020 lote 4/queries do
-> calendário mergeado, PR #11; T-02 sobe de ~5,8 para ~5,9/11 — o bug inteiro segue
-> Em Progresso, 4 de vários lotes fechados, contagem fracionária como no BUG-018/T-03).
+> **Última atualização:** 2026-07-03 (chat de execução — BUG-020 lote 5/journey
+> mergeado, PR #12; T-02 sobe de ~5,9 para ~5,95/11 — o bug inteiro segue Em
+> Progresso, 5 lotes fechados, faltam 2 (upload/portfólio e auth-permissions);
+> contagem fracionária como no BUG-018/T-03).
 
 ---
 
@@ -39,10 +40,10 @@ de modais) e **F0-04** (parar escrita de `User_JourneyMap`).
 Onde a implementação sistemática dos temas da Fase 0 acontece. Progresso = bugs
 mergeados na `main` sobre o total do track.
 
-### T-02 — Segurança sistemática · **~5,9 / 11 (~54%)**  `█████░░░░░`
+### T-02 — Segurança sistemática · **~5,95 / 11 (~54%)**  `█████░░░░░`
 
 - ✓ Mergeados: BUG-003 (recover, PR #3), BUG-007 (guard admin = F0-05, PR #1), BUG-019 (IDOR foto, PR #4), BUG-023 (rotas debug, PR #3), BUG-024 (trigger-sync removido, PR #5)
-- ◐ Parcial: BUG-020 (sistêmico, em lotes) — **lote 1/booking (PR #8)**: `cancelBookingAction`/`submitEvaluationAction` (2 IDORs fechados) + `bookEventAction` (guard condicional, preserva funil de lead); **lote 2/CRUD admin (PR #9)**: `requireAdmin()` em `partners.ts` (get/upsert/delete) + `admin-assessments.ts` (`getUserAssessments`/`toggleAssessmentRelease`); **lote 3/analytics admin (PR #10)**: `requireAdmin()` em `getAdminFormsAnalytics`/`getAdminSurveysAnalytics`; **lote 4/queries do calendário (PR #11)**: 2 IDORs de leitura fechados (`getUserBookingsAction`/`getUserOneToOneQuotaAction`) + `requireAdmin()` em `getEventAttendees`/`getEventNpsDetailsAction` + `requireAuth()` em `getSyncedEvents`/`fetchCalendarEvents`. Lotes restantes: journey, upload/portfólio, `auth-permissions`.
+- ◐ Parcial: BUG-020 (sistêmico, em lotes) — **lote 1/booking (PR #8)**: `cancelBookingAction`/`submitEvaluationAction` (2 IDORs fechados) + `bookEventAction` (guard condicional, preserva funil de lead); **lote 2/CRUD admin (PR #9)**: `requireAdmin()` em `partners.ts` (get/upsert/delete) + `admin-assessments.ts` (`getUserAssessments`/`toggleAssessmentRelease`); **lote 3/analytics admin (PR #10)**: `requireAdmin()` em `getAdminFormsAnalytics`/`getAdminSurveysAnalytics`; **lote 4/queries do calendário (PR #11)**: 2 IDORs de leitura fechados (`getUserBookingsAction`/`getUserOneToOneQuotaAction`) + `requireAdmin()` em `getEventAttendees`/`getEventNpsDetailsAction` + `requireAuth()` em `getSyncedEvents`/`fetchCalendarEvents`; **lote 5/journey (PR #12)**: 2 IDORs por uid fechados (`getJourneyProgressAction`/`updateJourneySubStepAction`) + `requireAdmin()` em `assignDynamicSubstepAction`/`assignDynamicSubstepToPresentAttendeesAction` + `requireAuth()` em `getJourneyStagesAction`/`getStandaloneStageAction`. **Faltam 2 lotes**: upload/portfólio, `auth-permissions`.
 - ○ Abertos: BUG-004 (vazamento de path em `admin-fs.ts` — linkado nesta reconciliação, estava sem track), BUG-005, BUG-006, BUG-021, BUG-025 (webhook HMAC)
 
 ### T-06 — Compliance técnico · **1 / 2 (50%)**  `█████░░░░░`
