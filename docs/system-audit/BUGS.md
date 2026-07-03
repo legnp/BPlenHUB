@@ -356,10 +356,23 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   inclui mutações reais (criar/editar/excluir parceiro, liberar assessment,
   fechar evento, cancelar/avaliar agendamento de qualquer usuário passando
   `matricula`/`userUid` arbitrários).
-- Status: Aberto
-- Decisão de execução: Precisa plano+aprovação (segurança sistemática — tratar
-  como um único esforço de padronização na Fase 0/Track T-02, não bug a bug)
-- Commit/PR: —
+- Status: **Em Progresso** — lote 1 (booking) mergeado (2026-07-03). Corrigido em
+  `src/actions/calendar-module/booking.ts`: `cancelBookingAction` e
+  `submitEvaluationAction` ganharam `requireAuth()` + checagem dono-ou-admin
+  (fecha 2 IDORs confirmados); `bookEventAction` ganhou guard condicional — fluxo
+  de membro (com `matricula`) exige sessão própria/admin, funil de lead público
+  (sem `matricula`, com `leadInfo`) permanece aberto. As 2 actions admin do
+  arquivo (`adminAddAttendeeAction`, `rescheduleAttendeeAction`) já tinham
+  `requireAdmin`. Lotes restantes (abertos): partners/assessments/forms/surveys
+  CRUD, journey (`assignDynamicSubstep*`), queries (`getEventAttendees`,
+  `getUserBookingsAction`, `getUserOneToOneQuotaAction`, `fetchCalendarEvents`,
+  guards condicionais frágeis `getSyncedEvents`/`getEventNpsDetailsAction`),
+  migração/portfólio/upload, `auth-permissions.ts:fetchUserPermissionsStatus`.
+- Decisão de execução: Padronização em lotes por módulo (padrão canônico do T-02:
+  `requireAuth()` + dono-ou-admin). Lote 1 validado por eslint + `tsc --noEmit` +
+  `next build`; assinaturas inalteradas (sessão pelo cookie assinado, como no
+  BUG-019). Plano+aprovação da Gestora antes de cada lote sensível.
+- Commit/PR: **lote 1 mergeado** — PR #8 (`6610167`, squash). Demais lotes pendentes.
 
 ### BUG-021 Guard "ad-hoc" divergente do padrão em `upload-to-drive.ts`
 

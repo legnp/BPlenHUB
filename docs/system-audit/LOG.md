@@ -608,3 +608,42 @@ para embasar essas decisões estão todos disponíveis.
 - Nada bloqueado para a próxima sessão de execução — o plano está pronto para
   retomar a fila de triagem por severidade (BUG-020 é o maior item aberto) ou
   seguir para a Fase 1.
+
+---
+
+## [2026-07-03] Chat de execução — BUG-020 lote 1 (guards de booking) mergeado
+
+- Chat/sessão: chat de execução (Opus 4.8), retomando o T-02
+- Escopo: 1º lote do BUG-020 (dezenas de Server Actions sem guard) — módulo de
+  **booking**. Plano+risco apresentados e **aprovados pela Gestora** antes de codar
+  (área sensível). Arquivo único: `src/actions/calendar-module/booking.ts`.
+- Achados/mapeamento de callers (por leitura direta, antes de codar):
+  - `cancelBookingAction` e `submitEvaluationAction`: **IDORs confirmados** — sem
+    guard, recebem `matricula`/`userUid` arbitrários. Todos os callers são membro
+    logado (`UserBookings.tsx`, `MemberDashboardView.tsx`, `StepRenderer.tsx`).
+  - `bookEventAction`: dois callers — membro (`Calendar.tsx`, com `matricula`) **e
+    lead público** (`external-booking.ts:bookPublicMeetingAction`, sem `matricula`,
+    com `leadInfo`). Por isso o guard teve de ser **condicional**, para não quebrar
+    o funil de lead 1-to-1 (receita).
+  - `adminAddAttendeeAction`/`rescheduleAttendeeAction`: já tinham `requireAdmin`.
+- Mudança: `cancel`/`submitEvaluation` → `requireAuth()` + `session.matricula !==
+  matricula && !isAdmin` → erro. `bookEventAction` → se `matricula` presente, exige
+  sessão própria/admin; senão exige `leadInfo` (funil de lead), caso contrário
+  rejeita. Padrão canônico do T-02 (`requireAuth` + dono-ou-admin) formalizado na
+  prática. Sessão resolvida pelo cookie assinado, **sem mudar assinatura** de
+  nenhuma action nem tocar o dispatcher god-file `calendar.ts` (blast radius mínimo,
+  mesmo padrão do BUG-019).
+- Validação: eslint no arquivo (0 erros, só warnings pré-existentes), `tsc --noEmit`
+  limpo, `next build` exit 0.
+- Entrega: branch `security/booking-actions-guards` → **PR #8 mergeado** (`6610167`,
+  squash) via REST API do GitHub (credencial salva do git; `gh` ausente). Branch
+  deletada (local+remota).
+- Contabilidade honesta: BUG-020 é **um** bug feito em lotes — fica **Em Progresso**
+  (não "Corrigido"). T-02 sobe de 5/11 para **~5,5/11** (contagem fracionária, mesmo
+  precedente do BUG-018/T-03), não 6/11.
+- Itens atualizados: `BUGS.md` (BUG-020 → Em Progresso, PR #8), `00-PLAN.md` (T-02
+  Execução/Resultado, Triagem por severidade, Índice bug→track), `DASHBOARD.md`
+  (T-02 ~5,5/11, BUG-020 ◐ parcial, data), este LOG.
+- Trilha de segurança restante no T-02: BUG-020 lotes seguintes (partners,
+  assessments, forms/surveys, journey, queries, upload, `auth-permissions`),
+  BUG-004 (vazamento de path), BUG-005, BUG-006, BUG-021, BUG-025 (webhook HMAC).
