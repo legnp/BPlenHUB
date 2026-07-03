@@ -525,9 +525,11 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   coordenados (`50`, `300`, `500`, `1000`, `9999`, `99999`) criam risco real de
   um modal aparecer atrás de outro se dois dispararem ao mesmo tempo (ex.:
   `ContractGateModal` global vs. `UpsellServiceModal` da jornada).
-- Status: Aberto (decisão de Fase 0 tomada — ver F0-01)
-- Decisão de execução: Precisa plano+aprovação (sistema de design — Fase 0). **[2026-07-02 / F0-01]** Decidido: `GlassModal` é o modal-base único oficial; converger os 11 modais divergentes em 3 lotes, começando por unificar a escala de z-index (correção prioritária: risco ContractGateModal vs UpsellServiceModal). Implementação gated por lote. Ver `F0-DECISIONS.md#f0-01`.
-- Commit/PR: —
+- Status: **Em Progresso** — lote 1/3 (escala de z-index) mergeado (PR #15,
+  2026-07-03); lotes A/B (converter os 11 modais para estender `GlassModal`)
+  seguem Abertos.
+- Decisão de execução: Precisa plano+aprovação (sistema de design — Fase 0). **[2026-07-02 / F0-01]** Decidido: `GlassModal` é o modal-base único oficial; converger os 11 modais divergentes em 3 lotes, começando por unificar a escala de z-index (correção prioritária: risco ContractGateModal vs UpsellServiceModal). Implementação gated por lote. **[2026-07-03 / lote 1]** Escala canônica de z-index implementada em `globals.css` (`.z-chrome`/`.z-chrome-popover`/`.z-overlay`/`.z-critical`/`.z-toast`/`.z-tour`), substituindo os 9 valores ad-hoc dos overlays; corrige inversões reais (modal sob header). Validado por tsc + build + preview. Ver `F0-DECISIONS.md#f0-01`.
+- Commit/PR: **lote 1 mergeado** — PR #15 (`7fc59f9`, squash). Lotes A/B pendentes.
 
 ### BUG-027 `ThemeSelector.tsx` é componente órfão (não é o seletor de tema real)
 

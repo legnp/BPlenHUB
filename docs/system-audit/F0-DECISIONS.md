@@ -37,12 +37,16 @@ não se propaga).
 
 **Plano de convergência (a ser executado nas Fases 1-2, cada lote sob aprovação):**
 
-1. **Antes de tudo — unificar a escala de z-index.** Definir uma constante única
-   (ex.: `src/config/zIndex.ts` ou tokens CSS) com camadas nomeadas: base de
-   conteúdo < header < modal padrão < modal crítico/gate < toast. Hoje o risco
-   concreto é `ContractGateModal` (gate global, `z-[9999]`) empilhar de forma
-   errada com `UpsellServiceModal` (jornada) — priorizar essa correção mesmo
-   antes da convergência completa.
+1. **Antes de tudo — unificar a escala de z-index. [FEITO — PR #15, 2026-07-03]**
+   Escala canônica implementada em `globals.css` como classes utilitárias estáticas
+   (compatíveis com Tailwind v4): `.z-chrome` (100) < `.z-chrome-popover` (200) <
+   `.z-overlay` (1000) < `.z-critical` (1100) < `.z-toast` (1200) < `.z-tour` (1300).
+   Os 9 valores `z-[NNNN]` ad-hoc dos overlays de nível de página foram trocados
+   pelas classes nomeadas; z-index locais (`relative z-10`, absolutos internos de
+   modal) foram preservados. Corrigiu inversões reais (ex.: modal de `visao_geral`
+   `z-50` ficava sob o `HubHeader` `z-[100]`). O risco `ContractGateModal` vs
+   `UpsellServiceModal` fica resolvido pela ordem `.z-critical` > `.z-overlay`.
+   Validado por tsc + build + preview (runtime confirmado). Diff 100% className/CSS.
 2. **Lote A (baixo risco) — modais que já clonam o visual do GlassModal**:
    `SequenceLockModal`, `UpsellServiceModal`, `WelcomeRedirectModal`,
    `CouponTermsModal`. Trocar a reimplementação pela extensão de `GlassModal`

@@ -171,13 +171,17 @@ evita "consertar" uma página para um padrão que será mudado depois.
   `GlassModal`)
 - Modo de validação: Automatizado (decisão embasada por Mapa 5; implementação da convergência é gated — sistema de design)
 - Decisão: Decidida — `GlassModal` é o modal-base único oficial (já é o mais completo: portal, motion, ESC, variantes)
-- Execução: Gated — aguarda plano+aprovação por lote (0/3 lotes feitos)
-- Resultado: Plano de convergência dos 11 modais restantes em 3 lotes, começando
-  por unificar a escala de z-index (6 valores não coordenados hoje — risco real
-  de empilhamento errado `ContractGateModal` vs `UpsellServiceModal`). Detalhe em
+- Execução: Em andamento — **1/3 lotes feitos**. Lote 1 (unificar a escala de
+  z-index) **mergeado (PR #15)**; lotes A e B (converter os 11 modais para estender
+  `GlassModal`) seguem gated (aguardam plano+aprovação por lote).
+- Resultado: Lote 1 entregue — escala canônica única de z-index em `globals.css`
+  (`.z-chrome`/`.z-chrome-popover`/`.z-overlay`/`.z-critical`/`.z-toast`/`.z-tour`)
+  substituindo os 9 valores `z-[NNNN]` ad-hoc dos overlays; corrige inversões reais
+  (ex.: modal de `visao_geral` que ficava sob o `HubHeader`). Validado por tsc +
+  build + preview (runtime: `.z-toast`=1200, `.z-chrome`=100). Detalhe em
   `F0-DECISIONS.md#f0-01`.
-- Bug(s) vinculado(s): BUG-026 (Aberto, com plano de correção registrado), BUG-027 (Aberto, remoção segura)
-- Log: [2026-07-02] decidido — ver `LOG.md`
+- Bug(s) vinculado(s): BUG-026 (Aberto — lote 1/z-index feito, lotes A/B pendentes), BUG-027 (Aberto, remoção segura)
+- Log: [2026-07-02] decidido; [2026-07-03] lote 1 (z-index) mergeado — ver `LOG.md`
 
 ### [F0-02] Padrão canônico de Timestamp no Firestore
 - Categoria(s) de qualidade: Manutenibilidade / Confiabilidade

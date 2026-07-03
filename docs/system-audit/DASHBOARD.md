@@ -22,11 +22,11 @@
 ## Fase 0 — Padrões canônicos
 
 **Decisões: 6/6 (100%).** Implementações ainda pendentes: **F0-01** (convergência
-de modais) e **F0-04** (parar escrita de `User_JourneyMap`).
+de modais — lote 1/3 feito) e **F0-04** (parar escrita de `User_JourneyMap`).
 
 | Item | Tema | Status |
 |---|---|---|
-| F0-01 | Modal canônico | Decidido · implementação pendente (gated) |
+| F0-01 | Modal canônico | Decidido · **lote 1/3 (escala de z-index) mergeado (PR #15)**; lotes A/B (converter 11 modais p/ GlassModal) pendentes |
 | F0-02 | Timestamp | ✓ Decidido (padrão pronto) |
 | F0-03 | Identidade | ✓ Decidido (padrão + convergência gradual) |
 | F0-04 | Coleções órfãs | Parcial — `entitlements` removida; `User_JourneyMap` pendente |
