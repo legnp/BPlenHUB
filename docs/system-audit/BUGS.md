@@ -374,17 +374,25 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
     `src/actions/admin-surveys.ts:getAdminSurveysAnalytics` (leituras agregadas
     via `collectionGroup` que expunham contagem/timestamps de respostas de todos
     os usuários). Callers 100% admin (`admin/fs/forms`, `admin/fs/surveys`).
+  - **Lote 4 (queries do calendário)** em `src/actions/calendar-module/queries.ts`:
+    `getUserBookingsAction`/`getUserOneToOneQuotaAction` ganharam `requireAuth()` +
+    dono-ou-admin (fecham 2 IDORs de leitura — bookings/cota de qualquer membro);
+    `getEventAttendees`/`getEventNpsDetailsAction` ganharam `requireAdmin()`
+    (a 2ª tinha guard condicional frágil `if (idToken)` que nunca disparava, e a
+    1ª vazava PII de inscritos — telefone/foto); `getSyncedEvents`/
+    `fetchCalendarEvents` ganharam `requireAuth()` (membro e admin listam eventos).
+    A chamada aninhada `getUserBookingsAction`→`getSyncedEvents` roda no mesmo
+    request autenticado, passa sem duplo-throw.
   - Lotes restantes (abertos):
-    journey (`assignDynamicSubstep*`), queries (`getEventAttendees`,
-    `getUserBookingsAction`, `getUserOneToOneQuotaAction`, `fetchCalendarEvents`,
-    guards condicionais frágeis `getSyncedEvents`/`getEventNpsDetailsAction`),
-    migração/portfólio/upload, `auth-permissions.ts:fetchUserPermissionsStatus`.
+    journey (`assignDynamicSubstep*`), migração/portfólio/upload,
+    `auth-permissions.ts:fetchUserPermissionsStatus`.
 - Decisão de execução: Padronização em lotes por módulo (padrão canônico do T-02:
   `requireAuth()`/`requireAdmin()` + dono-ou-admin). Cada lote validado por eslint
   + `tsc --noEmit` + `next build`; assinaturas inalteradas (sessão pelo cookie
   assinado, como no BUG-019). Plano+aprovação da Gestora antes de cada lote.
 - Commit/PR: **lote 1** — PR #8 (`6610167`, squash); **lote 2** — PR #9
-  (`70d418e`, squash); **lote 3** — PR #10 (`34c3c21`, squash). Demais lotes pendentes.
+  (`70d418e`, squash); **lote 3** — PR #10 (`34c3c21`, squash); **lote 4** — PR #11
+  (`e4d7fb9`, squash). Demais lotes pendentes.
 
 ### BUG-021 Guard "ad-hoc" divergente do padrão em `upload-to-drive.ts`
 

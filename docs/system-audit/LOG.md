@@ -714,3 +714,41 @@ para embasar essas decisões estão todos disponíveis.
   mais nuançado, mistura callers de membro e admin + guards condicionais; journey
   `assignDynamicSubstep*`; upload/portfólio; `auth-permissions`), BUG-004,
   BUG-005, BUG-006, BUG-021, BUG-025 (webhook HMAC).
+
+---
+
+## [2026-07-03] Chat de execução — BUG-020 lote 4 (queries do calendário) mergeado
+
+- Chat/sessão: mesmo chat de execução, na sequência do lote 3
+- Escopo: 4º lote do BUG-020 — o mais heterogêneo e de maior superfície de
+  regressão (caminho do dashboard/agenda do membro). Plano+risco apresentados e
+  **aprovados pela Gestora** (com explicação "para leigo" do que muda/pode quebrar)
+  antes de codar. Arquivo único: `src/actions/calendar-module/queries.ts`.
+- Mapa de callers (por grep, antes de codar) — determinou o guard por função:
+  - Membro lendo a própria matrícula: `getUserBookingsAction` (6 callers),
+    `getUserOneToOneQuotaAction` (1) → **IDOR** → `requireAuth()` + dono-ou-admin.
+  - Admin: `getEventAttendees` (ProgramacaoResumo/PostEventWizard/post-event),
+    `getEventNpsDetailsAction` (ProgramacaoResumo) → `requireAdmin()`.
+  - Misto autenticado (membro+admin, todos sem idToken → guard condicional nunca
+    disparava): `getSyncedEvents` → `requireAuth(idToken)`.
+  - `fetchCalendarEvents` (sem caller de UI direto) → `requireAuth()`.
+  - `getProgramacaoForMemberAction`/`getProgramacaoSummaryAction` já tinham guard.
+- Cuidado tratado: a chamada aninhada `getUserBookingsAction`→`getSyncedEvents()`
+  roda no mesmo request autenticado do membro, então o guard interno passa sem
+  duplo-throw (ordem verificada). Guard como 1ª linha do try → não-autorizado cai
+  no catch e recebe o retorno vazio seguro já tratado pelos callers (`[]`/`null`/
+  `{success:false}`). Assinaturas inalteradas; dispatcher `calendar.ts` intocado.
+- Validação: eslint (0 erros, 2 warnings pré-existentes `parseISO`/`isBefore`),
+  `tsc --noEmit` limpo, `next build` **exit 0**. Verificação em preview não se
+  aplica (telas logadas não autenticam no preview da Vercel — BUG-030); validado
+  por tsc+build como o resto do processo para fluxo logado.
+- Entrega: branch `security/calendar-queries-guards` → **PR #11 mergeado**
+  (`e4d7fb9`, squash) via REST API do GitHub. Branch deletada (local+remota).
+- Contabilidade: BUG-020 segue **Em Progresso** (4 lotes de vários). T-02 de
+  ~5,8 para **~5,9/11** (fracionário honesto, precedente BUG-018/T-03).
+- Itens atualizados: `BUGS.md` (BUG-020, +lote 4/PR #11), `00-PLAN.md` (T-02
+  Execução/Resultado, Triagem, Índice), `DASHBOARD.md` (T-02 ~5,9/11, data),
+  este LOG.
+- Trilha restante no T-02: BUG-020 lotes finais (journey `assignDynamicSubstep*`,
+  upload/portfólio, `auth-permissions`), BUG-004, BUG-005, BUG-006, BUG-021,
+  BUG-025 (webhook HMAC).

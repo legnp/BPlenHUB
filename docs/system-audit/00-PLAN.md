@@ -124,7 +124,7 @@ ativa furando a ordem das fases.
 
 | Bug | Severidade | Onde se conecta | Por que ainda não fechou |
 |---|---|---|---|
-| BUG-020 | Alto | T-02 | **Em Progresso** — lote 1/booking (PR #8, 2 IDORs) + lote 2/CRUD admin (PR #9) + lote 3/analytics admin (PR #10) mergeados; lotes restantes (queries do calendário, journey, upload, auth-permissions) mantêm o item aberto |
+| BUG-020 | Alto | T-02 | **Em Progresso** — lotes 1/booking (PR #8, 2 IDORs) + 2/CRUD admin (PR #9) + 3/analytics admin (PR #10) + 4/queries do calendário (PR #11, +2 IDORs) mergeados; lotes restantes (journey, upload, auth-permissions) mantêm o item aberto |
 | BUG-010 | Alto | T-03 | **[HIPÓTESE]** precisa confirmar se a implementação duplicada em `post-event.ts` é código morto antes de decidir remoção |
 | BUG-008 | Alto | F2-04, T-03 | Requer plano+aprovação (toca fluxo financeiro/cotas) |
 | BUG-004 | Alto | T-02 | Requer avaliação de exposição além do painel admin antes de corrigir |
@@ -530,11 +530,11 @@ O mapeamento das jornadas abaixo é entregável desta fase (não pré-existente)
 - Decisão: — (padrão de guard canônico já emergiu na prática —
   `requireAuth() + checagem dono-ou-admin` — formalizar como referência
   explícita quando o lote do BUG-020 for endereçado)
-- Execução: Em andamento — **~5,8/11 (~53%)** (ver `DASHBOARD.md`). BUG-020 é
+- Execução: Em andamento — **~5,9/11 (~54%)** (ver `DASHBOARD.md`). BUG-020 é
   sistêmico e feito em lotes: **lote 1 (booking, PR #8)**, **lote 2 (CRUD admin,
-  PR #9)** e **lote 3 (analytics admin, PR #10)** mergeados — contam fracionado no
-  numerador (bug inteiro segue Em Progresso, mesma contabilidade do BUG-018/T-03),
-  não como unidade fechada.
+  PR #9)**, **lote 3 (analytics admin, PR #10)** e **lote 4 (queries do calendário,
+  PR #11)** mergeados — contam fracionado no numerador (bug inteiro segue Em
+  Progresso, mesma contabilidade do BUG-018/T-03), não como unidade fechada.
 - Resultado: ✓ Corrigidos/mergeados: BUG-003 (recover sem auth, PR #3), BUG-007
   (guard admin server-side = F0-05, PR #1), BUG-019 (IDOR de foto de perfil, PR
   #4), BUG-023 (rotas de debug órfãs, PR #3), BUG-024 (`trigger-sync` removido,
@@ -543,7 +543,9 @@ O mapeamento das jornadas abaixo é entregável desta fase (não pré-existente)
   condicional que preserva o funil de lead; lote 2/CRUD admin (PR #9):
   `requireAdmin()` em `partners.ts` + `admin-assessments.ts`; lote 3/analytics
   admin (PR #10): `requireAdmin()` em `getAdminFormsAnalytics`/
-  `getAdminSurveysAnalytics`. Lotes restantes (queries do calendário, journey,
+  `getAdminSurveysAnalytics`; lote 4/queries do calendário (PR #11): +2 IDORs de
+  leitura fechados (`getUserBookingsAction`/`getUserOneToOneQuotaAction`) +
+  `requireAdmin()`/`requireAuth()` nas demais queries. Lotes restantes (journey,
   upload, `auth-permissions`) abertos. ○ Restantes: BUG-004 (vazamento de path,
   precisa avaliação de exposição), BUG-005, BUG-006, BUG-021, BUG-025 (webhook HMAC).
 - Bug(s) vinculado(s): BUG-003, BUG-004, BUG-005, BUG-006, BUG-007, BUG-019, BUG-020, BUG-021, BUG-023, BUG-024, BUG-025
@@ -640,7 +642,7 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-017 | Médio | Aberto | T-01 |
 | BUG-018 | Baixo | Em Progresso (parcial) | F0-04, T-03 |
 | BUG-019 | Alto | Corrigido (PR #4) | T-02 |
-| BUG-020 | Alto | Em Progresso (lotes 1/booking PR #8 + 2/CRUD admin PR #9 + 3/analytics admin PR #10 mergeados) | T-02 |
+| BUG-020 | Alto | Em Progresso (lotes 1/booking PR #8 + 2/CRUD admin PR #9 + 3/analytics admin PR #10 + 4/queries PR #11 mergeados) | T-02 |
 | BUG-021 | Baixo | Aberto | T-02 |
 | BUG-022 | Médio | Aberto | F3-03 *(recém-linkado)* — **[HIPÓTESE]** |
 | BUG-023 | Alto | Corrigido (PR #3) | F1-06, T-02, T-06 |
