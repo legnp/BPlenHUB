@@ -1,6 +1,7 @@
 "use server";
 
 import { getAdminDb } from "@/lib/firebase-admin";
+import { requireAuth, requireAdmin, AuthorizationError } from "@/lib/auth-guards";
 import { Product } from "@/types/products";
 import { JourneyStep, SubStepConfig, JourneyProgress } from "@/types/journey";
 import { SurveyConfig } from "@/types/survey";
@@ -26,6 +27,7 @@ const surveyRegistry = surveys as Record<string, SurveyConfig | undefined>;
  */
 export async function getJourneyStagesAction(): Promise<JourneyStep[]> {
   try {
+    await requireAuth();
     const db = getAdminDb();
     console.log("🔍 [JourneyAction] Iniciando busca agrupada no Firestore...");
     
@@ -205,8 +207,9 @@ export async function getJourneyStagesAction(): Promise<JourneyStep[]> {
  */
 export async function getStandaloneStageAction(slug: string): Promise<JourneyStep | null> {
   try {
+    await requireAuth();
     const db = getAdminDb();
-    
+
     // 🧬 REGRA DE NORMALIZAÇÃO BPLEN (Soberania de Dados)
     // Convertemos underscores para hifens e tudo para minúsculo para bater com o ID do Firestore
     const normalizedSlug = slug.toLowerCase().replace(/_/g, '-');
@@ -310,8 +313,12 @@ export async function getStandaloneStageAction(slug: string): Promise<JourneySte
  */
 export async function getJourneyProgressAction(uid: string): Promise<JourneyProgress | null> {
   try {
+    const session = await requireAuth();
+    if (session.uid !== uid && !session.isAdmin) {
+      throw new AuthorizationError("Voce nao pode acessar a jornada de outro membro.");
+    }
     const db = getAdminDb();
-    
+
     // 1. Resolver Matrícula via UID
     const uidMapSnap = await db.collection("_AuthMap").doc(uid).get();
     if (!uidMapSnap.exists) return null;
@@ -375,8 +382,12 @@ export async function updateJourneySubStepAction(
   completed: boolean
 ): Promise<{ success: boolean; progress?: JourneyProgress }> {
   try {
+    const session = await requireAuth();
+    if (session.uid !== uid && !session.isAdmin) {
+      throw new AuthorizationError("Voce nao pode alterar a jornada de outro membro.");
+    }
     const db = getAdminDb();
-    
+
     // 1. Resolver Matrícula
     const uidMapSnap = await db.collection("_AuthMap").doc(uid).get();
     if (!uidMapSnap.exists) throw new Error("Usuário não mapeado.");
@@ -407,7 +418,7 @@ export async function updateJourneySubStepAction(
       };
 
       let newCompleted = [...(stepProgress.completedSubSteps || [])];
-      let newCompletionDates = { ...(stepProgress.subStepCompletionDates || {}) };
+      const newCompletionDates = { ...(stepProgress.subStepCompletionDates || {}) };
 
       if (completed) {
         if (!newCompleted.includes(subStepId)) newCompleted.push(subStepId);
@@ -545,6 +556,7 @@ export async function assignDynamicSubstepAction(
   }
 ): Promise<{ success: boolean; message: string }> {
   try {
+    await requireAdmin();
     const db = getAdminDb();
     const subStepId = `ss-dynamic-${subStepConfig.type}-${subStepConfig.referenceId}-${Date.now()}`;
     const progressRef = db.collection("User").doc(targetMatricula).collection("User_Journey").doc("progress");
@@ -645,6 +657,7 @@ export async function assignDynamicSubstepToPresentAttendeesAction(
   }
 ): Promise<{ success: boolean; message: string }> {
   try {
+    await requireAdmin();
     const db = getAdminDb();
     const eventRef = db.collection("Calendar_Events").doc(eventId);
     const eventSnap = await eventRef.get();
@@ -762,7 +775,7 @@ function applyCrossCompletionSweep(
     const allSubsteps = [...(stage.substeps || []), ...(progress.dynamicSubSteps || [])];
     let stageChanged = false;
     let newCompleted = [...(progress.completedSubSteps || [])];
-    let newDates = { ...(progress.subStepCompletionDates || {}) };
+    const newDates = { ...(progress.subStepCompletionDates || {}) };
 
     allSubsteps.forEach(sub => {
       if (sub.referenceId) {
