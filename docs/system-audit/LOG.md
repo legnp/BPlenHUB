@@ -418,3 +418,31 @@ para embasar essas decisões estão todos disponíveis.
   área sensível".
 - Itens atualizados: `BUGS.md` (BUG-028/029 rebaixados, +BUG-030), este LOG.
 - Nenhuma mudança de código de auth feita.
+
+---
+
+## [2026-07-02] Chat de execução — remoção de rotas de API sem auth (BUG-003 Crítico + BUG-023)
+
+- Chat/sessão: mesmo chat de execução; a Gestora priorizou a segurança urgente
+  após validar o PR #1 em produção.
+- Escopo: removidas 3 rotas `GET` públicas sem guard, todas com zero callers no
+  `src/` (confirmado por busca). Branch `security/remove-unauthed-api-routes`.
+  - `/api/admin/recover` (BUG-003, **Crítico**): concedia admin total a qualquer
+    e-mail da query string existente no Firebase Auth. Escalação de privilégio
+    trivial (atacante loga a própria conta Google uma vez, chama a rota → admin).
+  - `/api/ghosts` (BUG-023): vazava matrícula + data de check-in de todos.
+  - `/api/liandra` (BUG-023): despejava todos os surveys de uma matrícula real
+    hardcoded.
+- Decisão (aprovada pela Gestora): remover as 3 e **preservar a capacidade de
+  recovery** num script local seguro — criado `scripts/recover-admin.js`
+  (admin SDK, execução local, exige service account, e-mail via argumento; sem o
+  default hardcoded que a rota tinha).
+- Validação: `tsc --noEmit` e `next build` limpos (foi preciso limpar `.next` por
+  causa de tipos de rota stale do validador do Next referenciando as rotas
+  deletadas — artefato de cache, não erro de código). Rotas restantes intactas
+  (`docs`, `media`, `trigger-sync`, `webhooks/mercadopago`).
+- Status: BUG-003 e BUG-023 → **Corrigido** (aguardando merge do PR).
+- Nota para T-02/T-06: BUG-024 (`/api/trigger-sync` sem guard) e BUG-025 (webhook
+  MP sem HMAC) continuam abertos — não tratados aqui (trigger-sync pode ser cron
+  real e precisa de shared secret, não remoção; webhook é fluxo financeiro).
+- Itens atualizados: `BUGS.md` (BUG-003, BUG-023 → Corrigido), este LOG.
