@@ -327,7 +327,7 @@ export function GuidedTourOverlay({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[1000] pointer-events-none">
+    <div className="fixed inset-0 z-tour pointer-events-none">
       {/* Dynamic Hole Overlay using Masking for perfect Rounded Corners + Blur */}
       <motion.div
         initial={false}

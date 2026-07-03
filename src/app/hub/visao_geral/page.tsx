@@ -599,7 +599,7 @@ export default function VisaoGeralPage() {
 
       {/* Modal Lateral de Detalhes (Ata/Feedback/Notas) */}
       {activeDetailItem && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-overlay p-4 animate-fade-in">
           <div className="glass max-w-lg w-full p-8 border-[var(--glass-border)] rounded-[3rem] relative space-y-6 text-left animate-in zoom-in duration-300">
             <div className="flex items-start justify-between border-b border-[var(--border-primary)] pb-4">
               <div>

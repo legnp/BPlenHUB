@@ -19,7 +19,7 @@ const SOCIAL_LINKS = [
 
 export function FloatingSupport() {
   return (
-    <div className="fixed bottom-8 right-8 z-[200] flex flex-col items-center gap-3">
+    <div className="fixed bottom-8 right-8 z-chrome flex flex-col items-center gap-3">
       
       {/* Stack de Redes Sociais (Aparecem escalonadas) */}
       <div className="flex flex-col gap-2 mb-2">

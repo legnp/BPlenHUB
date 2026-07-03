@@ -48,7 +48,7 @@ export default function CookieConsent() {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 100, opacity: 0 }}
           transition={{ type: "spring", damping: 25, stiffness: 200 }}
-          className="fixed bottom-6 left-6 right-6 md:left-auto md:max-w-md z-[9999]"
+          className="fixed bottom-6 left-6 right-6 md:left-auto md:max-w-md z-toast"
         >
           <div className="bg-[var(--bg-primary)]/80 backdrop-blur-2xl border border-[var(--border-primary)] shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-[2.5rem] p-8 md:p-10 relative overflow-hidden group">
             

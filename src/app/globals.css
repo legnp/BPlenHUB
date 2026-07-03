@@ -203,6 +203,26 @@ body.glass-modal-open {
   overflow: hidden;
 }
 
+/*
+  Escala canonica de z-index (F0-01 lote 1).
+  Camadas nomeadas e coordenadas (baixo -> alto) para todo overlay/chrome global.
+  Regra: usar SEMPRE uma destas classes em elementos fixed/overlay de nivel de
+  pagina, nunca um z-[NNNN] ad-hoc. Contextos de empilhamento locais (relative
+  z-10 dentro de um card, absolutos internos de um modal) nao usam esta escala.
+    chrome         header, botoes flutuantes, sidebar
+    chrome-popover menus/dropdowns ancorados ao chrome
+    overlay        modais padrao e overlays de tela cheia
+    critical       gate/modal obrigatorio (ex.: contrato pendente)
+    toast          cookie consent / confirmacoes pos-acao
+    tour           guided tour (acima de tudo)
+*/
+.z-chrome { z-index: 100; }
+.z-chrome-popover { z-index: 200; }
+.z-overlay { z-index: 1000; }
+.z-critical { z-index: 1100; }
+.z-toast { z-index: 1200; }
+.z-tour { z-index: 1300; }
+
 /* Gradient Accent */
 .gradient-accent {
   background: linear-gradient(135deg, var(--accent-start), var(--accent-end));

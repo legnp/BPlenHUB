@@ -51,7 +51,7 @@ export function ContractGateModal() {
   const currentContract = pendingContracts[0];
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-critical flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
       <div className="bg-card w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
         <div className="p-8 flex flex-col items-center text-center">
           <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">

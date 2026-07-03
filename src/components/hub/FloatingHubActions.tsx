@@ -139,7 +139,7 @@ export function FloatingHubActions() {
       {/* ═══════════════════════════════════════════════ */}
       {/* BOTÕES FLUTUANTES (Bottom-Right, Fixed)         */}
       {/* ═══════════════════════════════════════════════ */}
-      <div className="fixed bottom-8 right-8 z-[190] flex flex-col items-center gap-3">
+      <div className="fixed bottom-8 right-8 z-chrome flex flex-col items-center gap-3">
         
         {/* Botão 1: Bug Report / Suporte */}
         <motion.button
@@ -193,7 +193,7 @@ export function FloatingHubActions() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={closeModal}
-              className="fixed inset-0 z-[300] bg-black/60 backdrop-blur-sm"
+              className="fixed inset-0 z-overlay bg-black/60 backdrop-blur-sm"
             />
 
             {/* Modal */}
@@ -202,7 +202,7 @@ export function FloatingHubActions() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 30 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed z-[301] bottom-8 right-8 w-[90vw] max-w-[420px] bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-2xl shadow-[0_4px_16px_0_rgba(31,38,135,0.08)] overflow-hidden"
+              className="fixed z-overlay bottom-8 right-8 w-[90vw] max-w-[420px] bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-2xl shadow-[0_4px_16px_0_rgba(31,38,135,0.08)] overflow-hidden"
             >
               {/* Header */}
               <div className="flex items-center justify-between p-5 pb-0">
