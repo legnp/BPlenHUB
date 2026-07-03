@@ -1,6 +1,7 @@
 "use server";
 
-import { getAdminAuth, getAdminDb } from "@/lib/firebase-admin";
+import { getAdminDb } from "@/lib/firebase-admin";
+import { requireAuth, requireAdmin, AuthorizationError } from "@/lib/auth-guards";
 import { getDriveClient } from "@/lib/google-auth";
 import { ensureFolder, uploadFileToDrive, getEventDriveFolder } from "@/lib/drive-utils";
 import { serverEnv } from "@/env";
@@ -26,9 +27,12 @@ export async function uploadToUserDrive(formData: FormData) {
     }
 
     // 1. Validar Sessão e Segurança 🛡️
-    // Verificamos o token vindo do cliente para garantir que a requisição é legítima.
-    const auth = getAdminAuth();
-    await auth.verifyIdToken(idToken);
+    // Guard canonico: sessao valida + trava de dono (a matricula tem de ser a do
+    // proprio membro autenticado, ou admin).
+    const session = await requireAuth(idToken);
+    if (session.matricula !== matricula && !session.isAdmin) {
+      throw new AuthorizationError("Voce nao pode enviar arquivos para a pasta de outro membro.");
+    }
 
     // 2. Governança de Tamanho 📏
     // CV: 5MB | Portfolio: 20MB
@@ -103,9 +107,8 @@ export async function uploadPostEventDocAction(formData: FormData) {
       throw new Error(`O arquivo selecionado (${(file.size / (1024 * 1024)).toFixed(2)}MB) excede o limite maximo de 5MB.`);
     }
 
-    // 1. Validar Sessão 🛡️
-    const auth = getAdminAuth();
-    await auth.verifyIdToken(idToken);
+    // 1. Validar Sessão 🛡️ (fluxo administrativo de pos-evento)
+    await requireAdmin(idToken);
 
     // 2. Preparar estrutura de pastas no Drive 🗄️
     const drive = await getDriveClient();

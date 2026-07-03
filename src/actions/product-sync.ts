@@ -1,6 +1,7 @@
 "use server";
 
 import { getAdminDb } from "@/lib/firebase-admin";
+import { requireAdmin } from "@/lib/auth-guards";
 import { getDriveClient, getSheetsClient } from "@/lib/google-auth";
 import { ensureFolder, createSpreadsheet, syncDataToSheet, uploadFileToDrive, makeFilePublic } from "@/lib/drive-utils";
 import { serverEnv, clientEnv } from "@/env";
@@ -19,6 +20,7 @@ import { PRODUCTS_COLLECTION } from "@/config/collections";
  */
 export async function syncProductToDriveAction(product: Product) {
   try {
+    await requireAdmin();
     const drive = await getDriveClient();
     const sheets = await getSheetsClient();
     
@@ -83,6 +85,7 @@ export async function syncProductToDriveAction(product: Product) {
  */
 export async function uploadProductCoverAction(formData: FormData) {
   try {
+    await requireAdmin();
     const file = formData.get("file") as File;
     const folderId = formData.get("folderId") as string;
     const serviceCode = formData.get("serviceCode") as string;
