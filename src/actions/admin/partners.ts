@@ -9,6 +9,7 @@ import { Readable } from "stream";
 import { revalidatePath } from "next/cache";
 import { getErrorMessage } from "@/lib/utils/errors";
 import { safeSerialize } from "@/lib/utils/firestore";
+import { requireAdmin } from "@/lib/auth-guards";
 
 /**
  * BPlen HUB — Admin Partners Actions 🤝🛡️
@@ -37,6 +38,7 @@ export interface PartnerData {
  */
 export async function getPartnersAction(): Promise<PartnerData[]> {
   try {
+    await requireAdmin();
     const db = getAdminDb();
     const snapshot = await db.collection("Partners").get();
 
@@ -64,6 +66,7 @@ export async function getPartnersAction(): Promise<PartnerData[]> {
  */
 export async function upsertPartnerAction(data: PartnerData, base64Image?: string) {
   try {
+    await requireAdmin();
     const db = getAdminDb();
     const drive = await getDriveClient();
     
@@ -129,6 +132,7 @@ export async function upsertPartnerAction(data: PartnerData, base64Image?: strin
  */
 export async function deletePartnerAction(id: string) {
   try {
+    await requireAdmin();
     const db = getAdminDb();
     await db.collection("Partners").doc(id).delete();
     

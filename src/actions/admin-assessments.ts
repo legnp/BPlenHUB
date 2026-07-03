@@ -1,6 +1,7 @@
 "use server";
 
 import { getAdminDb } from "@/lib/firebase-admin";
+import { requireAdmin } from "@/lib/auth-guards";
 
 export interface UserAssessment {
   id: string;
@@ -19,6 +20,7 @@ export interface UserAssessment {
  */
 export async function getUserAssessments(matricula: string): Promise<UserAssessment[]> {
   try {
+    await requireAdmin();
     const db = getAdminDb();
     const resultsSnap = await db.collection(`User/${matricula}/results`).get();
     
@@ -45,6 +47,7 @@ export async function getUserAssessments(matricula: string): Promise<UserAssessm
  */
 export async function toggleAssessmentRelease(matricula: string, resultId: string, currentStatus: boolean) {
   try {
+    await requireAdmin();
     const db = getAdminDb();
     const resultRef = db.doc(`User/${matricula}/results/${resultId}`);
     
