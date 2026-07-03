@@ -36,6 +36,11 @@ completo de como os mapas foram fechados em 2 sessões.
    tentando validar, o chat de execução deve **completar a lacuna do mapa
    primeiro** (mesma metodologia de inspeção real de código dos mapas
    existentes) antes de validar o item — não validar às cegas.
+5. **A cada PR mergeada** que resolva um item/bug, atualizar
+   `DASHBOARD.md` (painel de progresso Fase 0 + Tracks): mover o item para
+   "resolvido", recalcular as % dos tracks afetados, e atualizar a data de
+   "Última atualização". O `DASHBOARD.md` só agrega — a fonte de verdade continua
+   sendo `BUGS.md` + este plano.
 
 ---
 
@@ -366,12 +371,11 @@ O mapeamento das jornadas abaixo é entregável desta fase (não pré-existente)
   corrigido; em especial o padrão sistêmico de dezenas de actions sem guard
   próprio (`BUG-020`) e o caso de IDOR confirmado (`BUG-019`) resolvidos ou
   aceitos formalmente com justificativa registrada
-- Modo de validação: PENDENTE (executável via análise de código — profundidade
-  igual às Fases 0-4; dados completos já disponíveis, não mais bloqueado)
-- Status: Não iniciado
-- Resultado: —
+- Modo de validação: Automatizado (execução via análise de código, em andamento)
+- Status: **Em andamento — 5/10 mergeados na `main` (50%)** (ver `DASHBOARD.md`)
+- Resultado: ✓ Corrigidos/mergeados: BUG-003 (recover sem auth, removido), BUG-007 (guard admin server-side = F0-05), BUG-019 (IDOR de foto de perfil), BUG-023 (rotas de debug órfãs removidas), BUG-024 (`trigger-sync` removido). ○ Restantes: BUG-005, BUG-006, BUG-020 (esforço sistêmico em lotes), BUG-021, BUG-025 (webhook HMAC). Padrão de guard canônico emergente: `requireAuth() + dono-ou-admin` (a documentar como referência para o lote do BUG-020).
 - Bug(s) vinculado(s): BUG-003, BUG-005, BUG-006, BUG-007, BUG-019, BUG-020, BUG-021, BUG-023, BUG-024, BUG-025
-- Log: —
+- Log: entradas de 2026-07-02 e 2026-07-03 no `LOG.md`
 
 ### [T-03] Integridade e migração de dados
 - Categoria(s) de qualidade: Manutenibilidade / Confiabilidade

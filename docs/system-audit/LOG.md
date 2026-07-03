@@ -499,3 +499,33 @@ para embasar essas decisões estão todos disponíveis.
   `updateGlobalProgramacaoRegistryAction` ao final de `syncCalendarToFirestore`.
 - Itens atualizados: `BUGS.md` (BUG-024 → Corrigido, +BUG-031), este LOG.
 - Trilha de segurança restante: BUG-020 (T-02), BUG-025 (webhook MP sem HMAC).
+
+---
+
+## [2026-07-03] Chat de execução — painel de progresso vivo (DASHBOARD.md)
+
+- Chat/sessão: mesmo chat de execução
+- Escopo: a Gestora pediu visibilidade contínua do progresso da Fase 0 **junto
+  dos Tracks (T-*) associados**, que se mantenha atualizada conforme itens são
+  resolvidos (inclusive bugs novos que surgirem).
+- Decisões (cadência e mecanismo, escolhidos pela Gestora):
+  - **Cadência:** atualizar o painel **a cada PR mergeada** (mesmo checkpoint da
+    entrada do LOG).
+  - **Mecanismo:** **manual** por ora (aplica julgamento nos status nuançados,
+    zero setup, casa com o volume atual). Script gerador automático fica como
+    upgrade futuro — quando/se for feito, adicionar antes campos legíveis por
+    máquina (Status + Tracks de vocabulário fixo) para o parser não chutar prosa.
+- Entregue:
+  - Novo **`DASHBOARD.md`** — Fase 0 (6/6 decididas; F0-01 e F0-04 com
+    implementação pendente) + Tracks T-02 (5/10), T-06 (1/2), T-03 (~0,5/4), mais
+    os bugs novos (BUG-028..031).
+  - **Regra amarrada no protocolo** do `00-PLAN.md` (item 5): atualizar o
+    DASHBOARD a cada PR mergeada.
+  - **Status do T-02 no `00-PLAN.md` corrigido** (estava "Não iniciado" apesar de
+    vários bugs já mergeados) → "Em andamento 5/10".
+- Observação de processo: a pergunta da Gestora ("os bugs se conectam à Fase 0?")
+  expôs que o T-02 nasce de dentro da Fase 0 (via F0-05) e que seu status estava
+  defasado — reconciliado aqui. PR #5 (BUG-024) foi mergeado nesta sessão antes de
+  montar o painel, para o DASHBOARD já refletir o estado final (T-02 5/10).
+- Itens atualizados: novo `DASHBOARD.md`; `00-PLAN.md` (protocolo item 5 + status
+  T-02); este LOG.
