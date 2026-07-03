@@ -88,7 +88,7 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   service account). Plano aprovado pela Gestora (opção "remover + script local").
 - Decisão de execução: Corrigido via branch `security/remove-unauthed-api-routes`
   (validado por `tsc --noEmit` + `next build`).
-- Commit/PR: branch `security/remove-unauthed-api-routes` (PR aberto)
+- Commit/PR: **mergeado** — PR #3 (`ca6b0aa`), commit `5108133` (verificado via `git log origin/main`)
 
 ### BUG-004 Vazamento de path interno do Firestore em resposta de produção
 
@@ -319,7 +319,7 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   assinatura nem no caller (`ProfileIdentityTab`); erro cai no try/catch existente.
 - Decisão de execução: Plano aprovado pela Gestora. Corrigido via branch
   `security/fix-profile-idor` (validado por eslint + `tsc --noEmit` + `next build`).
-- Commit/PR: branch `security/fix-profile-idor` (PR aberto)
+- Commit/PR: **mergeado** — PR #4 (`06becd7`), commit `1374712` (verificado via `git log origin/main`)
 
 ### BUG-020 Dezenas de Server Actions com efeito sensível/administrativo sem guard interno próprio
 
@@ -410,7 +410,7 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Decisão de execução: Corrigido via branch `security/remove-unauthed-api-routes`
   (validado por `tsc --noEmit` + `next build`). Assumido que nenhuma automação
   externa dependia dessas rotas de debug (queries hardcoded).
-- Commit/PR: branch `security/remove-unauthed-api-routes` (PR aberto)
+- Commit/PR: **mergeado** — PR #3 (`ca6b0aa`), commit `5108133` (verificado via `git log origin/main`)
 
 ### BUG-024 `/api/trigger-sync` sem guard e sem caller conhecido
 
@@ -432,7 +432,7 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Decisão de execução: Removida via branch `security/remove-trigger-sync-route`
   (plano/risco apresentados e aprovados pela Gestora; reversível via git se algum
   chamador externo invisível aparecer). Ver `BUG-031` para a melhoria relacionada.
-- Commit/PR: branch `security/remove-trigger-sync-route` (PR aberto)
+- Commit/PR: **mergeado** — PR #5 (`69fa151`), commit `50d892c` (verificado via `git log origin/main`)
 
 ### BUG-025 Webhook do Mercado Pago sem validação de assinatura/segredo
 

@@ -8,10 +8,13 @@
 > da entrada no `LOG.md`). Bugs novos que aparecerem entram no track certo e a
 > contagem se recalcula aqui.
 >
-> **"Resolvido" = mergeado na `main`.** Correções em PR aberta aparecem em
-> "Em andamento", não contam na %.
+> **"Resolvido" = mergeado na `main` OU formalmente aceito como risco/adiado**
+> (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
+> aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-03 (após PR #5 mergeado).
+> **Última atualização:** 2026-07-03 (reconciliação do chat de planejamento —
+> ver `LOG.md`; `BUG-004` linkado ao T-02, que passa de 10 para 11 no
+> denominador).
 
 ---
 
@@ -36,10 +39,10 @@ de modais) e **F0-04** (parar escrita de `User_JourneyMap`).
 Onde a implementação sistemática dos temas da Fase 0 acontece. Progresso = bugs
 mergeados na `main` sobre o total do track.
 
-### T-02 — Segurança sistemática · **5 / 10 (50%)**  `█████░░░░░`
+### T-02 — Segurança sistemática · **5 / 11 (~45%)**  `████░░░░░░`
 
-- ✓ Mergeados: BUG-003 (recover), BUG-007 (guard admin = F0-05), BUG-019 (IDOR foto), BUG-023 (rotas debug), BUG-024 (trigger-sync removido)
-- ○ Abertos: BUG-005, BUG-006, BUG-020 (sistêmico, em lotes), BUG-021, BUG-025 (webhook HMAC)
+- ✓ Mergeados: BUG-003 (recover, PR #3), BUG-007 (guard admin = F0-05, PR #1), BUG-019 (IDOR foto, PR #4), BUG-023 (rotas debug, PR #3), BUG-024 (trigger-sync removido, PR #5)
+- ○ Abertos: BUG-004 (vazamento de path em `admin-fs.ts` — linkado nesta reconciliação, estava sem track), BUG-005, BUG-006, BUG-020 (sistêmico, em lotes), BUG-021, BUG-025 (webhook HMAC)
 
 ### T-06 — Compliance técnico · **1 / 2 (50%)**  `█████░░░░░`
 

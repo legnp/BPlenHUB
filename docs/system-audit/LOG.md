@@ -552,3 +552,59 @@ para embasar essas decisões estão todos disponíveis.
   corrigidos antes de causar dano, e viram guia para o próximo chat.
 - Itens atualizados: novo `RETROSPECTIVE.md`; `00-PLAN.md` (protocolo item 1);
   este LOG.
+
+---
+
+## [2026-07-03] Chat de planejamento — refinamento do plano a partir do RETROSPECTIVE
+
+- Chat/sessão: chat de planejamento (Sonnet 5), a pedido explícito do Gestor
+- Escopo: leitura integral de `00-PLAN.md`, `LOG.md`, `BUGS.md`, `DASHBOARD.md` e
+  `RETROSPECTIVE.md`, seguida de refino do `00-PLAN.md` incorporando as 5
+  "Melhorias sugeridas para o PLANO" do `RETROSPECTIVE.md`, e reconciliação de
+  status defasado entre os 3 documentos-fonte. **Nenhuma linha de código de
+  produto foi tocada** — chat de planejamento não implementa.
+- As 5 melhorias aplicadas ao `00-PLAN.md`:
+  1. **Decisão separada de Execução em todos os 27 itens do checklist**
+     (Fases 0-4 + Tracks) — campo único `Status` (ambíguo) substituído por dois
+     campos de vocabulário fixo. Seção "Convenções deste documento" nova,
+     definindo o vocabulário.
+  2. **Índice explícito "Bug → Item/Track"** — tabela nova com os 31 bugs,
+     severidade, status e vínculo de plano, construída cruzando `BUGS.md`
+     contra o campo "Bug(s) vinculado(s)" de cada item.
+  3. **Tags `[HIPÓTESE]`/`[CONFIRMADO]`** — regra adicionada ao Protocolo (item
+     7) e aplicada retroativamente às afirmações não confirmadas já existentes
+     no plano: BUG-009 (`UserBooking.timestamp` sempre nulo), BUG-010
+     (`adminAddAttendeeAction` duplicado = código morto), BUG-011 (exploit
+     teórico de antecedência mínima), BUG-022 (bypass de pagamento intencional).
+  4. **Critério objetivo de fechamento de Track**: "corrigido (mergeado) OU
+     formalmente aceito com justificativa" — adicionado às "Convenções" e
+     espelhado no cabeçalho do `DASHBOARD.md`.
+  5. **Overlay de triagem por severidade**: seção nova logo após o template,
+     listando ao vivo todo bug `Crítico`/`Alto` `Aberto` (hoje: BUG-020, 010,
+     008, 004, 001 — nenhum Crítico ativo) e regra no Protocolo (item 6).
+- Reconciliações de status defasado encontradas e corrigidas:
+  - **`BUG-004`** (vazamento de path em `admin-fs.ts`) e **`BUG-022`** (bypass
+    de pagamento em `retroactive-contract.ts`) não tinham **nenhum** item/track
+    vinculado em nenhum dos 3 documentos — achado só ficou visível ao montar o
+    índice explícito (prova do valor da melhoria #2). Linkados: BUG-004 → T-02
+    (denominador sobe de 10 para 11, % recalculada para ~45%); BUG-022 → F3-03.
+  - **T-02 e T-06 no `00-PLAN.md` diziam "Status: Não iniciado"** enquanto o
+    `DASHBOARD.md` já mostrava progresso real (T-02 5/10, T-06 1/2) — o
+    `00-PLAN.md` nunca tinha sido atualizado depois que os bugs desses tracks
+    começaram a ser corrigidos. Corrigido: os itens agora refletem o mesmo
+    número que o `DASHBOARD.md` (fonte de verdade realinhada).
+  - **4 referências de PR desatualizadas em `BUGS.md`** (BUG-003, BUG-019,
+    BUG-023, BUG-024 diziam "branch ... (PR aberto)"): verificado via
+    `git log origin/main --merges` que todos os 7 PRs abertos até agora (#1 a
+    #7) estão mergeados — corrigidos os 4 campos `Commit/PR` com o número do PR
+    e hash do commit de merge confirmados no histórico real do git (não só nos
+    docs, que podem ficar desatualizados).
+- Itens do `00-PLAN.md` atualizados: reescrita completa (template, Protocolo
+  itens 6-7 novos, seção "Convenções", seção "Triagem por severidade", seção
+  "Índice — Bug → Item/Track", todos os 27 itens de Fase/Track com campos
+  Decisão/Execução, T-02/T-03/T-06 recalculados). `DASHBOARD.md` (T-02 → 5/11,
+  nota de última atualização, linha de critério de fechamento). `BUGS.md`
+  (4 campos `Commit/PR` corrigidos). Este LOG.
+- Nada bloqueado para a próxima sessão de execução — o plano está pronto para
+  retomar a fila de triagem por severidade (BUG-020 é o maior item aberto) ou
+  seguir para a Fase 1.
