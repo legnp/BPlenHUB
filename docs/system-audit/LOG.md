@@ -647,3 +647,40 @@ para embasar essas decisões estão todos disponíveis.
 - Trilha de segurança restante no T-02: BUG-020 lotes seguintes (partners,
   assessments, forms/surveys, journey, queries, upload, `auth-permissions`),
   BUG-004 (vazamento de path), BUG-005, BUG-006, BUG-021, BUG-025 (webhook HMAC).
+
+---
+
+## [2026-07-03] Chat de execução — BUG-020 lote 2 (CRUD admin) mergeado
+
+- Chat/sessão: mesmo chat de execução, na sequência do lote 1
+- Escopo: 2º lote do BUG-020 — CRUD/leituras admin sem guard. Plano+risco
+  apresentados e **aprovados pela Gestora** antes de codar. Arquivos:
+  `src/actions/admin/partners.ts` e `src/actions/admin-assessments.ts`.
+- Achados (por leitura direta): 5 actions admin **sem guard nenhum**, sendo 3
+  mutações diretamente invocáveis por rede — `upsertPartnerAction` (cria/edita
+  parceiro + upload Drive), `deletePartnerAction` (apaga parceiro),
+  `toggleAssessmentRelease` (libera/oculta diagnóstico DISC de qualquer membro +
+  cria/apaga `Shared_Documents`) — mais 2 leituras (`getPartnersAction`,
+  `getUserAssessments`). Grep confirmou callers 100% admin
+  (`admin/partners/page.tsx`, `admin/users/page.tsx`, `DevolutivaComportamentalView.tsx`);
+  `getPartnersAction` **não** é usado no `/hub/networking` (vitrine do membro lê
+  por `getNetworkingDataAction`), então `requireAdmin()` não afeta a área de membro.
+- Mudança: `requireAdmin()` como 1ª linha do `try` de cada uma das 5 actions
+  (defense-in-depth sobre o guard de render do F0-05). Chamador não-admin cai no
+  catch existente → resposta segura já tratada pelos callers (`[]` nas leituras,
+  `{success:false}` nas mutações). Sessão pelo cookie assinado; **assinaturas
+  inalteradas**, callers não mudam.
+- Validação: eslint nos 2 arquivos (0 erros, só warning `_excludeId` pré-existente),
+  `tsc --noEmit` limpo, `next build` **exit 0** (os logs `❌ [Server Session]` no
+  build são o efeito esperado do F0-05 — rotas `/admin/*` dinâmicas por lerem
+  `cookies()` — não erro; confirmado com captura do exit code real).
+- Entrega: branch `security/admin-crud-guards` → **PR #9 mergeado** (`70d418e`,
+  squash) via REST API do GitHub. Branch deletada (local+remota).
+- Contabilidade: BUG-020 segue **Em Progresso** (2 lotes de vários). T-02 de
+  ~5,5 para **~5,7/11** (fracionário honesto, precedente BUG-018/T-03).
+- Itens atualizados: `BUGS.md` (BUG-020, +lote 2/PR #9), `00-PLAN.md` (T-02
+  Execução/Resultado, Triagem, Índice), `DASHBOARD.md` (T-02 ~5,7/11, data),
+  este LOG.
+- Trilha restante no T-02: BUG-020 lotes seguintes (forms/surveys analytics,
+  journey `assignDynamicSubstep*`, queries do calendário, upload/portfólio,
+  `auth-permissions`), BUG-004, BUG-005, BUG-006, BUG-021, BUG-025 (webhook HMAC).
