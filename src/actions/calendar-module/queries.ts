@@ -1,7 +1,7 @@
 "use server";
 
 import { getAdminDb } from "@/lib/firebase-admin";
-import { requireAdmin, requireAuth } from "@/lib/auth-guards";
+import { requireAdmin, requireAuth, AuthorizationError } from "@/lib/auth-guards";
 import { getCalendarClient } from "@/lib/google-auth";
 import { serverEnv } from "@/env";
 import { formatISO, parseISO, isBefore } from "date-fns";
@@ -15,6 +15,7 @@ import { toISOSafe } from "@/lib/date-utils";
  */
 export async function fetchCalendarEvents(dateReference: Date): Promise<GoogleCalendarEvent[]> {
   try {
+    await requireAuth();
     const calendar = await getCalendarClient();
     const timeMin = formatISO(new Date(dateReference.getFullYear(), dateReference.getMonth(), 1));
     const timeMax = formatISO(new Date(dateReference.getFullYear(), dateReference.getMonth() + 1, 0));
@@ -74,7 +75,7 @@ export async function fetchCalendarEvents(dateReference: Date): Promise<GoogleCa
  */
 export async function getSyncedEvents(idToken?: string): Promise<GoogleCalendarEvent[]> {
     try {
-      if (idToken) await requireAdmin(idToken);
+      await requireAuth(idToken);
       const db = getAdminDb();
       const snap = await db.collection("Calendar_Events").get();
       
@@ -100,6 +101,10 @@ export async function getSyncedEvents(idToken?: string): Promise<GoogleCalendarE
  */
 export async function getUserBookingsAction(matricula: string): Promise<UserBooking[]> {
   try {
+    const session = await requireAuth();
+    if (session.matricula !== matricula && !session.isAdmin) {
+      throw new AuthorizationError("Voce nao pode acessar os agendamentos de outro membro.");
+    }
     const db = getAdminDb();
     const bookingsSnap = await db.collection("User").doc(matricula).collection("User_Bookings").get();
     
@@ -148,6 +153,7 @@ export async function getUserBookingsAction(matricula: string): Promise<UserBook
  */
 export async function getEventAttendees(eventId: string): Promise<AttendeeData[]> {
   try {
+    await requireAdmin();
     const db = getAdminDb();
     const attendeesSnap = await db.collection("Calendar_Events").doc(eventId).collection("attendees").get();
     
@@ -248,9 +254,9 @@ export async function getEventNpsDetailsAction(
   reviews: Array<{ nickname: string; matricula: string; rating: number; feedback: string; evaluatedAt: string | null }>;
 }> {
   try {
-    if (idToken) await requireAdmin(idToken);
+    await requireAdmin(idToken);
     const db = getAdminDb();
-    
+
     const eventRef = db.collection("Calendar_Events").doc(eventId);
     const attendeesSnap = await eventRef.collection("attendees").get();
     const reviews: Array<{ nickname: string; matricula: string; rating: number; feedback: string; evaluatedAt: string | null }> = [];
@@ -284,8 +290,12 @@ export async function getEventNpsDetailsAction(
  */
 export async function getUserOneToOneQuotaAction(matricula: string): Promise<number | null> {
   try {
+    const session = await requireAuth();
+    if (session.matricula !== matricula && !session.isAdmin) {
+      throw new AuthorizationError("Voce nao pode acessar a cota de outro membro.");
+    }
     const db = getAdminDb();
-    
+
     // Tenta buscar no caminho de quotas sob permissões
     const quotaRef = db.collection("User").doc(matricula).collection("User_Permissions").doc("quotas");
     const snap = await quotaRef.get();
