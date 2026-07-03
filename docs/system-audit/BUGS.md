@@ -393,16 +393,24 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
     (catálogo, callers 100% autenticados). `useJourney` só chama com uid real
     (nunca "guest", confirmado por leitura). `applyCrossCompletionSweep` é helper
     interno não-exportado, sem guard.
-  - Lotes restantes (abertos): migração/portfólio/upload,
-    `auth-permissions.ts:fetchUserPermissionsStatus`.
+  - **Lote 6 (upload/portfólio)** — `requireAdmin()` em
+    `migration-welcome.ts:runWelcomeMigration`,
+    `portfolio-commands.ts:syncPortfolioFromFilesAction`,
+    `product-sync.ts:syncProductToDriveAction`/`uploadProductCoverAction`,
+    `upload-to-drive.ts:uploadPostEventDocAction` (esta trocou o guard ad-hoc
+    `verifyIdToken` pelo helper canônico → também fecha o BUG-021);
+    `upload-to-drive.ts:uploadToUserDrive` ganhou `requireAuth(idToken)` +
+    dono-ou-admin (fecha IDOR: token válido de qualquer membro permitia upload na
+    pasta Drive de outra matrícula).
+  - Lote restante (aberto): `auth-permissions.ts:fetchUserPermissionsStatus`.
 - Decisão de execução: Padronização em lotes por módulo (padrão canônico do T-02:
   `requireAuth()`/`requireAdmin()` + dono-ou-admin). Cada lote validado por eslint
   + `tsc --noEmit` + `next build`; assinaturas inalteradas (sessão pelo cookie
   assinado, como no BUG-019). Plano+aprovação da Gestora antes de cada lote.
 - Commit/PR: **lote 1** — PR #8 (`6610167`, squash); **lote 2** — PR #9
   (`70d418e`, squash); **lote 3** — PR #10 (`34c3c21`, squash); **lote 4** — PR #11
-  (`e4d7fb9`, squash); **lote 5** — PR #12 (`ddbcc49`, squash). Faltam 2 lotes
-  (upload/portfólio, auth-permissions) para o bug fechar.
+  (`e4d7fb9`, squash); **lote 5** — PR #12 (`ddbcc49`, squash); **lote 6** — PR #13
+  (`bfc15b8`, squash). Falta 1 lote (auth-permissions) para o bug fechar.
 
 ### BUG-021 Guard "ad-hoc" divergente do padrão em `upload-to-drive.ts`
 
@@ -413,10 +421,15 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   diretamente em vez de `requireAuth`/`requireMemberAccess` de
   `@/lib/auth-guards.ts`, criando um segundo padrão de verificação de token
   paralelo ao resto do projeto (débito técnico de consistência).
-- Status: Aberto
-- Decisão de execução: Ajuste pequeno, mas mexe em upload de arquivo de
-  usuário — avaliar junto com F0 antes de unificar
-- Commit/PR: —
+- Status: **Corrigido** — resolvido junto com o lote 6 do BUG-020 (2026-07-03).
+  Em `upload-to-drive.ts`, `uploadToUserDrive` passou a usar `requireAuth(idToken)`
+  + trava de dono e `uploadPostEventDocAction` passou a usar `requireAdmin(idToken)`,
+  eliminando o `getAdminAuth().verifyIdToken(idToken)` ad-hoc (import `getAdminAuth`
+  removido). O padrão de verificação agora é único (helper canônico de
+  `@/lib/auth-guards.ts`), e a unificação ainda fechou um IDOR de upload real.
+- Decisão de execução: Unificado no mesmo PR do lote 6 do BUG-020 (mexem no mesmo
+  arquivo). Validado por eslint + `tsc --noEmit` + `next build`.
+- Commit/PR: **mergeado** — PR #13 (`bfc15b8`, squash).
 
 ### BUG-022 `retroactive-contract.ts` cria pedido "aprovado" sem gateway de pagamento
 

@@ -794,3 +794,41 @@ para embasar essas decisões estão todos disponíveis.
   `portfolio-commands`, `product-sync`, `upload-to-drive` — este é também o
   BUG-021) e **`auth-permissions.ts:fetchUserPermissionsStatus`**. Quando esses 2
   fecharem, BUG-020 vira Corrigido e o T-02 dá salto real na %.
+
+---
+
+## [2026-07-03] Chat de execução — BUG-020 lote 6 (upload/portfólio) + BUG-021 mergeados
+
+- Chat/sessão: mesmo chat de execução, na sequência do lote 5
+- Escopo: 6º lote do BUG-020 (upload/portfólio) que também **fecha o BUG-021**
+  (guard ad-hoc de `upload-to-drive.ts`). Plano+risco apresentados e **aprovados
+  pela Gestora** (com explicação "para leigo") antes de codar. Arquivos (4):
+  `migration-welcome.ts`, `portfolio-commands.ts`, `product-sync.ts`,
+  `upload-to-drive.ts`.
+- Mapa de callers (por grep, antes de codar):
+  - Admin: `runWelcomeMigration` (admin/users, admin/migrate-welcome),
+    `syncPortfolioFromFilesAction` (admin/products), `uploadProductCoverAction`
+    (AdminProductBuilder), `uploadPostEventDocAction` (PostEventWizard),
+    `syncProductToDriveAction` (interno via products.ts upsert admin) → `requireAdmin()`.
+  - Membro: `uploadToUserDrive` (EvidenceField/FileField em surveys, própria
+    matrícula) → `requireAuth(idToken)` + dono-ou-admin.
+- Mudança: guard como 1ª linha do try de cada action. As 2 de `upload-to-drive.ts`
+  trocaram o `getAdminAuth().verifyIdToken(idToken)` ad-hoc pelos helpers canônicos
+  (`requireAdmin(idToken)` / `requireAuth(idToken)`), eliminando o 2º padrão de
+  verificação (BUG-021) e, de quebra, fechando um IDOR real de upload
+  (`uploadToUserDrive` aceitava matrícula de terceiro com token válido de qualquer
+  membro). Import órfão `getAdminAuth` removido. Assinaturas e callers inalterados.
+- Validação: eslint nos 4 arquivos (0 erros), `tsc --noEmit` limpo, `next build`
+  **exit 0**. Fluxos logados não autenticam no preview (BUG-030); validado por
+  tsc+build.
+- Entrega: branch `security/upload-portfolio-guards` → **PR #13 mergeado**
+  (`bfc15b8`, squash) via REST API do GitHub. Branch deletada (local+remota).
+- Contabilidade: **BUG-021 → Corrigido** (unidade inteira). BUG-020 segue **Em
+  Progresso** (6 lotes; falta só `auth-permissions`). T-02 de ~5,95 para
+  **~6,9/11** (~63%) — o salto vem do BUG-021 fechar como unidade.
+- Itens atualizados: `BUGS.md` (BUG-020 +lote 6, BUG-021 → Corrigido), `00-PLAN.md`
+  (T-02 Execução/Resultado, Índice: BUG-020 e BUG-021), `DASHBOARD.md` (T-02 ~6,9/11,
+  BUG-021 nos mergeados, dedup da linha de abertos, data), este LOG.
+- Reta final do BUG-020: **único lote restante** é
+  `auth-permissions.ts:fetchUserPermissionsStatus` (IDOR de leitura de permissões
+  por uid). Ao fechar, BUG-020 vira Corrigido e o T-02 salta para ~7/11 (~64%).
