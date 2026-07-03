@@ -49,7 +49,7 @@ export function UpsellServiceModal({ isOpen, onClose, product, loading }: Upsell
   return createPortal(
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 md:p-6">
+        <div className="fixed inset-0 z-overlay flex items-center justify-center p-4 md:p-6">
           {/* Backdrop Eéreo */}
           <motion.div
             initial={{ opacity: 0 }}

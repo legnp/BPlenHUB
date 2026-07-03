@@ -43,7 +43,7 @@ export function WelcomeRedirectModal({
   const modalContent = (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6 overflow-hidden isolate">
+        <div className="fixed inset-0 z-overlay flex items-center justify-center p-4 sm:p-6 overflow-hidden isolate">
           {/* Backdrop (Camada de Profundidade Soberana 🌑) */}
           <motion.div
             initial={{ opacity: 0 }}

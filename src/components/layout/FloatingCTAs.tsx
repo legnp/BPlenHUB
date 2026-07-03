@@ -265,7 +265,7 @@ export function FloatingCTAs() {
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.8, delay: 1, ease: "easeOut" }}
-        className="fixed bottom-6 right-6 md:top-8 md:right-8 md:bottom-auto hidden md:flex flex-col items-end gap-2 md:gap-3 z-[100]"
+        className="fixed bottom-6 right-6 md:top-8 md:right-8 md:bottom-auto hidden md:flex flex-col items-end gap-2 md:gap-3 z-chrome"
       >
         <AnimatePresence mode="wait">
           {!isHomePage && (

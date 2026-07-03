@@ -68,7 +68,7 @@ export function SocialSidebar() {
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 1.2, delay: 1.5 }}
-      className="fixed bottom-6 left-6 md:top-1/2 md:left-8 md:-translate-y-1/2 md:bottom-auto hidden md:flex flex-col items-center gap-6 md:gap-8 z-[100]"
+      className="fixed bottom-6 left-6 md:top-1/2 md:left-8 md:-translate-y-1/2 md:bottom-auto hidden md:flex flex-col items-center gap-6 md:gap-8 z-chrome"
     >
       {/* Rótulo Vertical Sutil - Escondido no Mobile para ganhar espaço */}
       <div className="flex-col items-center gap-4 hidden md:flex">

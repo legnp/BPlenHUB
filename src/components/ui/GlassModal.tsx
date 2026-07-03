@@ -62,7 +62,7 @@ export default function GlassModal({
   const modalContent = (
     <AnimatePresence mode="wait">
       {isOpen && (
-        <div className="fixed inset-0 z-[1000] flex items-start justify-center p-4 overflow-y-auto custom-scrollbar">
+        <div className="fixed inset-0 z-overlay flex items-start justify-center p-4 overflow-y-auto custom-scrollbar">
           {/* Sombra imersiva sutil atrás do modal */}
           <motion.div 
             initial={{ opacity: 0 }}

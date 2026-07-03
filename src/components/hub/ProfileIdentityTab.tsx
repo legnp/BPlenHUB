@@ -214,7 +214,7 @@ export function ProfileIdentityTab() {
 
       {/* ✂️ Cropper Modal */}
       {showCropper && tempImage && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-10 animate-in fade-in zoom-in duration-300">
+        <div className="fixed inset-0 z-overlay flex items-center justify-center p-4 md:p-10 animate-in fade-in zoom-in duration-300">
           <div className="absolute inset-0 bg-black/95 backdrop-blur-xl" />
           
           <div className="relative w-full max-w-2xl bg-[var(--input-bg)] border border-white/10 rounded-[3rem] overflow-hidden shadow-2xl flex flex-col h-[80vh] md:h-auto">

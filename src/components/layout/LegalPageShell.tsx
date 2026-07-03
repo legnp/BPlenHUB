@@ -48,7 +48,7 @@ export function LegalPageShell({
       className="min-h-screen flex flex-col font-sans transition-all duration-300 antialiased"
     >
       {/* Cabeçalho Fixo Premium (Glassmorphism v3.1 Light) */}
-      <header className="sticky top-0 z-[100] w-full border-b border-[var(--border-primary)] bg-white/60 backdrop-blur-xl transition-all duration-300">
+      <header className="sticky top-0 z-chrome w-full border-b border-[var(--border-primary)] bg-white/60 backdrop-blur-xl transition-all duration-300">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="focus:outline-none">
             <BPlenLogo variant="main" size={26} />
