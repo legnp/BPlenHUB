@@ -1,0 +1,108 @@
+# Retrospectiva do Processo de Auditoria
+
+Documento **vivo** de lições aprendidas executando o `00-PLAN.md`. Serve a dois
+públicos:
+
+1. **Chat de planejamento** — para refinar o plano e os docs de processo.
+2. **Chats de execução** — para performar melhor que os anteriores. **Todo chat
+   de execução deve ler este arquivo** (junto de `00-PLAN.md` + `LOG.md`) antes de
+   agir — ver Protocolo no `00-PLAN.md`.
+
+Cada sessão que aprender algo reutilizável adiciona/edita aqui. Origem inicial:
+sessão de execução de 2026-07-02/03 (Fase 0 + início do Track T-02).
+
+---
+
+## Lições de execução (leia antes de agir)
+
+Regras práticas destiladas de erros e acertos reais. São diretivas, não teoria.
+
+1. **Nunca use uma rota/action que MUTA estado como "sonda" de teste.** Antes de
+   bater em qualquer endpoint "só pra ver se responde", confirme por leitura de
+   código que é read-only. _(Caso real: um `GET /api/trigger-sync` de sanity
+   disparou um rewrite do registro global de programação em produção.)_
+
+2. **Verifique no código ANTES de escrever a conclusão; marque o não-verificado
+   como provisório.** O plano já manda "inspeção real, não assumida" — vale também
+   para a prosa dos docs. _(Casos reais: afirmei que o arquivo de tipos do
+   `entitlements` era órfão — não era, quebraria o build; e um diagnóstico de auth
+   assumiu falha em produção que os dados refutaram.)_ Rotule recomendação não
+   validada como **hipótese**, não como fato.
+
+3. **Confirme premissa antes de implementar em área sensível.** Quando o alvo é
+   segurança/identidade/financeiro, o gating do `CLAUDE.md` (plano + aprovação)
+   não é burocracia — foi o que evitou um refactor grande e errado no fluxo de
+   login (o problema era preview-only, não produção). Validar primeiro > codar
+   rápido.
+
+4. **Higiene de branch/PR: conte os PRs em voo antes de ramificar.** Não crie uma
+   branch nova a partir da `main` mexendo em arquivos que um PR ainda aberto também
+   altera — dá conflito/stash desnecessário. Ou mergeie o PR antes, ou mantenha a
+   atualização de status na mesma branch da mudança de código.
+
+5. **Cheque ferramentas e sintaxe de shell no começo.** Nesta máquina:
+   - `gh` (GitHub CLI) **não está instalado**. Para abrir/mergear PR, usar a
+     credencial já salva do git via API REST do GitHub (ver `LOG.md` para o
+     padrão exato: `git credential fill` → token → `fetch` na API).
+   - A ferramenta Bash é **Git Bash (sh)**, não PowerShell: usar here-string
+     `<<'EOF'` para mensagens multi-linha. Sintaxe `@'...'@` (PowerShell) corrompe
+     o texto.
+
+6. **Triagem por severidade fura a ordem das fases.** Um Crítico/Alto vivo (ex.:
+   `BUG-003`, escalação de admin) vale mais que seguir Fase 0→1→2 ao pé da letra.
+   Priorize impacto/severidade real sobre a ordem nominal do plano.
+
+7. **Atualize o `DASHBOARD.md` a cada PR mergeada** (Protocolo item 5). É o que
+   mantém a visibilidade de progresso honesta e evita status defasado nos Tracks.
+
+8. **Agrupe confirmações sem dependência entre si** (batch) em vez de ida-e-volta,
+   para não gastar rodadas. Explicações "para leigo" quando a Gestora pedir; mas
+   decisões independentes podem ser perguntadas juntas.
+
+---
+
+## Melhorias sugeridas para o PLANO (para o chat de planejamento refinar)
+
+1. **Rollup de progresso nativo.** O plano rastreava itens/bugs mas não tinha
+   visão agregada, e o status dos Tracks ficou defasado (T-02 dizia "Não iniciado"
+   com 5 bugs já resolvidos). Já mitigado com `DASHBOARD.md` + Protocolo item 5 —
+   considerar nascer assim em planos futuros. Adicionar um **índice bug→item/track**
+   explícito (hoje a associação é inferida).
+
+2. **Separar "decidido" de "implementado".** A Fase 0 é fase de decisão, mas
+   F0-01/04/05 exigem código. "Fase 0 concluída" ficou ambíguo. Um item
+   decidido-mas-gated **não** é "done" — marcar os dois estados distintamente.
+
+3. **Recomendações como hipótese até validar.** O plano prescreve soluções antes
+   da validação e algumas mudaram na execução (BUG-002 reclassificado, BUG-024 de
+   "shared secret" para "remover", hipótese de authDomain invertida). Marcar
+   recomendação não validada como provisória.
+
+4. **Definir o critério de "fechar um Track".** Ex.: T-02 fecha com todo bug
+   "corrigido **ou** formalmente aceito com justificativa". A % do DASHBOARD
+   precisa dessa distinção para não mentir.
+
+5. **Overlay de triagem por severidade** sobre a ordem de fases (ver Lição 6).
+
+---
+
+## O que funcionou muito bem (preservar)
+
+1. **Docs como fonte de verdade compartilhada** (`00-PLAN` + `BUGS` + `LOG` +
+   mapas 01-05). Contexto retomável entre chats; decisões embasadas em inspeção
+   real, não achismo.
+
+2. **`BUGS.md` desacoplado das fases.** Achados novos entram sem bagunçar a
+   estrutura; a regra "registrar antes de decidir corrigir" mantém disciplina.
+
+3. **Gating de área sensível do `CLAUDE.md`.** Forçou validação antes de codar em
+   segurança/identidade/financeiro — maior gerador de valor da sessão.
+
+4. **"Modo de validação decidido na hora"** (Automatizado vs Requer execução
+   humana) — flexível e correto por item.
+
+---
+
+## Registro de revisões deste documento
+
+- 2026-07-03 — criação, a partir da sessão Fase 0 + início do T-02.

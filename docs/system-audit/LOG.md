@@ -529,3 +529,26 @@ para embasar essas decisões estão todos disponíveis.
   montar o painel, para o DASHBOARD já refletir o estado final (T-02 5/10).
 - Itens atualizados: novo `DASHBOARD.md`; `00-PLAN.md` (protocolo item 5 + status
   T-02); este LOG.
+
+---
+
+## [2026-07-03] Chat de execução — retrospectiva do processo (RETROSPECTIVE.md)
+
+- Chat/sessão: mesmo chat de execução
+- Escopo: a pedido da Gestora, retrospectiva do processo de auditoria para (a) o
+  chat de planejamento refinar o plano e (b) os próximos chats de execução
+  performarem melhor.
+- Entregue:
+  - Novo **`RETROSPECTIVE.md`** (documento vivo) com: **Lições de execução**
+    (diretivas práticas destiladas de erros/acertos reais — ex.: não usar rota
+    mutante como sonda; verificar código antes de afirmar; higiene de branch/PR;
+    `gh` ausente → PR via API; triagem por severidade), **melhorias sugeridas para
+    o plano**, e **o que preservar**.
+  - **Protocolo do `00-PLAN.md` (item 1) atualizado**: todo chat de execução deve
+    ler o `RETROSPECTIVE.md` antes de agir, e adicionar lições reutilizáveis.
+- Honestidade da sessão registrada: dois erros meus documentados como lição —
+  (1) disparei `/api/trigger-sync` (rota mutante) como sanity check; (2) afirmei
+  no doc que o tipo `entitlements` era órfão sem verificar (não era). Ambos
+  corrigidos antes de causar dano, e viram guia para o próximo chat.
+- Itens atualizados: novo `RETROSPECTIVE.md`; `00-PLAN.md` (protocolo item 1);
+  este LOG.

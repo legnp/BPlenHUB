@@ -18,8 +18,10 @@ completo de como os mapas foram fechados em 2 sessões.
 ## Protocolo entre chats
 
 1. Todo chat de execução deve ler este arquivo + as últimas entradas do `LOG.md`
-   antes de agir, e deve terminar registrando uma entrada no `LOG.md` (data,
-   escopo trabalhado, achados, decisões, mudanças de status neste plano).
+   **+ o `RETROSPECTIVE.md`** (lições de execução destiladas de sessões
+   anteriores) antes de agir, e deve terminar registrando uma entrada no `LOG.md`
+   (data, escopo trabalhado, achados, decisões, mudanças de status neste plano).
+   Se aprender algo reutilizável, adicionar/editar o `RETROSPECTIVE.md`.
 2. Ao tentar um item do checklist, o chat de execução decide o **Modo de
    validação** na hora, não antes:
    - Se conseguir validar sozinho (código + preview) → marca `Automatizado`,
