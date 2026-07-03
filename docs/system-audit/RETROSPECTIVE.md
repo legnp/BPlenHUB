@@ -59,6 +59,23 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
    para não gastar rodadas. Explicações "para leigo" quando a Gestora pedir; mas
    decisões independentes podem ser perguntadas juntas.
 
+9. **Antes de guardar uma função, cheque se ela é primitivo de infraestrutura.**
+   Se a função é chamada por `getServerSession` (ex.: `fetchUserPermissionsStatus`),
+   pôr `requireAuth`/`requireAdmin` dentro dela causa **recursão infinita** (o guard
+   depende de `getServerSession`, que depende dela). Padrão de solução: separe o
+   **resolvedor cru** (lib, sem guard, usado pela infra com identidade já verificada)
+   do **action exposto na rede** (wrapper com trava de dono via `verifySignedSession`,
+   que só lê o cookie e não recursa). _(Caso real: BUG-020 lote 7 / PR #14.)_
+
+10. **Um "último lote trivial" pode esconder o bug mais grave — inspecione o arquivo
+    inteiro, não só a função citada no bug.** O BUG-020 citava só
+    `fetchUserPermissionsStatus`, mas o mesmo arquivo tinha `syncUserPermissionsOnLogin`
+    concedendo admin a partir de um e-mail **não-verificado** (auto-promoção a admin,
+    Crítico = BUG-032, achado no lote 7). Server actions confiam em parâmetros do
+    cliente: todo `(uid, email)`/`matricula` recebido tem de ser confrontado com a
+    identidade **verificada** (cookie/token), nunca usado direto. Registre o achado
+    novo em `BUGS.md` antes de decidir (protocolo), mesmo no meio de outro lote.
+
 ---
 
 ## Melhorias sugeridas para o PLANO (para o chat de planejamento refinar)
