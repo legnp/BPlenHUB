@@ -4,6 +4,7 @@ import { getAdminDb } from "@/lib/firebase-admin";
 import { FORMS_REGISTRY } from "@/config/forms";
 import { FormRecord } from "@/types/forms";
 import { toSafeDate } from "@/lib/date-utils";
+import { requireAdmin } from "@/lib/auth-guards";
 
 export interface FormAnalyticsSummary {
   id: string;
@@ -29,8 +30,9 @@ export async function getAdminFormsAnalytics(): Promise<{
   stats: GlobalFormStats;
 }> {
   try {
+    await requireAdmin();
     const db = getAdminDb();
-    
+
     // 1. Buscar todas as respostas via Collection Group (Caminho Hierárquico: User/*/Forms/*)
     const formsSnapshot = await db.collectionGroup("Forms").get();
     
