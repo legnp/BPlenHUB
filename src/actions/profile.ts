@@ -3,6 +3,7 @@
 import { getAdminDb } from "@/lib/firebase-admin";
 import { getDriveClient } from "@/lib/google-auth";
 import { ensureFolder, uploadFileToDrive, makeFilePublic } from "@/lib/drive-utils";
+import { requireAuth, AuthorizationError } from "@/lib/auth-guards";
 import { serverEnv } from "@/env";
 import { Readable } from "stream";
 
@@ -14,6 +15,13 @@ import { Readable } from "stream";
 export async function updateProfileImageAction(matricula: string, base64Image: string) {
   console.log(`🛡️ [ProfileAction:Soberano] Iniciando atualização para matrícula: ${matricula}`);
   try {
+    // Guard de sessao + dono (via cookie assinado). Bloqueia IDOR: um usuario
+    // so pode alterar a propria foto (ou admin). Ver BUG-019.
+    const session = await requireAuth();
+    if (session.matricula !== matricula && !session.isAdmin) {
+      throw new AuthorizationError("Voce nao tem permissao para alterar a foto deste perfil.");
+    }
+
     const drive = await getDriveClient();
     
     // 1. Identificar Segmento (B2B/B2C) — Regra de Negócio BPlen 🛡️
@@ -72,6 +80,12 @@ export async function updateProfileImageAction(matricula: string, base64Image: s
  */
 export async function deleteProfileImageAction(matricula: string) {
   try {
+    // Guard de sessao + dono (via cookie assinado). Bloqueia IDOR. Ver BUG-019.
+    const session = await requireAuth();
+    if (session.matricula !== matricula && !session.isAdmin) {
+      throw new AuthorizationError("Voce nao tem permissao para remover a foto deste perfil.");
+    }
+
     const db = getAdminDb();
     await db.collection("User").doc(matricula).set({
       photoUrl: null,

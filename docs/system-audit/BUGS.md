@@ -313,9 +313,13 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   pertence ao usuário que está chamando a action. Um client que chame a action
   passando a matrícula de outra pessoa pode sobrescrever/apagar a foto de
   perfil dela.
-- Status: Aberto
-- Decisão de execução: Precisa plano+aprovação (identidade/sessão)
-- Commit/PR: —
+- Status: **Corrigido** — adicionado guard de sessão + dono nas duas actions
+  (2026-07-02). `requireAuth()` resolve a sessão pelo cookie assinado e bloqueia
+  se `session.matricula !== matricula && !session.isAdmin`. Sem mudança de
+  assinatura nem no caller (`ProfileIdentityTab`); erro cai no try/catch existente.
+- Decisão de execução: Plano aprovado pela Gestora. Corrigido via branch
+  `security/fix-profile-idor` (validado por eslint + `tsc --noEmit` + `next build`).
+- Commit/PR: branch `security/fix-profile-idor` (PR aberto)
 
 ### BUG-020 Dezenas de Server Actions com efeito sensível/administrativo sem guard interno próprio
 
