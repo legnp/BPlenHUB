@@ -701,6 +701,40 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   (toca `sync.ts` do módulo de calendário).
 - Commit/PR: —
 
+### BUG-032 `syncUserPermissionsOnLogin` concede admin a partir de e-mail não-verificado (escalação de privilégio)
+
+- Severidade: **Crítico** (auto-promoção a admin; mesma classe do BUG-003 já
+  corrigido — a Gestora pode reclassificar para Alto dado o pré-requisito de já
+  ter uma matrícula, ver abaixo)
+- Área/fase onde foi achado: T-02 / BUG-020 lote 7 (auth-permissions) — achado
+  colateral por leitura de código (2026-07-03)
+- Arquivo(s) afetado(s): `src/actions/auth-permissions.ts:syncUserPermissionsOnLogin`
+- Cenário de falha: a server action recebe `(uid, email)` como **parâmetros não
+  verificados**. Se `email` estiver na allowlist `MASTER_EMAILS`, o código resolve
+  a matrícula a partir do `uid` e grava `admin: true` em
+  `User/{matricula}/User_Permissions/access` (linhas 129-135). Como toda função
+  `"use server"` é um endpoint de rede real, um usuário autenticado com matrícula
+  pode chamar `syncUserPermissionsOnLogin(ownUid, "legnp@bplen.com")` diretamente
+  e **auto-conceder admin** à própria conta. O `email` não é confrontado com a
+  identidade verificada do chamador. **[CONFIRMADO por leitura de código]** —
+  não reproduzido em runtime, mas o caminho é direto e determinístico.
+  - Pré-requisito de exploração: ter uma matrícula (`User/{matricula}` + `_AuthMap`);
+    sem matrícula resolvida a action retorna sem gravar (linhas 81-87). Ou seja,
+    explorável por qualquer membro registrado, não por um visitante qualquer — por
+    isso a nota de possível reclassificação Alto.
+- Correção proposta (aguardando aprovação — identidade/sessão, gated): no login
+  legítimo (`use-auth.ts`), `createSignedSessionCookie` roda **antes** de
+  `syncUserPermissionsOnLogin`, então o cookie de sessão já existe. Verificar o
+  chamador com `verifySignedSession()` (que retorna `{uid,email}` sem recursão),
+  exigir `caller.uid === uid`, e usar o **e-mail verificado do cookie** (não o
+  parâmetro) para o teste `MASTER_EMAILS`. Assim um atacante não consegue reivindicar
+  um e-mail master que não possui.
+- Status: **Aberto** (registrado 2026-07-03; correção proposta, aguardando aprovação)
+- Decisão de execução: Precisa plano+aprovação (identidade/privilégio — gating do
+  `CLAUDE.md`). Furar a fila por severidade (Protocolo item 6). Proposto tratar no
+  mesmo lote 7 do BUG-020 (mesmo arquivo `auth-permissions.ts`).
+- Commit/PR: —
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em

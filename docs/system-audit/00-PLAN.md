@@ -124,14 +124,17 @@ ativa furando a ordem das fases.
 
 | Bug | Severidade | Onde se conecta | Por que ainda não fechou |
 |---|---|---|---|
+| BUG-032 | Crítico | T-02 | **Novo (2026-07-03)** — escalação de privilégio: `syncUserPermissionsOnLogin` concede admin a partir de e-mail não-verificado. Correção proposta (gated, identidade), aguardando aprovação; fura a fila por severidade |
 | BUG-020 | Alto | T-02 | **Em Progresso** — 5 lotes mergeados: 1/booking (PR #8, 2 IDORs) + 2/CRUD admin (PR #9) + 3/analytics admin (PR #10) + 4/queries do calendário (PR #11, +2 IDORs) + 5/journey (PR #12, +2 IDORs); faltam 2 lotes (upload/portfólio, auth-permissions) para fechar |
 | BUG-010 | Alto | T-03 | **[HIPÓTESE]** precisa confirmar se a implementação duplicada em `post-event.ts` é código morto antes de decidir remoção |
 | BUG-008 | Alto | F2-04, T-03 | Requer plano+aprovação (toca fluxo financeiro/cotas) |
 | BUG-004 | Alto | T-02 | Requer avaliação de exposição além do painel admin antes de corrigir |
 | BUG-001 | Alto | T-06 | Requer plano+aprovação (dado sensível/PII, regra explícita do `CLAUDE.md`) |
 
-Nenhum `Crítico` aberto no momento (o único registrado, `BUG-003`, foi corrigido
-e mergeado — PR #3).
+Há **1 `Crítico` aberto**: `BUG-032` (escalação de privilégio via
+`syncUserPermissionsOnLogin`), registrado em 2026-07-03 com correção proposta
+aguardando aprovação (identidade/gated). O `BUG-003` (o outro Crítico já
+registrado) foi corrigido e mergeado (PR #3).
 
 ---
 
@@ -662,6 +665,7 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-029 | Baixo (rebaixado) | Aberto (adiado) | fora do escopo original — cluster de auth, ver `LOG.md` 2026-07-02 |
 | BUG-030 | Baixo | Aceito | Riscos Aceitos (item 5, abaixo) |
 | BUG-031 | Baixo | Aberto | fora do escopo original — melhoria de usabilidade, ainda sem track (candidato a T-05 ou item novo de Fase 2 quando priorizado) |
+| BUG-032 | Crítico | Aberto | T-02 — escalação de privilégio (novo, achado no lote 7); correção proposta aguardando aprovação |
 
 ---
 
