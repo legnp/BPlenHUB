@@ -1095,3 +1095,43 @@ para embasar essas decisões estão todos disponíveis.
 - Itens atualizados: `BUGS.md` (BUG-004 → Corrigido, Baixo), `00-PLAN.md` (topo,
   triagem por severidade, ISO 25010 Segurança, item T-02, índice bug→track),
   `DASHBOARD.md` (T-02 10/12, data), este LOG.
+
+---
+
+## [2026-07-04] Chat de execução — BUG-006 (guard no networking) corrigido
+
+- Chat/sessão: mesmo chat de execução, penúltimo item do T-02
+- Escopo: BUG-006 — `getNetworkingDataAction` (`networking.ts`) importava
+  `requireAuth` mas nunca o chamava. Gated (avaliar exposição real do networking)
+  → avaliação + plano apresentados e **aprovados pela Gestora** antes de codar.
+- Avaliação de exposição + intenção de design (confirmada pela Gestora): o
+  networking é, **por design**, um espaço de conexão entre usuários do sistema —
+  dados de um membro (foto, perfil profissional, contatos, CV, portfólio) devem
+  ser consumíveis por outros membros, com o **dono** controlando via painel próprio
+  o que aparece (opt-in `networking_visibility` + flags por campo). A Gestora pediu
+  explicitamente garantia de que a correção não quebrasse essa lógica; devolvi meu
+  entendimento da feature em texto e ela ratificou.
+- Mapa de exposição (por leitura/grep): caller **único** é `hub/networking/page.tsx`
+  (página do hub, já atrás do guard server-side do `hub/layout.tsx`). Guard novo
+  não afeta o membro logado; só fecha o acesso direto por rede.
+- Mudança (`src/actions/networking.ts`): `await requireAuth()` como 1ª linha do try
+  (padrão canônico do T-02). **Não** altera quem aparece, os campos/contatos
+  retornados, nem o painel do dono — só exige sessão. Chamador não autenticado cai
+  no catch → `{success:false,data:[]}`, já tratado pela página (`if res.success`).
+  Removido também o import morto `resolveMatricula`.
+- Validação: `tsc --noEmit` limpo, `next build` exit 0, eslint do arquivo 0 erros.
+  Tela logada: não autentica no preview (BUG-030). Commit sem `--no-verify`.
+- Entrega: branch `security/networking-auth-guard` → **PR #18 mergeado**
+  (`8f8d15d`, squash) via REST API do GitHub. Branch deletada (local+remota).
+- Marco: **BUG-006 → Corrigido.** T-02 sobe para **11/12 (~92%)**. Resta só
+  **BUG-005** (checkout de membro cria preferência de pagamento sem
+  `member_area_access`, Médio/financeiro) para **fechar o T-02**.
+- Achado colateral registrado para depois (não é o BUG-006): a action devolve
+  `contacts` e URLs de CV/portfólio inteiros, incluindo itens marcados
+  não-visíveis pelo dono, aparentemente filtrados só no client — **[HIPÓTESE]** de
+  vazamento de valores ocultos para o browser de outros membros, contrariando o
+  controle do dono. A Gestora concordou em investigar/registrar como bug próprio
+  **após** fechar o T-02 (não confirmado no componente de render ainda).
+- Itens atualizados: `BUGS.md` (BUG-006 → Corrigido + achado colateral),
+  `00-PLAN.md` (topo, ISO 25010 Segurança, item T-02, índice bug→track),
+  `DASHBOARD.md` (T-02 11/12, data), este LOG.

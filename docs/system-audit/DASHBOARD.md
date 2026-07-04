@@ -12,11 +12,10 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-04 (chat de execução — BUG-004 corrigido, PR #17:
-> parou de vazar `doc.ref.path` no lugar do apelido no painel admin de analytics;
-> severidade rebaixada Alto→Baixo após avaliação de exposição (admin-only). T-02
-> sobe para 10/12. Antes, BUG-025 (webhook HMAC, PR #16) já havia fechado o item
-> financeiro. Nenhum Crítico aberto).
+> **Última atualização:** 2026-07-04 (chat de execução — BUG-006 corrigido, PR #18:
+> `requireAuth` em `getNetworkingDataAction`, preservando a lógica da feature de
+> networking (opt-in do dono intocado). T-02 sobe para 11/12; resta só BUG-005
+> (checkout de membro, financeiro) para fechar o track. Nenhum Crítico aberto).
 
 ---
 
@@ -41,11 +40,11 @@ de modais — lote 1/3 feito) e **F0-04** (parar escrita de `User_JourneyMap`).
 Onde a implementação sistemática dos temas da Fase 0 acontece. Progresso = bugs
 mergeados na `main` sobre o total do track.
 
-### T-02 — Segurança sistemática · **10 / 12 (~83%)**  `████████░░`
+### T-02 — Segurança sistemática · **11 / 12 (~92%)**  `█████████░`
 
-- ✓ Mergeados: BUG-003 (recover, PR #3), BUG-007 (guard admin = F0-05, PR #1), BUG-019 (IDOR foto, PR #4), BUG-023 (rotas debug, PR #3), BUG-024 (trigger-sync removido, PR #5), BUG-021 (guard ad-hoc de upload unificado, PR #13), **BUG-020 (guards sistemáticos em Server Actions — 7 lotes, PRs #8–#14)**, **BUG-032 (escalação de privilégio no login, PR #14)**, **BUG-025 (webhook MP com assinatura HMAC, PR #16)**, **BUG-004 (path de debug no lugar do apelido no painel admin, PR #17)**
+- ✓ Mergeados: BUG-003 (recover, PR #3), BUG-007 (guard admin = F0-05, PR #1), BUG-019 (IDOR foto, PR #4), BUG-023 (rotas debug, PR #3), BUG-024 (trigger-sync removido, PR #5), BUG-021 (guard ad-hoc de upload unificado, PR #13), **BUG-020 (guards sistemáticos em Server Actions — 7 lotes, PRs #8–#14)**, **BUG-032 (escalação de privilégio no login, PR #14)**, **BUG-025 (webhook MP com assinatura HMAC, PR #16)**, **BUG-004 (path de debug no lugar do apelido no painel admin, PR #17)**, **BUG-006 (guard `requireAuth` no networking, PR #18)**
 - ✅ **BUG-020 fechado** — 7 lotes: booking (PR #8, 2 IDORs), CRUD admin (PR #9), analytics admin (PR #10), queries do calendário (PR #11, 2 IDORs), journey (PR #12, 2 IDORs), upload/portfólio (PR #13, 1 IDOR + BUG-021), auth-permissions (PR #14, 1 IDOR + BUG-032). Padrão canônico do track consolidado: `requireAuth()`/`requireAdmin()` + dono-ou-admin, sessão pelo cookie assinado.
-- ○ Abertos: BUG-005, BUG-006 (Médios, checkout/networking)
+- ○ Aberto: BUG-005 (checkout de membro cria preferência de pagamento sem `member_area_access`, Médio/financeiro) — **último item do track**
 
 ### T-06 — Compliance técnico · **1 / 2 (50%)**  `█████░░░░░`
 

@@ -141,10 +141,30 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Cenário de falha: a Server Action que lista dados de networking (membros,
   profissionais, parceiros) não tem checagem própria de autenticação — o
   import de `requireAuth` está presente mas não é invocado no corpo da função.
-- Status: Aberto
-- Decisão de execução: Precisa plano+aprovação (avaliar exposição real antes
-  de decidir a correção)
-- Commit/PR: —
+- Avaliação de exposição (2026-07-04, por leitura): caller **único** é
+  `src/app/hub/networking/page.tsx` (página do hub, já atrás do guard server-side
+  do `hub/layout.tsx`); adicionar `requireAuth()` não afeta o membro logado, só
+  fecha o acesso direto por rede. A feature de networking é, **por design**, um
+  espaço de conexão entre usuários do sistema — dados de um membro (foto, perfil,
+  contatos, CV, portfólio) devem ser consumíveis por outros membros, com o dono
+  controlando via painel próprio o que aparece (opt-in `networking_visibility` +
+  flags por campo). O guard preserva isso: exige apenas que o solicitante seja um
+  usuário logado; não altera quem aparece nem os campos retornados.
+- Status: **Corrigido** — 2026-07-04. `await requireAuth()` como 1ª linha do try
+  (padrão canônico do T-02); chamador não autenticado cai no catch → retorno
+  seguro `{success:false,data:[]}`, já tratado pela página. Removido também o
+  import morto `resolveMatricula` (não usado no arquivo).
+- Decisão de execução: Avaliação de exposição + plano apresentados e **aprovados
+  pela Gestora** (2026-07-04, que confirmou a intenção de design da feature de
+  networking). Corrigido via branch `security/networking-auth-guard` (validado por
+  `tsc --noEmit` + `next build` + eslint do arquivo).
+- Commit/PR: **mergeado** — PR #18 (`8f8d15d`, squash).
+- Achado colateral (fora do escopo deste bug, a investigar): a action retorna
+  `contacts` e URLs de CV/portfólio **inteiros**, incluindo itens que o dono
+  marcou como não-visíveis (`visible:false`/flags), aparentemente filtrados só no
+  client — **[HIPÓTESE]** de que valores ocultos trafegam para o browser de outros
+  membros, contrariando o controle do dono. Não confirmado no componente de render;
+  a investigar/registrar como bug próprio após o fechamento do T-02.
 
 ### BUG-007 Guard da área `/admin` é só client-side
 
