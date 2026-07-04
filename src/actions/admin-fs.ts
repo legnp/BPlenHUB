@@ -189,7 +189,7 @@ export async function getFSItemDetails(
     let title = "";
     let totalRespondents = 0;
     let averageCompletionTimeSeconds: number | null = null;
-    let respondents: FSRespondent[] = [];
+    const respondents: FSRespondent[] = [];
 
     if (type === "survey") {
       const config = SURVEY_REGISTRY.find(s => s.id === id);
@@ -216,7 +216,7 @@ export async function getFSItemDetails(
         respondents.push({
           matricula,
           name: uInfo.name,
-          nickname: doc.ref.path, // TEMP: Expondo o path para debug
+          nickname: uInfo.nickname,
           submittedAt: iso,
           userUid: uInfo.uid,
         });
@@ -299,9 +299,4 @@ export async function getFSItemDetails(
       error: getErrorMessage(err, "Falha ao processar detalhes da estrutura selecionada."),
     };
   }
-}
-
-// Auxiliar para normalizar o ID caso necessário
-function configId(id: string): string {
-  return id;
 }
