@@ -517,6 +517,12 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   (re-fetch do pagamento no MP), desacoplando o merge da virada de chave em
   produção. Ativação em produção (execução humana): gerar o segredo no painel do
   MP, cadastrar `MERCADOPAGO_WEBHOOK_SECRET` na Vercel, confirmar com webhook real.
+  **[CONFIRMADO ativo em produção — 2026-07-04]** via "Simular notificação" do
+  painel MP (URL `/api/webhooks/mercadopago`, segredo cadastrado na Vercel): a
+  notificação assinada **passou pela verificação HMAC** — o log da Vercel mostra
+  o handler seguindo até o lookup do pagamento (404 esperado para o `data.id`
+  fictício `123456`), **sem** o aviso de "modo suave" e **sem** 401 de assinatura
+  inválida, provando que o segredo foi lido e a assinatura recalculada bateu.
 - Decisão de execução: Plano+risco apresentados e **aprovados pela Gestora**
   (2026-07-04). Corrigido via branch `security/mercadopago-webhook-hmac` (validado
   por eslint dos arquivos tocados + `tsc --noEmit` + `next build`).

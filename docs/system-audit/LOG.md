@@ -1031,3 +1031,27 @@ para embasar essas decisões estão todos disponíveis.
 - Itens atualizados: `BUGS.md` (BUG-025 → Corrigido), `00-PLAN.md` (topo, ISO
   25010 Segurança, item T-02 Execução/Resultado, índice bug→track), `DASHBOARD.md`
   (T-02 9/12, data), este LOG.
+
+### Ativação em produção confirmada (mesma sessão, 2026-07-04)
+
+- A Gestora cadastrou o segredo, corrigiu o nome da variável (havia divergência:
+  o plano inicial dizia `MP_WEBHOOK_SECRET`, mas o código mergeado lê
+  `MERCADOPAGO_WEBHOOK_SECRET`, seguindo o padrão do `MERCADOPAGO_ACCESS_TOKEN` —
+  renomeada na Vercel + `.env.local` + redeploy) e ajustou a URL do webhook no
+  painel MP para `/api/webhooks/mercadopago`.
+- Validação por "Simular notificação" (painel MP, modo teste; segredo do MP é o
+  mesmo para teste e produção). Log da Vercel:
+  `📡 Recebido: payment | ID: 123456` → `🚨 Payment not found (404)`. **Sem** o
+  aviso "modo suave" e **sem** `Assinatura invalida`/401 → o segredo foi lido e a
+  **assinatura HMAC passou**; o 404 é o resultado esperado do `data.id` fictício
+  (pagamento inexistente no MP). Proteção contra replay/spoofing **ativa em
+  produção**.
+- Lição de processo: divergência de nome de variável entre o texto do plano e o
+  código implementado gerou retrabalho (a Gestora cadastrou o nome antigo).
+  **Ao renomear algo durante a implementação, garantir que o nome final é o único
+  citado nas instruções de configuração passadas ao humano.**
+- Nota de código (não-bloqueante, fora de escopo): o SDK do MP emite
+  `DEP0169 url.parse() DeprecationWarning`; o handler retorna 500 em "Payment not
+  found" (política de retry do MP) — comportamento correto para pagamento real.
+- Itens atualizados: `BUGS.md` (BUG-025, nota [CONFIRMADO ativo em produção]),
+  este LOG.
