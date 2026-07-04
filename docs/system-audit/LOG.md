@@ -1135,3 +1135,48 @@ para embasar essas decisões estão todos disponíveis.
 - Itens atualizados: `BUGS.md` (BUG-006 → Corrigido + achado colateral),
   `00-PLAN.md` (topo, ISO 25010 Segurança, item T-02, índice bug→track),
   `DASHBOARD.md` (T-02 11/12, data), este LOG.
+
+---
+
+## [2026-07-04] Chat de execução — BUG-005 corrigido; Track T-02 FECHADO (12/12)
+
+- Chat/sessão: mesmo chat de execução, último item do T-02
+- Escopo: BUG-005 — checkout de membro criando pagamento sem matrícula rastreável.
+  Gated (financeiro) → mapeamento + plano apresentados e **aprovados pela Gestora**
+  (optou pela opção B: `requireMatricula` para rastreabilidade). A Gestora pediu
+  para só iniciar se houvesse budget suficiente; avaliei a mudança como cirúrgica
+  (2 trocas de guard, mapeamento já feito) e segui, sequenciando o PR de código
+  como unidade atômica antes dos docs.
+- Investigação que inverteu a premissa (por leitura):
+  - A premissa original (exigir `member_area_access`) é **[HIPÓTESE refutada]** —
+    seria circular (esse entitlement é o que a compra concede; nem admin herda; o
+    doc do `requireAuth` cita "ex: Checkout"). Gatear por ele quebraria o funil de
+    entrada de membros. O `requireAuth`-only é **intencional** (categoria do BUG-002).
+  - Mapa dos 3 fluxos de geração de matrícula (resposta a uma dúvida da Gestora):
+    `welcome_survey` (1º acesso) e `dados_cadastrais` (checkout) via
+    `resolveUserIdentity` (`survey-effects.ts`), e `claimInvitationTokenAction`
+    (convite). No checkout, a matrícula nasce na **abertura do RegistrationStep**
+    (`FormsEngine` chama `resolveUserIdentity("dados_cadastrais")` no mount),
+    **antes** de `createPreferenceAction`/`processPaymentAction`.
+- Mudança (`src/actions/mp-checkout.ts`): `createPreferenceAction` e
+  `processPaymentAction` de `requireAuth` → `requireMatricula` (fecha o
+  `NAO_MAPEADA`, toda ordem rastreável); `getCheckoutProductAction` mantido em
+  `requireAuth` (roda antes do RegistrationStep — gatear quebraria o registro no
+  checkout). Nenhum usuário legítimo barrado. Não é correção de vulnerabilidade,
+  e sim de rastreabilidade fiscal.
+- Validação: `tsc --noEmit` limpo, `next build` exit 0, eslint do arquivo 0 erros.
+  Fluxo logado: não autentica no preview (BUG-030). Commit sem `--no-verify`.
+- Entrega: branch `security/member-checkout-require-matricula` → **PR #19 mergeado**
+  (`ba447df`, squash) via REST API do GitHub. Branch deletada (local+remota).
+- **MARCO: Track T-02 (Segurança sistemática) FECHADO — 12/12 (100%).** Todos os
+  12 bugs vinculados corrigidos e mergeados (nenhum aceite formal/adiamento foi
+  necessário). Fila de triagem por severidade agora com 3 Altos (BUG-010, BUG-008,
+  BUG-001, de outros tracks); nenhum Crítico.
+- Follow-ups pendentes registrados nesta sessão: (1) achado colateral do BUG-006
+  (contatos/URLs não-visíveis do networking trafegando ao client — **[HIPÓTESE]**,
+  a investigar/registrar como bug próprio); (2) a Gestora pode ativar o
+  `MERCADOPAGO_WEBHOOK_SECRET` em produção quando quiser (BUG-025 já confirmado
+  funcional).
+- Itens atualizados: `BUGS.md` (BUG-005 → Corrigido), `00-PLAN.md` (topo, ISO
+  25010 Segurança, item T-02 → Concluída/Fechado, índice bug→track), `DASHBOARD.md`
+  (T-02 12/12 fechado, data), este LOG.

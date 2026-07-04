@@ -11,14 +11,16 @@ Populado pelo chat de planejamento a partir dos 5 mapas (`01` a `05`). **Status
 de cobertura dos mapas**: os 5 mapas estão **completos**. **Status de execução**:
 a **Fase 0 está completa** (6/6 itens decididos; `F0-01` com 1/3 lotes de
 implementação mergeado — PR #15, escala de z-index — e `F0-04` parcial; ver
-`DASHBOARD.md`) e a Track **T-02 (Segurança sistemática) está em 11/12 (~92%)**
+`DASHBOARD.md`) e a Track **T-02 (Segurança sistemática) está FECHADA — 12/12 (100%)**
 — o item sistêmico `BUG-020` foi fechado em 7 lotes (PRs #8–#14), junto de
 `BUG-021` e de um Crítico novo achado no processo (`BUG-032`, escalação de
 privilégio), ambos corrigidos; `BUG-025` (webhook Mercado Pago com assinatura
 HMAC, PR #16), `BUG-004` (path de debug no painel admin, PR #17, rebaixado
-Alto→Baixo após avaliação de exposição) e `BUG-006` (guard `requireAuth` no
-networking, PR #18) foram corrigidos. Resta só `BUG-005` (checkout de membro,
-financeiro) para fechar o track. **Nenhum bug Crítico está aberto no momento.**
+Alto→Baixo após avaliação de exposição), `BUG-006` (guard `requireAuth` no
+networking, PR #18) e `BUG-005` (`requireMatricula` no pagamento do checkout de
+membro, PR #19 — rastreabilidade) foram corrigidos. Todos os 12 bugs do track
+estão corrigidos e mergeados (nenhum aceite formal foi necessário). **Nenhum bug
+Crítico está aberto no momento.**
 Uma lacuna estrutural residual e conhecida nos mapas: contagem exata de quantas
 etapas da jornada usam `SurveyEngine` (ver nota de fechamento em
 `01-map-features.md`) — não bloqueia nenhuma fase. Ver `LOG.md` para o
@@ -179,7 +181,7 @@ fechado (7 lotes, PRs #8–#14) e saiu desta fila.
 | Usabilidade | Fase 0 (padrão canônico de design/UX via Mapa 5; tom de voz/copy via F0-06), Fase 1 (critério de aceite de cada página inclui usabilidade e revisão de texto/títulos) |
 | Eficiência de desempenho | Track adicional "Não-funcional / Performance" (full scans sem paginação já achados — `BUG-017`) |
 | Confiabilidade | Track adicional "Concorrência/Transactions" + Fase 4 (regressão e2e); transações do Firestore em booking/quotas já usam `runTransaction` corretamente na maioria dos casos mapeados |
-| Segurança | Track adicional "Segurança sistemática" (matriz de guards do Mapa 4) — **T-02 em 11/12 (~92%)**: corrigidos `BUG-003/004/006/007/019/020/021/023/024/025/032` (inclui o item sistêmico `BUG-020`, fechado em 7 lotes, o Crítico `BUG-032`, o webhook MP com HMAC `BUG-025`, o path de debug `BUG-004`, e o guard de networking `BUG-006`); aberto só `BUG-005` (checkout de membro) |
+| Segurança | Track adicional "Segurança sistemática" (matriz de guards do Mapa 4) — **T-02 FECHADA, 12/12 (100%)**: corrigidos `BUG-003/004/005/006/007/019/020/021/023/024/025/032` (inclui o item sistêmico `BUG-020`, fechado em 7 lotes, o Crítico `BUG-032`, o webhook MP com HMAC `BUG-025`, o path de debug `BUG-004`, o guard de networking `BUG-006`, e a matrícula no pagamento `BUG-005`). Nenhum bug de segurança aberto |
 | Compatibilidade | Fase 1 — critério de aceite de cada página inclui responsivo (mobile/tablet/desktop) e navegador via preview; integrações externas (Mercado Pago/Google/Resend) verificadas quanto à coexistência sem conflito no track de "Integrações externas" |
 | Manutenibilidade | Track adicional "Integridade e migração de dados" (schema drift, timestamps inconsistentes, coleções órfãs — `BUG-008/009/010/018`), reforçado pela regra "Zero Any" já enforced via ESLint |
 | Portabilidade | Relevância baixa para este tipo de sistema (SaaS web único, deploy Vercel, sem exigência de múltiplas plataformas/instalação). Verificação mínima: configuração via `src/env.ts`/variáveis de ambiente (já é padrão do projeto, não hardcoded) — sem track dedicado além disso |
@@ -575,7 +577,7 @@ O mapeamento das jornadas abaixo é entregável desta fase (não pré-existente)
   `getServerSession`), o padrão é separar o resolvedor cru (sem guard) do
   wrapper exposto (com guard) — ver Protocolo item 8 e Lição 9 do
   `RETROSPECTIVE.md`
-- Execução: Em andamento — **11/12 (~92%)** (ver `DASHBOARD.md`). **BUG-020 Corrigido**
+- Execução: **Concluída — 12/12 (100%), Track FECHADO** (ver `DASHBOARD.md`). **BUG-020 Corrigido**
   (7 lotes, PRs #8–#14 — todos os módulos do Mapa 4b padronizados com o guard
   canônico). **BUG-021 Corrigido** (PR #13). **BUG-032 Corrigido** (PR #14, novo
   Crítico de escalação de privilégio achado no lote 7; entra no denominador do track,
@@ -584,7 +586,9 @@ O mapeamento das jornadas abaixo é entregável desta fase (não pré-existente)
   (PR #17, path de debug no lugar do apelido no painel admin; rebaixado Alto→Baixo
   após avaliação de exposição — admin-only). **BUG-006 Corrigido** (PR #18, guard
   `requireAuth` em `getNetworkingDataAction`, preservando a lógica da feature de
-  networking). Resta só **BUG-005** para fechar o track. Nenhum Crítico aberto.
+  networking). **BUG-005 Corrigido** (PR #19, `requireMatricula` nas ações de
+  pagamento do checkout — rastreabilidade fiscal, fecha o `NAO_MAPEADA`). **Track
+  T-02 FECHADO: 12/12, todos corrigidos e mergeados.** Nenhum Crítico aberto.
 - Resultado: ✓ Corrigidos/mergeados: BUG-003 (recover sem auth, PR #3), BUG-007
   (guard admin server-side = F0-05, PR #1), BUG-019 (IDOR de foto de perfil, PR
   #4), BUG-023 (rotas de debug órfãs, PR #3), BUG-024 (`trigger-sync` removido,
@@ -594,8 +598,8 @@ O mapeamento das jornadas abaixo é entregável desta fase (não pré-existente)
   **BUG-032** (escalação de privilégio no login, PR #14), **BUG-025** (webhook
   Mercado Pago com validação de assinatura HMAC, PR #16), **BUG-004** (path de
   debug exposto no painel admin, PR #17), **BUG-006** (guard `requireAuth` no
-  networking, PR #18). ○ Restante: BUG-005 (checkout de membro cria preferência de
-  pagamento sem `member_area_access`, Médio/financeiro) — último item do track.
+  networking, PR #18), **BUG-005** (`requireMatricula` no pagamento do checkout de
+  membro, PR #19). ○ Restantes: nenhum — **track fechado**.
 - Bug(s) vinculado(s): BUG-003, BUG-004, BUG-005, BUG-006, BUG-007, BUG-019, BUG-020, BUG-021, BUG-023, BUG-024, BUG-025, BUG-032
 - Log: entradas de 2026-07-02, 2026-07-03 e 2026-07-04 no `LOG.md`
 
@@ -675,7 +679,7 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-002 | Médio | Aberto | F1-02 |
 | BUG-003 | Crítico | Corrigido (PR #3) | F1-06, T-02 |
 | BUG-004 | ~~Alto~~ Baixo | Corrigido (PR #17) | T-02 |
-| BUG-005 | Médio | Aberto | F1-05, T-02 |
+| BUG-005 | Médio | Corrigido (PR #19) | F1-05, T-02 |
 | BUG-006 | Médio | Corrigido (PR #18) | F1-05, T-02 |
 | BUG-007 | Médio | Corrigido (PR #1) | F0-05, F1-06, T-02 |
 | BUG-008 | Alto | Aberto | F2-04, T-03 |

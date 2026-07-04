@@ -129,9 +129,32 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Cenário de falha: as actions usam apenas `requireAuth` — um usuário
   autenticado mas sem `member_area_access`/matrícula confirmada pode iniciar
   criação de preferência de pagamento no Mercado Pago.
-- Status: Aberto
-- Decisão de execução: Precisa plano+aprovação (fluxo financeiro)
-- Commit/PR: —
+- Análise (2026-07-04, por leitura): a premissa original (exigir
+  `member_area_access`) é **[HIPÓTESE refutada]** — seria **circular**: o
+  `member_area_access` é o entitlement que a compra **concede**, não pré-requisito
+  (doc do `requireMemberAccess` confirma que nem admin herda; o `requireAuth`
+  cita "ex: Checkout" como caso de uso). Gatear o checkout por ele quebraria o
+  funil de entrada de novos membros. **O `requireAuth`-only é intencional**
+  (mesma categoria do BUG-002). O único endurecimento defensável, sem quebrar o
+  funil, é rastreabilidade: fechar o caso `"NAO_MAPEADA"`.
+- Mapa do fluxo (confirma segurança do fix): a matrícula é gerada na **abertura
+  do RegistrationStep** (`FormsEngine` → `resolveUserIdentity("dados_cadastrais")`
+  no mount → `BP-{seq}-{tipo}-{AAMMDD}` via contador atômico), **antes** de
+  `createPreferenceAction`/`processPaymentAction`. Os 3 fluxos de geração de
+  matrícula: `welcome_survey` (1º acesso), `dados_cadastrais` (checkout) — ambos
+  via `resolveUserIdentity` — e `claimInvitationTokenAction` (convite).
+- Status: **Corrigido** — 2026-07-04. `createPreferenceAction` e
+  `processPaymentAction` passaram de `requireAuth` para `requireMatricula` (toda
+  ordem rastreável a uma matrícula, fim do `NAO_MAPEADA`); `getCheckoutProductAction`
+  mantido em `requireAuth` (roda antes do RegistrationStep). Nenhum usuário
+  legítimo barrado (matrícula já existe quando o guard entra).
+- Decisão de execução: Mapeamento + plano apresentados e **aprovados pela Gestora**
+  (2026-07-04, optou pela opção B — `requireMatricula` para rastreabilidade, em
+  vez de aceitar como está). Corrigido via branch
+  `security/member-checkout-require-matricula` (validado por `tsc --noEmit` +
+  `next build` + eslint). Não é correção de vulnerabilidade, e sim de
+  rastreabilidade fiscal — fecha o último item do T-02.
+- Commit/PR: **mergeado** — PR #19 (`ba447df`, squash).
 
 ### BUG-006 `getNetworkingDataAction` importa `requireAuth` mas nunca o chama
 
