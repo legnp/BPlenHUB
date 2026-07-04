@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import crypto from "crypto";
 import { Payment } from "mercadopago";
 import { mpClient } from "@/lib/mercadopago";
+import { serverEnv } from "@/env";
 import { getAdminDb } from "@/lib/firebase-admin";
 import { USER_ORDERS_COLLECTION } from "@/config/collections";
 import { grantServiceEntitlement } from "@/lib/checkout";
@@ -13,6 +15,49 @@ import { syncOrderToUserDrive } from "@/lib/drive-sync";
  * Recebe notificações assíncronas de pagamento e ativa os serviços.
  * Foco em Soberania de Dados e Integridade Transacional.
  */
+
+/**
+ * Valida a assinatura HMAC-SHA256 enviada pelo Mercado Pago no header `x-signature`.
+ * Reconstrói o manifest documentado pelo MP (`id:<data.id>;request-id:<x-request-id>;ts:<ts>;`),
+ * recalcula o HMAC com o segredo do painel e compara com o `v1` de forma timing-safe.
+ * Segmentos cujo valor não está presente na notificação são omitidos do manifest
+ * (comportamento exigido pelo MP). `data.id` alfanumérico entra em minúsculas.
+ */
+function isValidMpSignature(params: {
+  xSignature: string | null;
+  xRequestId: string | null;
+  dataId: string;
+  secret: string;
+}): boolean {
+  const { xSignature, xRequestId, dataId, secret } = params;
+  if (!xSignature) return false;
+
+  // `x-signature` tem a forma "ts=<unix>,v1=<hash-hex>"
+  let ts: string | undefined;
+  let v1: string | undefined;
+  for (const part of xSignature.split(",")) {
+    const idx = part.indexOf("=");
+    if (idx === -1) continue;
+    const key = part.slice(0, idx).trim();
+    const value = part.slice(idx + 1).trim();
+    if (key === "ts") ts = value;
+    else if (key === "v1") v1 = value;
+  }
+  if (!ts || !v1) return false;
+
+  const normalizedId = /[a-zA-Z]/.test(dataId) ? dataId.toLowerCase() : dataId;
+  let manifest = `id:${normalizedId};`;
+  if (xRequestId) manifest += `request-id:${xRequestId};`;
+  manifest += `ts:${ts};`;
+
+  const computed = crypto.createHmac("sha256", secret).update(manifest).digest("hex");
+
+  // Comparação timing-safe; buffers de tamanho diferente indicam hash inválido.
+  const computedBuf = Buffer.from(computed, "hex");
+  const receivedBuf = Buffer.from(v1, "hex");
+  if (computedBuf.length !== receivedBuf.length) return false;
+  return crypto.timingSafeEqual(computedBuf, receivedBuf);
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -38,6 +83,26 @@ export async function POST(req: NextRequest) {
 
     if (!dataId) {
       return NextResponse.json({ error: "No data ID found" }, { status: 400 });
+    }
+
+    // 0. Validação de assinatura HMAC (habilitação suave)
+    // Só exige a assinatura se o segredo estiver configurado no ambiente. Quando
+    // ausente, o handler mantém o comportamento anterior (re-fetch no MP), evitando
+    // quebrar a entrega de serviço antes de o segredo ser cadastrado no painel/Vercel.
+    const webhookSecret = serverEnv.MERCADOPAGO_WEBHOOK_SECRET;
+    if (webhookSecret) {
+      const validSignature = isValidMpSignature({
+        xSignature: req.headers.get("x-signature"),
+        xRequestId: req.headers.get("x-request-id"),
+        dataId,
+        secret: webhookSecret,
+      });
+      if (!validSignature) {
+        console.error(`[Webhook:MP] Assinatura invalida para data.id ${dataId}. Requisicao rejeitada.`);
+        return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+      }
+    } else {
+      console.warn("[Webhook:MP] MERCADOPAGO_WEBHOOK_SECRET nao configurado; validacao de assinatura desativada (modo suave).");
     }
 
     // 1. Consultar Detalhes do Pagamento no Mercado Pago
