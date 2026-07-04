@@ -919,3 +919,70 @@ para embasar essas decisões estão todos disponíveis.
   `WelcomeRedirectModal`/`CouponTermsModal`, que já clonam o visual do GlassModal —
   baixo risco) e **lote B** (modais com backdrop próprio divergente — exige
   validação visual antes/depois). Ambos gated (sistema de design).
+
+---
+
+## [2026-07-03] Chat de planejamento — reconciliação pós-BUG-020/032/F0-01-lote1
+
+- Chat/sessão: chat de planejamento (Sonnet 5), a pedido explícito do Gestor,
+  após a sessão de execução que fechou o `BUG-020` (7 lotes), `BUG-021`, o
+  Crítico novo `BUG-032` e entregou o lote 1/3 do `F0-01` (último commit de
+  docs na `main` antes desta sessão: `6dbe31b`)
+- Escopo: leitura integral de `00-PLAN.md`, `LOG.md`, `BUGS.md`, `DASHBOARD.md`,
+  `RETROSPECTIVE.md` e `F0-DECISIONS.md`, seguida de checagem de consistência
+  cruzada bug a bug (todos os 32) entre os 4 documentos, confirmação da
+  Triagem por severidade, incorporação das Lições 9-10 do `RETROSPECTIVE.md` ao
+  corpo do plano, e verificação das tags `[HIPÓTESE]`/`[CONFIRMADO]`. **Nenhuma
+  linha de código de produto foi tocada.**
+- Achados da checagem cruzada (ponto 1 do pedido):
+  - **A maior parte já estava consistente** — diferente da reconciliação
+    anterior (que achou 2 bugs órfãos + 4 PRs desatualizados), desta vez a
+    disciplina de atualizar `00-PLAN`/`BUGS`/`DASHBOARD`/`LOG` a cada PR
+    (estabelecida na sessão passada) funcionou: `BUG-020` (Corrigido, 7 lotes,
+    PRs #8–#14), `BUG-021` (Corrigido, PR #13), `BUG-032` (Corrigido, PR #14,
+    Crítico), `T-02` em 8/12 (~67%, denominador correto — 12 bugs vinculados,
+    8 corrigidos), e `F0-01` em 1/3 lotes (PR #15) já estavam refletidos
+    identicamente nos 4 documentos e no `F0-DECISIONS.md`.
+  - **2 defasagens reais encontradas e corrigidas**:
+    1. A linha "Segurança" da checagem ISO 25010 (`00-PLAN.md`) ainda citava
+       `BUG-020`/`BUG-021` como "abertos" e não mencionava `BUG-032` —
+       corrigida para refletir o estado atual do T-02 (8/12).
+    2. O campo "Decisão" do item `[T-02]` dizia que o padrão de guard "já
+       emergiu na prática... formalizar quando o lote do BUG-020 for
+       endereçado" — linguagem de trabalho-em-andamento defasada, já que os 7
+       lotes estão concluídos. Atualizado para "Decidida", com o padrão
+       canônico (`requireAuth()`/`requireAdmin()` + dono-ou-admin, sessão via
+       cookie assinado) descrito como consolidado, e nota sobre o caso de
+       primitivo de infraestrutura (Lição 9).
+  - Verificado que `BUGS.md` não tinha nenhuma referência de PR desatualizada
+    desta vez (todas as 7 PRs do `BUG-020` + PR #13/#14/#15 já citam número e
+    hash corretos) — nenhuma edição necessária em `BUGS.md`.
+- Triagem por severidade (ponto 2): **já refletia a realidade** — `BUG-020`
+  já havia saído da fila (nota explícita registrada pela sessão de execução:
+  "também foi fechado... e saiu desta fila"), a tabela lista corretamente os
+  4 Altos abertos (`BUG-010`, `BUG-008`, `BUG-004`, `BUG-001`), e confirma
+  "nenhum Crítico aberto" (os 2 Críticos do processo — `BUG-003`, `BUG-032` —
+  ambos corrigidos). Nenhuma alteração necessária nesta seção.
+- Lições 9-10 do `RETROSPECTIVE.md` incorporadas ao corpo do plano (ponto 3):
+  adicionados os itens **8** (primitivo de infraestrutura — checar recursão
+  antes de guardar, separar resolvedor cru de wrapper exposto) e **9** (ler o
+  arquivo inteiro afetado por um bug/lote, não só a função citada — caso real
+  `BUG-032`) ao Protocolo entre chats, para valer para toda sessão futura, não
+  só para o T-02.
+- Tags `[HIPÓTESE]`/`[CONFIRMADO]` (ponto 4): confirmado que `BUG-009`,
+  `BUG-010`, `BUG-011` e `BUG-022` já estavam corretamente marcados
+  **[HIPÓTESE]** em todos os pontos onde aparecem (item de fase/track, Índice
+  bug→track, e — no caso do `BUG-010` — também na Triagem por severidade)
+  desde a reconciliação anterior; nenhum novo achado nesta sessão introduziu
+  afirmação não validada que precisasse da tag. `BUG-032` já estava
+  corretamente marcado **[CONFIRMADO por leitura de código]** em `BUGS.md`
+  pela própria sessão de execução (consistente com a regra do Protocolo item 7
+  de que leitura de código conta como validação).
+- Itens do `00-PLAN.md` atualizados: parágrafo de status de topo (refresh:
+  F0-01 1/3, T-02 8/12, zero Crítico aberto) + novo parágrafo "Reconciliação
+  desta versão"; linha "Segurança" da checagem ISO 25010; campo Decisão do
+  `[T-02]`; Protocolo (itens 8-9 novos). `BUGS.md` e `DASHBOARD.md`: nenhuma
+  alteração necessária (já consistentes). Este LOG.
+- Nada bloqueado para a próxima sessão — fila de triagem por severidade segue
+  com 4 Altos abertos (BUG-010, BUG-008, BUG-004, BUG-001, nenhum Crítico); ou
+  seguir com F0-01 lotes A/B, ou iniciar a Fase 1.

@@ -9,12 +9,16 @@ fonte de verdade); `F0-DECISIONS.md` guarda o detalhe longo das decisões de Fas
 
 Populado pelo chat de planejamento a partir dos 5 mapas (`01` a `05`). **Status
 de cobertura dos mapas**: os 5 mapas estão **completos**. **Status de execução**:
-a **Fase 0 está completa** (6/6 itens decididos; ver `DASHBOARD.md` para o
-progresso de implementação, que segue parcial em alguns itens) e a Track T-02
-(Segurança sistemática) está em andamento. Uma lacuna estrutural residual e
-conhecida nos mapas: contagem exata de quantas etapas da jornada usam
-`SurveyEngine` (ver nota de fechamento em `01-map-features.md`) — não bloqueia
-nenhuma fase. Ver `LOG.md` para o histórico completo de sessões.
+a **Fase 0 está completa** (6/6 itens decididos; `F0-01` com 1/3 lotes de
+implementação mergeado — PR #15, escala de z-index — e `F0-04` parcial; ver
+`DASHBOARD.md`) e a Track **T-02 (Segurança sistemática) está em 8/12 (~67%)**
+— o item sistêmico `BUG-020` foi fechado em 7 lotes (PRs #8–#14), junto de
+`BUG-021` e de um Crítico novo achado no processo (`BUG-032`, escalação de
+privilégio), ambos corrigidos. **Nenhum bug Crítico está aberto no momento.**
+Uma lacuna estrutural residual e conhecida nos mapas: contagem exata de quantas
+etapas da jornada usam `SurveyEngine` (ver nota de fechamento em
+`01-map-features.md`) — não bloqueia nenhuma fase. Ver `LOG.md` para o
+histórico completo de sessões.
 
 **Refinamento desta versão** (chat de planejamento, ver entrada correspondente no
 `LOG.md`): incorporadas as 5 melhorias sugeridas em
@@ -24,6 +28,19 @@ por item, índice explícito bug→item/track, tags de confiança
 de triagem por severidade. Também reconciliados 2 bugs que estavam sem nenhum
 item/track vinculado (`BUG-004`, `BUG-022`) e 4 referências de PR desatualizadas
 em `BUGS.md` (confirmadas mergeadas via `git log`).
+
+**Reconciliação desta versão** (chat de planejamento, ver entrada correspondente
+no `LOG.md`): checada a consistência cruzada entre `DASHBOARD.md`/`00-PLAN.md`/
+`BUGS.md`/índice bug→track para os 32 bugs registrados, após a sessão de
+execução que fechou `BUG-020` (7 lotes, PRs #8–#14), `BUG-021` e o Crítico novo
+`BUG-032`, e entregou o lote 1/3 do `F0-01` (PR #15). A disciplina de atualizar
+os 4 documentos a cada PR (estabelecida na reconciliação anterior) funcionou —
+a maior parte já estava consistente. Corrigidos apenas: a linha "Segurança" da
+checagem ISO 25010 (ainda citava `BUG-020`/`021` como abertos) e o campo
+Decisão do T-02 (linguagem "emergindo" desatualizada — o padrão de guard está
+consolidado, não mais em formação). Incorporadas as Lições 9 e 10 do
+`RETROSPECTIVE.md` (primitivo de infraestrutura/recursão; lote trivial pode
+esconder Crítico) como novos itens 8-9 do Protocolo.
 
 ---
 
@@ -69,6 +86,21 @@ em `BUGS.md` (confirmadas mergeadas via `git log`).
    sessão futura confirmar (ou refutar) por execução/teste real, atualiza para
    **[CONFIRMADO]** (ou corrige o item, como já aconteceu com `BUG-002`,
    `BUG-024` e o cluster `BUG-028/029/030`).
+8. **Antes de guardar um primitivo de infraestrutura, cheque se ele é chamado de
+   dentro de outro guard.** Se a função é usada por `getServerSession` (ou
+   equivalente), colocar `requireAuth`/`requireAdmin` nela causa recursão
+   infinita — separe o **resolvedor cru** (lib sem guard, para a infra que já
+   verificou identidade) do **action exposto na rede** (wrapper com trava de
+   dono, via `verifySignedSession`, que só lê o cookie e não recursa). Caso
+   real: `BUG-020` lote 7 / PR #14 (Lição 9 do `RETROSPECTIVE.md`).
+9. **Ao endereçar um bug/lote, leia o arquivo inteiro afetado — não só a função
+   citada no bug.** Um "último lote trivial" já escondeu o bug mais grave do
+   processo até agora (`BUG-032`, Crítico, achado dentro do mesmo arquivo do
+   lote 7 do `BUG-020`, sem estar no escopo original). Server actions confiam
+   em parâmetros do cliente: todo `uid`/`email`/`matricula` recebido tem que
+   ser confrontado com a identidade **verificada** (cookie/token), nunca usado
+   direto. Registre o achado novo em `BUGS.md` antes de decidir, mesmo no meio
+   de outro lote (Lição 10 do `RETROSPECTIVE.md`).
 
 ---
 
@@ -144,7 +176,7 @@ fechado (7 lotes, PRs #8–#14) e saiu desta fila.
 | Usabilidade | Fase 0 (padrão canônico de design/UX via Mapa 5; tom de voz/copy via F0-06), Fase 1 (critério de aceite de cada página inclui usabilidade e revisão de texto/títulos) |
 | Eficiência de desempenho | Track adicional "Não-funcional / Performance" (full scans sem paginação já achados — `BUG-017`) |
 | Confiabilidade | Track adicional "Concorrência/Transactions" + Fase 4 (regressão e2e); transações do Firestore em booking/quotas já usam `runTransaction` corretamente na maioria dos casos mapeados |
-| Segurança | Track adicional "Segurança sistemática" (matriz de guards do Mapa 4) + bugs já corrigidos (`BUG-003/007/019/023/024`) e abertos (`BUG-004/005/006/020/021/025`) |
+| Segurança | Track adicional "Segurança sistemática" (matriz de guards do Mapa 4) — **T-02 em 8/12 (~67%)**: corrigidos `BUG-003/007/019/020/021/023/024/032` (inclui o item sistêmico `BUG-020`, fechado em 7 lotes, e o Crítico `BUG-032`); abertos `BUG-004/005/006/025` |
 | Compatibilidade | Fase 1 — critério de aceite de cada página inclui responsivo (mobile/tablet/desktop) e navegador via preview; integrações externas (Mercado Pago/Google/Resend) verificadas quanto à coexistência sem conflito no track de "Integrações externas" |
 | Manutenibilidade | Track adicional "Integridade e migração de dados" (schema drift, timestamps inconsistentes, coleções órfãs — `BUG-008/009/010/018`), reforçado pela regra "Zero Any" já enforced via ESLint |
 | Portabilidade | Relevância baixa para este tipo de sistema (SaaS web único, deploy Vercel, sem exigência de múltiplas plataformas/instalação). Verificação mínima: configuração via `src/env.ts`/variáveis de ambiente (já é padrão do projeto, não hardcoded) — sem track dedicado além disso |
@@ -532,9 +564,14 @@ O mapeamento das jornadas abaixo é entregável desta fase (não pré-existente)
   próprio (`BUG-020`) e o caso de IDOR confirmado (`BUG-019`, já corrigido)
   resolvidos ou aceitos formalmente com justificativa registrada
 - Modo de validação: Automatizado (execução via análise de código, em andamento)
-- Decisão: — (padrão de guard canônico já emergiu na prática —
-  `requireAuth() + checagem dono-ou-admin` — formalizar como referência
-  explícita quando o lote do BUG-020 for endereçado)
+- Decisão: Decidida — padrão canônico de guard consolidado na prática ao longo
+  dos 7 lotes do `BUG-020`: `requireAuth()`/`requireAdmin()` + checagem
+  dono-ou-admin, sessão resolvida pelo cookie assinado (`verifySignedSession`/
+  `getServerSession`), sem alterar assinatura de action nem dispatcher.
+  Para primitivos de infraestrutura (funções chamadas de dentro de
+  `getServerSession`), o padrão é separar o resolvedor cru (sem guard) do
+  wrapper exposto (com guard) — ver Protocolo item 8 e Lição 9 do
+  `RETROSPECTIVE.md`
 - Execução: Em andamento — **8/12 (~67%)** (ver `DASHBOARD.md`). **BUG-020 Corrigido**
   (7 lotes, PRs #8–#14 — todos os módulos do Mapa 4b padronizados com o guard
   canônico). **BUG-021 Corrigido** (PR #13). **BUG-032 Corrigido** (PR #14, novo
