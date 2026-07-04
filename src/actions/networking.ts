@@ -2,7 +2,6 @@
 
 import { getAdminDb } from "@/lib/firebase-admin";
 import { requireAuth } from "@/lib/auth-guards";
-import { resolveMatricula } from "./get-user-results";
 import { PartnerData } from "./admin/partners";
 import { getErrorMessage } from "@/lib/utils/errors";
 import { safeSerialize } from "@/lib/utils/firestore";
@@ -44,8 +43,15 @@ export async function getNetworkingDataAction(
   serviceFilter?: string
 ) {
   try {
+    // Espaco de conexao entre usuarios do sistema: exige sessao autenticada.
+    // Nao altera a logica de visibilidade (opt-in do dono via networking_visibility
+    // e flags por campo) nem o shape dos dados — so garante que o solicitante e um
+    // usuario logado. Caller unico e a pagina do hub (membro), ja atras do guard
+    // server-side do hub/layout.tsx.
+    await requireAuth();
+
     const db = getAdminDb();
-    
+
     // 1. ABA: PARCEIROS 🤝
     if (tab === "parceiros") {
       // Busca simples sem compound queries (evita necessidade de índice)
