@@ -1,7 +1,7 @@
 "use server";
 
 import admin, { getAdminDb } from "@/lib/firebase-admin";
-import { requireAuth } from "@/lib/auth-guards";
+import { requireAuth, requireMatricula } from "@/lib/auth-guards";
 import { Product } from "@/types/products";
 import { PRODUCTS_COLLECTION, USER_ORDERS_COLLECTION } from "@/config/collections";
 import { mpClient } from "@/lib/mercadopago";
@@ -95,7 +95,7 @@ export async function createPreferenceAction(
 ) {
   try {
     // 🛡️ 1. Validar Autenticação
-    const session = await requireAuth(idToken);
+    const session = await requireMatricula(idToken);
 
     // 🛡️ 1.1 Rate Limit: previne spam de criação de preferências
     const { checkRateLimit, RATE_LIMITS } = await import("@/lib/rate-limit");
@@ -320,7 +320,7 @@ export async function getCheckoutProductAction(slug: string, idToken?: string) {
  */
 export async function processPaymentAction(formData: MercadoPagoFormData, orderId: string, idToken?: string) {
   try {
-    const session = await requireAuth(idToken);
+    const session = await requireMatricula(idToken);
     
     // 💉 Log de Auditoria: Dados que estão indo para o MP
     console.log(`📡 [MP-Checkout] Iniciando processamento para Ordem: ${orderId} | Usuário: ${session.email}`);
