@@ -66,6 +66,10 @@ const serverSchema = z.object({
   GOOGLE_CALENDAR_ID: z.string().min(1, "Google Calendar ID é obrigatório"),
   GOOGLE_BOOKING_CALENDAR_ID: z.string().min(1, "Google Booking Calendar ID é obrigatório"),
   MERCADOPAGO_ACCESS_TOKEN: z.string().min(1, "Mercado Pago Access Token é obrigatório"),
+  // Segredo de assinatura do webhook do Mercado Pago (painel MP). Opcional: quando
+  // ausente, a validação HMAC do webhook fica desativada (modo suave) e o handler
+  // mantém apenas a mitigação por re-fetch. Ver src/app/api/webhooks/mercadopago/route.ts.
+  MERCADOPAGO_WEBHOOK_SECRET: z.string().optional(),
 });
 
 // ──────────────────────────────
@@ -113,6 +117,7 @@ if (typeof window === "undefined") {
     GOOGLE_CALENDAR_ID: process.env.GOOGLE_CALENDAR_ID,
     GOOGLE_BOOKING_CALENDAR_ID: process.env.GOOGLE_BOOKING_CALENDAR_ID,
     MERCADOPAGO_ACCESS_TOKEN: process.env.MERCADOPAGO_ACCESS_TOKEN,
+    MERCADOPAGO_WEBHOOK_SECRET: process.env.MERCADOPAGO_WEBHOOK_SECRET,
   }, "server");
 }
 
