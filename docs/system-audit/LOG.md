@@ -1055,3 +1055,43 @@ para embasar essas decisões estão todos disponíveis.
   found" (política de retry do MP) — comportamento correto para pagamento real.
 - Itens atualizados: `BUGS.md` (BUG-025, nota [CONFIRMADO ativo em produção]),
   este LOG.
+
+---
+
+## [2026-07-04] Chat de execução — BUG-004 (path de debug no painel admin) corrigido
+
+- Chat/sessão: mesmo chat de execução, na sequência do BUG-025
+- Escopo: BUG-004 — `getFSItemDetails` (`admin-fs.ts`) preenchia
+  `FSRespondent.nickname` com `doc.ref.path` (`// TEMP: Expondo o path para debug`)
+  no ramo de survey. Gated (dado de identidade exposto a admin) → avaliação de
+  exposição + plano apresentados e **aprovados pela Gestora** antes de codar.
+- Avaliação de exposição (por leitura, antes de codar):
+  - Action guardada por `requireAdmin()`; caller **único** é `admin/fs/page.tsx`
+    (página admin, sob o guard server-side do F0-05). **Sem exposição além do
+    painel admin.** O `matricula` do path já vinha no mesmo objeto; o extra vazado
+    era só estrutura interna de coleção + docId, a admins autenticados.
+  - Ramo de `form` do mesmo arquivo já usava `uInfo.nickname` corretamente — só o
+    ramo de `survey` tinha o path de debug.
+  - **Severidade rebaixada Alto→Baixo** (aprovado pela Gestora), com justificativa
+    registrada: bug funcional + disclosure mínimo de schema, não vazamento a papel
+    indevido. BUG-004 sai da fila de triagem por severidade.
+- Mudança (`src/actions/admin-fs.ts`): `doc.ref.path` → `uInfo.nickname`
+  (`User_Nickname`, fonte canônica de display name — F0-03), espelhando o ramo de
+  form. Restaura o apelido na lista de respondentes e na busca do painel. **Não
+  toca telas de usuário** (função exclusiva do painel admin; a Gestora pediu
+  garantia explícita de que a personalização do usuário não quebra — confirmado:
+  nenhuma tela de usuário usa `getFSItemDetails`).
+- Limpezas no mesmo arquivo (aprovadas): removida a função morta `configId()`
+  (double-check por grep: aparece só na própria definição em todo o `src`, não
+  exportada); `respondents` `let`→`const` (prefer-const pré-existente, auto-fixável).
+- Validação: `tsc --noEmit` limpo, `next build` exit 0, eslint do arquivo 0 erros.
+  Painel admin atrás de auth: não observável no preview (BUG-030). Commit sem
+  `--no-verify` (arquivo staged limpo; lint-staged passou).
+- Entrega: branch `security/admin-fs-path-leak` → **PR #17 mergeado** (`f1a69f1`,
+  squash) via REST API do GitHub. Branch deletada (local+remota).
+- Marco: **BUG-004 → Corrigido.** T-02 sobe para **10/12 (~83%)**. Restam no T-02
+  só BUG-005 e BUG-006 (Médios, checkout/networking). Fila de triagem por
+  severidade agora com 3 Altos abertos (BUG-010, BUG-008, BUG-001; nenhum Crítico).
+- Itens atualizados: `BUGS.md` (BUG-004 → Corrigido, Baixo), `00-PLAN.md` (topo,
+  triagem por severidade, ISO 25010 Segurança, item T-02, índice bug→track),
+  `DASHBOARD.md` (T-02 10/12, data), este LOG.

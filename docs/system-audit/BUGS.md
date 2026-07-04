@@ -92,17 +92,33 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 
 ### BUG-004 Vazamento de path interno do Firestore em resposta de produção
 
-- Severidade: Alto
+- Severidade: ~~Alto~~ **Baixo** (rebaixado 2026-07-04 após avaliação de
+  exposição — ver abaixo: action guardada por `requireAdmin` e caller único
+  admin, sem exposição além do painel; é bug funcional + disclosure mínimo de
+  schema a admins autenticados, não vazamento a papel indevido)
 - Área/fase onde foi achado: Mapeamento — Mapa 4 (Firestore, admin actions)
 - Arquivo(s) afetado(s): `src/actions/admin-fs.ts:getFSItemDetails` (linha ~219)
 - Cenário de falha: campo `nickname` da resposta é preenchido com
   `doc.ref.path` (comentário no código: `// TEMP: Expondo o path para debug`),
   vazando `User/{matricula}/Surveys/{docId}` para o client em vez do apelido
   real do usuário — parece código de debug esquecido em produção.
-- Status: Aberto
-- Decisão de execução: Precisa plano+aprovação (toca dado de identidade exposto
-  a admin, avaliar se há exposição além do painel admin)
-- Commit/PR: —
+- Avaliação de exposição (2026-07-04, por leitura): a action tem `requireAdmin()`;
+  caller **único** é `src/app/admin/fs/page.tsx` (página admin, sob o guard
+  server-side do F0-05); **sem exposição além do painel admin**. O `matricula` do
+  path já vinha no mesmo objeto — o extra vazado era só a estrutura interna de
+  coleção + docId, a admins autenticados. Ramo de `form` do mesmo arquivo já usava
+  o apelido correto (`uInfo.nickname`); só o ramo de `survey` tinha o path de debug.
+- Status: **Corrigido** — 2026-07-04. Trocado `doc.ref.path` por `uInfo.nickname`
+  (`User_Nickname`, fonte canônica de display name — F0-03), espelhando o ramo de
+  form; restaura o apelido na lista de respondentes e na busca do painel. Não
+  afeta telas de usuário (função exclusiva do painel admin de analytics).
+  Aproveitou para remover a função morta `configId()` (nunca referenciada em todo
+  o `src`) e um `prefer-const` pré-existente.
+- Decisão de execução: Plano+avaliação de exposição apresentados e **aprovados
+  pela Gestora** (2026-07-04, incluindo o rebaixamento de severidade e a remoção
+  do `configId` morto). Corrigido via branch `security/admin-fs-path-leak`
+  (validado por `tsc --noEmit` + `next build` + eslint do arquivo).
+- Commit/PR: **mergeado** — PR #17 (`f1a69f1`, squash).
 
 ### BUG-005 Checkout de membro não exige `member_area_access` antes de criar preferência de pagamento
 
