@@ -11,10 +11,12 @@ Populado pelo chat de planejamento a partir dos 5 mapas (`01` a `05`). **Status
 de cobertura dos mapas**: os 5 mapas estão **completos**. **Status de execução**:
 a **Fase 0 está completa** (6/6 itens decididos; `F0-01` com 1/3 lotes de
 implementação mergeado — PR #15, escala de z-index — e `F0-04` parcial; ver
-`DASHBOARD.md`) e a Track **T-02 (Segurança sistemática) está em 8/12 (~67%)**
+`DASHBOARD.md`) e a Track **T-02 (Segurança sistemática) está em 9/12 (~75%)**
 — o item sistêmico `BUG-020` foi fechado em 7 lotes (PRs #8–#14), junto de
 `BUG-021` e de um Crítico novo achado no processo (`BUG-032`, escalação de
-privilégio), ambos corrigidos. **Nenhum bug Crítico está aberto no momento.**
+privilégio), ambos corrigidos; e `BUG-025` (webhook Mercado Pago com assinatura
+HMAC, PR #16) fechou o último item financeiro do track. **Nenhum bug Crítico
+está aberto no momento.**
 Uma lacuna estrutural residual e conhecida nos mapas: contagem exata de quantas
 etapas da jornada usam `SurveyEngine` (ver nota de fechamento em
 `01-map-features.md`) — não bloqueia nenhuma fase. Ver `LOG.md` para o
@@ -176,7 +178,7 @@ fechado (7 lotes, PRs #8–#14) e saiu desta fila.
 | Usabilidade | Fase 0 (padrão canônico de design/UX via Mapa 5; tom de voz/copy via F0-06), Fase 1 (critério de aceite de cada página inclui usabilidade e revisão de texto/títulos) |
 | Eficiência de desempenho | Track adicional "Não-funcional / Performance" (full scans sem paginação já achados — `BUG-017`) |
 | Confiabilidade | Track adicional "Concorrência/Transactions" + Fase 4 (regressão e2e); transações do Firestore em booking/quotas já usam `runTransaction` corretamente na maioria dos casos mapeados |
-| Segurança | Track adicional "Segurança sistemática" (matriz de guards do Mapa 4) — **T-02 em 8/12 (~67%)**: corrigidos `BUG-003/007/019/020/021/023/024/032` (inclui o item sistêmico `BUG-020`, fechado em 7 lotes, e o Crítico `BUG-032`); abertos `BUG-004/005/006/025` |
+| Segurança | Track adicional "Segurança sistemática" (matriz de guards do Mapa 4) — **T-02 em 9/12 (~75%)**: corrigidos `BUG-003/007/019/020/021/023/024/025/032` (inclui o item sistêmico `BUG-020`, fechado em 7 lotes, o Crítico `BUG-032`, e o webhook MP com HMAC `BUG-025`); abertos `BUG-004/005/006` |
 | Compatibilidade | Fase 1 — critério de aceite de cada página inclui responsivo (mobile/tablet/desktop) e navegador via preview; integrações externas (Mercado Pago/Google/Resend) verificadas quanto à coexistência sem conflito no track de "Integrações externas" |
 | Manutenibilidade | Track adicional "Integridade e migração de dados" (schema drift, timestamps inconsistentes, coleções órfãs — `BUG-008/009/010/018`), reforçado pela regra "Zero Any" já enforced via ESLint |
 | Portabilidade | Relevância baixa para este tipo de sistema (SaaS web único, deploy Vercel, sem exigência de múltiplas plataformas/instalação). Verificação mínima: configuração via `src/env.ts`/variáveis de ambiente (já é padrão do projeto, não hardcoded) — sem track dedicado além disso |
@@ -572,22 +574,24 @@ O mapeamento das jornadas abaixo é entregável desta fase (não pré-existente)
   `getServerSession`), o padrão é separar o resolvedor cru (sem guard) do
   wrapper exposto (com guard) — ver Protocolo item 8 e Lição 9 do
   `RETROSPECTIVE.md`
-- Execução: Em andamento — **8/12 (~67%)** (ver `DASHBOARD.md`). **BUG-020 Corrigido**
+- Execução: Em andamento — **9/12 (~75%)** (ver `DASHBOARD.md`). **BUG-020 Corrigido**
   (7 lotes, PRs #8–#14 — todos os módulos do Mapa 4b padronizados com o guard
   canônico). **BUG-021 Corrigido** (PR #13). **BUG-032 Corrigido** (PR #14, novo
   Crítico de escalação de privilégio achado no lote 7; entra no denominador do track,
-  que sobe de 11 para 12). Nenhum Crítico aberto.
+  que sobe de 11 para 12). **BUG-025 Corrigido** (PR #16, webhook MP com assinatura
+  HMAC em habilitação suave — fecha o item financeiro do track). Nenhum Crítico aberto.
 - Resultado: ✓ Corrigidos/mergeados: BUG-003 (recover sem auth, PR #3), BUG-007
   (guard admin server-side = F0-05, PR #1), BUG-019 (IDOR de foto de perfil, PR
   #4), BUG-023 (rotas de debug órfãs, PR #3), BUG-024 (`trigger-sync` removido,
   PR #5), BUG-021 (guard ad-hoc de upload unificado, PR #13), **BUG-020** (guards
   sistemáticos em Server Actions — 7 lotes, PRs #8–#14: booking/CRUD admin/
   analytics/queries/journey/upload/auth-permissions; 8 IDORs + priv-esc fechados),
-  **BUG-032** (escalação de privilégio no login, PR #14). ○ Restantes: BUG-004
-  (vazamento de path, precisa avaliação de exposição), BUG-005, BUG-006, BUG-025
-  (webhook HMAC).
+  **BUG-032** (escalação de privilégio no login, PR #14), **BUG-025** (webhook
+  Mercado Pago com validação de assinatura HMAC, PR #16). ○ Restantes: BUG-004
+  (vazamento de path, Alto — precisa avaliação de exposição), BUG-005, BUG-006
+  (Médios, checkout/networking).
 - Bug(s) vinculado(s): BUG-003, BUG-004, BUG-005, BUG-006, BUG-007, BUG-019, BUG-020, BUG-021, BUG-023, BUG-024, BUG-025, BUG-032
-- Log: entradas de 2026-07-02 e 2026-07-03 no `LOG.md`
+- Log: entradas de 2026-07-02, 2026-07-03 e 2026-07-04 no `LOG.md`
 
 ### [T-03] Integridade e migração de dados
 - Categoria(s) de qualidade: Manutenibilidade / Confiabilidade
@@ -685,7 +689,7 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-022 | Médio | Aberto | F3-03 *(recém-linkado)* — **[HIPÓTESE]** |
 | BUG-023 | Alto | Corrigido (PR #3) | F1-06, T-02, T-06 |
 | BUG-024 | Médio | Corrigido (PR #5) | F1-06, T-02 |
-| BUG-025 | Médio | Aberto | T-02 |
+| BUG-025 | Médio | Corrigido (PR #16) | T-02 |
 | BUG-026 | Médio | Aberto | F0-01 |
 | BUG-027 | Baixo | Aberto | F0-01 |
 | BUG-028 | Baixo (rebaixado) | Aberto (adiado) | fora do escopo original — cluster de auth, ver `LOG.md` 2026-07-02 |

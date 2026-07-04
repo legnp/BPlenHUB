@@ -508,9 +508,19 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   consegue forjar um pagamento aprovado sem que ele exista de fato no MP),
   mas não segue o padrão recomendado de verificação de assinatura HMAC do
   provedor, o que é mais robusto contra replay/enumeração de `data.id`.
-- Status: Aberto
-- Decisão de execução: Precisa plano+aprovação (fluxo financeiro/webhook)
-- Commit/PR: —
+- Status: **Corrigido** — validação de assinatura HMAC-SHA256 adicionada ao
+  handler (2026-07-04), seguindo o padrão documentado do MP (header `x-signature`
+  `ts`/`v1` + `x-request-id`, manifest `id:<data.id>;request-id:<...>;ts:<...>;`,
+  comparação timing-safe via `crypto.timingSafeEqual`). **Habilitação suave**: a
+  validação só é exigida quando `MERCADOPAGO_WEBHOOK_SECRET` (novo env opcional)
+  está configurado; sem o segredo, o handler mantém o comportamento anterior
+  (re-fetch do pagamento no MP), desacoplando o merge da virada de chave em
+  produção. Ativação em produção (execução humana): gerar o segredo no painel do
+  MP, cadastrar `MERCADOPAGO_WEBHOOK_SECRET` na Vercel, confirmar com webhook real.
+- Decisão de execução: Plano+risco apresentados e **aprovados pela Gestora**
+  (2026-07-04). Corrigido via branch `security/mercadopago-webhook-hmac` (validado
+  por eslint dos arquivos tocados + `tsc --noEmit` + `next build`).
+- Commit/PR: **mergeado** — PR #16 (`2417889`, squash).
 
 ### BUG-026 Fragmentação de implementação de Modal (11 de 13 não reaproveitam `GlassModal`)
 

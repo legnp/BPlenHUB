@@ -12,10 +12,10 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-03 (chat de execução — BUG-020 lote 7/auth-permissions
-> mergeado, PR #14, **fechando o BUG-020 inteiro** e o **BUG-032** Crítico de
-> escalação de privilégio achado no processo; T-02 sobe para 8/12 — BUG-032 entra
-> no denominador como corrigido; nenhum Crítico aberto).
+> **Última atualização:** 2026-07-04 (chat de execução — BUG-025 corrigido, PR #16:
+> validação de assinatura HMAC no webhook do Mercado Pago em habilitação suave;
+> **fecha o último item financeiro do T-02**, que sobe para 9/12. Nenhum Crítico
+> aberto).
 
 ---
 
@@ -40,11 +40,11 @@ de modais — lote 1/3 feito) e **F0-04** (parar escrita de `User_JourneyMap`).
 Onde a implementação sistemática dos temas da Fase 0 acontece. Progresso = bugs
 mergeados na `main` sobre o total do track.
 
-### T-02 — Segurança sistemática · **8 / 12 (~67%)**  `███████░░░`
+### T-02 — Segurança sistemática · **9 / 12 (~75%)**  `████████░░`
 
-- ✓ Mergeados: BUG-003 (recover, PR #3), BUG-007 (guard admin = F0-05, PR #1), BUG-019 (IDOR foto, PR #4), BUG-023 (rotas debug, PR #3), BUG-024 (trigger-sync removido, PR #5), BUG-021 (guard ad-hoc de upload unificado, PR #13), **BUG-020 (guards sistemáticos em Server Actions — 7 lotes, PRs #8–#14)**, **BUG-032 (escalação de privilégio no login, PR #14)**
+- ✓ Mergeados: BUG-003 (recover, PR #3), BUG-007 (guard admin = F0-05, PR #1), BUG-019 (IDOR foto, PR #4), BUG-023 (rotas debug, PR #3), BUG-024 (trigger-sync removido, PR #5), BUG-021 (guard ad-hoc de upload unificado, PR #13), **BUG-020 (guards sistemáticos em Server Actions — 7 lotes, PRs #8–#14)**, **BUG-032 (escalação de privilégio no login, PR #14)**, **BUG-025 (webhook MP com assinatura HMAC, PR #16)**
 - ✅ **BUG-020 fechado** — 7 lotes: booking (PR #8, 2 IDORs), CRUD admin (PR #9), analytics admin (PR #10), queries do calendário (PR #11, 2 IDORs), journey (PR #12, 2 IDORs), upload/portfólio (PR #13, 1 IDOR + BUG-021), auth-permissions (PR #14, 1 IDOR + BUG-032). Padrão canônico do track consolidado: `requireAuth()`/`requireAdmin()` + dono-ou-admin, sessão pelo cookie assinado.
-- ○ Abertos: BUG-004 (vazamento de path em `admin-fs.ts`), BUG-005, BUG-006, BUG-025 (webhook HMAC)
+- ○ Abertos: BUG-004 (vazamento de path em `admin-fs.ts`, Alto — requer avaliação de exposição), BUG-005, BUG-006 (Médios, checkout/networking)
 
 ### T-06 — Compliance técnico · **1 / 2 (50%)**  `█████░░░░░`
 

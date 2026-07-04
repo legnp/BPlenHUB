@@ -986,3 +986,48 @@ para embasar essas decisões estão todos disponíveis.
 - Nada bloqueado para a próxima sessão — fila de triagem por severidade segue
   com 4 Altos abertos (BUG-010, BUG-008, BUG-004, BUG-001, nenhum Crítico); ou
   seguir com F0-01 lotes A/B, ou iniciar a Fase 1.
+
+---
+
+## [2026-07-04] Chat de execução — BUG-025 (webhook MP com assinatura HMAC) mergeado
+
+- Chat/sessão: chat de execução (Opus 4.8), retomando o T-02
+- Escopo: BUG-025 — webhook do Mercado Pago sem validação de assinatura HMAC.
+  Recomendei este item sobre o F0-01 lote A (fecha o financeiro do T-02, é
+  backend puro 100% validável por código, vs. modais logados sem verificação
+  visual no preview por BUG-030). Plano+risco apresentados e **aprovados pela
+  Gestora** antes de codar (fluxo financeiro/webhook — área sensível).
+- Pergunta da Gestora respondida antes de codar: o `MERCADOPAGO_WEBHOOK_SECRET`
+  é a chave de assinatura do painel do MP (distinta do access token) que autentica
+  que a notificação veio mesmo do MP; e **não** é preciso ligar credencial de
+  produção neste PR — a habilitação suave desacopla o merge da virada de chave.
+- Achado ao ler o código (antes de codar): o handler já revalidava o pagamento via
+  re-fetch (`paymentClient.get`), o que barra spoofing total; a brecha real é
+  replay/enumeração de `data.id`, fechada pela assinatura HMAC.
+- Mudança (2 arquivos):
+  - `src/env.ts`: novo `MERCADOPAGO_WEBHOOK_SECRET` (opcional no serverSchema).
+  - `src/app/api/webhooks/mercadopago/route.ts`: helper `isValidMpSignature`
+    (parse do header `x-signature` `ts`/`v1`, reconstrução do manifest documentado
+    `id:<data.id>;request-id:<x-request-id>;ts:<ts>;` com segmentos ausentes
+    omitidos e `data.id` alfanumérico em minúsculas, HMAC-SHA256, comparação
+    timing-safe via `crypto.timingSafeEqual`) + guard no topo do `POST`.
+  - **Habilitação suave:** a validação só é exigida se `MERCADOPAGO_WEBHOOK_SECRET`
+    estiver setado; sem o segredo, loga aviso "modo suave" e mantém o
+    comportamento anterior (re-fetch) — evita 401 em massa antes de o segredo ser
+    cadastrado no painel do MP + Vercel (não quebra entrega de serviço).
+- Validação: eslint dos 2 arquivos tocados (0 erros; 2 warnings pré-existentes
+  intocados — `e`/`metadata`), `tsc --noEmit` limpo, `next build` **exit 0**.
+  Webhook é backend puro; não observável no preview (não se aplica verificação
+  visual). Sem `--no-verify` (arquivos staged com 0 erros; lint-staged passou).
+- Entrega: branch `security/mercadopago-webhook-hmac` → **PR #16 mergeado**
+  (`2417889`, squash) via REST API do GitHub. Branch deletada (local+remota).
+- Ativação em produção (pendência de execução humana da Gestora, quando decidir):
+  gerar o segredo no painel do MP, cadastrar `MERCADOPAGO_WEBHOOK_SECRET` na
+  Vercel, confirmar com webhook real que a assinatura casa (o aviso "modo suave"
+  some do log). Enquanto isso, o webhook segue funcional com o re-fetch.
+- Marco: **BUG-025 → Corrigido.** T-02 sobe para **9/12 (~75%)** — fecha o último
+  item financeiro do track. Restam no T-02: BUG-004 (vazamento de path, Alto —
+  requer avaliação de exposição), BUG-005, BUG-006 (Médios, checkout/networking).
+- Itens atualizados: `BUGS.md` (BUG-025 → Corrigido), `00-PLAN.md` (topo, ISO
+  25010 Segurança, item T-02 Execução/Resultado, índice bug→track), `DASHBOARD.md`
+  (T-02 9/12, data), este LOG.
