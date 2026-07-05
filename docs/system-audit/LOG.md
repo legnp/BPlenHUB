@@ -1180,3 +1180,33 @@ para embasar essas decisões estão todos disponíveis.
 - Itens atualizados: `BUGS.md` (BUG-005 → Corrigido), `00-PLAN.md` (topo, ISO
   25010 Segurança, item T-02 → Concluída/Fechado, índice bug→track), `DASHBOARD.md`
   (T-02 12/12 fechado, data), este LOG.
+
+---
+
+## [2026-07-04] Diretriz de estratégia da Gestora + foco em concluir a Fase 0
+
+- Chat/sessão: mesmo chat de execução; a Gestora definiu a estratégia daqui pra frente.
+- **Diretriz (registrada como Protocolo item 10 do `00-PLAN.md`):** bugs/pendências/
+  hipóteses **localizados** (não-globais/não-cascateados) são verificados e resolvidos
+  **na fase correspondente** — a Fase 1 (página-a-página) é a oportunidade natural
+  para as questões específicas de cada tela; Fase 2/3 para transversais. Só achados
+  **sistêmicos** (padrão repetido em N arquivos, como o `BUG-020`) justificam um track
+  transversal furando a ordem. Todo achado, mesmo adiado, fica registrado em `BUGS.md`
+  já vinculado à fase.
+- **Aplicação imediata da diretriz:** o achado colateral do BUG-006 (contatos/URLs
+  não-visíveis do networking possivelmente trafegando ao client) foi promovido a
+  **BUG-033** (Médio, **[HIPÓTESE]**), vinculado a **F1-05** (validação da página de
+  networking na Fase 1) — em vez de ficar como nota solta ou ser corrigido agora.
+- **Foco definido: concluir a Fase 0.** Itens restantes da Fase 0:
+  - **F0-01** (modal canônico): lote 1/z-index feito (PR #15). Faltam **lote A**
+    (converter `SequenceLockModal`/`UpsellServiceModal`/`WelcomeRedirectModal`/
+    `CouponTermsModal` para estender `GlassModal` — baixo risco, já clonam o visual)
+    e **lote B** (modais com backdrop divergente — exige validação visual antes/depois).
+  - **F0-04**: parar de escrever `User_JourneyMap` (gated — god file/onboarding).
+  - Ambos gated (design/onboarding) → plano + aprovação por lote antes de codar.
+- **Outros bugs abertos ficam nas suas fases/tracks** (não perseguir agora): BUG-010
+  (T-03), BUG-008 (F2-04/T-03), BUG-001 (T-06), BUG-002/016 (F1), BUG-011/012 (F3-01),
+  BUG-013 (F2-04), BUG-014/015 (F1), BUG-017 (T-01), BUG-022 (F3-03), BUG-026/027
+  (F0-01), BUG-031 (usabilidade), BUG-033 (F1-05).
+- Itens atualizados: `00-PLAN.md` (Protocolo item 10 novo; índice +BUG-033),
+  `BUGS.md` (+BUG-033), este LOG. Nenhuma mudança de código nesta entrada.

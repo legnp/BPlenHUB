@@ -823,6 +823,30 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   (validado por eslint + `tsc --noEmit` + `next build`).
 - Commit/PR: **mergeado** — PR #14 (`fa79e49`, squash).
 
+### BUG-033 Networking envia ao client contatos/URLs que o dono marcou como não-visíveis
+
+- Severidade: Médio (privacidade — **[HIPÓTESE]**, não confirmado no render)
+- Área/fase onde foi achado: achado colateral do BUG-006 (guard de networking),
+  2026-07-04 — a resolver na **Fase 1 (F1-05, validação da página de networking)**
+  conforme a diretriz de resolver bugs localizados na fase correspondente
+  (Protocolo item 10)
+- Arquivo(s) afetado(s): `src/actions/networking.ts:getNetworkingDataAction`
+  (retorno de `contacts` e `cvUrl`/`portfolioUrl`), `src/app/hub/networking/page.tsx`
+  + componente de card (render a confirmar)
+- Cenário de falha: **[HIPÓTESE]** a action devolve o objeto `contacts` inteiro
+  (cada item tem `{value, visible}`) e as URLs de CV/portfólio **independente das
+  flags de visibilidade do dono** (`contacts[].visible`, `cv_networking_visibility`,
+  `portfolio_networking_visibility`) — a ocultação parece ser só client-side. Se
+  confirmado, valores que o dono escolheu **esconder** trafegam para o browser de
+  outros membros, contrariando o controle do dono (que é o cerne da feature de
+  networking). Não confirmado no componente de render ainda.
+- Status: Aberto — **[HIPÓTESE]**, verificar na Fase 1 (F1-05). Se confirmado, o
+  fix provável é filtrar server-side no `getNetworkingDataAction` (não enviar
+  `value`/URL quando `visible === false`), preservando as flags para o próprio dono.
+- Decisão de execução: A investigar na fase correspondente; se confirmado e a
+  correção tocar o shape de dados de networking, avaliar impacto antes.
+- Commit/PR: —
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em

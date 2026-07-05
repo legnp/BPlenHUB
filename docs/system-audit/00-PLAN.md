@@ -107,6 +107,17 @@ esconder Crítico) como novos itens 8-9 do Protocolo.
    ser confrontado com a identidade **verificada** (cookie/token), nunca usado
    direto. Registre o achado novo em `BUGS.md` antes de decidir, mesmo no meio
    de outro lote (Lição 10 do `RETROSPECTIVE.md`).
+10. **Bug/pendência/hipótese localizado resolve-se na fase correspondente, não
+    oportunisticamente.** Se o problema é específico de uma tela/fluxo (não é
+    sistêmico/cascateado por todo o projeto), ele é verificado e corrigido quando
+    a fase associada chegar — a Fase 1 (página-a-página) é a oportunidade natural
+    para as questões específicas de cada tela; a Fase 2/3 para as transversais de
+    feature/regra. Só um achado **sistêmico** (padrão repetido em N arquivos, como
+    o `BUG-020` foi) justifica um track transversal furando a ordem das fases
+    (isso é diferente da triagem por severidade do item 6, que fura a ordem por
+    urgência de um Crítico/Alto, não por escopo). Todo achado, mesmo adiado para
+    sua fase, é registrado em `BUGS.md` já vinculado ao item/fase (Diretriz da
+    Gestora, 2026-07-04).
 
 ---
 
@@ -707,6 +718,7 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-030 | Baixo | Aceito | Riscos Aceitos (item 5, abaixo) |
 | BUG-031 | Baixo | Aberto | fora do escopo original — melhoria de usabilidade, ainda sem track (candidato a T-05 ou item novo de Fase 2 quando priorizado) |
 | BUG-032 | Crítico | Corrigido (PR #14) | T-02 — escalação de privilégio (novo, achado no lote 7) |
+| BUG-033 | Médio | Aberto — **[HIPÓTESE]** | F1-05 — achado colateral do BUG-006, a verificar na Fase 1 |
 
 ---
 
