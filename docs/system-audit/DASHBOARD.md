@@ -12,22 +12,23 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-04 (chat de execução — F0-01 lote A mergeado, PR #20:
-> 4 modais homogeneizados no GlassModal + limpeza de código morto do WelcomeRedirect.
-> F0-01 em 2/3 lotes; falta o lote B. T-02 segue FECHADO 12/12. Conferência visual do
-> lote A pendente em produção — BUG-030).
+> **Última atualização:** 2026-07-04 (chat de execução — F0-01 lote B mergeado, PR #21:
+> offboarding no GlassModal + z-index do JourneyNav coordenados + acentos PT-BR do lote A
+> restaurados. **Parte GlassModal do F0-01 concluída** (todos os modais-card convergidos);
+> resta só o 2º base para modais grandes app-shell (BUG-034, futuro). T-02 FECHADO 12/12.
+> Conferência visual pendente em produção — BUG-030).
 
 ---
 
 ## Fase 0 — Padrões canônicos
 
-**Decisões: 6/6 (100%).** Implementações ainda pendentes: **F0-01** (convergência
-de modais — lotes 1 + A feitos, 2/3; falta lote B) e **F0-04** (parar escrita de
-`User_JourneyMap`).
+**Decisões: 6/6 (100%).** Implementações ainda pendentes: **F0-01** — parte
+GlassModal concluída (lotes 1/A/B); resta o 2º base p/ modais grandes (BUG-034,
+futuro). **F0-04** (parar escrita de `User_JourneyMap`).
 
 | Item | Tema | Status |
 |---|---|---|
-| F0-01 | Modal canônico | Decidido · lote 1/3 (z-index, PR #15) + **lote A/3 (4 modais → GlassModal, PR #20)** mergeados; falta **lote B** (demais modais de backdrop divergente). Conferência visual do lote A pendente em produção (BUG-030) |
+| F0-01 | Modal canônico | Decidido · **parte GlassModal concluída** — lotes 1 (z-index, PR #15), A (4 modais-card, PR #20), B (offboarding + z-index JourneyNav, PR #21). Todos os modais-card convergidos; exceções aceitas (`ServiceSelection` público, `ContractGate` crítico); resta o 2º base p/ modais grandes app-shell (**BUG-034**, futuro). Conferência visual pendente em produção (BUG-030) |
 | F0-02 | Timestamp | ✓ Decidido (padrão pronto) |
 | F0-03 | Identidade | ✓ Decidido (padrão + convergência gradual) |
 | F0-04 | Coleções órfãs | Parcial — `entitlements` removida; `User_JourneyMap` pendente |
@@ -78,6 +79,8 @@ _Nenhuma no momento._
 - **BUG-030** (Baixo, **aceito**) — auth não funciona em preview Vercel (limitação conhecida)
 - **BUG-031** (Baixo, pendente) — "Sincronizar Agora" não reconstrói lista dos membros (usabilidade)
 - **BUG-032** (Crítico, **corrigido** PR #14) — escalação de privilégio: `syncUserPermissionsOnLogin` concedia admin a partir de e-mail não-verificado (achado no lote 7 do BUG-020)
+- **BUG-033** (Médio, **[HIPÓTESE]**, aberto) — networking envia contatos/URLs não-visíveis ao client (a verificar na Fase 1 / F1-05)
+- **BUG-034** (Baixo, aberto/futuro) — falta 2º componente-base para modais grandes "app-shell" (F0-01, opção iii)
 
 ---
 

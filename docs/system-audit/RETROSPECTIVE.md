@@ -78,6 +78,22 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
 
 ---
 
+11. **Nunca remova acentos PT-BR de texto de interface.** A regra do projeto é
+    "Zero Emoji" — **não** "zero acento". Acentos (ã, ç, é, ...) são copy correto e
+    esperado; removê-los degrada a UI. _(Caso real: no F0-01 lote A eu troquei
+    "Conclusão"→"Conclusao", "recepção"→"recepcao" etc. ao reescrever 4 modais —
+    regressão de copy, corrigida no PR #21.)_ ASCII só é apropriado em **comentários
+    de código, rotas/slugs e chaves/identificadores** — nunca em strings visíveis.
+
+12. **GlassModal não é base universal — é a base dos modais-card.** Ao convergir
+    modais para um padrão, cheque a estrutura de cada um antes de assumir que cabe:
+    modais grandes "app-shell" (header/footer fixos + corpo rolável) e modais de
+    outro universo (público) ou de criticidade especial (gate não-dismissível com
+    z próprio) **não** devem ser forçados no card. _(Caso real: F0-01 lote B — só
+    1 dos 6 candidatos cabia; os demais viraram exceções aceitas ou o 2º base
+    BUG-034.)_ A decisão "um modal-base único" precisou virar "dois bases: card +
+    app-shell".
+
 ## Melhorias sugeridas para o PLANO (para o chat de planejamento refinar)
 
 1. **Rollup de progresso nativo.** O plano rastreava itens/bugs mas não tinha

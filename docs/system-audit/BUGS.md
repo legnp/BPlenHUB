@@ -600,18 +600,25 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   coordenados (`50`, `300`, `500`, `1000`, `9999`, `99999`) criam risco real de
   um modal aparecer atrás de outro se dois dispararem ao mesmo tempo (ex.:
   `ContractGateModal` global vs. `UpsellServiceModal` da jornada).
-- Status: **Em Progresso** — lote 1/3 (escala de z-index) mergeado (PR #15,
-  2026-07-03) e **lote A (2/3)** mergeado (PR #20, 2026-07-04): 4 modais
-  (`SequenceLock`/`Upsell`/`WelcomeRedirect`/`CouponTerms`) convertidos para
-  renderizar via `GlassModal` — backdrop escuro nao-intencional unificado, recolor
-  para vars de tema, `z-[1000]` orfao do SequenceLock corrigido, corte de modal
-  alto eliminado (portal + scroll). Falta o **lote B** (os demais modais de
-  backdrop divergente — `ContractGate`/`ServiceSelection`/`DiscDevolutiva`/
-  `ContentEvaluation`/`ThemeSuggestion`/offboarding inline). Conferencia visual
-  nos 7 temas do lote A pendente em producao (BUG-030).
+- Status: **Em Progresso (parte GlassModal concluída)** — lotes **1** (z-index,
+  PR #15), **A** (4 modais-card, PR #20) e **B** (PR #21) mergeados. Lote B:
+  `NonMemberOffboardingModal` convertido para `GlassModal` (+`z-[50]` órfão
+  corrigido) e z-index órfãos do `JourneyNav` coordenados (modal de detalhes
+  `z-[200]`→`.z-overlay`; tooltip `z-50`→`.z-chrome-popover`). **Refino da decisão
+  original** (que assumia "todos os 11 estendem GlassModal"): o `GlassModal` é a
+  base dos **modais-card**; os **modais grandes "app-shell"** (`ThemeSuggestion`/
+  `ContentEvaluation`/`DiscDevolutiva` — header/footer fixos + corpo rolável) não
+  cabem nele e vão para um 2º componente-base próprio (**BUG-034**). **Exceções
+  aceitas** (não convertidas): `ServiceSelection` (universo público, estilo
+  intencional) e `ContractGate` (gate crítico não-dismissível, `z-critical`,
+  tokens shadcn). Todos os modais-card do inventário estão convergidos.
+  Conferência visual (telas logadas) pendente em produção (BUG-030).
+  Nota: no PR #21 também foram restaurados acentos PT-BR removidos por engano nos
+  4 modais do lote A (regressão de copy, corrigida).
 - Decisão de execução: Precisa plano+aprovação (sistema de design — Fase 0). **[2026-07-02 / F0-01]** Decidido: `GlassModal` é o modal-base único oficial; converger os 11 modais divergentes em 3 lotes, começando por unificar a escala de z-index (correção prioritária: risco ContractGateModal vs UpsellServiceModal). Implementação gated por lote. **[2026-07-03 / lote 1]** Escala canônica de z-index implementada em `globals.css` (`.z-chrome`/`.z-chrome-popover`/`.z-overlay`/`.z-critical`/`.z-toast`/`.z-tour`), substituindo os 9 valores ad-hoc dos overlays; corrige inversões reais (modal sob header). Validado por tsc + build + preview. Ver `F0-DECISIONS.md#f0-01`.
-- Commit/PR: **lote 1** — PR #15 (`7fc59f9`, squash); **lote A** — PR #20
-  (`9120a88`, squash). Lote B pendente.
+- Commit/PR: **lote 1** — PR #15 (`7fc59f9`); **lote A** — PR #20 (`9120a88`);
+  **lote B** — PR #21 (`c57c507`). Parte GlassModal concluída; resta o 2º base
+  (BUG-034) para os modais grandes.
 
 ### BUG-027 `ThemeSelector.tsx` é componente órfão (não é o seletor de tema real)
 
@@ -852,6 +859,25 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   `value`/URL quando `visible === false`), preservando as flags para o próprio dono.
 - Decisão de execução: A investigar na fase correspondente; se confirmado e a
   correção tocar o shape de dados de networking, avaliar impacto antes.
+- Commit/PR: —
+
+### BUG-034 Falta base canônica para modais grandes "app-shell" (header/footer fixos + corpo rolável)
+
+- Severidade: Baixo (débito de design system / manutenibilidade)
+- Área/fase onde foi achado: F0-01 lote B (2026-07-04) — decisão da Gestora (opção iii)
+- Arquivo(s) afetado(s): `ThemeSuggestionModal.tsx`, `ContentEvaluationModal.tsx`,
+  `DiscDevolutivaModal.tsx` (candidatos); provável novo `src/components/ui/` base
+- Cenário: o `GlassModal` é a base dos **modais-card** (centralizado, `p-8`,
+  scroll único). Os 3 modais acima são **modais grandes "app-shell"** (header e
+  footer fixos + corpo interno rolável, `max-h-*vh`, `max-w-2xl/4xl`) — estrutura
+  que o `GlassModal` não comporta. Hoje já usam vars de tema e `z-overlay`, mas
+  têm **backdrops divergentes** (`bg-black/60~90`) e cada um reimplementa portal/
+  backdrop. Falta um 2º componente-base canônico que padronize portal/backdrop/
+  z-index/estrutura header-body-footer, análogo ao GlassModal mas para modais grandes.
+- Status: Aberto — esforço próprio futuro (opção iii aprovada pela Gestora); não
+  bloqueia o fechamento da parte GlassModal do F0-01.
+- Decisão de execução: Precisa plano+aprovação (sistema de design). Ao implementar,
+  migrar os 3 modais grandes para a nova base + unificar o backdrop.
 - Commit/PR: —
 
 ---

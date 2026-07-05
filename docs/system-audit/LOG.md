@@ -1256,3 +1256,38 @@ para embasar essas decisões estão todos disponíveis.
   foram recoloridos de branco→vars). Se algo destoar, fix-forward.
 - Itens atualizados: `BUGS.md` (BUG-026), `00-PLAN.md` (topo, item F0-01),
   `DASHBOARD.md` (F0-01 2/3, data), este LOG.
+
+---
+
+## [2026-07-04] Chat de execução — F0-01 lote B + correção de acentos do lote A
+
+- Chat/sessão: mesmo chat de execução; conclusão da parte GlassModal do F0-01.
+- Diretriz da Gestora: executar itens 1+2+3 do lote B revisado; os 3 modais grandes
+  vão para a opção **(iii)** (2º componente-base próprio, futuro); cuidado com o
+  `ServiceSelection` (universo público).
+- Investigação (por leitura, antes de codar) — **refutou a premissa** do lote B
+  ("converter os 11 modais"): dos 6 candidatos, só o `NonMemberOffboarding` (card
+  pequeno) cabia no GlassModal. `ServiceSelection` = universo público (excluir),
+  `ContractGate` = gate crítico não-dismissível com `z-critical`+tokens shadcn
+  (excluir), e `ThemeSuggestion`/`ContentEvaluation`/`DiscDevolutiva` = modais
+  grandes "app-shell" (header/footer fixos + scroll) que o GlassModal não comporta.
+- Mudança (PR #21, `c57c507`):
+  - **Lote B:** `NonMemberOffboardingModal` (inline no `JourneyNav`) → `GlassModal`
+    (+`z-[50]` órfão corrigido); z-index órfãos do `JourneyNav` coordenados (modal
+    de detalhes `z-[200]`→`.z-overlay`; tooltip `z-50`→`.z-chrome-popover`).
+  - **Correção de regressão própria:** restaurados os acentos PT-BR que eu havia
+    removido por engano do texto de interface dos 4 modais do lote A (a regra é
+    "Zero Emoji", não "zero acento"; o copy original era acentuado). Comentários,
+    rotas e chaves de stage seguem em ASCII (correto). Lição registrada abaixo.
+  - **Exceções documentadas** e **BUG-034** registrado (2º base para modais grandes,
+    opção iii).
+- Validação: `tsc --noEmit` limpo, `next build` exit 0, eslint 0 erros (1 warning
+  `<img>` pré-existente no Upsell). Sem `--no-verify` (arquivos staged limpos).
+  Conferência visual (telas logadas) pendente em produção (BUG-030).
+- Marco: **parte GlassModal do F0-01 concluída** — todos os modais-card convergidos.
+  BUG-026 Em Progresso (parte GlassModal ok); resta BUG-034 (2º base, futuro).
+- **Lição de execução (adicionar ao RETROSPECTIVE):** não remover acentos PT-BR de
+  texto de interface — a regra do projeto é "Zero Emoji", não "zero acento".
+  Acentos são copy correto; strip degrada a UI. ASCII só em comentários/rotas/chaves.
+- Itens atualizados: `BUGS.md` (BUG-026 + BUG-034 novo), `00-PLAN.md` (topo, item
+  F0-01, índice +BUG-034), `DASHBOARD.md` (F0-01, novos bugs, data), este LOG.
