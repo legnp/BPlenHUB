@@ -17,6 +17,7 @@ interface SequenceLockModalProps {
  * Modal de bloqueio de sequencia linear. Padronizado sobre o GlassModal canonico
  * (portal, backdrop, z-index e scroll unificados); conteudo especifico como children.
  */
+// Nota: comentarios em ASCII; textos de interface preservam a acentuacao PT-BR.
 export function SequenceLockModal({ isOpen, onClose, prevStageTitle, type = "etapa" }: SequenceLockModalProps) {
   return (
     <GlassModal isOpen={isOpen} onClose={onClose} maxWidth="max-w-[440px]">
@@ -25,7 +26,7 @@ export function SequenceLockModal({ isOpen, onClose, prevStageTitle, type = "eta
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20">
           <Sparkles size={12} className="text-amber-500 animate-pulse" />
           <span className="text-[9px] font-black uppercase tracking-widest text-amber-500">
-            Soberania Metodologica
+            Soberania Metodológica
           </span>
         </div>
 
@@ -37,10 +38,10 @@ export function SequenceLockModal({ isOpen, onClose, prevStageTitle, type = "eta
         {/* Mensagem */}
         <div className="space-y-4">
           <h3 className="text-2xl font-black text-[var(--text-primary)] tracking-tight leading-tight">
-            {type === "etapa" ? "Aguardando Conclusao" : "Aguardando Parada"} <br /> {type === "etapa" ? "da Etapa Anterior" : "Anterior"}
+            {type === "etapa" ? "Aguardando Conclusão" : "Aguardando Parada"} <br /> {type === "etapa" ? "da Etapa Anterior" : "Anterior"}
           </h3>
           <p className="text-[13px] leading-relaxed text-[var(--text-secondary)] font-medium">
-            Para garantir a eficacia do seu progresso, a {type} <span className="text-amber-500 font-black">{prevStageTitle}</span> precisa ser concluida 100% antes de liberar este novo ciclo.
+            Para garantir a eficácia do seu progresso, a {type} <span className="text-amber-500 font-black">{prevStageTitle}</span> precisa ser concluída 100% antes de liberar este novo ciclo.
           </p>
         </div>
 
@@ -59,7 +60,7 @@ export function SequenceLockModal({ isOpen, onClose, prevStageTitle, type = "eta
 
         <div className="space-y-1">
           <p className="text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest opacity-60">
-            Sua evolucao e linear e focada
+            Sua evolução é linear e focada
           </p>
           <p className="text-[9px] font-medium text-amber-500/70 uppercase tracking-widest italic">
             &quot;Alavanque a sua carreira&quot;
