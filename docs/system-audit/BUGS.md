@@ -880,6 +880,32 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   migrar os 3 modais grandes para a nova base + unificar o backdrop.
 - Commit/PR: —
 
+### BUG-035 Revogação de acesso de membro via admin não surte efeito
+
+- Severidade: **Alto** (controle de acesso — um membro mantém acesso após a
+  revogação) — **[HIPÓTESE]**, causa-raiz a confirmar
+- Área/fase onde foi achado: reportado pela Gestora (2026-07-04) ao tentar
+  cancelar o acesso de membro de um cliente pelo painel admin — a validar na
+  **Fase 1** (teste do `/hub` + páginas admin, F1-06)
+- Arquivo(s) afetado(s): a confirmar — provavelmente a ação admin que altera
+  `User/{matricula}/User_Permissions/access.services.member_area_access` e/ou a
+  leitura de sessão que alimenta `requireMemberAccess` (cookie/`getServerSession`
+  podem estar servindo `services` em cache até re-login)
+- Cenário de falha: admin revoga `member_area_access` de um cliente, mas o cliente
+  **continua acessando** a área de membro. Hipóteses a investigar: (a) o toggle não
+  persiste no Firestore; (b) persiste, mas a sessão assinada (cookie) carrega
+  `services`/`isAdmin` em cache e o guard `requireMemberAccess` só reflete a mudança
+  após re-login/refresh do cookie; (c) o guard lê fonte diferente da que o admin
+  escreve.
+- Impacto colateral no processo: **bloqueia a validação visual do
+  `NonMemberOffboardingModal`** (BUG-026) — não dá para colocar um usuário no
+  estado "não-membro" para disparar o modal enquanto a revogação não funciona.
+- Status: Aberto — **[HIPÓTESE]**, investigar na Fase 1 (F1-06). Não investigado
+  agora, a pedido da Gestora (fazer junto do teste da página `/hub`).
+- Decisão de execução: Precisa plano+aprovação (identidade/sessão + controle de
+  acesso — área sensível). Investigar causa-raiz antes de propor correção.
+- Commit/PR: —
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em

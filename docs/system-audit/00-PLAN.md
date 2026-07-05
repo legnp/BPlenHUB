@@ -173,6 +173,7 @@ ativa furando a ordem das fases.
 
 | Bug | Severidade | Onde se conecta | Por que ainda não fechou |
 |---|---|---|---|
+| BUG-035 | Alto | F1-06 | **[HIPÓTESE]** revogação de acesso de membro via admin não surte efeito; investigar causa-raiz na Fase 1 (identidade/sessão) |
 | BUG-010 | Alto | T-03 | **[HIPÓTESE]** precisa confirmar se a implementação duplicada em `post-event.ts` é código morto antes de decidir remoção |
 | BUG-008 | Alto | F2-04, T-03 | Requer plano+aprovação (toca fluxo financeiro/cotas) |
 | BUG-001 | Alto | T-06 | Requer plano+aprovação (dado sensível/PII, regra explícita do `CLAUDE.md`) |
@@ -417,9 +418,14 @@ sem copy hardcoded fora do que o guia permitir).
 - Decisão: —
 - Execução: Não iniciada — nota: os 4 bugs de segurança vinculados abaixo já
   foram corrigidos (via T-02), mas a validação de UI/responsivo/copy das
-  páginas em si ainda não começou; não confundir uma coisa com a outra
+  páginas em si ainda não começou; não confundir uma coisa com a outra.
+  **Pendências acumuladas para esta fase (Gestora, 2026-07-04):** (a) validar o
+  fluxo de **controle de acesso via admin** — `BUG-035`, revogação de
+  `member_area_access` não surte efeito; (b) validar visualmente o
+  `NonMemberOffboardingModal` (BUG-026, bloqueado por BUG-035); (c) validar os 4
+  modais-card do F0-01 (lotes A/B) em produção nos temas claros.
 - Resultado: —
-- Bug(s) vinculado(s): BUG-003 (Corrigido), BUG-007 (Corrigido), BUG-023 (Corrigido), BUG-024 (Corrigido)
+- Bug(s) vinculado(s): BUG-003 (Corrigido), BUG-007 (Corrigido), BUG-023 (Corrigido), BUG-024 (Corrigido), BUG-035 (Aberto — controle de acesso)
 - Log: —
 
 ---
@@ -726,6 +732,7 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-032 | Crítico | Corrigido (PR #14) | T-02 — escalação de privilégio (novo, achado no lote 7) |
 | BUG-033 | Médio | Aberto — **[HIPÓTESE]** | F1-05 — achado colateral do BUG-006, a verificar na Fase 1 |
 | BUG-034 | Baixo | Aberto (futuro) | F0-01 — 2º componente-base p/ modais grandes app-shell (opção iii) |
+| BUG-035 | Alto | Aberto — **[HIPÓTESE]** | F1-06 — revogação de acesso de membro via admin não surte efeito; validar no teste do `/hub`/admin (bloqueia validação visual do offboarding modal) |
 
 ---
 

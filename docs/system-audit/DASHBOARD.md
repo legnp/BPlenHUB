@@ -81,6 +81,7 @@ _Nenhuma no momento._
 - **BUG-032** (Crítico, **corrigido** PR #14) — escalação de privilégio: `syncUserPermissionsOnLogin` concedia admin a partir de e-mail não-verificado (achado no lote 7 do BUG-020)
 - **BUG-033** (Médio, **[HIPÓTESE]**, aberto) — networking envia contatos/URLs não-visíveis ao client (a verificar na Fase 1 / F1-05)
 - **BUG-034** (Baixo, aberto/futuro) — falta 2º componente-base para modais grandes "app-shell" (F0-01, opção iii)
+- **BUG-035** (Alto, **[HIPÓTESE]**, aberto) — revogação de acesso de membro via admin não surte efeito; validar na Fase 1 (F1-06). Bloqueia validação visual do offboarding modal
 
 ---
 

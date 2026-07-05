@@ -1291,3 +1291,36 @@ para embasar essas decisões estão todos disponíveis.
   Acentos são copy correto; strip degrada a UI. ASCII só em comentários/rotas/chaves.
 - Itens atualizados: `BUGS.md` (BUG-026 + BUG-034 novo), `00-PLAN.md` (topo, item
   F0-01, índice +BUG-034), `DASHBOARD.md` (F0-01, novos bugs, data), este LOG.
+
+---
+
+## [2026-07-04] Chat de execução — BUG-035 registrado + investigação do F0-04 (User_JourneyMap)
+
+- Chat/sessão: mesmo chat de execução.
+- **BUG-035 registrado (Alto, [HIPÓTESE]):** a Gestora reportou que revogar o acesso
+  de membro de um cliente pelo painel admin **não surte efeito** (cliente segue com
+  acesso). Amarrado à Fase 1 (F1-06) — investigar causa-raiz (persistência do toggle
+  vs. cache de `services` no cookie de sessão vs. fonte lida pelo `requireMemberAccess`)
+  no teste do `/hub`/admin, a pedido da Gestora (não investigado agora). Isso
+  **bloqueia** a validação visual do `NonMemberOffboardingModal` (não dá para criar o
+  estado não-membro). Pendências acumuladas registradas em F1-06.
+- **F0-04 (investigação do `User_JourneyMap`, resposta à dúvida da Gestora):**
+  - **Dois locais distintos** com esse nome: a subcoleção `User/{matricula}/
+    User_JourneyMap/progress` (mapa de jornada legado/estático) e um **campo**
+    `User_JourneyMap` no doc do User (lido pelo networking).
+  - **Escreve a subcoleção:** só `welcome-survey.ts` (na conclusão do welcome).
+  - **Lê a subcoleção:** `admin-devolutiva.ts` — **como fallback legado** (o caminho
+    primário usa o journey v3; o fallback só entra se não houver v3).
+  - **`networking.ts`** lê `d.User_JourneyMap?.current_stage` (o **campo**, local
+    diferente) — provavelmente **sempre `undefined`** (ninguém escreve esse campo no
+    doc do User), então o filtro de estágio do networking cai sempre em "onboarding"
+    (**[HIPÓTESE]** — bug latente separado, a confirmar em Fase 1/F1-05).
+  - **Conclusão:** o `User_JourneyMap` **não é totalmente órfão** (a premissa do F0-04
+    de "legado sem propósito ativo" estava imprecisa) — há um consumidor real
+    (fallback do admin-devolutiva). Parar de escrevê-lo afetaria esse fallback para
+    usuários novos. Requer decisão: confirmar que o journey v3 cobre o que o fallback
+    fornecia (e migrar o admin-devolutiva) antes de parar a escrita, ou manter a
+    escrita e reclassificar o F0-04.
+- Nenhuma mudança de código nesta entrada (registro + investigação).
+- Itens atualizados: `BUGS.md` (+BUG-035), `00-PLAN.md` (índice +BUG-035, triagem
+  por severidade +BUG-035, F1-06 pendências), `DASHBOARD.md` (+BUG-035), este LOG.
