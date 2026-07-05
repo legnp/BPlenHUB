@@ -24,7 +24,6 @@ export function MatriculaGuard({ productSlug, className, children }: MatriculaGu
   const pathname = usePathname();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
-  const [modalMode, setModalMode] = useState<"login" | "welcome">("welcome");
 
   async function handleAction() {
     if (loading || isChecking) return;
@@ -32,7 +31,6 @@ export function MatriculaGuard({ productSlug, className, children }: MatriculaGu
     // 🛡️ SOBERANIA DE CONVERSÃO: Se não está logado, exige login.
     // Se está logado, segue para o checkout independente de ter matrícula (ela será gerada lá).
     if (!user) {
-      setModalMode("login");
       setIsModalOpen(true);
       return;
     }
@@ -48,11 +46,9 @@ export function MatriculaGuard({ productSlug, className, children }: MatriculaGu
 
   function handleModalConfirm() {
     setIsModalOpen(false);
-    if (modalMode === "login") {
-       // Redireciona para login e volta para o checkout do produto (ou Posicionamento de Carreira se Junior)
-      const targetPath = productSlug === "junior" ? "/hub/membro/journey/posicionamento-profissional" : `/hub/membro/checkout/${productSlug}`;
-      router.push(`/?auth=required&returnTo=${encodeURIComponent(targetPath)}`);
-    }
+    // Redireciona para login e volta para o checkout do produto (ou Posicionamento de Carreira se Junior)
+    const targetPath = productSlug === "junior" ? "/hub/membro/journey/posicionamento-profissional" : `/hub/membro/checkout/${productSlug}`;
+    router.push(`/?auth=required&returnTo=${encodeURIComponent(targetPath)}`);
   }
 
   return (
@@ -75,15 +71,13 @@ export function MatriculaGuard({ productSlug, className, children }: MatriculaGu
         )}
       </button>
 
-      <WelcomeRedirectModal 
+      <WelcomeRedirectModal
         isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
         userName={user?.displayName?.split(" ")[0] || "Membro"}
-        title={modalMode === "login" ? "Conecte-se à BPlen" : undefined}
-        description={modalMode === "login" 
-          ? "Para contratar este serviço, precisamos te identificar e garantir sua matrícula BPlen. Vamos te guiar para o login agora."
-          : undefined
-        }
-        buttonText={modalMode === "login" ? "FAZER LOGIN / REGISTRAR" : "IR PARA RECEPÇÃO"}
+        title="Conecte-se à BPlen"
+        description="Para contratar este serviço, precisamos te identificar e garantir sua matrícula BPlen. Vamos te guiar para o login agora."
+        buttonText="FAZER LOGIN / REGISTRAR"
         onConfirm={handleModalConfirm}
       />
     </>

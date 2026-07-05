@@ -11,7 +11,6 @@ import { GoogleLoginButton } from "@/components/auth/google-login-button";
 import { useTourStore } from "@/store/tour-store";
 import { hubOnboardingSteps } from "@/config/tour/hub-onboarding";
 import { HubHomeView } from "@/components/hub/HubHomeView";
-import { WelcomeRedirectModal } from "@/components/checkout/WelcomeRedirectModal";
 
 export default function HubPage() {
   const { user, loading } = useAuthContext();
