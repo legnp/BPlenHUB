@@ -601,10 +601,17 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   um modal aparecer atrás de outro se dois dispararem ao mesmo tempo (ex.:
   `ContractGateModal` global vs. `UpsellServiceModal` da jornada).
 - Status: **Em Progresso** — lote 1/3 (escala de z-index) mergeado (PR #15,
-  2026-07-03); lotes A/B (converter os 11 modais para estender `GlassModal`)
-  seguem Abertos.
+  2026-07-03) e **lote A (2/3)** mergeado (PR #20, 2026-07-04): 4 modais
+  (`SequenceLock`/`Upsell`/`WelcomeRedirect`/`CouponTerms`) convertidos para
+  renderizar via `GlassModal` — backdrop escuro nao-intencional unificado, recolor
+  para vars de tema, `z-[1000]` orfao do SequenceLock corrigido, corte de modal
+  alto eliminado (portal + scroll). Falta o **lote B** (os demais modais de
+  backdrop divergente — `ContractGate`/`ServiceSelection`/`DiscDevolutiva`/
+  `ContentEvaluation`/`ThemeSuggestion`/offboarding inline). Conferencia visual
+  nos 7 temas do lote A pendente em producao (BUG-030).
 - Decisão de execução: Precisa plano+aprovação (sistema de design — Fase 0). **[2026-07-02 / F0-01]** Decidido: `GlassModal` é o modal-base único oficial; converger os 11 modais divergentes em 3 lotes, começando por unificar a escala de z-index (correção prioritária: risco ContractGateModal vs UpsellServiceModal). Implementação gated por lote. **[2026-07-03 / lote 1]** Escala canônica de z-index implementada em `globals.css` (`.z-chrome`/`.z-chrome-popover`/`.z-overlay`/`.z-critical`/`.z-toast`/`.z-tour`), substituindo os 9 valores ad-hoc dos overlays; corrige inversões reais (modal sob header). Validado por tsc + build + preview. Ver `F0-DECISIONS.md#f0-01`.
-- Commit/PR: **lote 1 mergeado** — PR #15 (`7fc59f9`, squash). Lotes A/B pendentes.
+- Commit/PR: **lote 1** — PR #15 (`7fc59f9`, squash); **lote A** — PR #20
+  (`9120a88`, squash). Lote B pendente.
 
 ### BUG-027 `ThemeSelector.tsx` é componente órfão (não é o seletor de tema real)
 

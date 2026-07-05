@@ -12,21 +12,22 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-04 (chat de execução — BUG-005 corrigido, PR #19:
-> `requireMatricula` nas ações de pagamento do checkout de membro, fechando o
-> `NAO_MAPEADA` (rastreabilidade). **Track T-02 FECHADO — 12/12 (100%).** Nenhum
-> Crítico aberto).
+> **Última atualização:** 2026-07-04 (chat de execução — F0-01 lote A mergeado, PR #20:
+> 4 modais homogeneizados no GlassModal + limpeza de código morto do WelcomeRedirect.
+> F0-01 em 2/3 lotes; falta o lote B. T-02 segue FECHADO 12/12. Conferência visual do
+> lote A pendente em produção — BUG-030).
 
 ---
 
 ## Fase 0 — Padrões canônicos
 
 **Decisões: 6/6 (100%).** Implementações ainda pendentes: **F0-01** (convergência
-de modais — lote 1/3 feito) e **F0-04** (parar escrita de `User_JourneyMap`).
+de modais — lotes 1 + A feitos, 2/3; falta lote B) e **F0-04** (parar escrita de
+`User_JourneyMap`).
 
 | Item | Tema | Status |
 |---|---|---|
-| F0-01 | Modal canônico | Decidido · **lote 1/3 (escala de z-index) mergeado (PR #15)**; lotes A/B (converter 11 modais p/ GlassModal) pendentes |
+| F0-01 | Modal canônico | Decidido · lote 1/3 (z-index, PR #15) + **lote A/3 (4 modais → GlassModal, PR #20)** mergeados; falta **lote B** (demais modais de backdrop divergente). Conferência visual do lote A pendente em produção (BUG-030) |
 | F0-02 | Timestamp | ✓ Decidido (padrão pronto) |
 | F0-03 | Identidade | ✓ Decidido (padrão + convergência gradual) |
 | F0-04 | Coleções órfãs | Parcial — `entitlements` removida; `User_JourneyMap` pendente |

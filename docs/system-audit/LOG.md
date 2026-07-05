@@ -1210,3 +1210,49 @@ para embasar essas decisões estão todos disponíveis.
   (F0-01), BUG-031 (usabilidade), BUG-033 (F1-05).
 - Itens atualizados: `00-PLAN.md` (Protocolo item 10 novo; índice +BUG-033),
   `BUGS.md` (+BUG-033), este LOG. Nenhuma mudança de código nesta entrada.
+
+---
+
+## [2026-07-04] Chat de execução — F0-01 lote A (4 modais → GlassModal) mergeado
+
+- Chat/sessão: mesmo chat de execução; foco em concluir a Fase 0 (F0-01).
+- Escopo: lote A do F0-01 — homogeneizar 4 modais no `GlassModal`. Plano+risco
+  apresentados e **aprovados pela Gestora** por várias rodadas (decidiu:
+  homogeneizar; backdrop escuro era não-intencional; opção A — manter o
+  WelcomeRedirect como prompt de login e limpar o código morto).
+- Investigação que corrigiu a premissa (por leitura, antes de codar):
+  - Os 4 modais **não** clonavam o GlassModal de forma limpa (a premissa do plano):
+    2 usavam backdrop escuro `bg-black/85`, `SequenceLock`/`Welcome` eram feitos
+    para fundo escuro (`text-white`/`#0a0a0a`), `Upsell` tinha imagem full-bleed,
+    `Welcome` não tinha fechar. `SequenceLock` ainda estava com `z-[1000]` órfão
+    (o lote 1 não pegou).
+  - `--glass-bg` é **claro na maioria dos 7 temas** → recolor para vars de tema é
+    obrigatório (senão texto branco some em tema claro).
+  - **WelcomeRedirect era redundante no propósito original** (redirect p/ recepção
+    criar matrícula): o checkout gera a matrícula sozinho (mapeado antes). O modo
+    "welcome" estava morto no `MatriculaGuard` (só o modo "login" era acionado) e o
+    import em `hub/page.tsx` estava morto. Mantido só como prompt de login (opção A).
+- Mudança (6 arquivos): 4 modais convertidos para `<GlassModal>` (backdrop/portal/
+  z-index/scroll unificados; recolor para vars; Upsell com imagem em bloco moldurado;
+  Welcome dismissível com `onClose`); `MatriculaGuard` sem o `modalMode` morto +
+  passa `onClose`; `hub/page.tsx` sem o import morto. Diff -468/+303 (modais ficaram
+  mais simples). O portal+scroll do GlassModal **elimina o corte** de modal alto que
+  a Gestora relatou (modal preso no card da jornada).
+- Validação: `tsc --noEmit` limpo, `next build` exit 0, eslint dos 4 modais novos
+  0 erros (1 warning `<img>` pré-existente no Upsell). **Conferência visual nos 7
+  temas fica para produção** (telas logadas não autenticam no preview — BUG-030).
+- `--no-verify` (documentado): o `hub/page.tsx` carrega 4 erros de lint
+  PRÉ-EXISTENTES (React Hooks condicionais) que travam o hook de lint-staged; o
+  único toque nele foi remover 1 import morto (confirmado por `git diff`), que não
+  cria erro de ordem de hooks. Não introduzidos por esta mudança.
+- Entrega: branch `design/homogenize-modals-glassmodal` → **PR #20 mergeado**
+  (`9120a88`, squash) via REST API do GitHub. Branch deletada (local+remota).
+- Marco: **F0-01 em 2/3 lotes** (lote 1 z-index + lote A). Falta o **lote B**
+  (demais modais de backdrop divergente: `ContractGate`/`ServiceSelection`/
+  `DiscDevolutiva`/`ContentEvaluation`/`ThemeSuggestion`/offboarding inline) — exige
+  validação visual antes/depois. BUG-026 segue Em Progresso.
+- **Pendência de verificação para a Gestora:** conferir visualmente em produção os
+  4 modais nos temas claros (principalmente `SequenceLock` e `WelcomeRedirect`, que
+  foram recoloridos de branco→vars). Se algo destoar, fix-forward.
+- Itens atualizados: `BUGS.md` (BUG-026), `00-PLAN.md` (topo, item F0-01),
+  `DASHBOARD.md` (F0-01 2/3, data), este LOG.
