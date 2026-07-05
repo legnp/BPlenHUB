@@ -38,13 +38,13 @@ export function WelcomeRedirectModal({
 
         <div className="space-y-5">
           <h2 className="text-3xl sm:text-4xl font-black tracking-tight leading-none uppercase italic text-[var(--text-primary)]">
-            {title || <>Ola, <span className="text-[var(--accent-start)]">{userName}</span></>}
+            {title || <>Olá, <span className="text-[var(--accent-start)]">{userName}</span></>}
           </h2>
           <p className="text-sm sm:text-base font-medium text-[var(--text-secondary)] leading-relaxed max-w-[350px] mx-auto">
             {description || (
               <>
-                Percebemos que voce ainda nao passou pela nossa <span className="text-[var(--text-primary)] font-bold tracking-tight underline decoration-[var(--accent-start)]/30">recepcao oficial</span>.
-                Vamos te guiar agora para garantir sua melhor experiencia.
+                Percebemos que você ainda não passou pela nossa <span className="text-[var(--text-primary)] font-bold tracking-tight underline decoration-[var(--accent-start)]/30">recepção oficial</span>.
+                Vamos te guiar agora para garantir sua melhor experiência.
               </>
             )}
           </p>
@@ -55,7 +55,7 @@ export function WelcomeRedirectModal({
             <ArrowRight size={18} className="text-[var(--accent-start)]" />
           </div>
           <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-[var(--text-muted)] leading-snug">
-            Sua intencao de contratacao esta segura e voce retornara automaticamente para este servico.
+            Sua intenção de contratação está segura e você retornará automaticamente para este serviço.
           </p>
         </div>
 

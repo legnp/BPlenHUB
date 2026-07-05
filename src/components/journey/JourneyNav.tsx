@@ -13,6 +13,7 @@ import { UpsellServiceModal } from "./UpsellServiceModal";
 import { getProductBySlug } from "@/actions/products";
 import { StageTelemetry } from "@/hooks/useJourney";
 import { SequenceLockModal } from "./SequenceLockModal";
+import GlassModal from "@/components/ui/GlassModal";
 import { BPlenRichTextRenderer } from "@/components/shared/BPlenRichTextRenderer";
 
 interface JourneyNavProps {
@@ -263,7 +264,7 @@ export function JourneyNav({ stages, currentStepId, stepStatusMap, getStageTelem
                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 5, scale: 0.95 }}
-                      className="absolute -top-24 z-50 min-w-[160px] px-5 py-4 rounded-[1.5rem] bg-slate-900/95 backdrop-blur-xl border border-white/10 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.5)] pointer-events-none"
+                      className="absolute -top-24 z-chrome-popover min-w-[160px] px-5 py-4 rounded-[1.5rem] bg-slate-900/95 backdrop-blur-xl border border-white/10 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.5)] pointer-events-none"
                     >
                       <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/90 mb-2">
                         {isBlocked ? "Conteúdo Exclusivo" : isBlockedBySequence ? "Aguardando Fase Anterior" : beaconStatus}
@@ -381,7 +382,7 @@ export function JourneyNav({ stages, currentStepId, stepStatusMap, getStageTelem
       {mounted && createPortal(
         <AnimatePresence>
            {detailModalOpen && (
-            <div className="fixed inset-0 z-[200] flex items-start justify-center p-4 overflow-y-auto custom-scrollbar">
+            <div className="fixed inset-0 z-overlay flex items-start justify-center p-4 overflow-y-auto custom-scrollbar">
                {/* Backdrop */}
                <motion.div 
                   initial={{ opacity: 0 }}
@@ -522,62 +523,42 @@ export function JourneyNav({ stages, currentStepId, stepStatusMap, getStageTelem
 }
 
 function NonMemberOffboardingModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
-  if (!isOpen) return null;
-
   return (
-    <AnimatePresence>
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
-        onClick={onClose}
-      >
-        <motion.div 
-          initial={{ scale: 0.95, opacity: 0, y: 10 }}
-          animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.95, opacity: 0, y: 10 }}
-          onClick={(e) => e.stopPropagation()}
-          className="bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-[2rem] p-8 max-w-md w-full shadow-2xl relative overflow-hidden group"
+    <GlassModal isOpen={isOpen} onClose={onClose} maxWidth="max-w-md">
+      <div className="relative flex flex-col items-center text-center">
+        <button
+          onClick={onClose}
+          className="absolute -top-2 -right-2 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors z-10"
+          aria-label="Fechar"
         >
-          {/* Decorative Gradient Background */}
-          <div className="absolute inset-0 bg-gradient-to-br from-[#ff0080]/10 to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-          
-          <button 
-            onClick={onClose}
-            className="absolute top-6 right-6 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors z-10"
-          >
-            <LucideIcons.X size={20} />
-          </button>
+          <LucideIcons.X size={20} />
+        </button>
 
-          <div className="relative z-10 flex flex-col items-center text-center">
-            <div className="w-16 h-16 rounded-2xl bg-[#ff0080]/10 text-[#ff0080] flex items-center justify-center mb-6 border border-[#ff0080]/20">
-              <LucideIcons.Lock size={28} />
-            </div>
-            
-            <h3 className="text-2xl font-black text-[var(--text-primary)] tracking-tight mb-4">
-              Sua Jornada de Membro ainda não começou.
-            </h3>
-            
-            <div className="space-y-4 mb-8">
-               <p className="text-sm text-[var(--text-secondary)] font-medium leading-relaxed">
-                  O <strong className="text-[var(--text-primary)]">Offboarding</strong> é a etapa master onde nossos membros consolidam aprendizados, mensuram evolução real e preparam a decolagem para os próximos grandes desafios de suas carreiras.
-               </p>
-               <p className="text-sm text-[var(--text-secondary)] font-medium leading-relaxed">
-                  Essa área segue reservada para quem iniciou a Jornada BPlen.
-               </p>
-            </div>
+        <div className="w-16 h-16 rounded-2xl bg-[var(--accent-soft)] text-[var(--accent-start)] flex items-center justify-center mb-6 border border-[var(--accent-start)]/20">
+          <LucideIcons.Lock size={28} />
+        </div>
 
-            <Link 
-              href="/servicos/pessoas"
-              className="w-full py-4 rounded-xl bg-[#ff0080] text-white font-black text-xs uppercase tracking-widest hover:scale-[1.02] shadow-[0_0_20px_rgba(255,0,128,0.3)] transition-all flex items-center justify-center gap-2 group/btn"
-            >
-              Conheça nossos serviços!
-              <LucideIcons.ChevronRight size={16} className="group-hover/btn:translate-x-1 duration-300" />
-            </Link>
-          </div>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
+        <h3 className="text-2xl font-black text-[var(--text-primary)] tracking-tight mb-4">
+          Sua Jornada de Membro ainda não começou.
+        </h3>
+
+        <div className="space-y-4 mb-8">
+          <p className="text-sm text-[var(--text-secondary)] font-medium leading-relaxed">
+            O <strong className="text-[var(--text-primary)]">Offboarding</strong> é a etapa master onde nossos membros consolidam aprendizados, mensuram evolução real e preparam a decolagem para os próximos grandes desafios de suas carreiras.
+          </p>
+          <p className="text-sm text-[var(--text-secondary)] font-medium leading-relaxed">
+            Essa área segue reservada para quem iniciou a Jornada BPlen.
+          </p>
+        </div>
+
+        <Link
+          href="/servicos/pessoas"
+          className="w-full py-4 rounded-xl bg-[var(--accent-start)] text-white font-black text-xs uppercase tracking-widest hover:scale-[1.02] shadow-[0_0_20px_rgba(255,0,128,0.3)] transition-all flex items-center justify-center gap-2 group/btn"
+        >
+          Conheça nossos serviços!
+          <LucideIcons.ChevronRight size={16} className="group-hover/btn:translate-x-1 duration-300" />
+        </Link>
+      </div>
+    </GlassModal>
   );
 }

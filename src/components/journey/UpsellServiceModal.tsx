@@ -81,14 +81,14 @@ export function UpsellServiceModal({ isOpen, onClose, product, loading }: Upsell
             {/* Conteudo */}
             <div className="space-y-3">
               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--accent-start)]">
-                {isOnboarding ? "Conteudo Exclusivo para Membros BPlen" : "Voce ainda nao contratou esse servico"}
+                {isOnboarding ? "Conteúdo Exclusivo para Membros BPlen" : "Você ainda não contratou esse serviço"}
               </p>
               <h3 className="text-2xl font-black text-[var(--text-primary)] tracking-tight italic">
                 {product.title}
               </h3>
               <p className="text-sm leading-relaxed text-[var(--text-secondary)] font-medium line-clamp-4">
                 {isOnboarding
-                  ? "E aqui e onde a sua carreira profissional ganha potencia! Para acessar e liberar todo o ecossistema HUB, torne-se um Membro BPlen."
+                  ? "É aqui é onde a sua carreira profissional ganha potência! Para acessar e liberar todo o ecossistema HUB, torne-se um Membro BPlen."
                   : product.sheet.description}
               </p>
             </div>
@@ -117,7 +117,7 @@ export function UpsellServiceModal({ isOpen, onClose, product, loading }: Upsell
                 "hover:scale-[1.02] active:scale-[0.98] transition-all duration-500"
               )}
             >
-              {isOnboarding ? "Ver servicos BPlen" : "Ver mais detalhes"}
+              {isOnboarding ? "Ver serviços BPlen" : "Ver mais detalhes"}
               <ChevronRight size={16} className="group-hover/btn:translate-x-1.5 transition-transform duration-500" />
             </Link>
 
