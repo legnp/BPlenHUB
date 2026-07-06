@@ -358,10 +358,14 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   escrever o `User_JourneyMap`. **Double-check de preservação feito**: o antigo
   `capturedData` era desnormalização — `userType`/`nickname` têm fonte em
   `User_Type`/`User_Nickname` (doc do User) e `origin`/`demand`/`topics` na resposta
-  crua do survey (`Surveys/welcome_survey.data`); nada se perde. **Pendente:** Ação 2
-  (migração um-a-um dos clientes atuais — garantir v3 + apagar `User_JourneyMap`) e
-  Ação 1b (remover o fallback legado do `admin-devolutiva` + nomenclatura obsoleta do
-  networking, via BUG-033).
+  crua do survey (`Surveys/welcome_survey.data`); nada se perde. **Ação 2 — script entregue (PR #23):**
+  `scripts/migrate-journeymap-cleanup.js` (LOCAL, Admin SDK). Dry-run por padrão;
+  apaga o legado só onde há v3 (usuários só-legado são reportados, não apagados);
+  backup de cada doc em `scratch/journeymap-backups/` antes de excluir; suporta
+  `--matricula`/`--limit` para rodar um-a-um. **Requer execução humana da Gestora**
+  (rodar dry-run → revisar → `--apply`). **Pendente:** execução da migração + Ação 1b
+  (remover o fallback legado do `admin-devolutiva` + nomenclatura obsoleta do
+  networking via BUG-033), após a migração.
 - Decisão de execução: **[2026-07-02 / F0-04]** Avaliação de impacto feita e
   executada em parte. **REMOVIDO**: `src/actions/entitlements.ts` (ação órfã) +
   tipos `UserEntitlement`/`EntitlementStatus` (zero uso externo). Correção da

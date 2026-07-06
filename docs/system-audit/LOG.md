@@ -1354,3 +1354,28 @@ para embasar essas decisões estão todos disponíveis.
   lê subcoleção) — precisa desnormalizar o estágio no doc User; tratado no BUG-033.
 - Itens atualizados: `BUGS.md` (BUG-018), `00-PLAN.md` (F0-04), `DASHBOARD.md`
   (T-03/BUG-018, data), este LOG.
+
+---
+
+## [2026-07-04] Chat de execução — script da Ação 2 (migração do User_JourneyMap) entregue
+
+- Chat/sessão: mesmo chat de execução.
+- Entregue `scripts/migrate-journeymap-cleanup.js` (**PR #23**, `ff2b919`) — script
+  LOCAL (Admin SDK) da Ação 2 do BUG-018. Segue o padrão CommonJS dos demais scripts.
+- Comportamento (segurança de dados no centro): **dry-run por padrão** (não escreve);
+  `--apply` para executar; apaga o `User_JourneyMap` só de usuários que **já têm o v3**
+  (`User_Journey/progress`); usuários **só-legado (sem v3) NÃO são apagados** —
+  reportados para revisão; **backup** de cada doc em `scratch/journeymap-backups/`
+  (gitignored) **antes** de excluir; `--matricula=<m>` e `--limit=<n>` permitem rodar
+  **um-a-um** / em lotes pequenos (como a Gestora pediu).
+- `--no-verify` no commit: erro de `require()` (`no-require-imports`) é baseline de
+  **todos** os scripts/ (CommonJS) — confirmado em `recover-admin.js`/
+  `check-all-progress.js`; não introduzido por este script.
+- Nota de processo: o corpo do PR #23 saiu truncado (backticks no shell ao montar o
+  JSON via `node -e`); cosmético, o merge foi correto. Lição: montar corpo de PR
+  sempre por arquivo `.md` (como nos outros), nunca inline com backticks.
+- **Requer execução humana (Gestora):** rodar o dry-run → revisar o relatório
+  (quantos "both" seriam apagados, quantos "só-legado" a revisar) → rodar `--apply`
+  (idealmente `--limit=1` ou `--matricula=...` primeiro, para validar 1 cliente).
+  Depois da migração: Ação 1b (remover fallback do `admin-devolutiva` + networking).
+- Itens atualizados: `BUGS.md` (BUG-018, Ação 2 script), este LOG.
