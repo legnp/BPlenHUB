@@ -1379,3 +1379,34 @@ para embasar essas decisões estão todos disponíveis.
   (idealmente `--limit=1` ou `--matricula=...` primeiro, para validar 1 cliente).
   Depois da migração: Ação 1b (remover fallback do `admin-devolutiva` + networking).
 - Itens atualizados: `BUGS.md` (BUG-018, Ação 2 script), este LOG.
+
+---
+
+## [2026-07-04] Chat de execução — Ação 2 EXECUTADA (migração do User_JourneyMap concluída)
+
+- Chat/sessão: mesmo chat de execução. A Gestora não sabia rodar o script; como o
+  dry-run é read-only, rodei aqui e conduzi a migração com aprovação passo a passo.
+- Dry-run inicial: 6 usuários — 3 "both" (v3+legado: BP-005/011/012), 2 "só-legado"
+  sem v3 (BP-013/015), 1 "só v3".
+- Execução (com aprovação da Gestora, um-a-um no início):
+  - `--apply --matricula=BP-005-...` → apagado com backup; verificado (backup tem o
+    capturedData completo; re-check mostrou BP-005 vira "só v3", v3 intacto). Gestora
+    validou o resultado do BP-005 e autorizou seguir.
+  - `--apply` → BP-011 e BP-012 apagados (backup). BP-013/015 protegidos (sem v3).
+  - Decisão da Gestora: opção **b** (incluir os sem-v3). Adicionada flag opt-in
+    `--include-sem-v3` ao script (PR #24), com backup obrigatório. Dry-run com a flag
+    confirmou alvo (BP-013/015); `--apply --include-sem-v3` apagou os 2 com backup.
+  - **Dry-run final: 0 `User_JourneyMap` restante.** 5 backups em
+    `scratch/journeymap-backups/`.
+- Resultado: **Ação 2 concluída** — as duas subcoleções redundantes consolidadas no
+  v3 (`User_Journey`); legado `User_JourneyMap` removido de todos os clientes atuais,
+  sem perda de dados. BP-013/015 (que nunca acessaram a jornada) recriam o v3 por
+  lazy-write no próximo acesso.
+- Nota de segurança: exclusão de dados de produção feita com dry-run prévio + backup
+  local de cada doc + verificação pós-exclusão do primeiro caso. Reversível pelos
+  backups se necessário.
+- **Resta a Ação 1b** (agora desbloqueada, pois não há mais legado): remover o
+  fallback morto do `admin-devolutiva` (passa a usar só v3) + nomenclatura obsoleta
+  do networking (BUG-033).
+- Itens atualizados: `BUGS.md` (BUG-018 — Ação 2 executada), este LOG. Script: PRs
+  #23 (base) e #24 (flag `--include-sem-v3`).

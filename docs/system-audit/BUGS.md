@@ -358,14 +358,17 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   escrever o `User_JourneyMap`. **Double-check de preservação feito**: o antigo
   `capturedData` era desnormalização — `userType`/`nickname` têm fonte em
   `User_Type`/`User_Nickname` (doc do User) e `origin`/`demand`/`topics` na resposta
-  crua do survey (`Surveys/welcome_survey.data`); nada se perde. **Ação 2 — script entregue (PR #23):**
-  `scripts/migrate-journeymap-cleanup.js` (LOCAL, Admin SDK). Dry-run por padrão;
-  apaga o legado só onde há v3 (usuários só-legado são reportados, não apagados);
-  backup de cada doc em `scratch/journeymap-backups/` antes de excluir; suporta
-  `--matricula`/`--limit` para rodar um-a-um. **Requer execução humana da Gestora**
-  (rodar dry-run → revisar → `--apply`). **Pendente:** execução da migração + Ação 1b
-  (remover o fallback legado do `admin-devolutiva` + nomenclatura obsoleta do
-  networking via BUG-033), após a migração.
+  crua do survey (`Surveys/welcome_survey.data`); nada se perde. **Ação 2 — script entregue (PR #23) e EXECUTADA (2026-07-04):**
+  `scripts/migrate-journeymap-cleanup.js` (LOCAL, Admin SDK; flag `--include-sem-v3`
+  add. no PR #24). Migração rodada com aprovação da Gestora, com dry-run antes:
+  **5 clientes migrados** (`BP-005`/`011`/`012` "both" + `BP-013`/`015` só-legado,
+  incluídos por decisão da Gestora — opção b), cada doc com **backup** em
+  `scratch/journeymap-backups/` antes de apagar. Dry-run final confirma **0
+  `User_JourneyMap` restante**. Sem perda de dados (capturedData preservado em
+  `User_Type`/`User_Nickname` + `Surveys/welcome_survey.data`, e nos backups).
+  **Pendente só a Ação 1b** (agora desbloqueada/segura, pois não há mais legado):
+  remover o fallback morto do `admin-devolutiva` + nomenclatura obsoleta do
+  networking (via BUG-033, que exige desnormalizar o estágio no doc User).
 - Decisão de execução: **[2026-07-02 / F0-04]** Avaliação de impacto feita e
   executada em parte. **REMOVIDO**: `src/actions/entitlements.ts` (ação órfã) +
   tipos `UserEntitlement`/`EntitlementStatus` (zero uso externo). Correção da
