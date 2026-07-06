@@ -287,10 +287,13 @@ evita "consertar" uma página para um padrão que será mudado depois.
 - Modo de validação: Automatizado (decisão documental; parada de escrita de `User_JourneyMap` toca onboarding/god file — implementação gated)
 - Decisão: Decidida — ambas são legado sem propósito ativo; `entitlements`
   removida, `User_JourneyMap` deixa de ser escrita quando o PR gated for feito
-- Execução: Parcial — `src/actions/entitlements.ts` (ação órfã) + tipos
-  `UserEntitlement`/`EntitlementStatus` **removidos e mergeados** (PR #1).
-  Parada de escrita de `User_JourneyMap` (em `welcome-survey.ts`/`survey-effects.ts`)
-  segue **Gated** (toca god file/onboarding)
+- Execução: Parcial — `entitlements` removido (PR #1). A parte `User_JourneyMap`
+  foi **reclassificada e absorvida pela consolidação do BUG-018** (T-03): descoberto
+  que `User_Journey` (v3, canônico) e `User_JourneyMap` (legado) são redundantes; o
+  plano passou de "só parar de escrever" para "consolidar no v3 + migrar clientes
+  antigos + apagar o legado". **Ação 1a mergeada (PR #22)** — welcome parou de
+  escrever o `User_JourneyMap`; migração (Ação 2) e limpeza do fallback (Ação 1b)
+  seguem sob o BUG-018. Ver `BUGS.md#bug-018`.
 - Resultado: Correção de uma suposição inicial registrada no processo:
   `src/types/entitlements.ts` **não** era órfão (hospeda `MemberQuota`/
   `MemberQuotaWallet`, usados por `quotas.ts`/`useJourney.ts`) — foi mantido; a

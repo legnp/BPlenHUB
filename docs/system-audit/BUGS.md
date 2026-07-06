@@ -349,7 +349,19 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   consumidor confirmado)
 - Cenário de falha: nenhum ativo — são sistemas paralelos sem uso real
   (débito técnico / código morto), mas continuam sendo escritos/mantidos.
-- Status: Em Progresso — `entitlements` removida (branch `fix/admin-server-side-guard`); `User_JourneyMap` pendente (gated)
+- Status: Em Progresso — `entitlements` removida (PR #1). `User_JourneyMap`:
+  **consolidação em curso** — descoberto que são **duas subcoleções redundantes de
+  jornada**: `User_Journey/progress` (v3, canônico, motor em `journey.ts`) e
+  `User_JourneyMap/progress` (legado, só escrito pelo welcome, só lido como fallback
+  no `admin-devolutiva`). Plano de consolidar no v3 e apagar o legado (aprovado pela
+  Gestora, 2026-07-04). **Ação 1a mergeada (PR #22)**: `welcome-survey.ts` parou de
+  escrever o `User_JourneyMap`. **Double-check de preservação feito**: o antigo
+  `capturedData` era desnormalização — `userType`/`nickname` têm fonte em
+  `User_Type`/`User_Nickname` (doc do User) e `origin`/`demand`/`topics` na resposta
+  crua do survey (`Surveys/welcome_survey.data`); nada se perde. **Pendente:** Ação 2
+  (migração um-a-um dos clientes atuais — garantir v3 + apagar `User_JourneyMap`) e
+  Ação 1b (remover o fallback legado do `admin-devolutiva` + nomenclatura obsoleta do
+  networking, via BUG-033).
 - Decisão de execução: **[2026-07-02 / F0-04]** Avaliação de impacto feita e
   executada em parte. **REMOVIDO**: `src/actions/entitlements.ts` (ação órfã) +
   tipos `UserEntitlement`/`EntitlementStatus` (zero uso externo). Correção da
@@ -358,7 +370,8 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   mantido; remoção cirúrgica. Validado por type-check + build. **Pendente/gated**:
   parar escrita de `User_JourneyMap` em `welcome-survey.ts`/`survey-effects.ts`
   (god file) = PR próprio com plano+aprovação. Ver `F0-DECISIONS.md#f0-04`.
-- Commit/PR: https://github.com/legnp/BPlenHUB/pull/1 (mergeado — remoção de `entitlements`); parte `User_JourneyMap` ainda aberta
+- Commit/PR: PR #1 (`entitlements` removido); **PR #22** (`671dc03` — Ação 1a: parar
+  de escrever `User_JourneyMap`). Ações 2 e 1b ainda abertas.
 
 ### BUG-019 `updateProfileImageAction`/`deleteProfileImageAction` sem qualquer guard — IDOR confirmado
 

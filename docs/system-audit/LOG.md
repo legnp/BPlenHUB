@@ -1324,3 +1324,33 @@ para embasar essas decisões estão todos disponíveis.
 - Nenhuma mudança de código nesta entrada (registro + investigação).
 - Itens atualizados: `BUGS.md` (+BUG-035), `00-PLAN.md` (índice +BUG-035, triagem
   por severidade +BUG-035, F1-06 pendências), `DASHBOARD.md` (+BUG-035), este LOG.
+
+---
+
+## [2026-07-04] Chat de execução — consolidação de jornada, Ação 1a (BUG-018) mergeada
+
+- Chat/sessão: mesmo chat de execução. A Gestora redefiniu o F0-04 como uma
+  **consolidação de duas subcoleções redundantes** de jornada.
+- Mapeamento (por leitura): `User_Journey/progress` (v3) é o canônico/vivo (motor
+  `journey.ts`, +`sync-tools`, +`admin-devolutiva` primário); `User_JourneyMap/
+  progress` é legado (só escrito pelo `welcome-survey`, só lido como fallback no
+  `admin-devolutiva`). Decisão: manter v3, aposentar o Map.
+- **Double-check de preservação (pedido da Gestora) — resultado: nada se perde.**
+  O `capturedData` do Map era desnormalização: `userType`→`User_Type` e
+  `nickname`→`User_Nickname` (doc do User); `origin`/`demand`(reason)/`topics`
+  (interests) ficam na resposta crua do survey (`submitSurvey` grava
+  `data: responses` em `User/{matricula}/Surveys/welcome_survey` antes dos
+  side-effects). userType/nickname também na resposta crua.
+- **Ação 1a (PR #22, `671dc03`):** `welcome-survey.ts` deixou de criar o
+  `User_JourneyMap`. Afeta só usuários novos (já recebem o v3 por lazy-write).
+  Validado: tsc/eslint/build limpos. Sem `--no-verify`.
+- **Faseamento restante** (sob BUG-018): Ação 2 = migração **um-a-um** dos clientes
+  atuais (garantir v3 + apagar `User_JourneyMap/progress`, com dry-run/backup);
+  Ação 1b = remover o fallback legado do `admin-devolutiva` + nomenclatura obsoleta
+  do networking (via BUG-033) — depois da migração, para não abrir janela vazia.
+- **F0-04 reclassificado**: a parte `User_JourneyMap` foi absorvida pela
+  consolidação do BUG-018 (T-03); não é mais "só parar de escrever".
+- Nuance registrada: apontar o networking pro v3 não é rename (query em massa não
+  lê subcoleção) — precisa desnormalizar o estágio no doc User; tratado no BUG-033.
+- Itens atualizados: `BUGS.md` (BUG-018), `00-PLAN.md` (F0-04), `DASHBOARD.md`
+  (T-03/BUG-018, data), este LOG.

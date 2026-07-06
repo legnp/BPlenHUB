@@ -12,7 +12,12 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-04 (chat de execução — F0-01 lote B mergeado, PR #21:
+> **Última atualização:** 2026-07-04 (chat de execução — BUG-018/consolidação de jornada
+> Ação 1a mergeada, PR #22: welcome parou de escrever o `User_JourneyMap` legado
+> (double-check: sem perda de dados). Migração dos clientes atuais + limpeza do fallback
+> pendentes. Antes: F0-01 lote B, PR #21).
+>
+> _(entrada anterior)_ 2026-07-04 (chat de execução — F0-01 lote B mergeado, PR #21:
 > offboarding no GlassModal + z-index do JourneyNav coordenados + acentos PT-BR do lote A
 > restaurados. **Parte GlassModal do F0-01 concluída** (todos os modais-card convergidos);
 > resta só o 2º base para modais grandes app-shell (BUG-034, futuro). T-02 FECHADO 12/12.
@@ -55,7 +60,7 @@ mergeados na `main` sobre o total do track.
 
 ### T-03 — Integridade de dados · **~0,5 / 4 (~13%)**  `█░░░░░░░░░`
 
-- ◐ Parcial: BUG-018 (`entitlements` removida; `User_JourneyMap` pendente)
+- ◐ Parcial: BUG-018 (`entitlements` removida; consolidação `User_Journey`(v3) vs `User_JourneyMap`(legado) em curso — Ação 1a mergeada PR #22 / welcome parou de escrever o legado; falta migração dos clientes atuais + limpeza do fallback)
 - ○ Abertos: BUG-008 (chave de cota), BUG-009 (`UserBooking.timestamp`), BUG-010 (`adminAddAttendee` duplicado)
 
 ### Outros tracks (ainda não iniciados)
