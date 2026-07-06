@@ -66,6 +66,11 @@ const matriculaArg = args.find(a => a.startsWith('--matricula='));
 const ONLY_MATRICULA = matriculaArg ? matriculaArg.split('=')[1] : null;
 const limitArg = args.find(a => a.startsWith('--limit='));
 const LIMIT = limitArg ? parseInt(limitArg.split('=')[1], 10) : null;
+// Por padrao, usuarios so-legado (sem v3) NAO sao apagados (protecao). Com esta
+// flag, eles TAMBEM sao apagados (sempre com backup). Seguro pois o capturedData
+// ja esta preservado (User_Type/User_Nickname + Surveys/welcome_survey.data) e
+// esses usuarios nunca progrediram na jornada (nao tinham v3).
+const INCLUDE_NO_V3 = args.includes('--include-sem-v3');
 
 const BACKUP_DIR = path.join(__dirname, '..', 'scratch', 'journeymap-backups');
 
@@ -122,11 +127,26 @@ async function run() {
     processed++;
 
     if (!hasV3) {
-      // So tem o legado, sem v3: NAO apagar (evita deixar o usuario sem nenhum doc
-      // de jornada). Reportar para revisao manual.
-      stats.only_legacy_flagged++;
-      onlyLegacy.push(matricula);
-      console.log(`[REVISAR] ${matricula}: tem User_JourneyMap MAS nao tem User_Journey (v3). NAO sera apagado. Faca o usuario acessar a jornada (lazy-write cria o v3) ou decida manualmente.`);
+      // So tem o legado, sem v3.
+      if (!INCLUDE_NO_V3) {
+        // Protecao padrao: nao apagar; reportar para revisao manual.
+        stats.only_legacy_flagged++;
+        onlyLegacy.push(matricula);
+        console.log(`[REVISAR] ${matricula}: tem User_JourneyMap MAS nao tem User_Journey (v3). NAO sera apagado (use --include-sem-v3 para incluir). Ou faca o usuario acessar a jornada (lazy-write cria o v3).`);
+        continue;
+      }
+      const legacyDocIdsNoV3 = legacySnap.docs.map(d => d.id);
+      if (!APPLY) {
+        stats.only_legacy_would_delete = (stats.only_legacy_would_delete || 0) + 1;
+        console.log(`[DRY-RUN sem-v3] ${matricula}: User_JourneyMap presente sem v3 (docs: ${legacyDocIdsNoV3.join(', ')}) -> SERIA apagado com backup (--include-sem-v3).`);
+        continue;
+      }
+      for (const d of legacySnap.docs) {
+        const file = backupDoc(matricula, d.id, d.data());
+        await d.ref.delete();
+        console.log(`[APAGADO sem-v3] ${matricula}/User_JourneyMap/${d.id} (backup: ${path.relative(path.join(__dirname, '..'), file)})`);
+      }
+      stats.only_legacy_deleted = (stats.only_legacy_deleted || 0) + 1;
       continue;
     }
 
@@ -150,7 +170,11 @@ async function run() {
   console.log('\n=== Resumo ===');
   console.log(`Usuarios avaliados: ${stats.total}`);
   console.log(`- Com v3 + legado (both): ${APPLY ? stats.both_deleted + ' apagados' : stats.both_skipped_dryrun + ' seriam apagados (dry-run)'}`);
-  console.log(`- So legado, sem v3 (REVISAR, nao apagados): ${stats.only_legacy_flagged}`);
+  if (INCLUDE_NO_V3) {
+    console.log(`- So legado, sem v3 (--include-sem-v3): ${APPLY ? (stats.only_legacy_deleted || 0) + ' apagados' : (stats.only_legacy_would_delete || 0) + ' seriam apagados (dry-run)'}`);
+  } else {
+    console.log(`- So legado, sem v3 (REVISAR, nao apagados): ${stats.only_legacy_flagged}`);
+  }
   console.log(`- So v3 (nada a fazer): ${stats.only_v3}`);
   console.log(`- Sem nenhum (nada a fazer): ${stats.neither}`);
   if (onlyLegacy.length) {
