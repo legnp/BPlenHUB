@@ -19,7 +19,6 @@ import { SocialSidebar } from "@/components/layout/SocialSidebar";
 import { LANDING_TOKENS } from "@/constants/landing-tokens";
 import { notFound } from "next/navigation";
 import { ComparisonTable } from "@/components/services/ComparisonTable";
-import { seedComparisonProductsAction } from "@/actions/seed-comparison-products";
 
 interface PageProps {
   params: Promise<{
@@ -236,11 +235,11 @@ export default async function SegmentedServicesPage({ params }: PageProps) {
                         </span>
                         {product.pricePix && product.pricePix < product.price ? (
                           <span className="block text-[9px] font-black text-[#ff0080] uppercase tracking-wider mt-0.5 opacity-90">
-                            {Math.round((1 - product.pricePix / product.price) * 100)}% de desconto a vista no PIX
+                            {Math.round((1 - product.pricePix / product.price) * 100)}% de desconto à vista no PIX
                           </span>
                         ) : (
                           <span className="block text-[9px] font-black text-[#ff0080] uppercase tracking-wider mt-0.5 opacity-90">
-                            Preco especial a vista
+                            Preço especial à vista
                           </span>
                         )}
                       </div>
