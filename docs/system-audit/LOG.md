@@ -1637,3 +1637,41 @@ para embasar essas decisões estão todos disponíveis.
 - Próximo: decisão da Gestora sobre a correção do BUG-035 (F1-06) e sobre a
   remoção da ação órfã (BUG-039); concluir a F1-01 (`/conteudo/artigo/[id]` +
   responsivo restante).
+
+---
+
+## [2026-07-07] Chat de execução — BUG-039 removido (PR #27) + F1-01 polish + refino do BUG-035
+
+- Chat/sessão: mesmo chat de execução. A Gestora aprovou: (1) seguir com a
+  correção do BUG-035 (recomendação); (2) double-check + remover a ação órfã
+  (BUG-039); (3) concluir a revisão das páginas públicas (F1-01).
+- **BUG-039 (removido, PR #27, `6681689`):** double-check pedido pela Gestora feito
+  antes de apagar — `git grep` no repo inteiro (fora `docs/` e o próprio arquivo)
+  = **zero referências** ao módulo/função. Removido `seed-comparison-products.ts`.
+  Validado: tsc limpo, build exit 0. Branch `chore/f1-01-cleanup` deletada.
+- **F1-01 polish:** validadas por leitura de código (build confirma render) as
+  páginas restantes — `/conteudo/artigo/[id]` (artigo, tema claro, copy ok) e
+  `/profissionais/[slug]` (SSG, lê config `PROFISSIONAIS`) — **sem achados novos**.
+  A reconferência ao vivo dessas duas + responsivo tablet ficou bloqueada pela
+  **instabilidade do preview local** (proxy/compilação lentos, navegação revertia
+  para `/`) — não é defeito de página; fica p/ passada final de baixo risco.
+- **BUG-035 — PAROU antes de codar (Lição 3, exemplo real):** a Gestora aprovou o
+  fix, mas a investigação da estrutura da área logada ANTES de codar mostrou que
+  o gate ingênuo quebraria receita/onboarding:
+  - `hub/layout.tsx` (todo `/hub/*`) barraria a **welcome survey** do lead novo.
+  - `/hub/membro/*` barraria o **funil**: `MatriculaGuard` manda o 1º comprador
+    para `/hub/membro/checkout/${slug}` **sem** `member_area_access` (concedido só
+    na compra, `checkout.ts:125`); e o **junior grátis** vai para `/hub/membro/
+    journey/*` também sem o entitlement.
+  - subpáginas de membro (journey/carreira/agenda/contratos) hoje nem gateiam.
+  Logo, **onde cravar a fronteira do "membro pago" é decisão de produto** — não dá
+  para codar às cegas sem quebrar funil/onboarding. Registrado o refino + 3 opções
+  no `BUGS.md#bug-035`; aguardando a decisão da Gestora sobre a fronteira. Este é
+  o padrão da Lição 3 (validar premissa antes de implementar em área sensível)
+  evitando um refactor errado num fluxo de receita.
+- Itens atualizados: `BUGS.md` (BUG-039 → Corrigido PR #27; BUG-035 refino +
+  opções), `00-PLAN.md` (F1-01 Execução/bugs, índice BUG-039), `DASHBOARD.md`
+  (BUG-039 corrigido, BUG-035 refino), este LOG.
+- Próximo: **decisão da Gestora sobre a fronteira do BUG-035** (3 opções no
+  `BUGS.md`); passada final de reconferência ao vivo da F1-01 quando o preview
+  local estabilizar (ou em produção).

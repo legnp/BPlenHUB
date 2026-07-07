@@ -958,14 +958,38 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Status: Aberto — **[CONFIRMADO]**, causa-raiz mapeada; correção **gated**
   (plano+aprovação da Gestora antes de codar — identidade/sessão + controle de
   acesso).
+- **Refino da correção (2026-07-07, investigação da estrutura antes de codar —
+  Lição 3):** a Gestora aprovou "enforçar no `hub/layout.tsx`", mas a leitura da
+  estrutura da área logada mostrou que **nenhuma fronteira única serve** — o
+  enforcement ingênuo quebraria fluxos de receita/onboarding:
+  - Gatear `hub/layout.tsx` (todo o `/hub/*`) barra **onboarding**: o lead novo
+    faz a welcome survey em `/hub` **sem** `member_area_access` ainda.
+  - Gatear a subárvore `/hub/membro/*` (via layout) barra o **funil de aquisição**:
+    o `MatriculaGuard` da página pública manda o 1º comprador para
+    `/hub/membro/checkout/${slug}` **sem** `member_area_access` (o entitlement é
+    **concedido pela compra**, `checkout.ts:125` — mesma circularidade do BUG-005);
+    e o plano **junior (grátis)** vai direto para `/hub/membro/journey/
+    posicionamento-profissional` também sem o entitlement.
+  - Confirmado que `member_area_access` só é **escrito** em `checkout.ts:125` (compra
+    paga). Free junior e 1ª compra passam por `/hub/membro/*` de propósito, sem ele.
+  - Os subpáginas de membro (journey/carreira/agenda/contratos) hoje **não gateiam**
+    `member_area_access` — só a página índice `/hub/membro` (com bypass `isAdmin ||`).
+  Conclusão: **onde exatamente cravar a fronteira do "membro pago" é decisão de
+  produto** (ex.: junior grátis conta como membro? conceder `member_area_access`
+  na entrada do junior e então gatear a área de membro exceto checkout?). Codar às
+  cegas quebraria funil/onboarding — parado antes de codar, aguardando a decisão da
+  Gestora sobre a fronteira. (Exemplo do valor de validar antes de implementar,
+  Lição 3.)
 - Decisão de execução: Precisa plano+aprovação (identidade/sessão + controle de
-  acesso — área sensível). Opções de correção propostas (aguardando escolha da
-  Gestora), ver `LOG.md` 2026-07-07: (1) enforçar `member_area_access` no
-  `hub/layout.tsx` (fecha o hub inteiro de uma vez, via o guard já pronto
-  `requireMemberAccess`) — decidir se admin herda; (2) decidir o comportamento do
-  bypass `isAdmin ||` (manter para admin testar vs. remover); (3) opcional:
-  ejeção em tempo real no client quando `services.member_area_access` cai (reagir
-  ao `onSnapshot`).
+  acesso — área sensível) **e** decisão de produto sobre a fronteira do membro
+  pago (ver refino acima). Opções em aberto para a Gestora: (1) conceder
+  `member_area_access` também no junior grátis e então gatear a área de membro
+  (dashboard + journey + carreira + agenda + contratos) **exceto** `checkout/*`;
+  (2) gatear só as páginas claramente pós-membro (dashboard/carreira/agenda/
+  contratos), deixando journey e checkout abertos; (3) outra fronteira que a
+  Gestora definir. Em todos: admin não herda (auto-libera para testar); remover o
+  bypass `isAdmin ||` do índice por consistência; ejeção em tempo real fica como
+  follow-up opcional.
 - Commit/PR: —
 
 ### BUG-036 Erro de hidratação no `ComparisonTable` (whitespace dentro de `<colgroup>`)
@@ -1050,12 +1074,14 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   mutação de dados financeiro-adjacente sem guard — não deveria ficar no
   repositório. A remoção não foi feita junto do BUG-014 por ser
   financeiro-adjacente (produtos/preços) — decisão da Gestora.
-- Status: Aberto — recomendação: remover o arquivo (dead code confirmado). Requer
-  ok da Gestora por tocar dados de produto/preço, mesmo sendo dead code.
-- Decisão de execução: Precisa ok da Gestora (financeiro-adjacente), apesar de ser
-  remoção de código morto sem callers. Se aprovado, remover o arquivo + validar
-  tsc/build.
-- Commit/PR: —
+- Status: **Corrigido** — 2026-07-07. Arquivo `src/actions/seed-comparison-products.ts`
+  removido. Double-check pedido pela Gestora feito antes de apagar: `git grep` no
+  repo inteiro (fora `docs/` e o próprio arquivo) confirmou **zero referências**
+  (nenhum import do módulo, nenhuma chamada, nenhum uso em página/componente/API/
+  script/config). Ausência do arquivo não impacta nada.
+- Decisão de execução: OK da Gestora (financeiro-adjacente) após double-check.
+  Removido + validado por tsc + build (ambos exit 0).
+- Commit/PR: **mergeado** — PR #27 (`6681689`, squash).
 
 ---
 

@@ -424,11 +424,14 @@ sem copy hardcoded fora do que o guia permitir).
 - Critério de aceite: ver critério comum acima
 - Modo de validação: **Automatizado** (páginas públicas — validáveis no preview)
 - Decisão: —
-- Execução: **Em andamento** — 1ª leva de correções mergeada (PR #26). Validadas ao
-  vivo no preview: `/` (home), `/servicos`, `/servicos/pessoas` (com `ComparisonTable`),
-  `/conteudo`; leitura de código de `/servicos/[audience]/[slug]` (detalhe) e
-  `/profissionais/[slug]`. Restam: `/conteudo/artigo/[id]` (conferência ao vivo),
-  responsivo mobile/tablet das demais, e a pendência de conferência visual abaixo.
+- Execução: **Em andamento** — 2 PRs mergeados (PR #26 correções + PR #27 limpeza
+  BUG-039). Validadas ao vivo no preview: `/` (home, incl. mobile), `/servicos`,
+  `/servicos/pessoas` (com `ComparisonTable`), `/conteudo`. Validadas por leitura de
+  código (build confirma render): `/servicos/[audience]/[slug]` (detalhe +
+  `MatriculaGuard`), `/profissionais/[slug]` (SSG), `/conteudo/artigo/[id]` — sem
+  achados novos. Pendente (bloqueado pela instabilidade do preview local, não por
+  defeito): reconferência ao vivo de `/profissionais/[slug]` e `/conteudo/artigo/[id]`
+  + responsivo tablet das internas — de baixo risco, pode fechar numa passada final.
 - Resultado: renderização sem erro nas páginas validadas (após o fix do BUG-036,
   console limpo do erro de hidratação). Achados corrigidos: **BUG-036** (hidratação
   no `ComparisonTable`), **BUG-037** (acentos/crase), **BUG-014** (import morto) —
@@ -437,7 +440,7 @@ sem copy hardcoded fora do que o guia permitir).
   remoção gated). Copy geral das páginas conferida contra o guia F0-06 (tom
   formal-acolhedor, títulos em caixa alta) — conforme.
 - Bug(s) vinculado(s): BUG-014 (Corrigido, PR #26), BUG-036 (Corrigido, PR #26),
-  BUG-037 (Corrigido, PR #26), BUG-038 (Aberto/adiado), BUG-039 (Aberto/gated)
+  BUG-037 (Corrigido, PR #26), BUG-038 (Aberto/adiado), BUG-039 (Corrigido, PR #27)
 - Pendência de validação acumulada: `WelcomeRedirectModal` (F0-01 lote A, via
   `MatriculaGuard` em `/servicos/[audience]/[slug]`) foi recolorido de branco
   fixo para vars de tema — conferência visual nos temas claros pendente em
@@ -849,7 +852,7 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-036 | Médio | Corrigido (PR #26) | F1-01 — erro de hidratação no `ComparisonTable` (whitespace em `<colgroup>`), verificado ao vivo |
 | BUG-037 | Baixo | Corrigido (PR #26) | F1-01 — acentos/crase em copy de serviços |
 | BUG-038 | Baixo | Aberto (adiado) | F1-01/T-01 — `<Image fill>` sem `sizes` na foto da fundadora (perf) |
-| BUG-039 | Baixo | Aberto | F1-01 — `seedComparisonProductsAction` órfã (grava produtos sem guard); remoção gated (financeiro-adjacente) |
+| BUG-039 | Baixo | Corrigido (PR #27) | F1-01 — `seedComparisonProductsAction` órfã removida (double-check: zero refs) |
 
 ---
 

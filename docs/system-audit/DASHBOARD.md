@@ -95,11 +95,11 @@ _Nenhuma no momento._
 - **BUG-032** (Crítico, **corrigido** PR #14) — escalação de privilégio: `syncUserPermissionsOnLogin` concedia admin a partir de e-mail não-verificado (achado no lote 7 do BUG-020)
 - **BUG-033** (Médio, **[HIPÓTESE]**, aberto) — networking envia contatos/URLs não-visíveis ao client (a verificar na Fase 1 / F1-05)
 - **BUG-034** (Baixo, aberto/futuro) — falta 2º componente-base para modais grandes "app-shell" (F0-01, opção iii)
-- **BUG-035** (Alto, **[CONFIRMADO]**, aberto) — revogação de acesso de membro via admin não surte efeito; causa-raiz confirmada por leitura (F1-06): enforcement de `member_area_access` só em `/hub/membro` + bypass `isAdmin ||`; `hub/layout.tsx` não checa entitlement. Correção gated. Bloqueia validação visual do offboarding modal (F1-03)
+- **BUG-035** (Alto, **[CONFIRMADO]**, aberto) — revogação de acesso de membro via admin não surte efeito; causa-raiz confirmada (F1-06). **Correção parada antes de codar** (Lição 3): gate ingênuo quebraria funil de aquisição (1ª compra passa por `/hub/membro/checkout` sem `member_area_access`) e onboarding (welcome survey em `/hub`) e junior grátis (journey sem o entitlement). Fronteira do "membro pago" = **decisão de produto** aguardando a Gestora. Bloqueia validação visual do offboarding modal (F1-03)
 - **BUG-036** (Médio, **corrigido** PR #26) — erro de hidratação no `ComparisonTable` (whitespace em `<colgroup>`) em `/servicos/[audience]`; F1-01
 - **BUG-037** (Baixo, **corrigido** PR #26) — acentos/crase em copy pública de serviços; F1-01
 - **BUG-038** (Baixo, aberto/adiado) — `<Image fill>` sem `sizes` na foto da fundadora (perf); F1-01/T-01
-- **BUG-039** (Baixo, aberto/gated) — `seedComparisonProductsAction` órfã grava produtos sem guard; remoção gated (financeiro-adjacente); F1-01
+- **BUG-039** (Baixo, **corrigido** PR #27) — `seedComparisonProductsAction` órfã removida (double-check: zero refs no repo); F1-01
 
 ---
 
