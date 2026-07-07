@@ -291,9 +291,11 @@ evita "consertar" uma página para um padrão que será mudado depois.
   foi **reclassificada e absorvida pela consolidação do BUG-018** (T-03): descoberto
   que `User_Journey` (v3, canônico) e `User_JourneyMap` (legado) são redundantes; o
   plano passou de "só parar de escrever" para "consolidar no v3 + migrar clientes
-  antigos + apagar o legado". **Ação 1a mergeada (PR #22)** — welcome parou de
-  escrever o `User_JourneyMap`; migração (Ação 2) e limpeza do fallback (Ação 1b)
-  seguem sob o BUG-018. Ver `BUGS.md#bug-018`.
+  antigos + apagar o legado". **Concluído (BUG-018):** Ação 1a (parar de escrever,
+  PR #22) + Ação 2 (migração dos 5 clientes atuais — script PRs #23/#24, executada)
+  + Ação 1b (remover fallback do `admin-devolutiva`, PR #25). Consolidação completa
+  no código; só resta a nomenclatura obsoleta do networking (BUG-033, Fase 1). Ver
+  `BUGS.md#bug-018`.
 - Resultado: Correção de uma suposição inicial registrada no processo:
   `src/types/entitlements.ts` **não** era órfão (hospeda `MemberQuota`/
   `MemberQuotaWallet`, usados por `quotas.ts`/`useJourney.ts`) — foi mantido; a
@@ -718,7 +720,7 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-015 | Baixo | Aberto | F1-03, F2-01 |
 | BUG-016 | Médio | Aberto | F1-05 |
 | BUG-017 | Médio | Aberto | T-01 |
-| BUG-018 | Baixo | Em Progresso (parcial) | F0-04, T-03 |
+| BUG-018 | Baixo | Corrigido (PRs #1/#22/#23/#24/#25) | F0-04, T-03 — consolidação de jornada concluída |
 | BUG-019 | Alto | Corrigido (PR #4) | T-02 |
 | BUG-020 | Alto | Corrigido (7 lotes: PR #8/#9/#10/#11/#12/#13/#14) | T-02 |
 | BUG-021 | Baixo | Corrigido (PR #13) | T-02 |

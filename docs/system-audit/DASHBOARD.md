@@ -12,10 +12,10 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-04 (chat de execução — BUG-018/consolidação de jornada
-> Ação 1a mergeada, PR #22: welcome parou de escrever o `User_JourneyMap` legado
-> (double-check: sem perda de dados). Migração dos clientes atuais + limpeza do fallback
-> pendentes. Antes: F0-01 lote B, PR #21).
+> **Última atualização:** 2026-07-04 (chat de execução — **BUG-018 FECHADO**:
+> consolidação de jornada completa — parar de escrever (PR #22), migração dos 5
+> clientes atuais executada (scripts PRs #23/#24) e fallback removido (PR #25).
+> Sem perda de dados. T-03 sobe para ~1,5/4. Resíduo networking no BUG-033).
 >
 > _(entrada anterior)_ 2026-07-04 (chat de execução — F0-01 lote B mergeado, PR #21:
 > offboarding no GlassModal + z-index do JourneyNav coordenados + acentos PT-BR do lote A
@@ -58,9 +58,9 @@ mergeados na `main` sobre o total do track.
 - ✓ Mergeados: BUG-023
 - ○ Abertos: BUG-001 (`Support_Tickets` com PII em coleção raiz)
 
-### T-03 — Integridade de dados · **~0,5 / 4 (~13%)**  `█░░░░░░░░░`
+### T-03 — Integridade de dados · **~1,5 / 4 (~38%)**  `████░░░░░░`
 
-- ◐ Parcial: BUG-018 (`entitlements` removida; consolidação `User_Journey`(v3) vs `User_JourneyMap`(legado) em curso — Ação 1a mergeada PR #22 / welcome parou de escrever o legado; falta migração dos clientes atuais + limpeza do fallback)
+- ✓ BUG-018 **Corrigido** — `entitlements` removida + consolidação de jornada completa: `User_Journey`(v3) mantido, `User_JourneyMap`(legado) parou de ser escrito (PR #22), migrado dos 5 clientes atuais (script PRs #23/#24, executado) e fallback removido (PR #25). Resíduo (networking) segue no BUG-033.
 - ○ Abertos: BUG-008 (chave de cota), BUG-009 (`UserBooking.timestamp`), BUG-010 (`adminAddAttendee` duplicado)
 
 ### Outros tracks (ainda não iniciados)

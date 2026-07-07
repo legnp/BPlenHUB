@@ -1410,3 +1410,22 @@ para embasar essas decisões estão todos disponíveis.
   do networking (BUG-033).
 - Itens atualizados: `BUGS.md` (BUG-018 — Ação 2 executada), este LOG. Script: PRs
   #23 (base) e #24 (flag `--include-sem-v3`).
+
+---
+
+## [2026-07-04] Chat de execução — Ação 1b + BUG-018 FECHADO
+
+- Chat/sessão: mesmo chat de execução.
+- **Ação 1b (PR #25):** removido o fallback morto do `User_JourneyMap` no
+  `admin-devolutiva.ts` (agora que a coleção legada não existe mais em nenhum
+  cliente). Passa a usar só o v3; sem v3, `journeyData` fica null (v3 recriado por
+  lazy-write). Validado tsc/eslint/build.
+- **BUG-018 FECHADO:** as duas coleções órfãs tratadas — `entitlements` (PR #1) e
+  `User_JourneyMap` consolidado no v3 (1a PR #22 + Ação 2 migração PRs #23/#24
+  executada + 1b PR #25). T-03 sobe para ~1,5/4.
+- Resíduo registrado no **BUG-033** (Fase 1): o networking lê
+  `d.User_JourneyMap.current_stage` (campo inexistente + coleção agora deletada) →
+  estágio sempre "onboarding"; fix exige desnormalizar o estágio do v3 num campo do
+  doc User.
+- Itens atualizados: `BUGS.md` (BUG-018 → Corrigido; BUG-033 nota do stage-read),
+  `00-PLAN.md` (índice BUG-018, F0-04), `DASHBOARD.md` (T-03 ~1,5/4, data), este LOG.

@@ -349,9 +349,12 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   consumidor confirmado)
 - Cenário de falha: nenhum ativo — são sistemas paralelos sem uso real
   (débito técnico / código morto), mas continuam sendo escritos/mantidos.
-- Status: Em Progresso — `entitlements` removida (PR #1). `User_JourneyMap`:
-  **consolidação em curso** — descoberto que são **duas subcoleções redundantes de
-  jornada**: `User_Journey/progress` (v3, canônico, motor em `journey.ts`) e
+- Status: **Corrigido** — `entitlements` removida (PR #1) e `User_JourneyMap`
+  consolidado no v3 e removido de todos os clientes (Ações 1a/2/1b). Resíduo único:
+  a referência obsoleta do networking a um campo `User_JourneyMap` inexistente —
+  rastreada à parte no **BUG-033** (Fase 1). Detalhe:
+  **consolidação concluída** — duas subcoleções redundantes de
+  jornada: `User_Journey/progress` (v3, canônico, motor em `journey.ts`) e
   `User_JourneyMap/progress` (legado, só escrito pelo welcome, só lido como fallback
   no `admin-devolutiva`). Plano de consolidar no v3 e apagar o legado (aprovado pela
   Gestora, 2026-07-04). **Ação 1a mergeada (PR #22)**: `welcome-survey.ts` parou de
@@ -366,9 +369,10 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   `scratch/journeymap-backups/` antes de apagar. Dry-run final confirma **0
   `User_JourneyMap` restante**. Sem perda de dados (capturedData preservado em
   `User_Type`/`User_Nickname` + `Surveys/welcome_survey.data`, e nos backups).
-  **Pendente só a Ação 1b** (agora desbloqueada/segura, pois não há mais legado):
-  remover o fallback morto do `admin-devolutiva` + nomenclatura obsoleta do
-  networking (via BUG-033, que exige desnormalizar o estágio no doc User).
+  **Ação 1b concluída (PR #25):** fallback morto do `User_JourneyMap` removido do
+  `admin-devolutiva` (passa a usar só o v3). Consolidação completa no código; só
+  resta a nomenclatura obsoleta do networking, que segue no **BUG-033** (exige
+  desnormalizar o estágio no doc User).
 - Decisão de execução: **[2026-07-02 / F0-04]** Avaliação de impacto feita e
   executada em parte. **REMOVIDO**: `src/actions/entitlements.ts` (ação órfã) +
   tipos `UserEntitlement`/`EntitlementStatus` (zero uso externo). Correção da
@@ -377,8 +381,9 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   mantido; remoção cirúrgica. Validado por type-check + build. **Pendente/gated**:
   parar escrita de `User_JourneyMap` em `welcome-survey.ts`/`survey-effects.ts`
   (god file) = PR próprio com plano+aprovação. Ver `F0-DECISIONS.md#f0-04`.
-- Commit/PR: PR #1 (`entitlements` removido); **PR #22** (`671dc03` — Ação 1a: parar
-  de escrever `User_JourneyMap`). Ações 2 e 1b ainda abertas.
+- Commit/PR: PR #1 (`entitlements`); **PR #22** (Ação 1a: parar de escrever);
+  **PRs #23/#24** (Ação 2: script de migração + flag); **PR #25** (`adda6e9` — Ação
+  1b: remover fallback). Migração executada em 2026-07-04. BUG-018 fechado.
 
 ### BUG-019 `updateProfileImageAction`/`deleteProfileImageAction` sem qualquer guard — IDOR confirmado
 
@@ -874,6 +879,12 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   confirmado, valores que o dono escolheu **esconder** trafegam para o browser de
   outros membros, contrariando o controle do dono (que é o cerne da feature de
   networking). Não confirmado no componente de render ainda.
+- Item relacionado (mesma action, tratar junto na F1-05): o `getNetworkingDataAction`
+  lê `d.User_JourneyMap?.current_stage` para o `journeyStageId` — mas `User_JourneyMap`
+  é (a) um campo inexistente no doc User e (b) uma coleção agora **deletada** (BUG-018).
+  Logo o filtro de estágio cai **sempre** em "onboarding". Fix: desnormalizar o
+  estágio do v3 (`User_Journey`) num campo do doc User (o networking é query em massa
+  e não lê subcoleção) e apontar o read para ele.
 - Status: Aberto — **[HIPÓTESE]**, verificar na Fase 1 (F1-05). Se confirmado, o
   fix provável é filtrar server-side no `getNetworkingDataAction` (não enviar
   `value`/URL quando `visible === false`), preservando as flags para o próprio dono.
