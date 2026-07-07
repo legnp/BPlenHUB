@@ -94,6 +94,15 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
     BUG-034.)_ A decisão "um modal-base único" precisou virar "dois bases: card +
     app-shell".
 
+13. **Contagem fracionária de Track só vale enquanto o bug está `Em Progresso` —
+    um bug `Corrigido` conta como unidade inteira, nunca fração.** O precedente
+    correto (BUG-020/T-02, ex.: `~5,5/11` → `~5,7/11` → ...) existia só porque o
+    bug ainda não tinha fechado. Ao fechar de fato, ele soma 1 inteiro ao
+    numerador — nunca "meio ponto a mais" por progresso incremental já
+    encerrado. _(Caso real: BUG-018/T-03 fechou por completo (Ações 1a+2+1b) e
+    o `DASHBOARD.md` foi atualizado para `~1,5/4`, quando o correto era `1/4`
+    exato — erro pego só na reconciliação seguinte, 2026-07-07.)_
+
 ## Melhorias sugeridas para o PLANO (para o chat de planejamento refinar)
 
 1. **Rollup de progresso nativo.** O plano rastreava itens/bugs mas não tinha
@@ -139,3 +148,7 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
 ## Registro de revisões deste documento
 
 - 2026-07-03 — criação, a partir da sessão Fase 0 + início do T-02.
+- 2026-07-04 — Lições 11 (acentos PT-BR) e 12 (GlassModal não é base universal)
+  adicionadas, a partir do F0-01 lote A/B.
+- 2026-07-07 — Lição 13 (contagem fracionária só vale para bug `Em Progresso`)
+  adicionada, a partir do erro de % do T-03 pego na reconciliação desta data.

@@ -11,7 +11,10 @@ Populado pelo chat de planejamento a partir dos 5 mapas (`01` a `05`). **Status
 de cobertura dos mapas**: os 5 mapas estão **completos**. **Status de execução**:
 a **Fase 0 está completa** (6/6 itens decididos; `F0-01` com a **parte GlassModal
 concluída** — lotes 1/A/B mergeados, PRs #15/#20/#21; resta só um 2º componente-base
-para modais grandes app-shell, `BUG-034`, futuro; e `F0-04` parcial; ver `DASHBOARD.md`) e a Track **T-02 (Segurança sistemática) está FECHADA — 12/12 (100%)**
+para modais grandes app-shell, `BUG-034`, futuro; e `F0-04` **concluído**
+— entitlements removida + `User_JourneyMap` consolidado no v3, PRs
+#1/#22/#23/#24/#25; resíduo de nomenclatura tratado à parte no `BUG-033`,
+Fase 1; ver `DASHBOARD.md`) e a Track **T-02 (Segurança sistemática) está FECHADA — 12/12 (100%)**
 — o item sistêmico `BUG-020` foi fechado em 7 lotes (PRs #8–#14), junto de
 `BUG-021` e de um Crítico novo achado no processo (`BUG-032`, escalação de
 privilégio), ambos corrigidos; `BUG-025` (webhook Mercado Pago com assinatura
@@ -47,6 +50,45 @@ Decisão do T-02 (linguagem "emergindo" desatualizada — o padrão de guard est
 consolidado, não mais em formação). Incorporadas as Lições 9 e 10 do
 `RETROSPECTIVE.md` (primitivo de infraestrutura/recursão; lote trivial pode
 esconder Crítico) como novos itens 8-9 do Protocolo.
+
+**Reconciliação desta sessão** (chat de planejamento, 2026-07-07, ver entrada
+correspondente no `LOG.md`): checagem cruzada bug a bug (todos os 35
+registrados) entre `00-PLAN.md`/`BUGS.md`/`DASHBOARD.md`/índice bug→track, mais
+verificação de que a Triagem por severidade não escondia nenhum Crítico/Alto
+vivo (confirmado: só os 4 Altos já listados — `BUG-001/008/010/035` — seguem
+abertos, nenhum Crítico). Achados corrigidos:
+1. **% do T-03 estava errada nos dois agregadores**, em direções opostas —
+   `~0,5/4` aqui, `~1,5/4 (~38%)` no `DASHBOARD.md`. O `BUG-018` fechou por
+   completo (Ações 1a+2+1b), e o critério de fechamento de Track conta um bug
+   `Corrigido` como **unidade inteira**, nunca fração — a contagem fracionária
+   só vale enquanto o bug está `Em Progresso` (uso correto foi o `BUG-020`/T-02
+   antes de fechar). Corrigido para o valor exato: **1/4 (25%)**.
+2. **`F0-04` estava com Execução desatualizada** ("Parcial") em ambos os
+   documentos — as duas partes do item (`entitlements` removida + consolidação/
+   parada de escrita do `User_JourneyMap`) estão concluídas desde o fechamento
+   do `BUG-018`; o resíduo de nomenclatura no networking (`BUG-033`) é achado
+   colateral separado, rastreado na Fase 1, não parte pendente do F0-04.
+   Atualizado para "Concluída".
+3. **Linha do `BUG-026` no índice bug→track** dizia "Aberto"; `BUGS.md` (fonte
+   de verdade) já registrava "Em Progresso" desde o lote B do F0-01. Corrigida.
+4. **2 lições novas do `RETROSPECTIVE.md`** (11 — nunca remover acentos PT-BR
+   de copy; 12 — verificar encaixe estrutural antes de generalizar um
+   componente-base) incorporadas como itens 11-12 do Protocolo.
+5. **Entrada da Fase 1 deixada crisp por página** (pedido explícito do Gestor,
+   mesma sessão): confirmado por leitura direta (`grep` de cada componente de
+   modal + seu importador) onde os 5 modais-card do F0-01 (lotes A/B)
+   realmente renderizam — nenhum é página admin, ao contrário do que o `F1-06`
+   registrava. Redistribuído: `WelcomeRedirectModal` → `F1-01` (via
+   `MatriculaGuard` em `/servicos/[audience]/[slug]`); `SequenceLockModal`/
+   `UpsellServiceModal`/`NonMemberOffboardingModal` → `F1-03` (via
+   `JourneyNav`/`SubStepRail`); `CouponTermsModal` → `F1-05` (via
+   `CouponInput`/`CheckoutFlow` em `/hub/membro/checkout/[slug]`). `F1-06`
+   mantém só a pendência que é de fato dele — causa-raiz do `BUG-035` — com
+   nota cruzada de que ela bloqueia a validação do offboarding modal em
+   `F1-03`. Também achado e corrigido: **`BUG-033` estava vinculado a `F1-05`
+   no índice bug→track, mas ausente do campo "Bug(s) vinculado(s)" do próprio
+   item `F1-05`** — checagem cruzada anterior tinha auditado o índice, não o
+   campo de cada item da Fase 1 contra ele.
 
 ---
 
@@ -118,6 +160,22 @@ esconder Crítico) como novos itens 8-9 do Protocolo.
     urgência de um Crítico/Alto, não por escopo). Todo achado, mesmo adiado para
     sua fase, é registrado em `BUGS.md` já vinculado ao item/fase (Diretriz da
     Gestora, 2026-07-04).
+11. **Nunca remova acentos PT-BR de texto de interface ao editar/reescrever
+    copy.** A regra do `CLAUDE.md` é "Zero Emoji", não "zero acento" — acentos
+    (ã, ç, é, ...) são copy correto e esperado em português; removê-los é
+    regressão, não limpeza. ASCII só é apropriado em comentários de código,
+    rotas/slugs e chaves/identificadores — nunca em strings visíveis. Caso
+    real: `F0-01` lote A removeu acentos de 4 modais por engano ao reescrevê-
+    los, corrigido no lote B (Lição 11 do `RETROSPECTIVE.md`).
+12. **Antes de generalizar um componente-base único para todos os casos,
+    verifique se a estrutura de cada candidato realmente cabe.** Nem todo caso
+    que "parece" similar serve ao mesmo padrão — universo diferente (público
+    vs. logado), criticidade especial (gate não-dismissível), ou estrutura
+    física diferente (modal-card vs. app-shell com header/footer fixos) podem
+    exigir exceções documentadas ou um 2º padrão-base, em vez de forçar tudo
+    num só. Caso real: `F0-01` — a decisão "GlassModal único" precisou virar
+    "GlassModal (card) + 2º base (app-shell, `BUG-034`) + exceções aceitas"
+    (Lição 12 do `RETROSPECTIVE.md`).
 
 ---
 
@@ -173,7 +231,7 @@ ativa furando a ordem das fases.
 
 | Bug | Severidade | Onde se conecta | Por que ainda não fechou |
 |---|---|---|---|
-| BUG-035 | Alto | F1-06 | **[HIPÓTESE]** revogação de acesso de membro via admin não surte efeito; investigar causa-raiz na Fase 1 (identidade/sessão) |
+| BUG-035 | Alto | F1-06 | **[CONFIRMADO por leitura, 2026-07-07]** causa-raiz = enforcement de `member_area_access` num único ponto (`/hub/membro`, com bypass `isAdmin ||`); o `hub/layout.tsx` só autentica → revogar não expulsa do hub. Correção gated (plano+aprovação) |
 | BUG-010 | Alto | T-03 | **[HIPÓTESE]** precisa confirmar se a implementação duplicada em `post-event.ts` é código morto antes de decidir remoção |
 | BUG-008 | Alto | F2-04, T-03 | Requer plano+aprovação (toca fluxo financeiro/cotas) |
 | BUG-001 | Alto | T-06 | Requer plano+aprovação (dado sensível/PII, regra explícita do `CLAUDE.md`) |
@@ -287,15 +345,17 @@ evita "consertar" uma página para um padrão que será mudado depois.
 - Modo de validação: Automatizado (decisão documental; parada de escrita de `User_JourneyMap` toca onboarding/god file — implementação gated)
 - Decisão: Decidida — ambas são legado sem propósito ativo; `entitlements`
   removida, `User_JourneyMap` deixa de ser escrita quando o PR gated for feito
-- Execução: Parcial — `entitlements` removido (PR #1). A parte `User_JourneyMap`
+- Execução: **Concluída** — mergeada em PR #1 (`entitlements`) + PRs #22/#23/#24/#25
+  (`User_JourneyMap`). *(Corrigido nesta sessão de reconciliação — estava "Parcial",
+  defasado desde o fechamento do BUG-018.)* A parte `User_JourneyMap`
   foi **reclassificada e absorvida pela consolidação do BUG-018** (T-03): descoberto
   que `User_Journey` (v3, canônico) e `User_JourneyMap` (legado) são redundantes; o
   plano passou de "só parar de escrever" para "consolidar no v3 + migrar clientes
   antigos + apagar o legado". **Concluído (BUG-018):** Ação 1a (parar de escrever,
   PR #22) + Ação 2 (migração dos 5 clientes atuais — script PRs #23/#24, executada)
   + Ação 1b (remover fallback do `admin-devolutiva`, PR #25). Consolidação completa
-  no código; só resta a nomenclatura obsoleta do networking (BUG-033, Fase 1). Ver
-  `BUGS.md#bug-018`.
+  no código; só resta a nomenclatura obsoleta do networking (`BUG-033`, Fase 1 —
+  achado colateral separado, não pendência deste item). Ver `BUGS.md#bug-018`.
 - Resultado: Correção de uma suposição inicial registrada no processo:
   `src/types/entitlements.ts` **não** era órfão (hospeda `MemberQuota`/
   `MemberQuotaWallet`, usados por `quotas.ts`/`useJourney.ts`) — foi mantido; a
@@ -367,6 +427,11 @@ sem copy hardcoded fora do que o guia permitir).
 - Execução: Não iniciada
 - Resultado: —
 - Bug(s) vinculado(s): BUG-014 (a confirmar/limpar durante esta validação)
+- Pendência de validação acumulada: `WelcomeRedirectModal` (F0-01 lote A, via
+  `MatriculaGuard` em `/servicos/[audience]/[slug]`) foi recolorido de branco
+  fixo para vars de tema — conferência visual nos temas claros pendente em
+  produção (o modal só aparece na tentativa de compra sem matrícula; confirmar
+  no fluxo real, não só por leitura de código).
 - Log: —
 
 ### [F1-02] Fluxo de checkout público e contrato retroativo
@@ -392,6 +457,15 @@ sem copy hardcoded fora do que o guia permitir).
 - Execução: Não iniciada
 - Resultado: —
 - Bug(s) vinculado(s): BUG-015
+- Pendências de validação acumuladas: (a) `SequenceLockModal`/`UpsellServiceModal`
+  (F0-01 lote A, via `JourneyNav`/`SubStepRail` em `hub/membro/journey/*` e
+  `hub/step-journey`) recoloridos para vars de tema — conferência visual nos
+  temas claros pendente em produção (BUG-030: telas logadas não autenticam no
+  preview, então isso não foi validável nas sessões de execução); (b)
+  `NonMemberOffboardingModal` (F0-01 lote B, inline em `JourneyNav`) convertido
+  ao `GlassModal` — conferência visual **bloqueada pelo `BUG-035`** (F1-06): não
+  dá para colocar um usuário no estado "não-membro" via admin para disparar o
+  modal enquanto a revogação de acesso não funcionar.
 - Log: —
 
 ### [F1-04] Hub — carreira, agenda do membro, contratos, visão geral
@@ -412,7 +486,17 @@ sem copy hardcoded fora do que o guia permitir).
 - Decisão: —
 - Execução: Não iniciada
 - Resultado: —
-- Bug(s) vinculado(s): BUG-005, BUG-006, BUG-016
+- Bug(s) vinculado(s): BUG-005 (Corrigido, PR #19), BUG-006 (Corrigido, PR #18),
+  BUG-016, BUG-033 (**[HIPÓTESE]**, networking — *corrigido nesta reconciliação:
+  já constava no índice bug→track vinculado a F1-05, mas estava ausente deste
+  campo*)
+- Pendência de validação acumulada: `CouponTermsModal` (F0-01 lote A, via
+  `CouponInput`/`CheckoutFlow` em `/hub/membro/checkout/[slug]`) recolorido
+  para vars de tema — conferência visual nos temas claros pendente em produção
+  (BUG-030). A validação da página `/hub/networking` deve resolver o `BUG-033`
+  (contatos/URLs marcados não-visíveis pelo dono possivelmente trafegando ao
+  client, e leitura obsoleta de `User_JourneyMap.current_stage` — campo e
+  coleção que não existem mais desde o fechamento do `BUG-018`).
 - Log: —
 
 ### [F1-06] Validar as 19 páginas de admin
@@ -424,11 +508,16 @@ sem copy hardcoded fora do que o guia permitir).
 - Execução: Não iniciada — nota: os 4 bugs de segurança vinculados abaixo já
   foram corrigidos (via T-02), mas a validação de UI/responsivo/copy das
   páginas em si ainda não começou; não confundir uma coisa com a outra.
-  **Pendências acumuladas para esta fase (Gestora, 2026-07-04):** (a) validar o
-  fluxo de **controle de acesso via admin** — `BUG-035`, revogação de
-  `member_area_access` não surte efeito; (b) validar visualmente o
-  `NonMemberOffboardingModal` (BUG-026, bloqueado por BUG-035); (c) validar os 4
-  modais-card do F0-01 (lotes A/B) em produção nos temas claros.
+  **Pendência acumulada para esta fase (Gestora, 2026-07-04):** investigar a
+  causa-raiz do `BUG-035` — revogação de `member_area_access` via admin não
+  surte efeito. Isso também **bloqueia**, transversalmente, a validação visual
+  do `NonMemberOffboardingModal` registrada em `F1-03` (não dá para criar o
+  estado "não-membro" sem a revogação funcionar). *(Nota: a conferência visual
+  dos 5 modais-card do F0-01 lotes A/B em temas claros foi redistribuída para
+  as páginas onde cada um de fato renderiza — `F1-01` (`WelcomeRedirect`),
+  `F1-03` (`SequenceLock`/`Upsell`/`NonMemberOffboarding`) e `F1-05`
+  (`CouponTerms`) — nenhum deles é uma página admin; corrigido nesta
+  reconciliação, estavam todos bundlados aqui por engano.)*
 - Resultado: —
 - Bug(s) vinculado(s): BUG-003 (Corrigido), BUG-007 (Corrigido), BUG-023 (Corrigido), BUG-024 (Corrigido), BUG-035 (Aberto — controle de acesso)
 - Log: —
@@ -639,13 +728,20 @@ O mapeamento das jornadas abaixo é entregável desta fase (não pré-existente)
 - Modo de validação: PENDENTE (executável via análise de código — profundidade
   igual às Fases 0-4)
 - Decisão: —
-- Execução: Em andamento (parcial) — **~0,5/4** (ver `DASHBOARD.md`) — estava
-  registrado como "Não iniciado" neste plano, defasado em relação ao progresso
-  real já refletido no `DASHBOARD.md`; reconciliado nesta sessão
-- Resultado: ◐ Parcial: BUG-018 (`entitlements` removida via F0-04; `User_JourneyMap`
-  pendente). ○ Abertos: BUG-008 (chave de cota), BUG-009 (**[HIPÓTESE]**
-  `UserBooking.timestamp` sempre nulo, não confirmado em produção), BUG-010
-  (**[HIPÓTESE]** `adminAddAttendeeAction` duplicado, código morto a confirmar).
+- Execução: Em andamento — **1/4 (25%)** (ver `DASHBOARD.md`) — `BUG-018` fechou
+  por completo e conta como **unidade inteira** no numerador (critério de
+  fechamento de Track); os outros 3 bugs vinculados seguem `Aberto`. *(Corrigido
+  nesta sessão de reconciliação — o valor anterior aqui (`~0,5/4`) e no
+  `DASHBOARD.md` (`~1,5/4`) estava incorreto em ambos os documentos: a contagem
+  fracionária só é válida enquanto um bug está `Em Progresso` — precedente
+  correto é o `BUG-020`/T-02 antes de fechar — e não se aplica a um bug já
+  `Corrigido`.)*
+- Resultado: ✓ Corrigido: BUG-018 (`entitlements` removida via F0-04 +
+  consolidação completa de `User_JourneyMap` no v3 — Ações 1a/2/1b, PRs
+  #22/#23/#24/#25; ver `BUGS.md#bug-018`). ○ Abertos: BUG-008 (chave de cota),
+  BUG-009 (**[HIPÓTESE]** `UserBooking.timestamp` sempre nulo, não confirmado
+  em produção), BUG-010 (**[HIPÓTESE]** `adminAddAttendeeAction` duplicado,
+  código morto a confirmar).
 - Bug(s) vinculado(s): BUG-008, BUG-009, BUG-010, BUG-018
 - Log: —
 
@@ -728,7 +824,7 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-023 | Alto | Corrigido (PR #3) | F1-06, T-02, T-06 |
 | BUG-024 | Médio | Corrigido (PR #5) | F1-06, T-02 |
 | BUG-025 | Médio | Corrigido (PR #16) | T-02 |
-| BUG-026 | Médio | Aberto | F0-01 |
+| BUG-026 | Médio | Em Progresso | F0-01 — parte GlassModal concluída, resta BUG-034 *(corrigido nesta sessão — estava "Aberto")* |
 | BUG-027 | Baixo | Aberto | F0-01 |
 | BUG-028 | Baixo (rebaixado) | Aberto (adiado) | fora do escopo original — cluster de auth, ver `LOG.md` 2026-07-02 |
 | BUG-029 | Baixo (rebaixado) | Aberto (adiado) | fora do escopo original — cluster de auth, ver `LOG.md` 2026-07-02 |
@@ -737,7 +833,7 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-032 | Crítico | Corrigido (PR #14) | T-02 — escalação de privilégio (novo, achado no lote 7) |
 | BUG-033 | Médio | Aberto — **[HIPÓTESE]** | F1-05 — achado colateral do BUG-006, a verificar na Fase 1 |
 | BUG-034 | Baixo | Aberto (futuro) | F0-01 — 2º componente-base p/ modais grandes app-shell (opção iii) |
-| BUG-035 | Alto | Aberto — **[HIPÓTESE]** | F1-06 — revogação de acesso de membro via admin não surte efeito; validar no teste do `/hub`/admin (bloqueia validação visual do offboarding modal) |
+| BUG-035 | Alto | Aberto — **[CONFIRMADO]** | F1-06 — causa-raiz mapeada (enforcement de `member_area_access` só em `/hub/membro` + bypass `isAdmin ||`; `hub/layout.tsx` não checa entitlement; guard `requireMemberAccess` sem caller). Correção gated. Bloqueia validação visual do offboarding modal (F1-03) |
 
 ---
 

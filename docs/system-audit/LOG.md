@@ -1413,6 +1413,119 @@ para embasar essas decisões estão todos disponíveis.
 
 ---
 
+## [2026-07-07] Chat de planejamento — reconciliação geral pós-fechamento do BUG-018
+
+- Chat/sessão: chat de planejamento (Sonnet 5), a pedido explícito do Gestor
+  (função permanente de manter os docs coerentes entre sessões de execução).
+  Último commit de docs na `main` antes desta sessão: `2c6ea8e`.
+- Escopo: leitura integral de `00-PLAN.md`, `LOG.md`, `BUGS.md`, `DASHBOARD.md`,
+  `RETROSPECTIVE.md` e `F0-DECISIONS.md`, seguida de (1) checagem cruzada bug a
+  bug — todos os 35 registrados, não por amostragem — entre `00-PLAN.md`/
+  `BUGS.md`/`DASHBOARD.md`/índice bug→track; (2) confirmação de que a Triagem
+  por severidade reflete a realidade; (3) recálculo das % dos tracks pelo
+  critério de fechamento, sem arredondar para cima; (4) checagem das tags
+  `[HIPÓTESE]`/`[CONFIRMADO]`; (5) incorporação de lições novas do
+  `RETROSPECTIVE.md` ainda não refletidas no corpo do `00-PLAN.md`. **Nenhuma
+  linha de código de produto foi tocada.**
+- Achados e correções:
+  1. **% do T-03 errada nos dois agregadores, em direções opostas** — `00-PLAN.md`
+     dizia `~0,5/4`, `DASHBOARD.md` dizia `~1,5/4 (~38%)`. Causa: o `BUG-018`
+     fechou por completo (Ações 1a+2+1b, PRs #22/#23/#24/#25) depois da última
+     atualização desses campos, e ninguém recalculou — pior, o `DASHBOARD.md`
+     tentou incrementar a fração antiga (`~1/4`→`~1,5/4`) em vez de substituí-la
+     pela unidade inteira que o critério de fechamento exige para um bug
+     `Corrigido`. Valor correto, exato: **1/4 (25%)** — só o `BUG-018` fechado
+     dos 4 vinculados (`BUG-008/009/010` seguem `Aberto`). Corrigido nos dois
+     documentos.
+  2. **`F0-04` com Execução desatualizada** ("Parcial") em ambos os documentos —
+     as duas partes do item (`entitlements` removida + `User_JourneyMap`
+     consolidado/parado) estão concluídas desde o fechamento do `BUG-018`; o
+     resíduo de nomenclatura no networking (`BUG-033`) é achado colateral
+     separado, rastreado na Fase 1, não pendência deste item. Atualizado para
+     "Concluída" em `00-PLAN.md` e `DASHBOARD.md`.
+  3. **Linha do `BUG-026` no índice bug→track** dizia "Aberto"; `BUGS.md`
+     (fonte de verdade) já registrava "Em Progresso" (parte GlassModal
+     concluída, resta `BUG-034`) desde o lote B do F0-01. Corrigida.
+  4. **Triagem por severidade**: confirmada correta, sem alteração — os 4 Altos
+     abertos (`BUG-001/008/010/035`) são exatamente os que constam na fila;
+     nenhum Crítico vivo escondido (os 2 Críticos do processo, `BUG-003` e
+     `BUG-032`, seguem corrigidos).
+  5. **Tags `[HIPÓTESE]`/`[CONFIRMADO]`**: revisadas, sem pendência nova —
+     todas as afirmações não validadas por execução real já estavam
+     corretamente marcadas nos 3 locais onde aparecem (item de fase/track,
+     índice bug→track, e triagem por severidade quando aplicável).
+  6. **2 lições novas do `RETROSPECTIVE.md` incorporadas ao Protocolo do
+     `00-PLAN.md`** (itens 11-12): não remover acentos PT-BR de copy (Lição
+     11); verificar encaixe estrutural antes de generalizar um componente-base
+     único (Lição 12). Ambas datam do F0-01 lote A/B e ainda não tinham virado
+     regra de Protocolo (só estavam registradas como lição pontual).
+  7. **Nova lição registrada no `RETROSPECTIVE.md`** (13, a partir do achado 1
+     acima): contagem fracionária de Track só vale enquanto o bug está `Em
+     Progresso` — um bug `Corrigido` conta como unidade inteira, nunca fração.
+- Verificação de git: confirmado via `git log --merges origin/main` e
+  `git log -- docs/system-audit/` que nenhum PR/commit de docs além dos já
+  refletidos em `LOG.md` (até `2c6ea8e`) existe — nada para reconciliar fora do
+  que os achados acima cobrem.
+- Itens do `00-PLAN.md` atualizados: novo parágrafo "Reconciliação desta
+  sessão" (topo), Protocolo (itens 11-12 novos), item `[T-03]` (Execução/
+  Resultado), item `[F0-04]` (Execução), índice bug→track (linha `BUG-026`).
+  `DASHBOARD.md`: nota "Última atualização", tabela Fase 0 (linha F0-04),
+  seção T-03 (título + resultado). `RETROSPECTIVE.md`: Lição 13 nova + registro
+  de revisões do documento. `BUGS.md`: nenhuma alteração necessária (já
+  consistente com a fonte de verdade real).
+- Nada bloqueado para a próxima sessão de execução — a fila de triagem por
+  severidade segue com os mesmos 4 Altos (`BUG-001/008/010/035`, nenhum
+  Crítico); ou seguir com o BUG-034 (2º base de modal) / F1-06 (`BUG-035`), ou
+  iniciar a Fase 1.
+
+---
+
+## [2026-07-07] Chat de planejamento — Fase 1 deixada crisp por página + achado de campo ausente (BUG-033)
+
+- Chat/sessão: mesma sessão de planejamento da entrada anterior (2026-07-07),
+  continuação a pedido explícito do Gestor após a reconciliação geral já
+  registrada acima.
+- Escopo: (1) checagem cruzada bug-a-bug repetida (confirmado: nada novo desde
+  a entrada anterior — nenhum commit de docs além de `2c6ea8e`); (2) Triagem
+  por severidade reconfirmada (Altos abertos: `BUG-035`, `BUG-010`, `BUG-008`,
+  `BUG-001`; nenhum Crítico); (3) Fase 1 reescrita para ficar crisp por página;
+  (4) Lições 11/12 — já incorporadas na entrada anterior, confirmado sem
+  pendência nova. **Nenhuma linha de código de produto foi tocada.**
+- Achado novo (do item 3, ao mapear cada modal do F0-01 para sua página real
+  via leitura direta — `grep` de cada componente + seu importador, não por
+  suposição): os "4 modais-card em temas claros" e o `NonMemberOffboardingModal`
+  estavam **todos bundlados como pendência do `F1-06`** (admin), mas nenhum
+  deles renderiza em página admin:
+  - `WelcomeRedirectModal` → via `MatriculaGuard` → `/servicos/[audience]/[slug]`
+    (**F1-01**, página pública).
+  - `SequenceLockModal`/`UpsellServiceModal`/`NonMemberOffboardingModal` → via
+    `JourneyNav`/`SubStepRail` → `hub/membro/journey/*`, `hub/step-journey`
+    (**F1-03**, dashboard/motor de jornada).
+  - `CouponTermsModal` → via `CouponInput`/`CheckoutFlow` →
+    `/hub/membro/checkout/[slug]` (**F1-05**, checkout de membro).
+  Redistribuídas as pendências de conferência visual (temas claros, produção —
+  BUG-030 impede validação no preview) para o item correto de cada uma.
+  `F1-06` mantém só a pendência que é dele de fato: causa-raiz do `BUG-035`
+  (revogação de acesso), com nota cruzada de que ela bloqueia a validação do
+  offboarding modal registrada em `F1-03`.
+- **Achado de checagem cruzada** (item 1, mais fino que a reconciliação
+  anterior — desta vez auditando o campo "Bug(s) vinculado(s)" de cada item de
+  fase contra o índice bug→track, não só o índice em si): `BUG-033` já constava
+  no índice como vinculado a `F1-05`, mas estava **ausente do campo do próprio
+  item `F1-05`** — corrigido, `BUG-033` adicionado à lista de bugs vinculados
+  de `F1-05` (com nota do porquê da correção).
+- Itens do `00-PLAN.md` atualizados: parágrafo "Reconciliação desta sessão"
+  (topo, item 5 novo), `[F1-01]`, `[F1-03]`, `[F1-05]` e `[F1-06]` (pendências
+  de validação redistribuídas + bug vinculado ausente corrigido em F1-05).
+  `DASHBOARD.md`/`BUGS.md`/`RETROSPECTIVE.md`: nenhuma alteração necessária
+  (escopo desta entrada é só a Fase 1, que o `DASHBOARD.md` não cobre).
+- Nada bloqueado para a próxima sessão de execução — a Fase 0 está
+  essencialmente concluída (só resta o `BUG-034`, esforço futuro); a Fase 1
+  está pronta para começar com pendências já mapeadas por página; a fila de
+  severidade segue com os mesmos 4 Altos, nenhum Crítico.
+
+---
+
 ## [2026-07-04] Chat de execução — Ação 1b + BUG-018 FECHADO
 
 - Chat/sessão: mesmo chat de execução.
@@ -1429,3 +1542,47 @@ para embasar essas decisões estão todos disponíveis.
   doc User.
 - Itens atualizados: `BUGS.md` (BUG-018 → Corrigido; BUG-033 nota do stage-read),
   `00-PLAN.md` (índice BUG-018, F0-04), `DASHBOARD.md` (T-03 ~1,5/4, data), este LOG.
+
+---
+
+## [2026-07-07] Chat de execução — início da Fase 1: investigação do BUG-035 (F1-06)
+
+- Chat/sessão: chat de execução (Opus 4.8), retomando a Fase 1.
+- Escopo: investigação por leitura de código da causa-raiz do BUG-035 (Alto —
+  revogação de `member_area_access` via admin não surte efeito), pedida pela
+  Gestora como parte do F1-06. **Nenhuma linha de código de produto foi tocada** —
+  só investigação + registro do achado (correção é gated: identidade/sessão +
+  controle de acesso).
+- Cadeia lida ponta-a-ponta: `admin/users/page.tsx` (toggle "Área de Membros" →
+  `handleUpdateServices` → `updateUserPermissions`), `users-admin.ts`
+  (`set(...,{merge:true})` no path soberano), `server-session.ts` + `user-permissions.ts`
+  (resolução ao vivo do Firestore), `auth-guards.ts` (`requireMemberAccess`),
+  `member-area.ts` (`validateMemberAreaAccess`), `AuthContext.tsx` (listener
+  `onSnapshot` em tempo real), `hub/layout.tsx` + `hub/page.tsx` + `hub/membro/page.tsx`
+  (gates de rota), `MemberJourneyHero.tsx`.
+- **As 3 hipóteses originais foram REFUTADAS** por leitura: (a) a escrita persiste
+  correto; (b) não há cache de `services` no cookie (cookie só tem `{uid,email}`;
+  server resolve ao vivo a cada request; client escuta `onSnapshot` em tempo real);
+  (c) admin escreve e guards leem o mesmo path/campo.
+- **Causa-raiz CONFIRMADA (superfície de enforcement, não dado):** `member_area_access`
+  só é enforçado em `/hub/membro/page.tsx` (com bypass `isAdmin ||`); o `hub/layout.tsx`
+  (gate de TODO o `/hub/*`) só autentica, não checa o entitlement — então revogar
+  não expulsa do hub, só bloqueia a dashboard `/hub/membro`. Agravantes: bypass
+  admin nunca bloqueia alvo admin; gate de servidor só reavalia em navegação nova
+  (sem ejeção em tempo real). O guard correto `requireMemberAccess` (via
+  `validateMemberAreaAccess`) existe mas **não tem caller** (código morto).
+- Correção proposta (gated — aguardando escolha da Gestora): (1) enforçar
+  `member_area_access` no `hub/layout.tsx` fechando o hub inteiro de uma vez, via
+  o `requireMemberAccess` já pronto — decidir se admin herda; (2) definir o
+  comportamento do bypass `isAdmin ||` de `/hub/membro`; (3) opcional: ejeção em
+  tempo real no client reagindo ao `onSnapshot`.
+- BUG-035 promovido de **[HIPÓTESE]** a **[CONFIRMADO por leitura]** em `BUGS.md`,
+  `00-PLAN.md` (triagem por severidade + índice bug→track).
+- Recomendação de Fase 1 apresentada à Gestora: começar o sweep página-a-página
+  por **F1-01** (marketing público — única fatia validável ponta-a-ponta no
+  preview) em paralelo à correção gated do BUG-035 (F1-06), já que as telas
+  logadas dependem de produção/execução humana (BUG-030) e o offboarding modal
+  do F1-03 depende do BUG-035 fechar.
+- Itens atualizados: `BUGS.md` (BUG-035 → CONFIRMADO + causa-raiz + opções),
+  `00-PLAN.md` (triagem, índice bug→track), este LOG. `DASHBOARD.md`: sem
+  alteração de contagem (nenhum PR mergeado; BUG-035 segue Aberto).

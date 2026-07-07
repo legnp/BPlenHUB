@@ -914,27 +914,117 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 ### BUG-035 Revogação de acesso de membro via admin não surte efeito
 
 - Severidade: **Alto** (controle de acesso — um membro mantém acesso após a
-  revogação) — **[HIPÓTESE]**, causa-raiz a confirmar
+  revogação) — **[CONFIRMADO por leitura de código]** (2026-07-07), causa-raiz
+  identificada abaixo
 - Área/fase onde foi achado: reportado pela Gestora (2026-07-04) ao tentar
-  cancelar o acesso de membro de um cliente pelo painel admin — a validar na
-  **Fase 1** (teste do `/hub` + páginas admin, F1-06)
-- Arquivo(s) afetado(s): a confirmar — provavelmente a ação admin que altera
-  `User/{matricula}/User_Permissions/access.services.member_area_access` e/ou a
-  leitura de sessão que alimenta `requireMemberAccess` (cookie/`getServerSession`
-  podem estar servindo `services` em cache até re-login)
+  cancelar o acesso de membro de um cliente pelo painel admin — investigado na
+  **Fase 1** (F1-06) por leitura de código em 2026-07-07
+- Arquivo(s) afetado(s): `src/app/hub/layout.tsx` (gate de TODO o `/hub/*` — só
+  autentica, não checa entitlement), `src/app/hub/membro/page.tsx:29` (único gate
+  de rota que checa `member_area_access`, com bypass `isAdmin ||`),
+  `src/actions/member-area.ts:validateMemberAreaAccess` +
+  `src/lib/auth-guards.ts:requireMemberAccess` (guard real correto, porém **sem
+  nenhum caller** em `src/` — código morto), `src/components/hub/MemberJourneyHero.tsx:54`
+  (só troca de hero client-side, não é gate)
 - Cenário de falha: admin revoga `member_area_access` de um cliente, mas o cliente
-  **continua acessando** a área de membro. Hipóteses a investigar: (a) o toggle não
-  persiste no Firestore; (b) persiste, mas a sessão assinada (cookie) carrega
-  `services`/`isAdmin` em cache e o guard `requireMemberAccess` só reflete a mudança
-  após re-login/refresh do cookie; (c) o guard lê fonte diferente da que o admin
-  escreve.
+  **continua acessando** o hub. As 3 hipóteses originais foram **refutadas** por
+  leitura: (a) a escrita **persiste** — `updateUserPermissions` grava
+  `services.member_area_access:false` via `set(...,{merge:true})` no path soberano;
+  (b) **não há cache no cookie** — o cookie assinado só carrega `{uid,email}`;
+  `getServerSession` resolve `services`/`isAdmin` **ao vivo** do Firestore a cada
+  request (`resolveUserPermissions`), e o `AuthContext` client escuta o mesmo doc
+  em tempo real (`onSnapshot`), então `services` atualiza na hora; (c) **mesma
+  fonte** — admin escreve e todo guard lê o mesmo path/campo.
+- **Causa-raiz confirmada (falha de superfície de enforcement, não de dado):**
+  `member_area_access` é enforçado em **um único ponto de rota** — `/hub/membro/
+  page.tsx` — enquanto o `hub/layout.tsx` (gate de todo o `/hub/*`) só verifica
+  autenticação, não o entitlement. Logo, revogar o acesso **não expulsa o membro
+  do hub** — só bloqueia a dashboard `/hub/membro`; `/hub` (home) e as demais
+  sub-páginas seguem abertas a qualquer autenticado. Somam-se dois agravantes:
+  (i) mesmo em `/hub/membro`, o bypass `isAdmin ||` nunca bloqueia um alvo admin;
+  (ii) o gate de servidor só reavalia numa navegação nova — um cliente com a aba
+  já aberta não é ejetado em tempo real (nada consome a mudança de `services` do
+  `onSnapshot` para forçar saída). O guard dedicado e correto (`requireMemberAccess`
+  via `validateMemberAreaAccess`) existe mas está **desconectado** (zero callers).
 - Impacto colateral no processo: **bloqueia a validação visual do
-  `NonMemberOffboardingModal`** (BUG-026) — não dá para colocar um usuário no
-  estado "não-membro" para disparar o modal enquanto a revogação não funciona.
-- Status: Aberto — **[HIPÓTESE]**, investigar na Fase 1 (F1-06). Não investigado
-  agora, a pedido da Gestora (fazer junto do teste da página `/hub`).
+  `NonMemberOffboardingModal`** (BUG-026, em F1-03) — não dá para colocar um
+  usuário no estado "não-membro" e ver o modal enquanto a revogação não expulsa
+  do hub de fato.
+- Status: Aberto — **[CONFIRMADO]**, causa-raiz mapeada; correção **gated**
+  (plano+aprovação da Gestora antes de codar — identidade/sessão + controle de
+  acesso).
 - Decisão de execução: Precisa plano+aprovação (identidade/sessão + controle de
-  acesso — área sensível). Investigar causa-raiz antes de propor correção.
+  acesso — área sensível). Opções de correção propostas (aguardando escolha da
+  Gestora), ver `LOG.md` 2026-07-07: (1) enforçar `member_area_access` no
+  `hub/layout.tsx` (fecha o hub inteiro de uma vez, via o guard já pronto
+  `requireMemberAccess`) — decidir se admin herda; (2) decidir o comportamento do
+  bypass `isAdmin ||` (manter para admin testar vs. remover); (3) opcional:
+  ejeção em tempo real no client quando `services.member_area_access` cai (reagir
+  ao `onSnapshot`).
+- Commit/PR: —
+
+### BUG-036 Erro de hidratação no `ComparisonTable` (whitespace dentro de `<colgroup>`)
+
+- Severidade: Médio (erro de hidratação React em página pública de marketing —
+  React descarta o HTML do servidor para a subárvore e re-renderiza no client;
+  polui o console e pode causar flicker)
+- Área/fase onde foi achado: Fase 1 — F1-01 (validação de `/servicos/[audience]`,
+  2026-07-07, confirmado ao vivo via console do preview + logs do servidor)
+- Arquivo(s) afetado(s): `src/components/services/ComparisonTable.tsx:101-108`
+- Cenário de falha: **[CONFIRMADO ao vivo]** — cada `<col />` do `<colgroup>` tem
+  um comentário JSX inline na mesma linha (`<col ... />  {/* Serviço */}`), o que
+  gera nós de texto de whitespace (`"  "`) como filhos diretos de `<colgroup>`.
+  HTML inválido → React emite "In HTML, whitespace text nodes cannot be a child
+  of <colgroup>. This will cause a hydration error." repetidamente (visto no
+  console do browser e nos logs do dev server em toda renderização de
+  `/servicos/pessoas`). O preview marca "1 issue".
+- Status: Aberto — a corrigir na F1-01 (fix localizado, página pública,
+  não-sensível: remover os comentários inline / whitespace do `<colgroup>`; zero
+  mudança visual).
+- Decisão de execução: Ajuste localizado a um único componente (bugfix isolado,
+  sem tocar segurança/identidade/financeiro nem padrão de design) — pode
+  prosseguir direto (CLAUDE.md). Validar com tsc + build + preview (confirmar que
+  o erro some do console).
+- Commit/PR: —
+
+### BUG-037 Erros de acento/crase em copy das páginas públicas de serviços
+
+- Severidade: Baixo (copy de interface — acentuação PT-BR incorreta; Lição 11 do
+  RETROSPECTIVE)
+- Área/fase onde foi achado: Fase 1 — F1-01 (validação de `/servicos`, 2026-07-07,
+  por leitura + preview)
+- Arquivo(s) afetado(s): `src/components/services/ComparisonTable.tsx`,
+  `src/app/servicos/[audience]/page.tsx`
+- Cenário de falha: strings visíveis com acento/crase incorretos —
+  `ComparisonTable.tsx`: `"% de desc. a vista"`/`"5% de desc. a vista"` (×7,
+  linhas 36/48/49/60/61/72/73) devem ser `"à vista"`; `"Autoaplicavel"` (linha 37)
+  → `"Autoaplicável"`; `duration: "1 mes"` (linha 55) → `"1 mês"`.
+  `servicos/[audience]/page.tsx`: linha 239 `"...desconto a vista no PIX"` →
+  `"à vista"`; linha 244 `"Preco especial a vista"` → `"Preço especial à vista"`.
+  Nota: a página de detalhe do serviço (`[slug]/page.tsx:173`) já usa `"À vista"`
+  corretamente — confirma a direção do fix. Nenhum é ASCII de rota/chave; são copy
+  visível.
+- Status: Aberto — a corrigir na F1-01 (copy puro, sem afetar layout).
+- Decisão de execução: Copy de texto puro sem afetar layout — pode prosseguir
+  direto (CLAUDE.md). Validar com tsc + build + preview.
+- Commit/PR: —
+
+### BUG-038 `<Image fill>` sem prop `sizes` na foto da fundadora (aviso de performance)
+
+- Severidade: Baixo (aviso de performance do Next.js, não erro funcional;
+  pré-existente)
+- Área/fase onde foi achado: Fase 1 — F1-01 (logs do dev server ao validar a home,
+  2026-07-07)
+- Arquivo(s) afetado(s): componente da home que renderiza
+  `/foto_perfil_fundadora.jpg` com `fill` (provável `AboutSection`)
+- Cenário de falha: o dev server emite `Image with src "/foto_perfil_fundadora.jpg"
+  has "fill" but is missing "sizes" prop` — sem `sizes`, o Next serve a imagem no
+  maior tamanho possível, penalizando performance. Não afeta correção funcional.
+- Status: Aberto — adiado (não bloqueia F1-01; fix é adicionar `sizes` ao
+  `<Image>`, avaliar junto de uma varredura de performance — T-01 — ou quando
+  tocar o componente).
+- Decisão de execução: Ajuste pequeno e localizado; pode ser feito quando alguém
+  tocar o componente ou numa varredura de performance (T-01).
 - Commit/PR: —
 
 ---
