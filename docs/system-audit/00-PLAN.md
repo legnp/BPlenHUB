@@ -422,17 +422,29 @@ sem copy hardcoded fora do que o guia permitir).
 ### [F1-01] Páginas públicas de marketing (home, /servicos, /profissionais, /conteudo)
 - Categoria(s) de qualidade: Adequação funcional / Usabilidade / Compatibilidade
 - Critério de aceite: ver critério comum acima
-- Modo de validação: PENDENTE
+- Modo de validação: **Automatizado** (páginas públicas — validáveis no preview)
 - Decisão: —
-- Execução: Não iniciada
-- Resultado: —
-- Bug(s) vinculado(s): BUG-014 (a confirmar/limpar durante esta validação)
+- Execução: **Em andamento** — 1ª leva de correções mergeada (PR #26). Validadas ao
+  vivo no preview: `/` (home), `/servicos`, `/servicos/pessoas` (com `ComparisonTable`),
+  `/conteudo`; leitura de código de `/servicos/[audience]/[slug]` (detalhe) e
+  `/profissionais/[slug]`. Restam: `/conteudo/artigo/[id]` (conferência ao vivo),
+  responsivo mobile/tablet das demais, e a pendência de conferência visual abaixo.
+- Resultado: renderização sem erro nas páginas validadas (após o fix do BUG-036,
+  console limpo do erro de hidratação). Achados corrigidos: **BUG-036** (hidratação
+  no `ComparisonTable`), **BUG-037** (acentos/crase), **BUG-014** (import morto) —
+  todos PR #26. Novos achados adiados/gated: **BUG-038** (`<Image>` sem `sizes`,
+  perf, adiado), **BUG-039** (ação `seedComparisonProductsAction` órfã sem guard,
+  remoção gated). Copy geral das páginas conferida contra o guia F0-06 (tom
+  formal-acolhedor, títulos em caixa alta) — conforme.
+- Bug(s) vinculado(s): BUG-014 (Corrigido, PR #26), BUG-036 (Corrigido, PR #26),
+  BUG-037 (Corrigido, PR #26), BUG-038 (Aberto/adiado), BUG-039 (Aberto/gated)
 - Pendência de validação acumulada: `WelcomeRedirectModal` (F0-01 lote A, via
   `MatriculaGuard` em `/servicos/[audience]/[slug]`) foi recolorido de branco
   fixo para vars de tema — conferência visual nos temas claros pendente em
   produção (o modal só aparece na tentativa de compra sem matrícula; confirmar
-  no fluxo real, não só por leitura de código).
-- Log: —
+  no fluxo real, não só por leitura de código). Wiring do `MatriculaGuard`
+  confirmado por leitura nesta sessão.
+- Log: [2026-07-07] validação iniciada + PR #26 (BUG-014/036/037) — ver `LOG.md`
 
 ### [F1-02] Fluxo de checkout público e contrato retroativo
 - Categoria(s) de qualidade: Adequação funcional / Segurança
@@ -812,7 +824,7 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-011 | Médio | Aberto | F3-01 — **[HIPÓTESE]** |
 | BUG-012 | Baixo | Aberto | F3-01 |
 | BUG-013 | Médio | Aberto | F2-04 |
-| BUG-014 | Baixo | Aberto | F1-01 |
+| BUG-014 | Baixo | Corrigido (PR #26) | F1-01 — import morto removido |
 | BUG-015 | Baixo | Aberto | F1-03, F2-01 |
 | BUG-016 | Médio | Aberto | F1-05 |
 | BUG-017 | Médio | Aberto | T-01 |
@@ -834,6 +846,10 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-033 | Médio | Aberto — **[HIPÓTESE]** | F1-05 — achado colateral do BUG-006, a verificar na Fase 1 |
 | BUG-034 | Baixo | Aberto (futuro) | F0-01 — 2º componente-base p/ modais grandes app-shell (opção iii) |
 | BUG-035 | Alto | Aberto — **[CONFIRMADO]** | F1-06 — causa-raiz mapeada (enforcement de `member_area_access` só em `/hub/membro` + bypass `isAdmin ||`; `hub/layout.tsx` não checa entitlement; guard `requireMemberAccess` sem caller). Correção gated. Bloqueia validação visual do offboarding modal (F1-03) |
+| BUG-036 | Médio | Corrigido (PR #26) | F1-01 — erro de hidratação no `ComparisonTable` (whitespace em `<colgroup>`), verificado ao vivo |
+| BUG-037 | Baixo | Corrigido (PR #26) | F1-01 — acentos/crase em copy de serviços |
+| BUG-038 | Baixo | Aberto (adiado) | F1-01/T-01 — `<Image fill>` sem `sizes` na foto da fundadora (perf) |
+| BUG-039 | Baixo | Aberto | F1-01 — `seedComparisonProductsAction` órfã (grava produtos sem guard); remoção gated (financeiro-adjacente) |
 
 ---
 

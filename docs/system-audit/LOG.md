@@ -1586,3 +1586,54 @@ para embasar essas decisões estão todos disponíveis.
 - Itens atualizados: `BUGS.md` (BUG-035 → CONFIRMADO + causa-raiz + opções),
   `00-PLAN.md` (triagem, índice bug→track), este LOG. `DASHBOARD.md`: sem
   alteração de contagem (nenhum PR mergeado; BUG-035 segue Aberto).
+
+---
+
+## [2026-07-07] Chat de execução — F1-01 (páginas públicas): validação + PR #26
+
+- Chat/sessão: mesmo chat de execução; a Gestora aprovou iniciar a validação da
+  F1-01. BUG-035 (fix) segue gated aguardando decisão.
+- Escopo: validação página-a-página das páginas públicas de marketing, com preview
+  ao vivo (pode autenticar? não precisa — são públicas). Validadas: `/` (home),
+  `/servicos`, `/servicos/pessoas` (com `ComparisonTable`), `/conteudo` — render,
+  console, snapshot, responsivo mobile na home. Leitura de código de
+  `/servicos/[audience]/[slug]` (detalhe, com `MatriculaGuard`) e `/profissionais/[slug]`.
+- Achados e correções (PR #26, `ecfc93d`, squash):
+  - **BUG-036 (Médio, novo):** erro de hidratação React em `/servicos/[audience]`
+    — `<colgroup>` com comentário JSX inline por `<col />` gerando nós de whitespace
+    inválidos. **Confirmado ao vivo** (console do browser + logs do dev server,
+    repetido). Fix: removidos os comentários inline. **Verificado resolvido ao vivo**
+    (erro sumiu, badge "1 issue" do preview desapareceu, tabela intacta).
+  - **BUG-037 (Baixo, novo):** acentos/crase em copy pública — `a vista`→`à vista`
+    (×7 no `ComparisonTable` + 1 na página do audience), `Autoaplicavel`→
+    `Autoaplicável`, `1 mes`→`1 mês`, `Preco especial a vista`→`Preço especial à
+    vista`. A página de detalhe já usava `À vista` — fix alinhou as demais. Verificado
+    ao vivo (`À VISTA`/`1 MÊS` renderizam).
+  - **BUG-014 (Baixo, pré-existente):** import morto `seedComparisonProductsAction`
+    removido da página do audience.
+  - **BUG-038 (Baixo, novo, adiado):** `<Image fill>` sem `sizes` na foto da
+    fundadora (aviso de perf do Next). Registrado, não corrigido (perf — T-01).
+  - **BUG-039 (Baixo, novo, gated):** ao remover o import do BUG-014, a ação
+    `seedComparisonProductsAction` ficou **órfã** — é uma server action que grava
+    produtos **sem guard**. Registrada; remoção do arquivo deixada para decisão da
+    Gestora (financeiro-adjacente).
+- Validação: `tsc --noEmit` limpo, `next build` exit 0, preview das 4 páginas
+  públicas. Pre-commit (lint-staged + eslint --fix) passou **sem** `--no-verify`.
+- Entrega: branch `fix/f1-01-servicos-copy-hydration` → **PR #26 mergeado**
+  (`ecfc93d`, squash) via REST API do GitHub (Node fetch; `gh` e `jq` ausentes na
+  máquina — usei Node p/ montar/enviar o payload e ler o token via `git credential
+  fill`). Branch deletada (local+remota).
+- **Lição de processo (reforço da Lição 4 — higiene de branch):** commitei os docs
+  na `main` **local** (a178ab1) mas **não fiz push** antes de ramificar; como a
+  `origin/main` seguia em `2c6ea8e`, o PR #26 (base=`origin/main`) **arrastou o
+  commit de docs junto** com o código no squash. Resultado final correto (tudo em
+  `ecfc93d`), mas o corpo do PR subdescreveu o diff, e a `main` local divergiu
+  (resolvido com `reset --hard origin/main`, docs idênticos confirmados). Correto
+  seria: `git push origin main` (docs) **antes** de criar a branch, ou incluir os
+  docs no próprio PR de propósito. Registrar no RETROSPECTIVE.
+- Itens atualizados: `BUGS.md` (BUG-014/036/037 → Corrigido PR #26; +BUG-038/039),
+  `00-PLAN.md` (F1-01 Execução/Resultado/bugs, índice bug→track), `DASHBOARD.md`
+  (nota de última atualização + bugs novos), este LOG.
+- Próximo: decisão da Gestora sobre a correção do BUG-035 (F1-06) e sobre a
+  remoção da ação órfã (BUG-039); concluir a F1-01 (`/conteudo/artigo/[id]` +
+  responsivo restante).

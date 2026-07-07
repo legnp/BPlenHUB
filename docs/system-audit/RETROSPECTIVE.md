@@ -39,6 +39,14 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
    branch nova a partir da `main` mexendo em arquivos que um PR ainda aberto também
    altera — dá conflito/stash desnecessário. Ou mergeie o PR antes, ou mantenha a
    atualização de status na mesma branch da mudança de código.
+   **Corolário (caso real 2026-07-07, F1-01):** se você commitar docs na `main`
+   **local** e ramificar SEM dar `git push origin main` antes, a `origin/main`
+   fica atrás e o PR (base=`origin/main`) **arrasta o commit de docs junto** no
+   squash — o corpo do PR passa a subdescrever o diff e a `main` local diverge.
+   Regra: **push do que for direto-na-main ANTES de criar a branch** (ou inclua os
+   docs no próprio PR de propósito). Se divergir, `git diff <local> origin/main`
+   para confirmar que o conteúdo local está contido no remoto antes de
+   `reset --hard origin/main`.
 
 5. **Cheque ferramentas e sintaxe de shell no começo.** Nesta máquina:
    - `gh` (GitHub CLI) **não está instalado**. Para abrir/mergear PR, usar a

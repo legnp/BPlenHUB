@@ -297,10 +297,15 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Arquivo(s) afetado(s): `src/app/servicos/[audience]/page.tsx`
 - Cenário de falha: nenhum — é código morto (import não utilizado no fluxo
   atual, comentário indica que o seed sob demanda foi desativado).
-- Status: Aberto
+- Status: **Corrigido** — 2026-07-07 (F1-01). Import removido de
+  `servicos/[audience]/page.tsx`. **Achado colateral:** com o import removido, a
+  ação `src/actions/seed-comparison-products.ts` fica **totalmente órfã** (zero
+  callers) — é uma server action que **grava produtos** no Firestore sem guard;
+  a remoção do arquivo em si foi deixada para decisão da Gestora (financeiro-
+  adjacente, fora do escopo do fix de import). Ver `BUG-039`.
 - Decisão de execução: Ajuste pequeno e localizado (arquivo único, sem efeito
-  colateral) — pode ser removido sem plano formal quando alguém tocar o arquivo
-- Commit/PR: —
+  colateral) — removido junto da leva F1-01. Validado por tsc + build + preview.
+- Commit/PR: **mergeado** — PR #26 (`ecfc93d`, squash).
 
 ### BUG-015 `/hub/step-journey` é página órfã/duplicada
 
@@ -978,14 +983,15 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   of <colgroup>. This will cause a hydration error." repetidamente (visto no
   console do browser e nos logs do dev server em toda renderização de
   `/servicos/pessoas`). O preview marca "1 issue".
-- Status: Aberto — a corrigir na F1-01 (fix localizado, página pública,
-  não-sensível: remover os comentários inline / whitespace do `<colgroup>`; zero
-  mudança visual).
+- Status: **Corrigido** — 2026-07-07 (F1-01). Removidos os comentários JSX inline
+  entre os `<col>`; a legenda das colunas virou um único comentário acima do
+  `<colgroup>`. Larguras preservadas. **Verificado ao vivo no preview:** o erro
+  sumiu do console/logs e o badge de "1 issue" desapareceu; a tabela renderiza
+  com as larguras corretas.
 - Decisão de execução: Ajuste localizado a um único componente (bugfix isolado,
-  sem tocar segurança/identidade/financeiro nem padrão de design) — pode
-  prosseguir direto (CLAUDE.md). Validar com tsc + build + preview (confirmar que
-  o erro some do console).
-- Commit/PR: —
+  sem tocar segurança/identidade/financeiro nem padrão de design) — feito direto
+  (CLAUDE.md). Validado por tsc + build + preview.
+- Commit/PR: **mergeado** — PR #26 (`ecfc93d`, squash).
 
 ### BUG-037 Erros de acento/crase em copy das páginas públicas de serviços
 
@@ -1004,10 +1010,13 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   Nota: a página de detalhe do serviço (`[slug]/page.tsx:173`) já usa `"À vista"`
   corretamente — confirma a direção do fix. Nenhum é ASCII de rota/chave; são copy
   visível.
-- Status: Aberto — a corrigir na F1-01 (copy puro, sem afetar layout).
-- Decisão de execução: Copy de texto puro sem afetar layout — pode prosseguir
-  direto (CLAUDE.md). Validar com tsc + build + preview.
-- Commit/PR: —
+- Status: **Corrigido** — 2026-07-07 (F1-01). Todas as ocorrências acentuadas
+  (`à vista` ×7 + `à vista` na página do audience, `Autoaplicável`, `1 mês`,
+  `Preço especial à vista`). **Verificado ao vivo no preview:** `/servicos/pessoas`
+  renderiza "À VISTA" e "1 MÊS" corretamente.
+- Decisão de execução: Copy de texto puro sem afetar layout — feito direto
+  (CLAUDE.md). Validado por tsc + build + preview.
+- Commit/PR: **mergeado** — PR #26 (`ecfc93d`, squash).
 
 ### BUG-038 `<Image fill>` sem prop `sizes` na foto da fundadora (aviso de performance)
 
@@ -1025,6 +1034,27 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   tocar o componente).
 - Decisão de execução: Ajuste pequeno e localizado; pode ser feito quando alguém
   tocar o componente ou numa varredura de performance (T-01).
+- Commit/PR: —
+
+### BUG-039 `seedComparisonProductsAction` — server action órfã que grava produtos sem guard
+
+- Severidade: Baixo (código morto; latente — não há caller que a acione hoje)
+- Área/fase onde foi achado: Fase 1 — F1-01, achado colateral ao remover o import
+  morto do BUG-014 (2026-07-07)
+- Arquivo(s) afetado(s): `src/actions/seed-comparison-products.ts`
+- Cenário de falha: com a remoção do import (BUG-014), a ação fica com **zero
+  callers** em todo o `src/`. É uma `"use server"` action que **grava/mescla
+  produtos** (`batch.set` na coleção de produtos) com dados hardcoded e **sem
+  guard** (`requireAdmin`). Como ninguém a importa/usa, o Next.js não a registra
+  como endpoint acionável (risco prático baixo), mas é (a) código morto e (b) uma
+  mutação de dados financeiro-adjacente sem guard — não deveria ficar no
+  repositório. A remoção não foi feita junto do BUG-014 por ser
+  financeiro-adjacente (produtos/preços) — decisão da Gestora.
+- Status: Aberto — recomendação: remover o arquivo (dead code confirmado). Requer
+  ok da Gestora por tocar dados de produto/preço, mesmo sendo dead code.
+- Decisão de execução: Precisa ok da Gestora (financeiro-adjacente), apesar de ser
+  remoção de código morto sem callers. Se aprovado, remover o arquivo + validar
+  tsc/build.
 - Commit/PR: —
 
 ---

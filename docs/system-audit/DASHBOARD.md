@@ -12,7 +12,14 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-07 (chat de planejamento — reconciliação
+> **Última atualização:** 2026-07-07 (chat de execução — **Fase 1 iniciada**:
+> BUG-035 (F1-06) promovido a **[CONFIRMADO]** por leitura (causa-raiz: enforcement
+> de `member_area_access` só em `/hub/membro`; correção gated). **F1-01** (páginas
+> públicas): PR #26 mergeada corrigindo **BUG-036** (hidratação no `ComparisonTable`),
+> **BUG-037** (acentos/crase) e **BUG-014** (import morto); registrados **BUG-038**
+> (perf, adiado) e **BUG-039** (ação órfã sem guard, remoção gated).
+>
+> _(entrada anterior)_ 2026-07-07 (chat de planejamento — reconciliação
 > geral: corrigida a % do **T-03** (BUG-018 fechado conta como unidade inteira
 > no critério de fechamento de Track, não fração — de `~1,5/4 (~38%)`,
 > incorreto, para **1/4 (25%)**, exato); **F0-04** atualizado de "Parcial" para
@@ -88,7 +95,11 @@ _Nenhuma no momento._
 - **BUG-032** (Crítico, **corrigido** PR #14) — escalação de privilégio: `syncUserPermissionsOnLogin` concedia admin a partir de e-mail não-verificado (achado no lote 7 do BUG-020)
 - **BUG-033** (Médio, **[HIPÓTESE]**, aberto) — networking envia contatos/URLs não-visíveis ao client (a verificar na Fase 1 / F1-05)
 - **BUG-034** (Baixo, aberto/futuro) — falta 2º componente-base para modais grandes "app-shell" (F0-01, opção iii)
-- **BUG-035** (Alto, **[HIPÓTESE]**, aberto) — revogação de acesso de membro via admin não surte efeito; validar na Fase 1 (F1-06). Bloqueia validação visual do offboarding modal
+- **BUG-035** (Alto, **[CONFIRMADO]**, aberto) — revogação de acesso de membro via admin não surte efeito; causa-raiz confirmada por leitura (F1-06): enforcement de `member_area_access` só em `/hub/membro` + bypass `isAdmin ||`; `hub/layout.tsx` não checa entitlement. Correção gated. Bloqueia validação visual do offboarding modal (F1-03)
+- **BUG-036** (Médio, **corrigido** PR #26) — erro de hidratação no `ComparisonTable` (whitespace em `<colgroup>`) em `/servicos/[audience]`; F1-01
+- **BUG-037** (Baixo, **corrigido** PR #26) — acentos/crase em copy pública de serviços; F1-01
+- **BUG-038** (Baixo, aberto/adiado) — `<Image fill>` sem `sizes` na foto da fundadora (perf); F1-01/T-01
+- **BUG-039** (Baixo, aberto/gated) — `seedComparisonProductsAction` órfã grava produtos sem guard; remoção gated (financeiro-adjacente); F1-01
 
 ---
 
