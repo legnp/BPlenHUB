@@ -129,20 +129,10 @@ export async function getDevolutivaUserData(
         currentStep: readableStep,
         overallProgress: v3Data.overallProgress || 0,
       };
-    } else {
-      // Fallback para o mapa de jornada legado/estático
-      const journeyRef = db.doc(`User/${matricula}/User_JourneyMap/progress`);
-      const journeySnap = await journeyRef.get();
-
-      if (journeySnap.exists) {
-        const jData = journeySnap.data() || {};
-        journeyData = {
-          currentPhase: jData.currentPhase === "venda" ? "Jornada" : (jData.currentPhase || "Jornada"),
-          currentStep: jData.currentStep || "onboarding",
-          overallProgress: jData.overallProgress || 0,
-        };
-      }
     }
+    // Fallback legado (User_JourneyMap) removido: a subcolecao foi consolidada no v3
+    // e migrada/apagada dos clientes atuais (BUG-018). Sem v3, journeyData fica null
+    // (o v3 e recriado por lazy-write no proximo acesso do usuario a jornada).
 
     // 4. Buscar permissoes e link DISC do usuario
     const accessRef = db.doc(`User/${matricula}/User_Permissions/access`);
