@@ -33,8 +33,8 @@ export function ComparisonTable({ products = [] }: ComparisonTableProps) {
         ? `${pacoteJunior.maxInstallments || 12}x de ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(pacoteJunior.price / (pacoteJunior.maxInstallments || 12))}`
         : "Sem Custo", 
       cashDiscount: pacoteJunior && pacoteJunior.pricePix && pacoteJunior.pricePix < pacoteJunior.price
-        ? `${Math.round((1 - pacoteJunior.pricePix / pacoteJunior.price) * 100)}% de desc. a vista`
-        : "Autoaplicavel", 
+        ? `${Math.round((1 - pacoteJunior.pricePix / pacoteJunior.price) * 100)}% de desc. à vista`
+        : "Autoaplicável",
       slug: pacoteJunior ? pacoteJunior.slug : "pacote-junior" 
     },
     { 
@@ -45,20 +45,20 @@ export function ComparisonTable({ products = [] }: ComparisonTableProps) {
         ? `${pacotePleno.maxInstallments || 12}x de ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(pacotePleno.price / (pacotePleno.maxInstallments || 12))}`
         : "Sem Custo", 
       cashDiscount: pacotePleno && pacotePleno.pricePix && pacotePleno.pricePix < pacotePleno.price
-        ? `${Math.round((1 - pacotePleno.pricePix / pacotePleno.price) * 100)}% de desc. a vista`
-        : "5% de desc. a vista", 
+        ? `${Math.round((1 - pacotePleno.pricePix / pacotePleno.price) * 100)}% de desc. à vista`
+        : "5% de desc. à vista",
       slug: pacotePleno ? pacotePleno.slug : "pacote-pleno" 
     },
     { 
       id: "senior", 
       name: "Senior", 
-      duration: "1 mes", 
+      duration: "1 mês",
       priceInstallment: pacoteSenior && pacoteSenior.price > 0
         ? `${pacoteSenior.maxInstallments || 12}x de ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(pacoteSenior.price / (pacoteSenior.maxInstallments || 12))}`
         : "Sem Custo", 
       cashDiscount: pacoteSenior && pacoteSenior.pricePix && pacoteSenior.pricePix < pacoteSenior.price
-        ? `${Math.round((1 - pacoteSenior.pricePix / pacoteSenior.price) * 100)}% de desc. a vista`
-        : "5% de desc. a vista", 
+        ? `${Math.round((1 - pacoteSenior.pricePix / pacoteSenior.price) * 100)}% de desc. à vista`
+        : "5% de desc. à vista",
       slug: pacoteSenior ? pacoteSenior.slug : "pacote-senior" 
     },
     { 
@@ -69,8 +69,8 @@ export function ComparisonTable({ products = [] }: ComparisonTableProps) {
         ? `${pacoteLider.maxInstallments || 12}x de ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(pacoteLider.price / (pacoteLider.maxInstallments || 12))}`
         : "Sem Custo", 
       cashDiscount: pacoteLider && pacoteLider.pricePix && pacoteLider.pricePix < pacoteLider.price
-        ? `${Math.round((1 - pacoteLider.pricePix / pacoteLider.price) * 100)}% de desc. a vista`
-        : "5% de desc. a vista", 
+        ? `${Math.round((1 - pacoteLider.pricePix / pacoteLider.price) * 100)}% de desc. à vista`
+        : "5% de desc. à vista",
       slug: pacoteLider ? pacoteLider.slug : "pacote-lider" 
     }
   ];
@@ -97,14 +97,16 @@ export function ComparisonTable({ products = [] }: ComparisonTableProps) {
       {/* Main Table Grid wrapper */}
       <div className="overflow-x-auto w-full scrollbar-none flex justify-center">
         <table className="border-collapse text-left text-xs table-fixed mx-auto" style={{ width: '790px' }}>
-          {/* Definição rigorosa de larguras para evitar que o colSpan do thead quebre o layout */}
+          {/* Definição rigorosa de larguras para evitar que o colSpan do thead quebre o layout.
+              Ordem das colunas: Serviço, O que entrega, Junior, Pleno, Senior, Lider.
+              Sem comentários inline entre os <col> — geram nós de whitespace inválidos em <colgroup> (erro de hidratação). */}
           <colgroup>
-            <col style={{ width: '50px' }} />  {/* Serviço */}
-            <col style={{ width: '300px' }} /> {/* O que entrega */}
-            <col style={{ width: '110px' }} /> {/* Junior */}
-            <col style={{ width: '110px' }} /> {/* Pleno */}
-            <col style={{ width: '110px' }} /> {/* Senior */}
-            <col style={{ width: '110px' }} /> {/* Lider */}
+            <col style={{ width: '50px' }} />
+            <col style={{ width: '300px' }} />
+            <col style={{ width: '110px' }} />
+            <col style={{ width: '110px' }} />
+            <col style={{ width: '110px' }} />
+            <col style={{ width: '110px' }} />
           </colgroup>
           <thead>
             {/* New Title Row */}

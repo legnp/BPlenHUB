@@ -12,31 +12,33 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-04 (chat de execução — **BUG-018 FECHADO**:
+> **Última atualização:** 2026-07-07 (chat de planejamento — reconciliação
+> geral: corrigida a % do **T-03** (BUG-018 fechado conta como unidade inteira
+> no critério de fechamento de Track, não fração — de `~1,5/4 (~38%)`,
+> incorreto, para **1/4 (25%)**, exato); **F0-04** atualizado de "Parcial" para
+> **Concluído** (as duas partes — `entitlements` e `User_JourneyMap` — estão
+> mergeadas). Nenhuma mudança de código.
+>
+> _(entrada anterior)_ 2026-07-04 (chat de execução — **BUG-018 FECHADO**:
 > consolidação de jornada completa — parar de escrever (PR #22), migração dos 5
 > clientes atuais executada (scripts PRs #23/#24) e fallback removido (PR #25).
-> Sem perda de dados. T-03 sobe para ~1,5/4. Resíduo networking no BUG-033).
->
-> _(entrada anterior)_ 2026-07-04 (chat de execução — F0-01 lote B mergeado, PR #21:
-> offboarding no GlassModal + z-index do JourneyNav coordenados + acentos PT-BR do lote A
-> restaurados. **Parte GlassModal do F0-01 concluída** (todos os modais-card convergidos);
-> resta só o 2º base para modais grandes app-shell (BUG-034, futuro). T-02 FECHADO 12/12.
-> Conferência visual pendente em produção — BUG-030).
+> Sem perda de dados. Resíduo networking no BUG-033).
 
 ---
 
 ## Fase 0 — Padrões canônicos
 
-**Decisões: 6/6 (100%).** Implementações ainda pendentes: **F0-01** — parte
+**Decisões: 6/6 (100%).** Implementação ainda pendente: **F0-01** — parte
 GlassModal concluída (lotes 1/A/B); resta o 2º base p/ modais grandes (BUG-034,
-futuro). **F0-04** (parar escrita de `User_JourneyMap`).
+futuro). **F0-04 concluído** (entitlements + consolidação de `User_JourneyMap`,
+PRs #1/#22/#23/#24/#25).
 
 | Item | Tema | Status |
 |---|---|---|
 | F0-01 | Modal canônico | Decidido · **parte GlassModal concluída** — lotes 1 (z-index, PR #15), A (4 modais-card, PR #20), B (offboarding + z-index JourneyNav, PR #21). Todos os modais-card convergidos; exceções aceitas (`ServiceSelection` público, `ContractGate` crítico); resta o 2º base p/ modais grandes app-shell (**BUG-034**, futuro). Conferência visual pendente em produção (BUG-030) |
 | F0-02 | Timestamp | ✓ Decidido (padrão pronto) |
 | F0-03 | Identidade | ✓ Decidido (padrão + convergência gradual) |
-| F0-04 | Coleções órfãs | Parcial — `entitlements` removida; `User_JourneyMap` pendente |
+| F0-04 | Coleções órfãs | ✓ Concluída — `entitlements` removida (PR #1) + `User_JourneyMap` consolidado no v3 e removido de todos os clientes (PRs #22/#23/#24/#25); resíduo de nomenclatura obsoleta no networking tratado à parte (BUG-033, Fase 1) |
 | F0-05 | Guard admin server-side | ✓ Mergeado (PR #1) |
 | F0-06 | Tom de voz / copy | ✓ Ratificado (+ data legal em config, PR #1) |
 
@@ -58,9 +60,9 @@ mergeados na `main` sobre o total do track.
 - ✓ Mergeados: BUG-023
 - ○ Abertos: BUG-001 (`Support_Tickets` com PII em coleção raiz)
 
-### T-03 — Integridade de dados · **~1,5 / 4 (~38%)**  `████░░░░░░`
+### T-03 — Integridade de dados · **1 / 4 (25%)**  `███░░░░░░░`
 
-- ✓ BUG-018 **Corrigido** — `entitlements` removida + consolidação de jornada completa: `User_Journey`(v3) mantido, `User_JourneyMap`(legado) parou de ser escrito (PR #22), migrado dos 5 clientes atuais (script PRs #23/#24, executado) e fallback removido (PR #25). Resíduo (networking) segue no BUG-033.
+- ✓ BUG-018 **Corrigido** — `entitlements` removida (F0-04) + consolidação de jornada completa: `User_Journey`(v3) mantido, `User_JourneyMap`(legado) parou de ser escrito (PR #22), migrado dos 5 clientes atuais (script PRs #23/#24, executado) e fallback removido (PR #25). Conta como unidade inteira no numerador (critério de fechamento de Track) — resíduo de nomenclatura no networking segue à parte no BUG-033 (Fase 1).
 - ○ Abertos: BUG-008 (chave de cota), BUG-009 (`UserBooking.timestamp`), BUG-010 (`adminAddAttendee` duplicado)
 
 ### Outros tracks (ainda não iniciados)
