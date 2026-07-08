@@ -1675,3 +1675,47 @@ para embasar essas decisões estão todos disponíveis.
 - Próximo: **decisão da Gestora sobre a fronteira do BUG-035** (3 opções no
   `BUGS.md`); passada final de reconferência ao vivo da F1-01 quando o preview
   local estabilizar (ou em produção).
+
+---
+
+## [2026-07-07] Chat de execução — design do modelo de acesso modular + inventário da base (Trilha 3a)
+
+- Chat/sessão: mesmo chat de execução. A Gestora aprofundou o BUG-035 num
+  **redesenho do modelo de acesso a serviços/escopos** e aprovou a reestruturação
+  completa. Decisões dela registradas: 3 sub-áreas (`/hub` público logado, `/hub/membro`
+  selo, `/admin` selo admin); selo concedido por **qualquer item comprável** (serviço
+  ou pacote) com `concedeSelo` (junior/posicionamento = não); jornada reordenada
+  (posicionamento = etapa 1, antes do onboarding); pré-req corrigidos (plano<análise,
+  GDC<plano, análise/mentocoach/posicionamento = nenhum, offboarding = GDC OU
+  mentocoach); "DISC" deixa de ser sinônimo de análise comportamental; config só via
+  Docs/Sheets (anuncios/campanhas/portfolio) + Word/Excel, sem UI admin; workflow de
+  "avaliação de elegibilidade" (a política de dispensa de pré-req) desenhado para
+  fase futura dedicada (reusa devolutiva admin + booking 1-to-1 + Drive + Resend;
+  conclui por presença → grava o entitlement/waiver).
+- **Roadmap acordado:** (0) mapa da base [feito, abaixo]; (A) modelo de dados
+  [acesso + SKU/fiscal + `dispensaPreRequisito` + botão admin manual]; (B) motor único
+  de acesso; (C) reposicionar checkout/junior → `/hub`; (D) trancar `/hub/membro` =
+  **BUG-035 resolvido**; (Trilha 3) higiene da base; (E) workflow de elegibilidade;
+  (Trilha 4) nomenclatura "análise comportamental".
+- **Inventário da base (Trilha 3a) — script `scripts/inventory-base.js` (SOMENTE
+  LEITURA) escrito e executado.** Achados principais (registrados como BUG-040..043):
+  - **75 coleções-raiz, ~50 são backups** (`products_backup_<ts>` ×26 +
+    `coupons_backup_<ts>` ×24). **Fonte:** `products.ts:329-363` (Sync de portfólio)
+    cria uma coleção-raiz nova a cada sync → **BUG-040**.
+  - **`products` = 26 docs:** conjunto **ativo canônico limpo** (5 pacotes `BPL-PAC-*`
+    + 7 etapas `BPL-000..006`, `journey=sim`, `order` batendo com o modelo:
+    posicionamento=1, onboarding=2, análise=3, plano=4, GDC=5, mentocoach=6,
+    offboarding=7). **~13 arquivados poluentes** (mentoria, coaching, desenvolvimento-*,
+    junior/pleno/senior soltos, primeiros-passos, 1-to-1, preparacao-de-carreira,
+    plano-embaixadores-bplen) → **BUG-041**.
+  - **4 clientes com entitlement:** chaves inconsistentes (`plano_de_Carreira` caixa
+    errada, `vLYKPTLII8tTP2Wo5wpV` ID órfão, slugs arquivados, chaves de capability)
+    → **BUG-042**.
+  - **`steps-registry.ts` divergente dos produtos** (IDs de etapa antigos) → **BUG-043**.
+  - Cupons: v1 `marketing_coupons`(3) + v2 `coupon_batches`(3)/`coupons_v2`(65)/
+    `redemptions`(1)/`acceptances`(1) + `coupons`(1) solto.
+- Nenhuma escrita na base (script read-only). Nenhum código de produto tocado.
+- Itens atualizados: `BUGS.md` (+BUG-040/041/042/043), `00-PLAN.md` (índice), este LOG.
+- Próximo: apresentar o mapa à Gestora + decisões (retenção de backups; classificar
+  as chaves de capability; confirmar mapa de migração de slugs). Depois: formalizar
+  `ACCESS-MODEL-DESIGN.md` e detalhar a Fase A.

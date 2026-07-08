@@ -1083,6 +1083,86 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   Removido + validado por tsc + build (ambos exit 0).
 - Commit/PR: **mergeado** — PR #27 (`6681689`, squash).
 
+### BUG-040 ~50 coleções de backup poluindo a raiz do Firestore (+ fonte que as gera)
+
+- Severidade: Baixo (higiene/manutenibilidade; sem risco funcional, mas polui a raiz)
+- Área/fase onde foi achado: Fase 1 — Trilha 3 (inventário read-only da base, 2026-07-07)
+- Arquivo(s)/coleção(ões) afetado(s): raiz do Firestore — **26** coleções
+  `products_backup_<timestamp>` (19-26 docs cada) + **24** coleções
+  `coupons_backup_<timestamp>` (1 doc cada). **Fonte:** `src/actions/products.ts:329-363`
+  (Sincronização de Portfólio) cria **uma nova coleção-raiz de backup a cada sync**,
+  antes de sobrescrever produtos/cupons.
+- Cenário de falha: de 75 coleções-raiz, ~50 são backups timestamp — a Sync gera
+  mais a cada execução (desde 2026-06-21). Não quebra nada, mas suja a raiz e
+  dificulta a leitura da base.
+- Status: Aberto — Trilha 3d. Plano: (1) mudar a fonte para rotacionar (manter só
+  os N últimos) **ou** gravar num namespace único (ex.: subcoleções sob um doc
+  `_portfolio_backups/{ts}`), em vez de coleção-raiz nova; (2) remover as ~50
+  existentes. Confirmar retenção com a Gestora antes de apagar.
+- Decisão de execução: Ajuste de higiene; a mudança da fonte toca `products.ts`
+  (sync do portfólio) — avaliar junto do acoplamento Sheets/Docs. Excluir backups
+  antigos = script LOCAL com dry-run + confirmação (como o migrate-journeymap).
+- Commit/PR: —
+
+### BUG-041 Produtos legados/duplicados poluindo a coleção `products`
+
+- Severidade: Baixo (higiene; alguns ainda referenciados por clientes — ver BUG-042)
+- Área/fase onde foi achado: Fase 1 — Trilha 3 (inventário, 2026-07-07)
+- Arquivo(s)/coleção(ões) afetado(s): coleção `products` (26 docs). **Conjunto ativo
+  canônico está limpo** (5 pacotes `BPL-PAC-*` + 7 etapas de jornada `BPL-000..006`
+  com `journey=sim` e `order` batendo com o modelo da Gestora). **Poluentes (status
+  `archived`, slugs inconsistentes com espaço/caixa):** `mentoria`, `coaching`,
+  `coaching-e-mentoria`, `desenvolvimento-de-carreira`(+`-em-grupo`/`-individual`),
+  `junior`/`pleno`/`senior`/`lider` (nomes soltos), `primeiros-passos`, `1-to-1`,
+  `preparacao-de-carreira` (duplicata do `posicionamento-profissional`),
+  `plano-embaixadores-bplen`.
+- Cenário de falha: catálogo poluído com ~13 duplicatas/legados arquivados. Alguns
+  ainda referenciados por clientes (`plano-embaixadores-bplen` ×3, `1-to-1` ×1) →
+  **migrar antes de excluir** (ver BUG-042).
+- Status: Aberto — Trilha 3c. Excluir **após** a migração (BUG-042).
+- Decisão de execução: Exclusão de dados de produto (financeiro-adjacente) → script
+  LOCAL com dry-run + ok da Gestora, e só depois da migração dos clientes.
+- Commit/PR: —
+
+### BUG-042 Chaves de entitlement dos clientes inconsistentes (slugs antigos/órfãos)
+
+- Severidade: Médio (afeta resolução de acesso — chave que não casa com produto pode
+  não ser reconhecida pelo motor)
+- Área/fase onde foi achado: Fase 1 — Trilha 3 (inventário, 2026-07-07)
+- Arquivo(s)/coleção(ões) afetado(s): `User/{matricula}/User_Permissions/access.services`
+  (4 clientes com entitlement). Chaves encontradas com problema: `plano_de_Carreira`
+  (caixa/underscore — não casa com o produto `plano-de-carreira`);
+  `vLYKPTLII8tTP2Wo5wpV` (ID aleatório de doc usado como chave de serviço — bug de
+  dado); `plano-embaixadores-bplen`/`1-to-1` (produtos arquivados); `content_premium`/
+  `hub_community`/`survey_welcome`/`career_planning` (chaves estilo "capability", a
+  classificar: intencional vs legado).
+- Cenário de falha: o motor de acesso (Fase B) precisa de chaves canônicas; hoje há
+  divergência de formato (caixa/hífen), um ID órfão, e slugs arquivados. Como são só
+  **4 clientes**, a migração é pequena.
+- Status: Aberto — Trilha 3b. Definir mapa canônico (chave antiga → nova) + migrar,
+  antes de excluir os produtos legados (BUG-041) e antes do motor único (Fase B).
+- Decisão de execução: Migração de dados de permissão (identidade/acesso) → script
+  LOCAL com dry-run + backup + ok da Gestora (padrão do migrate-journeymap).
+- Commit/PR: —
+
+### BUG-043 `steps-registry.ts` (jornada) fora de sincronia com os produtos canônicos
+
+- Severidade: Médio (fonte de verdade dupla e divergente para as etapas da jornada)
+- Área/fase onde foi achado: Fase 1 — Trilha 3 / desenho da Fase A (2026-07-07)
+- Arquivo(s) afetado(s): `src/config/journey/steps-registry.ts` vs coleção `products`
+  (`journey=sim`)
+- Cenário de falha: o registro estático usa IDs de etapa **antigos**
+  (`preparacao-de-carreira` order 2, `desenvolvimento-de-carreira`, `coaching-e-mentoria`)
+  enquanto os **produtos canônicos** usam `posicionamento-profissional` (order 1),
+  `onboarding` (order 2), `gestao-e-desenvolvimento` (GDC, order 5), `mentocoach`
+  (order 6). Duas fontes divergentes para a mesma jornada — risco de a UI/motor
+  lerem estágios que não batem com os produtos/entitlements.
+- Status: Aberto — resolver na **Fase A** (modelo de dados): decidir a fonte única
+  (jornada dirigida pelos produtos `journey=sim` + `order` + `preRequisitos`, com o
+  `steps-registry` aposentado ou reconciliado). Alinha com o modelo modular pedido.
+- Decisão de execução: Parte do desenho da Fase A (gated — motor de jornada).
+- Commit/PR: —
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em

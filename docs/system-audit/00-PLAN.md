@@ -853,6 +853,10 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-037 | Baixo | Corrigido (PR #26) | F1-01 — acentos/crase em copy de serviços |
 | BUG-038 | Baixo | Aberto (adiado) | F1-01/T-01 — `<Image fill>` sem `sizes` na foto da fundadora (perf) |
 | BUG-039 | Baixo | Corrigido (PR #27) | F1-01 — `seedComparisonProductsAction` órfã removida (double-check: zero refs) |
+| BUG-040 | Baixo | Aberto | T-03 — ~50 coleções de backup na raiz (+ fonte na Sync de portfólio); Trilha 3d |
+| BUG-041 | Baixo | Aberto | T-03 — produtos legados/duplicados arquivados poluindo `products`; Trilha 3c (após migração) |
+| BUG-042 | Médio | Aberto | T-03 — chaves de entitlement de cliente inconsistentes (slugs antigos/órfãos); Trilha 3b |
+| BUG-043 | Médio | Aberto | F2-01/Fase A — `steps-registry.ts` fora de sync com os produtos canônicos da jornada |
 
 ---
 
