@@ -5,7 +5,8 @@ import { requireAdmin } from "@/lib/auth-guards";
 import { Product } from "@/types/products";
 import { safeSerialize } from "@/lib/utils/firestore";
 import { revalidatePath } from "next/cache";
-import { PRODUCTS_COLLECTION, COUPONS_COLLECTION } from "@/config/collections";
+import { PRODUCTS_COLLECTION, COUPONS_COLLECTION, BACKUP_NAMESPACE_COLLECTION } from "@/config/collections";
+import { backupPortfolioCollections } from "@/lib/portfolio-backup";
 import { Resend } from "resend";
 import { serverEnv } from "@/env";
 import { buildSoberanaEmail, EMAIL_STYLES } from "@/lib/emails/soberana-layout";
@@ -326,42 +327,16 @@ export async function syncPortfolioAction(idToken?: string) {
       couponsPayload = camValidation.data;
     }
     
-    // 3. Backup diferencial preventivo das informações atuais de produtos
-    const productsSnapshot = await db.collection(PRODUCTS_COLLECTION).get();
-    let backupCollectionName = "";
-    
-    if (!productsSnapshot.empty) {
-      const timestamp = new Date().toISOString().replace(/[-:T.]/g, '').slice(0, 14);
-      backupCollectionName = `products_backup_${timestamp}`;
-      const backupBatch = db.batch();
-      
-      productsSnapshot.docs.forEach((doc) => {
-        const backupDocRef = db.collection(backupCollectionName).doc(doc.id);
-        backupBatch.set(backupDocRef, doc.data());
-      });
-      
-      await backupBatch.commit();
-      console.log(`[Portfolio Sync] Backup incremental concluído na coleção: ${backupCollectionName}`);
-    } else {
-      console.log("[Portfolio Sync] Nenhuma coleção de produtos existente para fazer backup.");
-    }
+    // 3. Backup preventivo em NAMESPACE UNICO com rotacao (Trilha 3d / BUG-040) —
+    // helper compartilhado com o sync via repositorio (portfolio-commands.ts).
+    const backupId = await backupPortfolioCollections(db, {
+      includeCoupons: couponsPayload.length > 0,
+    });
 
-    // 3.B Backup incremental de cupons se houver dados
+    // Snapshots para a logica de sync (createdAt/arquivamento) — leitura propria,
+    // independente do backup.
+    const productsSnapshot = await db.collection(PRODUCTS_COLLECTION).get();
     const couponsSnapshot = await db.collection(COUPONS_COLLECTION).get();
-    let couponsBackupCol = "";
-    if (!couponsSnapshot.empty && couponsPayload.length > 0) {
-      const timestamp = new Date().toISOString().replace(/[-:T.]/g, '').slice(0, 14);
-      couponsBackupCol = `coupons_backup_${timestamp}`;
-      const cpBackupBatch = db.batch();
-      
-      couponsSnapshot.docs.forEach((doc) => {
-        const bDocRef = db.collection(couponsBackupCol).doc(doc.id);
-        cpBackupBatch.set(bDocRef, doc.data());
-      });
-      
-      await cpBackupBatch.commit();
-      console.log(`[Portfolio Sync] Backup de cupons concluído na coleção: ${couponsBackupCol}`);
-    }
     
     // 4. Gravação em lote (Batch Write) para Sincronização de Produtos e Cupons
     const syncBatch = db.batch();
@@ -447,8 +422,8 @@ export async function syncPortfolioAction(idToken?: string) {
       archivedCount,
       couponsCount: couponsPayload.length,
       deactivatedCouponsCount,
-      backedUpTo: backupCollectionName || null,
-      couponsBackedUpTo: couponsBackupCol || null,
+      backedUpTo: backupId ? `${BACKUP_NAMESPACE_COLLECTION}/${backupId}` : null,
+      couponsBackedUpTo: backupId ? `${BACKUP_NAMESPACE_COLLECTION}/${backupId}` : null,
       message: `Sincronização concluída com sucesso! ${payload.length} produtos sincronizados, ${archivedCount} arquivados. ${couponsPayload.length} cupons sincronizados, ${deactivatedCouponsCount} desativados.`
     };
   } catch (error: unknown) {

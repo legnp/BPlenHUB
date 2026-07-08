@@ -2180,3 +2180,35 @@ para embasar essas decisões estão todos disponíveis.
   chaves → BUG-041 legados, com scripts LOCAIS dry-run+backup+OK), **Fase E**
   (workflow de elegibilidade) e **Trilha 4** (nomenclatura DISC). Pendências de
   validação em produção acumuladas: fluxos da Fase C/D + dispensa do A3.
+
+---
+
+## [2026-07-08] Chat de execução — Trilha 3d: fonte de backups em namespace único (mergeado) + dry-run da limpeza
+
+- Chat/sessão: mesmo chat. BUG-035 **[CONFIRMADO em produção pela Gestora]** —
+  revogação funcional (registrado no BUGS.md). Próximo passo do roadmap: Trilha 3,
+  começando pela fonte dos backups (BUG-040), na ordem decidida (fonte → limpeza →
+  migração de chaves → excluir legados).
+- **Fonte (PR #38):** `src/lib/portfolio-backup.ts` (helper compartilhado):
+  um doc por sync em `_portfolio_backups/{ts}` + subcoleções `products`/`coupons`,
+  metadados (createdAt/counts) e **rotação automática de 3** (`db.recursiveDelete`
+  nos mais antigos; falha de rotação não aborta o sync). Constante
+  `BACKUP_NAMESPACE_COLLECTION` em `src/config/collections.ts`.
+- **Achado no processo:** os syncs da Gestora de 2026-07-08 não geraram backup —
+  porque o botão "via repositório" chama `syncPortfolioFromFilesAction`
+  (`portfolio-commands.ts`), um SEGUNDO caminho de sync que **não fazia backup
+  nenhum**. O helper agora cobre os dois caminhos (era exatamente o risco de
+  corrigir só a fonte citada no bug — Lição 10, arquivo/fluxo inteiro).
+- **Limpeza do legado:** `scripts/cleanup-backup-collections.js` (LOCAL; dry-run por
+  padrão; `--apply`; `--keep=N` default 3; `--limit=N`; exporta cada coleção em JSON
+  para `scratch/` antes de apagar — reversível). **Dry-run executado (read-only):**
+  27 `products_backup_*` + 26 `coupons_backup_*`; mantém 3+3 mais recentes; **fila de
+  exclusão: 47 coleções**. `--apply` aguarda OK explícito da Gestora.
+- Validação: suíte 52/52, tsc limpo, build exit 0. `--no-verify` no commit: erros de
+  `no-require-imports` no script novo são baseline de todos os `scripts/` (CommonJS —
+  precedente PR #23, documentado).
+- Itens atualizados: `BUGS.md` (BUG-035 confirmação em produção; BUG-040 Em
+  Progresso), `DASHBOARD.md`, este LOG.
+- Próximo: OK da Gestora para o `--apply` da limpeza; depois Trilha 3b (BUG-042,
+  migração das chaves dos 4 clientes — resta decidir o remap de
+  `plano-embaixadores-bplen`/`1-to-1`) e 3c (BUG-041, excluir produtos legados).
