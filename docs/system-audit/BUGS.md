@@ -1139,8 +1139,19 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Cenário de falha: o motor de acesso (Fase B) precisa de chaves canônicas; hoje há
   divergência de formato (caixa/hífen), um ID órfão, e slugs arquivados. Como são só
   **4 clientes**, a migração é pequena.
-- Status: Aberto — Trilha 3b. Definir mapa canônico (chave antiga → nova) + migrar,
-  antes de excluir os produtos legados (BUG-041) e antes do motor único (Fase B).
+- **Verificação (2026-07-07, condição da Gestora):** as flags `content_premium`/
+  `hub_community`/`survey_welcome` são **booleanas, não guardam dado** — o dado real
+  está nas subcoleções `Surveys`/`Forms`. Confirmado na base: só `BP-002` as tem, e
+  ele tem 13 surveys + 1 form íntegros. Remover as flags **não perde dado**.
+- **Mapa canônico decidido (Gestora, 2026-07-07):** `plano_de_Carreira` **e**
+  `career_planning` → **`plano-de-carreira`** (esta última é lida por
+  `career-module.ts` → renomear dado **+ código** juntos); `vLYKPTLII8tTP2Wo5wpV`
+  (ID órfão) → **remover**; `content_premium`/`hub_community`/`survey_welcome` →
+  **remover** (inertes, dado preservado nas subcoleções); `plano-embaixadores-bplen`/
+  `1-to-1` → decidir remap (produtos arquivados). Migração minúscula (~4 clientes).
+- Status: Aberto — Trilha 3b. Executar a migração (script LOCAL dry-run + backup +
+  OK) **antes** de excluir os produtos legados (BUG-041) e do motor único (Fase B).
+  Detalhe consolidado em `ACCESS-MODEL-DESIGN.md`.
 - Decisão de execução: Migração de dados de permissão (identidade/acesso) → script
   LOCAL com dry-run + backup + ok da Gestora (padrão do migrate-journeymap).
 - Commit/PR: —

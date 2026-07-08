@@ -142,6 +142,27 @@ async function tallyClientServiceSlugs() {
   console.log('   nao existe/duplica em products = candidato a migracao/renomeacao.)');
 }
 
+async function inspectUserSurveyData() {
+  // Para cada usuario: mostra as etiquetas de interesse que ele possui e os docs
+  // reais nas subcolecoes Surveys/Forms - para confirmar que, se a etiqueta existe,
+  // ha dado correspondente guardado (garantia pedida antes de limpar as tags inertes).
+  console.log('\n=== 5. ETIQUETAS x DADOS REAIS DE SURVEY/FORM POR USUARIO ===');
+  const TAGS = ['content_premium', 'hub_community', 'survey_welcome', 'career_planning'];
+  const users = await db.collection('User').get();
+  for (const u of users.docs) {
+    const mat = u.id;
+    const accessSnap = await db.doc(`User/${mat}/User_Permissions/access`).get();
+    const services = accessSnap.exists ? (accessSnap.data().services || {}) : {};
+    const tagsHeld = TAGS.filter(t => services[t] === true);
+    const surveys = await db.collection(`User/${mat}/Surveys`).get();
+    const forms = await db.collection(`User/${mat}/Forms`).get();
+    console.log(`\n  Cliente ${mat}`);
+    console.log(`    etiquetas de interesse: ${tagsHeld.length ? tagsHeld.join(', ') : '(nenhuma)'}`);
+    console.log(`    Surveys (${surveys.size}): ${surveys.docs.map(d => d.id).join(', ') || '(vazio)'}`);
+    console.log(`    Forms   (${forms.size}): ${forms.docs.map(d => d.id).join(', ') || '(vazio)'}`);
+  }
+}
+
 async function run() {
   console.log('BPlen HUB - INVENTARIO DA BASE (somente leitura)');
   console.log('Projeto:', process.env.FIREBASE_PROJECT_ID || '(sem FIREBASE_PROJECT_ID)');
@@ -149,6 +170,7 @@ async function run() {
   await inventoryProducts();
   await inventoryCoupons();
   await tallyClientServiceSlugs();
+  await inspectUserSurveyData();
   console.log('\n=== FIM (nenhuma escrita realizada) ===');
 }
 
