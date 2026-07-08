@@ -23,6 +23,7 @@ import {
   Trophy,
   FileText,
   Copy,
+  KeyRound,
   type LucideIcon
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -73,6 +74,7 @@ export default function UsersManagementPage() {
   const [discLinkInput, setDiscLinkInput] = useState("");
   const [savingDisc, setSavingDisc] = useState(false);
   const [showDiscDevolutiva, setShowDiscDevolutiva] = useState(false);
+  const [savingWaiver, setSavingWaiver] = useState<string | null>(null);
 
   const fetchUsersAndProducts = async () => {
     setLoading(true);
@@ -169,6 +171,39 @@ export default function UsersManagementPage() {
       return matchesSearch && matchesRole;
     });
   }, [users, searchTerm, roleFilter]);
+
+  /**
+   * Etapas da jornada (fonte única: produtos com `isStepJourney`), na ordem canônica.
+   * É sobre elas que a dispensa de pré-requisito é concedida.
+   */
+  const journeySteps = useMemo(() => {
+    return products
+      .filter(p => p.isStepJourney && p.status === "active" && Boolean(p.serviceCode))
+      .sort((a, b) => (a.order ?? 99) - (b.order ?? 99));
+  }, [products]);
+
+  const handleToggleWaiver = async (serviceCode: string) => {
+    if (!selectedUser) return;
+    const current = selectedUser.dispensaPreRequisito ?? [];
+    const next = current.includes(serviceCode)
+      ? current.filter(code => code !== serviceCode)
+      : [...current, serviceCode];
+
+    setSavingWaiver(serviceCode);
+    try {
+      const token = await auth.currentUser?.getIdToken();
+      // A action lança em caso de payload inválido/erro — tratado no catch abaixo.
+      await updateUserPermissions(selectedUser.matricula, { dispensaPreRequisito: next }, token);
+      setSelectedUser(prev => prev ? { ...prev, dispensaPreRequisito: next } : null);
+      setUsers(prev => prev.map(u =>
+        u.matricula === selectedUser.matricula ? { ...u, dispensaPreRequisito: next } : u
+      ));
+    } catch (err: unknown) {
+      alert(getErrorMessage(err, "Erro ao atualizar a dispensa de pré-requisito."));
+    } finally {
+      setSavingWaiver(null);
+    }
+  };
 
   const handleUpdateRole = async (targetMatricula: string, newRole: UserRole) => {
     setProcessingUser(targetMatricula);
@@ -811,6 +846,67 @@ export default function UsersManagementPage() {
                                <Trophy size={16} className="group-hover:rotate-12 transition-transform" />
                                Lançar Devolutiva DISC
                             </button>
+                         </div>
+
+                         {/* Dispensa de Pré-Requisito (Fase A / A3) */}
+                         <div className="p-7 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-[2rem] space-y-5">
+                            <div className="flex items-center gap-3">
+                               <div className="p-2 bg-[var(--accent-start)]/10 rounded-xl text-[var(--accent-start)]">
+                                  <KeyRound size={16} />
+                               </div>
+                               <h6 className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--accent-start)]">Dispensa de Pré-Requisito</h6>
+                            </div>
+                            <p className="text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-[0.2em] leading-relaxed max-w-md ml-1 opacity-60">
+                               Libera uma etapa da jornada sem exigir a conclusão das etapas anteriores.
+                               Não concede o serviço nem o selo de membro — apenas remove a trava de sequência.
+                            </p>
+
+                            {journeySteps.length > 0 ? (
+                               <div className="space-y-2">
+                                  {journeySteps.map((step) => {
+                                     const isWaived = (selectedUser.dispensaPreRequisito ?? []).includes(step.serviceCode);
+                                     const preReq = step.preRequisitos;
+                                     const preReqLabel = preReq && preReq.modo !== "nenhum" && preReq.etapas.length > 0
+                                       ? `exige ${preReq.modo === "qualquer" ? "qualquer uma de" : "todas"}: ${preReq.etapas.join(", ")}`
+                                       : "sem pré-requisito declarado";
+
+                                     return (
+                                       <div
+                                         key={step.serviceCode}
+                                         className="flex items-center justify-between gap-4 p-4 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-[1.25rem]"
+                                       >
+                                          <div className="min-w-0">
+                                             <h5 className="font-bold text-sm text-[var(--text-primary)] truncate">
+                                                {step.order ? `${step.order}. ` : ""}{step.title}
+                                             </h5>
+                                             <p className="text-[8px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-60 mt-1">
+                                                <span className="font-mono">{step.serviceCode}</span> · {preReqLabel}
+                                             </p>
+                                          </div>
+
+                                          <button
+                                            onClick={() => handleToggleWaiver(step.serviceCode)}
+                                            disabled={savingWaiver !== null}
+                                            className={`shrink-0 px-5 py-2.5 rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all flex items-center gap-2 disabled:opacity-40 ${
+                                              isWaived
+                                              ? "bg-emerald-500/10 text-emerald-600 hover:bg-red-500/10 hover:text-red-500"
+                                              : "bg-[var(--accent-start)]/10 text-[var(--accent-start)] border border-[var(--accent-start)]/20 hover:bg-[var(--accent-start)] hover:text-white"
+                                            }`}
+                                          >
+                                             {savingWaiver === step.serviceCode
+                                               ? <Loader2 size={12} className="animate-spin" />
+                                               : isWaived ? <CheckCircle2 size={12} /> : <KeyRound size={12} />}
+                                             {isWaived ? "Dispensado" : "Dispensar"}
+                                          </button>
+                                       </div>
+                                     );
+                                  })}
+                               </div>
+                            ) : (
+                               <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-50 py-4 text-center">
+                                  Nenhuma etapa de jornada ativa no catálogo de produtos.
+                               </p>
+                            )}
                          </div>
                        </div>
                    ) : activeTab === "contracts" ? (

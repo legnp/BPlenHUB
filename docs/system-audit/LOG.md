@@ -1859,3 +1859,56 @@ para embasar essas decisões estão todos disponíveis.
   Devolutivas" em `admin/users` e/ou `/admin/fs/devolutiva`). Depois: Fase B (motor
   `resolverAcesso`), C, D. **Pendente da Gestora:** preencher a aba `Atributos` (não
   sincronizar ainda — ver decisão 2).
+
+---
+
+## [2026-07-08] Chat de execução — Fase A / PR A3: botão admin de dispensa de pré-requisito (mergeado)
+
+- Chat/sessão: mesmo chat de execução. A Gestora autorizou seguir direto ("pode
+  seguir com o botão"). Não é área gated: admin CRUD atrás de `requireAdmin` +
+  guard server-side (F0-05), e a UI **reaproveita um padrão de card já existente**
+  na mesma aba (bloco "Portal DISC"), sem introduzir padrão visual novo.
+- **A3 (PR #31):** provisiona a escrita de `dispensaPreRequisito` (o campo nasceu no
+  A1, em `AdminUser`, sem escritor nem leitor). **Continua sem consumidor** — quem
+  lê é o motor `resolverAcesso` (Fase B).
+- Arquivos: `src/actions/users-admin.ts`, `src/app/admin/users/page.tsx`.
+- **Servidor** (`updateUserPermissions`): aceita `dispensaPreRequisito?: string[]`;
+  normaliza (trim → uppercase → dedup), teto defensivo de 20 itens, e **valida cada
+  entrada contra um `serviceCode` real da coleção `products`** antes de gravar.
+  Isso impede reintroduzir chaves-lixo em `User_Permissions` — exatamente a classe
+  de defeito que o `BUG-042` está limpando (`vLYKPTLII8tTP2Wo5wpV` como chave de
+  serviço). Array vazio limpa as dispensas. `getAdminUsersList` passa a ler o campo
+  (`AccessDocData` + objeto retornado).
+- **UI** (aba "Assessments / Devolutivas" de `admin/users`): lista as etapas da
+  jornada **derivadas dos produtos** (`isStepJourney` + `status: active`, ordenadas
+  por `order`) — **nenhuma lista hardcoded de etapas**, coerente com "produtos =
+  fonte única" (`BUG-043`) e com a regra de combate ao hardcoded do `CLAUDE.md`.
+  Cada linha mostra `serviceCode` + o pré-requisito declarado, ou "sem pré-requisito
+  declarado" enquanto a aba `Atributos` não for sincronizada. Botão Dispensar/
+  Dispensado com escrita imediata (mesmo padrão do `handleToggleRelease` da aba).
+- **Escopo decidido:** só `admin/users`, não `/admin/fs/devolutiva`. O design dizia
+  "e/ou"; um ponto único é mais descobrível e evita duas telas escrevendo o mesmo
+  campo (risco de divergência de validação).
+- **Erro real pego pelo type-check** (não por leitura): escrevi o handler no padrão
+  `if (!res.success) alert(res.error)`, mas `updateUserPermissions` **lança** em vez
+  de retornar `{success:false}` — `tsc` reprovou (`Property 'error' does not exist`).
+  Corrigido para o padrão real do arquivo (try/catch + `getErrorMessage`).
+- **Nota registrada (não corrigida):** como a action lança, a mensagem de validação
+  ("serviceCode desconhecido") é **redigida pelo Next em produção** — o admin veria
+  um erro genérico. Vale para a trava anti-lockout que já existia no mesmo arquivo;
+  é limitação pré-existente do padrão, e o caminho é defesa em profundidade (a UI só
+  envia códigos vindos do catálogo). Não introduzi regressão; não expandi o escopo.
+- **Validação:** `tsc --noEmit` limpo, `next build` exit 0, `eslint` dos 2 arquivos
+  com **0 erros** (10 warnings de variável não usada, **todas pré-existentes** —
+  nenhuma toca símbolo introduzido aqui). Pre-commit passou sem `--no-verify`.
+  Sem preview: tela logada de admin (BUG-030) → conferência visual em produção.
+- **Fase A concluída (A0→A3).** O modelo de dados está inteiro e inerte: nada lê
+  `escopo`/`concedeSelo`/`preRequisitos`/`libera`/`dispensaPreRequisito` ainda.
+- Itens atualizados: `ACCESS-MODEL-DESIGN.md` (§9.4 A3 feito), `DASHBOARD.md`,
+  este LOG.
+- Próximo: **Fase B** — motor único `resolverAcesso` (§4), substituindo o
+  sequence-lock hardcoded e o bypass `isAdmin ||`. Gated (motor de jornada / god
+  file) → plano + aprovação antes de codar. Depois C (reposicionar checkout/junior),
+  que **destrava a Sync do A2**, e D (trancar `/hub/membro` = `BUG-035` resolvido).
+- **Pendente da Gestora:** preencher a aba `Atributos` (pode agora); **não
+  sincronizar** o portfólio ainda (decisão do A2 — a Sync espera a Fase C).

@@ -12,7 +12,13 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-08 (chat de execução — **Fase A / A2 mergeada**
+> **Última atualização:** 2026-07-08 (chat de execução — **Fase A / A3 mergeada**
+> (PR #31): botão admin de dispensa de pré-requisito na aba "Assessments /
+> Devolutivas" de `admin/users`; etapas derivadas dos produtos (sem hardcode) e
+> cada `serviceCode` validado contra o catálogo no servidor. Campo gravado sem
+> consumidor — quem lê é o motor da Fase B. **Fase A concluída (A0→A3).**
+>
+> _(entrada anterior)_ 2026-07-08 (chat de execução — **Fase A / A2 mergeada**
 > (PR #30): `grantServiceEntitlement` concede `member_area_access` só se o produto
 > não declarar `concedeSelo: false`. **Merge behavior-neutral** — nenhum produto tem
 > o campo no Firestore ainda; o comportamento vira na **Sync do portfólio**, retida
@@ -97,8 +103,8 @@ Desenho em `ACCESS-MODEL-DESIGN.md`. Fecha o `BUG-035` na **Fase D**, não antes
 | A0 | Endurecer `portfolio_parser.py` (paths, slug BPL-003, travas) | ✓ PR #28 |
 | A1 | Campos do modelo (aba `Atributos` + `ProductSchema` + `Product` + `dispensaPreRequisito`), sem consumidores | ✓ PR #29 |
 | A2 | Selo condicional no checkout (`concedeSelo`) | ✓ PR #30 — **inerte até a Sync** |
-| A3 | Botão admin de `dispensaPreRequisito` | ○ próximo |
-| B | Motor único `resolverAcesso` | ○ |
+| A3 | Botão admin de `dispensaPreRequisito` | ✓ PR #31 — **sem consumidor até a Fase B** |
+| B | Motor único `resolverAcesso` | ○ próximo |
 | C | Reposicionar checkout/junior → `/hub` | ○ **destrava a Sync do A2** |
 | D | Trancar `/hub/membro` (exige selo) | ○ **→ BUG-035 resolvido** |
 
