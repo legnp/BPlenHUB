@@ -2239,3 +2239,38 @@ para embasar essas decisões estão todos disponíveis.
   true/false do plano em BP-002.
 - Nenhum código de produto tocado nesta entrada (limpeza = script; levantamento =
   read-only). Itens atualizados: `BUGS.md` (040/042), `DASHBOARD.md`, este LOG.
+
+---
+
+## [2026-07-08] Chat de execução — Trilha 3b: migração das chaves de entitlement EXECUTADA (BUG-042)
+
+- `scripts/migrate-entitlement-keys.js` (novo) executado com OK da Gestora, após
+  dry-run apresentado e as 2 decisões dela: (1) Embaixadores (BP-005/011/012) →
+  acesso TOTAL às etapas do Pacote Embaixador (liga BPL-000..005 por slug; remove a
+  chave arquivada `plano-embaixadores-bplen`); (2) BP-002 = conta de teste → limpa
+  lixo + `plano_de_Carreira`→`plano-de-carreira`.
+- **Correção ao design (registrada):** o design mandava renomear `career_planning`→
+  `plano-de-carreira`. Leitura do código mostrou que `career_planning` é **capability
+  VIVA** (gate do módulo Gestão de Carreira, lido em 8 sites + `toggleCareerPlanning
+  AccessAction`), não apelido do stage. **Preservado** — renomear quebraria a feature.
+  Também confirmado por grep que `content_premium`/`hub_community`/`survey_welcome`
+  são de fato inertes (só escritas/listadas, nunca lidas p/ gate) — removidas com
+  segurança.
+- **Bug de escrita pego e corrigido:** 1ª passada usou `set(...,{merge:true})` — que
+  faz merge profundo do mapa `services` e **não remove** chave ausente. Só as adições
+  aplicaram; o inventário pós-migração ainda mostrava o lixo. Troquei para
+  `update({services: target})` e reexecutei: remoções completas. Backups do estado
+  ORIGINAL protegidos de sobrescrita (guard `if !exists`). Lição 16 no RETROSPECTIVE.
+- **Verificação final (inventory read-only):** as chaves dos 4 clientes resolvem 100%
+  para produto ATIVO / selo / `career_planning` — zero arquivado/órfão/inerte.
+  Embaixadores com a jornada inteira liberada.
+- Backups: `scratch/entitlement-key-backups/<matricula>__access.json` (4, gitignored).
+- **Nota — módulo Gestão de Carreira nos Embaixadores:** só BP-005 tem
+  `career_planning`=true; BP-011/012 não (a Gestora optou por não ligar em massa; é
+  toggle admin por pessoa). Etapa ligada ≠ concluída — só deixa de aparecer como
+  "comprar".
+- Trilha 3b concluída. Itens atualizados: `BUGS.md` (BUG-042 Corrigido),
+  `RETROSPECTIVE.md` (Lição 16), `DASHBOARD.md`, este LOG.
+- Próximo: **Trilha 3c (BUG-041)** — excluir os ~13 produtos legados/arquivados de
+  `products` (agora que nenhum cliente referencia os arquivados). Script LOCAL
+  dry-run + export + OK.
