@@ -1204,6 +1204,39 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   coluna fica como melhoria futura opcional (as travas já evitam o crash).
 - Commit/PR: **A0 mergeado** — PR #28 (`76bc05d`, squash).
 
+### BUG-045 `npm run test` quebrado na baseline desde o PR #19 (mock desatualizado)
+
+- Severidade: Médio (a suíte de testes — um dos 4 portões do `npm run check`, regra 5
+  do `CLAUDE.md` — estava **vermelha na `main`** e ninguém percebeu; qualquer
+  regressão que os testes existentes pegariam passaria despercebida)
+- Área/fase onde foi achado: Fase B / B1 (2026-07-08), ao rodar a suíte completa
+  antes de entregar o motor de acesso
+- Arquivo(s) afetado(s): `__tests__/actions/mp-checkout.test.ts`
+- Cenário de falha: **[CONFIRMADO por execução]** o **PR #19** (BUG-005) trocou o guard
+  de `createPreferenceAction` de `requireAuth` para `requireMatricula`
+  (`src/actions/mp-checkout.ts:98`), mas o `vi.mock("@/lib/auth-guards")` do teste só
+  expunha `requireAuth`. Vitest então lança `No "requireMatricula" export is defined on
+  the mock` dentro da action, que cai no próprio catch e retorna `{success:false}` —
+  os 2 testes do arquivo falham. Confirmado por bissecção: falha já em `fd62ebc`
+  (antes das Fases A2/A3), logo **não é regressão desta trilha**.
+- Causa da invisibilidade: as sessões de execução vinham validando com
+  `tsc --noEmit` + `next build` + `eslint` do arquivo tocado — **nunca** `npm run test`.
+  O pre-commit (lint-staged) só roda eslint. Nada no fluxo executava a suíte.
+- Status: **Corrigido** — 2026-07-08 (junto do PR B1). O mock passa a expor
+  `requireMatricula` e os 2 testes mockam o guard que a action de fato usa (com
+  `matricula` na sessão). **Só o arquivo de teste mudou** — zero alteração de código de
+  produto. Suíte completa: **39/39 passando** (era 37/39). Aproveitou para eliminar os
+  **4 `as any` pré-existentes** do arquivo (violação da regra "Zero Any" do `CLAUDE.md`,
+  que o lint-staged expôs ao incluir o arquivo tocado): substituídos por um helper
+  `mockSession(): Session` e um `mockQuerySnapshot()` tipado. Nenhum `--no-verify` foi
+  necessário.
+- Decisão de execução: bugfix isolado a um único arquivo de teste, sem tocar
+  segurança/identidade/financeiro (`CLAUDE.md` permite direto). Corrigido no PR do B1
+  para restaurar o `npm run check` verde antes de a Fase B avançar.
+- Lição de processo: validar com `npm run check` (que inclui `test`), não só
+  `tsc` + `build`. Registrada no `RETROSPECTIVE.md` (Lição 14).
+- Commit/PR: **mergeado** — PR #32 (junto do B1).
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em

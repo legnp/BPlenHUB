@@ -1912,3 +1912,81 @@ para embasar essas decisões estão todos disponíveis.
   que **destrava a Sync do A2**, e D (trancar `/hub/membro` = `BUG-035` resolvido).
 - **Pendente da Gestora:** preencher a aba `Atributos` (pode agora); **não
   sincronizar** o portfólio ainda (decisão do A2 — a Sync espera a Fase C).
+
+---
+
+## [2026-07-08] Chat de execução — Fase B / PR B1: motor puro `resolverAcesso` (mergeado) + BUG-045
+
+- Chat/sessão: mesmo chat de execução. A Gestora informou a planilha preenchida e
+  mandou seguir com o plano da Fase B.
+- **Conferência da aba `Atributos` (antes de qualquer código):** lida em read-only por
+  `openpyxl`. Achada **1 divergência** contra o design aprovado (§3.1 / commit `fd62ebc`):
+  `BPL-PAC-JR` estava `member` + `concedeSelo TRUE` (deveria ser `public` + `FALSE`).
+  Impacto explicado à Gestora: com o selo, o A2 vira no-op para o junior e a Fase D
+  deixaria o comprador junior entrar em `/hub/membro` — o oposto de "junior é o pacote
+  de não-membro". **A Gestora corrigiu a planilha**; re-verificado: as 12 linhas batem
+  com o §3.1. Parser rodado → payload ganha `escopo`/`concedeSelo`/`preRequisitos`/
+  `libera` nos 12 produtos, **regressão zero** nos campos existentes; `.xlsx` não tocado
+  (mtime intacto). **Payload restaurado, não commitado** — commitá-lo arma a Sync, que
+  espera a Fase C (decisão do A2).
+- **Sequenciamento da Fase B corrigido (decisão da Gestora):** a ordem `B → C → D` do
+  design **não roda** — o motor precisa de `preRequisitos` no Firestore, logo da Sync,
+  que está retida até a C. Circularidade. Nova ordem: **B1 → C → Sync → B2 + D**.
+  Medido o risco real de soltar a Sync antes da C (alternativa descartada): o modo
+  "Prévia" do `MemberJourneyHero` é **só o texto do badge** (navegação é gated por
+  `telemetry.hasAccess`, não pelo selo) e o A2 **nunca revoga** — então só **novas**
+  compras de junior na janela perderiam o dashboard `/hub/membro`. Pequeno, mas evitável.
+- **B1 (PR #32):** `src/lib/access/resolve-access.ts` — `resolverAcesso(usuario, servico)`
+  → `LIBERADO | PREVIA | UPSELL | SEQUENCE_LOCK` + `pendentes[]`. **Função pura**: sem I/O,
+  sem Firebase, sem rota/UI. **Sem consumidor** (o adaptador é o B2).
+  - Ordem das regras (§4): escopo → entitlement → pré-requisito. A `dispensa` curto-circuita
+    o pré-req, mas **nunca** o selo nem o entitlement (testado).
+  - Não conhece `admin` — o modelo diz que admin não herda a área de membro; auto-liberar
+    para admin é decisão do caller, não do motor.
+  - Defaults de transição: `escopo` ausente não bloqueia; `preRequisitos` ausente = `nenhum`;
+    `etapas: []` não exige nada. `serviceCode` normalizado (trim + uppercase).
+- **27 testes Vitest** (`__tests__/lib/resolve-access.test.ts`), table-driven sobre a
+  jornada canônica real do §3.1 (não sobre exemplos inventados).
+- **Verificação por mutação (não confiei na suíte de cara):** inverti deliberadamente a
+  ordem escopo↔entitlement no motor — **só 1 dos 26 testes quebrou**. O teste "PREVIA vence
+  entitlement" não discriminava a ordem (o usuário *possuía* o serviço, então passava nos
+  dois arranjos). Faltava o caso discriminante: **sem selo E sem entitlement** num serviço
+  `member` → deve ser `PREVIA`, nunca `UPSELL` (ofertar a um não-membro um serviço que ele
+  nem pode acessar). Adicionado → a mutação passou a quebrar 2 testes. Registrado como
+  Lição 15 do `RETROSPECTIVE.md`.
+- **BUG-045 (Médio, novo, corrigido no mesmo PR):** ao rodar `npm run test` (suíte completa,
+  não só o arquivo novo) descobri que **a suíte estava vermelha na `main`**: 37/39. Causa
+  confirmada por bissecção (`fd62ebc`, antes das Fases A2/A3 → **não é regressão desta
+  trilha**): o **PR #19** trocou o guard de `createPreferenceAction` de `requireAuth` para
+  `requireMatricula`, mas o `vi.mock("@/lib/auth-guards")` de `__tests__/actions/mp-checkout.test.ts`
+  só expunha `requireAuth`. Corrigido (só o arquivo de teste; zero código de produto).
+  **Suíte: 39/39.** Invisível até hoje porque as sessões validavam com `tsc` + `build` +
+  eslint, **nunca** com `npm run test`; o pre-commit só roda eslint. Registrado como
+  Lição 14 do `RETROSPECTIVE.md`.
+- **Zero Any restaurado no arquivo tocado:** o pre-commit barrou em **4 `as any`
+  pré-existentes** do `mp-checkout.test.ts` (só apareceram porque o lint-staged passou a
+  incluir o arquivo). O processo permite `--no-verify` para baseline, mas "Zero Any" é
+  regra inegociável do `CLAUDE.md` e eram 4 linhas num arquivo que eu já estava tocando —
+  **consertei em vez de contornar** (helpers `mockSession(): Session` e `mockQuerySnapshot()`
+  tipados). **Nenhum `--no-verify` usado nesta trilha.**
+- **Achado sobre o BUG-043** (leitura, registrado no design §9.6): o `steps-registry.ts`
+  **já não dirige a jornada** — `getJourneyStagesAction` deriva as etapas dos produtos. O
+  registry só sobrescreve `substeps` em `journey.ts:175-178` quando o id casa com o slug do
+  produto **e tem substeps**, e **só `onboarding` tem**. As outras 6 entradas legadas nunca
+  sobrescrevem nada. Mas o registry está **vivo** em `NetworkingFilters.tsx` (filtro com nomes
+  legados; somado ao BUG-033, duplamente quebrado). Aposentá-lo exige mover os substeps
+  curados do onboarding para **dado** + consertar o networking → **PR próprio depois do B**
+  (decisão da Gestora), não dentro do motor.
+- **Decisão registrada para o B2:** adaptador **leniente** — entitlement = união de `services`
+  + quotas + `libera` expandido **em leitura**. Motivo: hoje o comprador de pacote acessa as
+  etapas por `grantedQuotas` + *fuzzy match*, não por `libera` (que ninguém lê e o checkout não
+  expande). Motor estrito de imediato **removeria acesso de compradores de pacote**. Estrito só
+  depois da Trilha 3b (BUG-042).
+- **Validação:** `npm run test` **39/39** (era 37/39), `tsc --noEmit` limpo, `next build`
+  exit 0, `eslint` dos arquivos novos 0 erros/0 warnings. Pre-commit sem `--no-verify`.
+  Nada observável em preview (função pura).
+- Itens atualizados: `BUGS.md` (+BUG-045), `RETROSPECTIVE.md` (Lições 14 e 15),
+  `ACCESS-MODEL-DESIGN.md` (§9.5 B1/B2 + §9.6 BUG-043), `DASHBOARD.md`, este LOG.
+- Próximo: **Fase C** — reposicionar `/hub/membro/checkout/*` → `/hub/checkout/*` (~8 refs)
+  e posicionamento/junior como serviço público em `/hub`. Gated. Depois: **Sync do portfólio**
+  (ativa o A2), **B2** (plugar o motor) e **D** (trancar `/hub/membro` = BUG-035 resolvido).

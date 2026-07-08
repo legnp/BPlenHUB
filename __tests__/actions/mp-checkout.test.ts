@@ -1,11 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createPreferenceAction } from '@/actions/mp-checkout';
-import { requireAuth } from '@/lib/auth-guards';
+import { requireMatricula } from '@/lib/auth-guards';
+import type { Session } from '@/lib/server-session';
 import { getAdminDb } from '@/lib/firebase-admin';
 import { checkRateLimit } from '@/lib/rate-limit';
 
+// `createPreferenceAction` passou de `requireAuth` para `requireMatricula` no PR #19
+// (BUG-005, rastreabilidade fiscal). O mock precisa expor os dois exports.
 vi.mock('@/lib/auth-guards', () => ({
   requireAuth: vi.fn(),
+  requireMatricula: vi.fn(),
 }));
 
 vi.mock('@/lib/rate-limit', () => ({
@@ -63,6 +67,22 @@ vi.mock('@/env', () => ({
   },
 }));
 
+/** Sessao completa (o guard resolve `isAdmin`/`matricula`) — evita `as any` no mock. */
+function mockSession(patch: Partial<Session> = {}): Session {
+  return {
+    uid: 'user-123',
+    email: 'test@bplen.com',
+    isAdmin: false,
+    matricula: 'BP-001-PF-260101',
+    ...patch,
+  };
+}
+
+/** Snapshot minimo de query do Firestore, no formato que a action consome. */
+function mockQuerySnapshot(docs: { id: string; data: () => unknown }[]) {
+  return { empty: docs.length === 0, docs } as unknown as FirebaseFirestore.QuerySnapshot;
+}
+
 describe('Mercado Pago Checkout Actions 💳', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -70,8 +90,7 @@ describe('Mercado Pago Checkout Actions 💳', () => {
   });
 
   it('should create a preference successfully', async () => {
-    const mockSession = { uid: 'user-123', email: 'test@bplen.com' };
-    vi.mocked(requireAuth).mockResolvedValue(mockSession as any);
+    vi.mocked(requireMatricula).mockResolvedValue(mockSession());
 
     const mockProduct = {
       id: 'prod-1',
@@ -83,10 +102,9 @@ describe('Mercado Pago Checkout Actions 💳', () => {
 
     const db = getAdminDb();
     const productCol = db.collection('products');
-    vi.mocked(productCol.get).mockResolvedValue({
-      empty: false,
-      docs: [{ data: () => mockProduct, id: 'prod-1' }],
-    } as any);
+    vi.mocked(productCol.get).mockResolvedValue(
+      mockQuerySnapshot([{ id: 'prod-1', data: () => mockProduct }])
+    );
 
     const result = await createPreferenceAction('test-service', 'token');
 
@@ -95,11 +113,11 @@ describe('Mercado Pago Checkout Actions 💳', () => {
   });
 
   it('should return error if product not found', async () => {
-    vi.mocked(requireAuth).mockResolvedValue({ uid: '123' } as any);
+    vi.mocked(requireMatricula).mockResolvedValue(mockSession({ uid: '123' }));
     
     const db = getAdminDb();
     const productCol = db.collection('products');
-    vi.mocked(productCol.get).mockResolvedValue({ empty: true } as any);
+    vi.mocked(productCol.get).mockResolvedValue(mockQuerySnapshot([]));
 
     const result = await createPreferenceAction('invalid', 'token');
     expect(result.success).toBe(false);

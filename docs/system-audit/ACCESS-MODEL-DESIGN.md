@@ -305,6 +305,56 @@ resiliente**), `Checkpoints` (**por linha — resiliente**); `anuncios_bplen.doc
     Array vazio limpa as dispensas.
 - **(Fase B, não A):** derivar a jornada dos produtos + motor `resolverAcesso`.
 
+## 9.5 Fase B — motor de acesso (dividida em B1/B2)
+
+**Sequenciamento corrigido (decisão da Gestora, 2026-07-08).** A ordem original
+`B → C → D` **não roda**: o motor precisa de `preRequisitos` no Firestore, logo
+precisa da **Sync**, que o A2 reteve até a Fase C. Ordem real:
+
+> **B1 (agora) → C → Sync → B2 + D**
+
+- **PR B1 — motor puro, sem consumidor. ✅ FEITO (PR #32).**
+  - `src/lib/access/resolve-access.ts`: `resolverAcesso(usuario, servico)` →
+    `LIBERADO | PREVIA | UPSELL | SEQUENCE_LOCK` + `pendentes[]`. Função pura, sem
+    I/O, sem Firebase, sem conceito de rota/UI. **Não conhece admin** — se um caller
+    quiser auto-liberar para admin, a decisão é dele (o modelo diz que admin não
+    herda a área de membro).
+  - Ordem das regras (§4): escopo → entitlement → pré-requisito (com `dispensa`
+    curto-circuitando o pré-req, mas **nunca** o selo nem o entitlement).
+  - Defaults de transição: `escopo` ausente não bloqueia; `preRequisitos` ausente
+    equivale a `modo: nenhum`; `etapas: []` não exige nada. `serviceCode` comparado
+    com trim + uppercase.
+  - **27 testes Vitest** (`__tests__/lib/resolve-access.test.ts`) sobre a jornada
+    canônica real do §3.1. Validados por **mutação**: inverter escopo↔entitlement
+    quebra a suíte (ver Lição 15 do `RETROSPECTIVE.md`).
+- **PR B2 — adaptador + troca do lock hardcoded.** Depende da Sync.
+  - `buildAccessContext`: normaliza `services` + quotas + progresso + produtos em
+    `serviceCode`s. **Adaptador leniente** (decisão da Gestora): entitlement =
+    união de `services` + quotas + `libera` expandido **em leitura**. Motivo: hoje
+    o comprador de pacote acessa etapas via `grantedQuotas` + *fuzzy match*, não via
+    `libera` (que ninguém lê e o checkout não expande). Um motor estrito de imediato
+    **removeria acesso de compradores de pacote**. O estrito só depois da Trilha 3b
+    (`BUG-042`, chaves-lixo dos 4 clientes).
+  - Substitui as heurísticas de `useJourney.ts:231-252` (índice de array + exceções
+    hardcoded de onboarding/mentocoach/offboarding) e o `hasAccess` por *fuzzy match*
+    de quotas.
+
+### 9.6 Achado sobre o `BUG-043` (leitura de 2026-07-08)
+
+O `steps-registry.ts` **já não dirige a jornada**: `getJourneyStagesAction` deriva as
+etapas dos produtos. O registry entra só em `journey.ts:175-178`, sobrescrevendo
+`substeps` quando o id estático casa com o slug do produto **e tem substeps** — e
+**só `onboarding` tem**. As outras 6 entradas (ids legados) nunca sobrescrevem nada.
+
+Porém o registry está **vivo** em `NetworkingFilters.tsx` (filtro de estágio, com os
+nomes legados) — que, somado ao `BUG-033` (`journeyStageId` sempre "onboarding"),
+está duplamente quebrado.
+
+Consequência: aposentar o registry exige **mover os substeps curados do onboarding
+(vídeo, check-in, sessão) para dado** (`deliverySteps` / aba `Checkpoints`) e
+consertar o filtro do networking. É mudança de **dado + 2 telas** → **PR próprio,
+depois da Fase B** (decisão da Gestora, 2026-07-08), não dentro do motor.
+
 Observação registrada: os arquivos de `portfolio/` (preços/config comercial) estão
 **versionados no repo** — decisão deliberada da Gestora (o parser os trata como
 "secure sources"); não é bug, mas fica anotado.

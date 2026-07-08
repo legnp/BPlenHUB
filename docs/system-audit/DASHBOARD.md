@@ -12,7 +12,13 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-08 (chat de execução — **Fase A / A3 mergeada**
+> **Última atualização:** 2026-07-08 (chat de execução — **Fase B / B1 mergeada**
+> (PR #32): motor puro `resolverAcesso` + 27 testes Vitest, sem consumidor. Achado e
+> corrigido no mesmo PR o **BUG-045**: `npm run test` estava **vermelho na `main`**
+> desde o PR #19 (mock sem `requireMatricula`) — a suíte volta a **39/39**.
+> Sequenciamento da Fase B corrigido para **B1 → C → Sync → B2 + D**.
+>
+> _(entrada anterior)_ 2026-07-08 (chat de execução — **Fase A / A3 mergeada**
 > (PR #31): botão admin de dispensa de pré-requisito na aba "Assessments /
 > Devolutivas" de `admin/users`; etapas derivadas dos produtos (sem hardcode) e
 > cada `serviceCode` validado contra o catálogo no servidor. Campo gravado sem
@@ -104,13 +110,20 @@ Desenho em `ACCESS-MODEL-DESIGN.md`. Fecha o `BUG-035` na **Fase D**, não antes
 | A1 | Campos do modelo (aba `Atributos` + `ProductSchema` + `Product` + `dispensaPreRequisito`), sem consumidores | ✓ PR #29 |
 | A2 | Selo condicional no checkout (`concedeSelo`) | ✓ PR #30 — **inerte até a Sync** |
 | A3 | Botão admin de `dispensaPreRequisito` | ✓ PR #31 — **sem consumidor até a Fase B** |
-| B | Motor único `resolverAcesso` | ○ próximo |
-| C | Reposicionar checkout/junior → `/hub` | ○ **destrava a Sync do A2** |
+| B1 | Motor puro `resolverAcesso` + 27 testes | ✓ PR #32 — **sem consumidor** |
+| C | Reposicionar checkout/junior → `/hub` | ○ próximo — **destrava a Sync** |
+| — | **Sync do portfólio** (ativa o A2) | ○ depois da C |
+| B2 | Adaptador + troca do lock hardcoded | ○ depende da Sync |
 | D | Trancar `/hub/membro` (exige selo) | ○ **→ BUG-035 resolvido** |
 
-**Pendente da Gestora:** preencher a aba `Atributos` no `portfolio_bplen.xlsx`
-(valores em `ACCESS-MODEL-DESIGN.md#31`; `BPL-PAC-JR` = `public` + `concedeSelo FALSE`).
-**Não sincronizar ainda** — a Sync é o que ativa o A2, e espera a Fase C.
+**Sequenciamento corrigido (2026-07-08):** a ordem `B → C → D` do design não roda —
+o motor precisa de `preRequisitos` no Firestore, que só chegam pela Sync, retida até
+a C. Ordem real: **B1 → C → Sync → B2 + D**.
+
+**Aba `Atributos` preenchida** (2026-07-08) e conferida contra o §3.1: as 12 linhas
+batem, `BPL-PAC-JR` = `public` + `concedeSelo FALSE` (a Gestora corrigiu uma
+divergência apontada na conferência). Parser validado por diff — regressão zero.
+**Payload não commitado e portfólio não sincronizado** de propósito: a Sync espera a C.
 
 ---
 
@@ -134,6 +147,7 @@ _Nenhuma no momento._
 - **BUG-037** (Baixo, **corrigido** PR #26) — acentos/crase em copy pública de serviços; F1-01
 - **BUG-038** (Baixo, aberto/adiado) — `<Image fill>` sem `sizes` na foto da fundadora (perf); F1-01/T-01
 - **BUG-039** (Baixo, **corrigido** PR #27) — `seedComparisonProductsAction` órfã removida (double-check: zero refs no repo); F1-01
+- **BUG-045** (Médio, **corrigido** PR #32) — `npm run test` quebrado na `main` desde o PR #19 (mock de `@/lib/auth-guards` sem `requireMatricula`); suíte estava 37/39 e ninguém via, porque as sessões validavam só com `tsc` + `build`
 
 ---
 
