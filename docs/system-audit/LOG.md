@@ -1800,3 +1800,62 @@ para embasar essas decisões estão todos disponíveis.
   libera, sku, nbs, naturezaOperacao, descricaoFiscal) e sincronizar o portfólio.
 - Próximo: **PR A2** (selo condicional no checkout — financeiro/gated) e **A3** (botão
   admin de `dispensaPreRequisito`). Depois, Fase B (motor de acesso).
+
+---
+
+## [2026-07-08] Chat de execução — Fase A / PR A2: selo condicional no checkout (mergeado)
+
+- Chat/sessão: chat de execução (Opus 4.8). Área **financeira** → plano + risco
+  apresentados e **aprovados pela Gestora** antes de codar (gating do `CLAUDE.md`).
+- Higiene de branch (Lição 4): `main == origin/main` em `fd62ebc` verificado **antes**
+  de ramificar; os docs desta entrada foram para dentro do próprio PR, de propósito.
+- **A2 (PR #30):** `src/lib/checkout.ts:grantServiceEntitlement` passa a conceder
+  `member_area_access` **condicionado ao `concedeSelo` do produto**. Arquivo único.
+  - Ponto de escrita confirmado **único** por grep: `grantServiceEntitlement` é o só
+    escritor do selo no código de produto; callers = `actions/checkout.ts:100`
+    (resgate gratuito/cupom-100%, `bplen_free_bypass`) e o webhook do Mercado Pago
+    (`api/webhooks/mercadopago/route.ts:148`). `retroactive-contract.ts` **não**
+    concede entitlement (só grava a ordem + consentimento legal — verificado).
+    O toggle admin (`users-admin.ts`) escreve direto, fora deste caminho.
+  - Sem leitura nova: `productData` já era pré-buscado (linhas 80-92, por `doc(productId)`
+    com fallback `where("slug","==",...)`). Assinatura, transação e callers intactos.
+- **Decisões da Gestora (2026-07-08), as 3 conforme recomendação:**
+  1. **Default seguro:** só `concedeSelo === false` deixa de conceder; `undefined`
+     (aba `Atributos` ainda não preenchida/sincronizada) ou produto não resolvido
+     → concede. Rejeitada a variante estrita (`só true concede`), que quebraria
+     **todos** os fluxos de compra no merge, já que nenhum produto tem o campo hoje.
+     Rejeitado também o critério extra `escopo === "public"`: inerte, pois `escopo`
+     vem da **mesma aba** que `concedeSelo` — quando um existe, o outro existe.
+  2. **Sequenciamento:** a **Sync do portfólio com a aba preenchida fica retida até
+     a Fase C**. É a Sync que ativa o comportamento, não o merge.
+  3. **`role`** (`checkout.ts:146`, promoção `visitor → member` em toda compra):
+     **não tocar**. `role` só é lido para `=== "suspended"` (3 guards) e `=== "admin"`
+     — promover um comprador junior é inócuo; dar semântica de selo a `role` é Fase D.
+- **Prova de neutralidade do merge** (o "risco zero" não é asserção vaga): nenhum doc
+  de `products` no Firestore tem o campo `concedeSelo` (ele nasceu no A1, opcional, e
+  a aba `Atributos` ainda não foi preenchida/sincronizada) → `concedeSelo === undefined`
+  em 100% das compras → `grantsMemberSeal === true` → mesmo comportamento de antes.
+  O comportamento muda **no momento da Sync**, sob controle da Gestora.
+- **Nunca revoga:** `...currentServices` precede o spread condicional — um membro que
+  já tem o selo o mantém ao comprar um item `concedeSelo: false`.
+- **Risco registrado (não no merge, na Sync):** com os valores de `ACCESS-MODEL-DESIGN.md`
+  §3.1, `BPL-PAC-JR` e `BPL-001` deixam de conceder o selo. Antes das Fases C/D isso
+  significa: comprador junior perde `/hub/membro` (redirect `→ /hub`,
+  `hub/membro/page.tsx:33`) e vê o hero em **"Prévia"** (`MemberJourneyHero.tsx:55`);
+  a rota `/hub/membro/journey/posicionamento-profissional` **não é gated** hoje, então
+  o serviço segue acessível por link direto, mas sem ponto de entrada navegável. Por
+  isso a Sync espera a Fase C (que reposiciona posicionamento/junior como serviço
+  público em `/hub`).
+- **Validação:** `eslint src/lib/checkout.ts` (0 erros; 2 *warnings* de import morto —
+  `USER_PERMISSIONS_COLLECTION` e `sendServiceGrantedEmail` — **pré-existentes**, não
+  introduzidos aqui, deixados intocados por ser arquivo financeiro), `tsc --noEmit`
+  limpo, `next build` exit 0. Sem preview: fluxo logado/financeiro (BUG-030).
+- Nota de "Zero Any": `productData` é `FirebaseFirestore.DocumentData`, cujo acesso a
+  propriedade infere `any` — anotado como `const concedeSelo: unknown` e comparado
+  por identidade (`!== false`), sem cast.
+- Itens atualizados: `ACCESS-MODEL-DESIGN.md` (§9.4 A2 feito + decisões),
+  `DASHBOARD.md`, este LOG.
+- Próximo: **PR A3** — botão admin de `dispensaPreRequisito` (aba "Assessments/
+  Devolutivas" em `admin/users` e/ou `/admin/fs/devolutiva`). Depois: Fase B (motor
+  `resolverAcesso`), C, D. **Pendente da Gestora:** preencher a aba `Atributos` (não
+  sincronizar ainda — ver decisão 2).

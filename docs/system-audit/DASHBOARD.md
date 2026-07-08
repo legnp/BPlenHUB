@@ -12,7 +12,15 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-07 (chat de execução — **Fase 1 iniciada**:
+> **Última atualização:** 2026-07-08 (chat de execução — **Fase A / A2 mergeada**
+> (PR #30): `grantServiceEntitlement` concede `member_area_access` só se o produto
+> não declarar `concedeSelo: false`. **Merge behavior-neutral** — nenhum produto tem
+> o campo no Firestore ainda; o comportamento vira na **Sync do portfólio**, retida
+> até a Fase C por decisão da Gestora. Nenhuma contagem de track muda (A2 é
+> reestruturação do modelo de acesso, não fechamento de bug; `BUG-035` fecha na
+> Fase D).
+>
+> _(entrada anterior)_ 2026-07-07 (chat de execução — **Fase 1 iniciada**:
 > BUG-035 (F1-06) promovido a **[CONFIRMADO]** por leitura (causa-raiz: enforcement
 > de `member_area_access` só em `/hub/membro`; correção gated). **F1-01** (páginas
 > públicas): PR #26 mergeada corrigindo **BUG-036** (hidratação no `ComparisonTable`),
@@ -77,6 +85,26 @@ mergeados na `main` sobre o total do track.
 - **T-01** Performance/concorrência — BUG-017 (aberto)
 - **T-04** Observabilidade — escopo reduzido (inventariar gap)
 - **T-05** Integrações externas — escopo misto (sandbox)
+
+---
+
+## Reestruturação do modelo de acesso (origem: `BUG-035`)
+
+Desenho em `ACCESS-MODEL-DESIGN.md`. Fecha o `BUG-035` na **Fase D**, não antes.
+
+| Etapa | Escopo | Status |
+|---|---|---|
+| A0 | Endurecer `portfolio_parser.py` (paths, slug BPL-003, travas) | ✓ PR #28 |
+| A1 | Campos do modelo (aba `Atributos` + `ProductSchema` + `Product` + `dispensaPreRequisito`), sem consumidores | ✓ PR #29 |
+| A2 | Selo condicional no checkout (`concedeSelo`) | ✓ PR #30 — **inerte até a Sync** |
+| A3 | Botão admin de `dispensaPreRequisito` | ○ próximo |
+| B | Motor único `resolverAcesso` | ○ |
+| C | Reposicionar checkout/junior → `/hub` | ○ **destrava a Sync do A2** |
+| D | Trancar `/hub/membro` (exige selo) | ○ **→ BUG-035 resolvido** |
+
+**Pendente da Gestora:** preencher a aba `Atributos` no `portfolio_bplen.xlsx`
+(valores em `ACCESS-MODEL-DESIGN.md#31`; `BPL-PAC-JR` = `public` + `concedeSelo FALSE`).
+**Não sincronizar ainda** — a Sync é o que ativa o A2, e espera a Fase C.
 
 ---
 

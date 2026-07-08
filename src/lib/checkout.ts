@@ -106,6 +106,19 @@ export async function grantServiceEntitlement(params: GrantEntitlementParams) {
     }
   }
 
+  // Selo de membro condicional (Fase A / A2 — ver ACCESS-MODEL-DESIGN.md).
+  // O item compravel declara, via aba "Atributos" do portfolio, se concede o selo
+  // `member_area_access` (pacotes/servicos de clube = sim; junior/posicionamento = nao).
+  // DEFAULT SEGURO: so `concedeSelo === false` deixa de conceder. Campo ausente
+  // (aba ainda nao preenchida/sincronizada) ou produto nao resolvido mantem o
+  // comportamento historico de conceder o selo em toda compra.
+  const concedeSelo: unknown = productData?.concedeSelo;
+  const grantsMemberSeal = concedeSelo !== false;
+
+  if (!grantsMemberSeal) {
+    console.log(`[Entitlement] Produto ${productSlug} nao concede o selo de membro (concedeSelo=false).`);
+  }
+
   // Caminho Soberano Oficial (Validado)
   const userRef = db.doc(`User/${matricula}/User_Permissions/access`);
 
@@ -117,12 +130,14 @@ export async function grantServiceEntitlement(params: GrantEntitlementParams) {
       : {};
 
     // Ativando o servico (Entitlement via ID, Slug e Stage IDs derivados das quotas)
+    // O selo de membro so entra quando o item o concede; nunca e revogado aqui —
+    // `currentServices` preserva um selo pre-existente de outra compra/atribuicao admin.
     const updatedServices = {
       ...currentServices,
       ...quotaBasedStageActivations,
       [productId]: true,
       [productSlug]: true,
-      member_area_access: true // Toda compra garante acesso a area de membros
+      ...(grantsMemberSeal ? { member_area_access: true } : {})
     };
 
     const updateData: Record<string, unknown> = {
