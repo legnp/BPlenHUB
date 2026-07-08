@@ -432,8 +432,10 @@
     "escopo": "member",
     "concedeSelo": true,
     "preRequisitos": {
-      "modo": "nenhum",
-      "etapas": []
+      "modo": "todos",
+      "etapas": [
+        "BPL-000"
+      ]
     }
   },
   {
@@ -606,6 +608,7 @@
     "preRequisitos": {
       "modo": "todos",
       "etapas": [
+        "BPL-000",
         "BPL-002"
       ]
     }
@@ -810,6 +813,7 @@
     "preRequisitos": {
       "modo": "todos",
       "etapas": [
+        "BPL-000",
         "BPL-003"
       ]
     }
@@ -1064,8 +1068,10 @@
     "escopo": "member",
     "concedeSelo": true,
     "preRequisitos": {
-      "modo": "nenhum",
-      "etapas": []
+      "modo": "todos",
+      "etapas": [
+        "BPL-000"
+      ]
     }
   },
   {
@@ -1264,6 +1270,7 @@
       "etapas": []
     },
     "libera": [
+      "BPL-000",
       "BPL-001",
       "BPL-002"
     ]
@@ -1330,6 +1337,7 @@
       "etapas": []
     },
     "libera": [
+      "BPL-000",
       "BPL-001",
       "BPL-002",
       "BPL-003"
@@ -1399,6 +1407,7 @@
       "etapas": []
     },
     "libera": [
+      "BPL-000",
       "BPL-001",
       "BPL-002",
       "BPL-003",
@@ -1470,6 +1479,7 @@
       "etapas": []
     },
     "libera": [
+      "BPL-000",
       "BPL-001",
       "BPL-002",
       "BPL-003",

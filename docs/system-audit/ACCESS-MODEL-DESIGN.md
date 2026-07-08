@@ -60,10 +60,10 @@ jornada (o `steps-registry.ts` legado é aposentado/reconciliado — `BUG-043`).
 |---|---|---|---|
 | 1 | Posicionamento de Carreira (`posicionamento-profissional`, BPL-001) | **público** | nenhum |
 | 2 | Onboarding (BPL-000) | membro | nenhum |
-| 3 | Análise Comportamental (BPL-002) | membro | **nenhum** |
+| 3 | Análise Comportamental (BPL-002) | membro | **onboarding** *(rev. Gestora 2026-07-08)* |
 | 4 | Plano de Carreira (BPL-003) | membro | **análise comportamental** |
 | 5 | Gestão e Desenvolvimento de Carreira / GDC (`gestao-e-desenvolvimento`, BPL-004) | membro | **plano de carreira** |
-| 6 | MentoCoach (BPL-005) | membro | nenhum |
+| 6 | MentoCoach (BPL-005) | membro | **onboarding** *(rev. Gestora 2026-07-08)* |
 | 7 | Offboarding (BPL-006) | membro | **qualquer: [GDC, mentocoach]** (conforme contratado) |
 
 Notas:
@@ -83,16 +83,16 @@ humana (parser ignora). Fiscais podem ficar em branco por ora (provisionados).
 |---|---|---|---|---|---|
 | BPL-001 (Posicionamento) | **public** | FALSE | nenhum | | |
 | BPL-000 (Onboarding) | member | FALSE | nenhum | | |
-| BPL-002 (Análise Comportamental) | member | TRUE | nenhum | | |
-| BPL-003 (Plano de Carreira) | member | TRUE | todos | BPL-002 | |
-| BPL-004 (GDC) | member | TRUE | todos | BPL-003 | |
-| BPL-005 (MentoCoach) | member | TRUE | nenhum | | |
+| BPL-002 (Análise Comportamental) | member | TRUE | todos | BPL-000 | |
+| BPL-003 (Plano de Carreira) | member | TRUE | todos | BPL-000,BPL-002 | |
+| BPL-004 (GDC) | member | TRUE | todos | BPL-000,BPL-003 | |
+| BPL-005 (MentoCoach) | member | TRUE | todos | BPL-000 | |
 | BPL-006 (Offboarding) | member | FALSE | qualquer | BPL-004,BPL-005 | |
 | BPL-PAC-JR (Junior) | **public** | **FALSE** | nenhum | | BPL-001 |
-| BPL-PAC-PL (Pleno) | member | TRUE | nenhum | | BPL-001,BPL-002 |
-| BPL-PAC-SR (Senior) | member | TRUE | nenhum | | BPL-001,BPL-002,BPL-003 |
-| BPL-PAC-LD (Líder) | member | TRUE | nenhum | | BPL-001,BPL-002,BPL-003,BPL-004 |
-| BPL-PAC-EB (Embaixador) | member | TRUE | nenhum | | BPL-001,BPL-002,BPL-003,BPL-004,BPL-005 |
+| BPL-PAC-PL (Pleno) | member | TRUE | nenhum | | BPL-000,BPL-001,BPL-002 |
+| BPL-PAC-SR (Senior) | member | TRUE | nenhum | | BPL-000,BPL-001,BPL-002,BPL-003 |
+| BPL-PAC-LD (Líder) | member | TRUE | nenhum | | BPL-000,BPL-001,BPL-002,BPL-003,BPL-004 |
+| BPL-PAC-EB (Embaixador) | member | TRUE | nenhum | | BPL-000,BPL-001,BPL-002,BPL-003,BPL-004,BPL-005 |
 
 **Correção da Gestora (2026-07-07):** o **Pacote Junior (BPL-PAC-JR) é `public`,
 não `member`** — é o pacote de não-membro (entrega o posicionamento em `/hub`); e
@@ -360,6 +360,11 @@ Observação registrada: os arquivos de `portfolio/` (preços/config comercial) 
 "secure sources"); não é bug, mas fica anotado.
 
 ## Registro de revisões
+- 2026-07-08 — **Revisão da Gestora nos atributos (pós-B2, via planilha — zero
+  código):** Onboarding (BPL-000) vira pré-requisito de análise/plano/GDC/mentocoach,
+  e os pacotes pleno..embaixador passam a liberar BPL-000. Fecha a lacuna de o
+  onboarding não ser liberado por nenhum pacote. Primeira mudança de regra feita
+  puramente por dado, como o modelo prevê (§0). Vigora no próximo clique de Sync.
 - 2026-07-07 — criação, a partir do desenho iterativo com a Gestora (BUG-035 →
   modelo modular). Decisões locked: 3 sub-áreas; `concedeSelo` por item; jornada
   reordenada + pré-req; produtos = fonte única; higiene da base (backups 3 últimos/
