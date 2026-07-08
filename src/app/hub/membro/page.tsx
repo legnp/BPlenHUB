@@ -25,8 +25,11 @@ export default async function MemberAreaPage() {
   }
 
   // 2. Gate de Autorização Granular (Soberania de Permissões) 🛡️
-  const { isAdmin, services: userServices } = await fetchUserPermissionsStatus(session.uid);
-  const hasAccess = isAdmin || userServices?.member_area_access === true;
+  // 2a camada — a 1a e' o layout.tsx da subarvore (Fase D). Sem bypass de admin:
+  // o selo de membro nao e' herdado (ACCESS-MODEL-DESIGN.md secao 1); admin que
+  // precise testar a area se auto-libera pelo proprio painel.
+  const { services: userServices } = await fetchUserPermissionsStatus(session.uid);
+  const hasAccess = userServices?.member_area_access === true;
 
   if (!hasAccess) {
     console.warn(`🚦 [MemberArea Gate] Acesso bloqueado via Servidor para o UID: ${session.uid}.`);
