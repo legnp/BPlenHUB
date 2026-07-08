@@ -77,4 +77,20 @@ export interface Product {
   status: 'draft' | 'active' | 'archived';
   createdAt: string;
   updatedAt: string;
+
+  // Modelo modular de acesso (Fase A / A1) — opcionais, ainda sem consumidor.
+  // Origem: aba "Atributos" do portfolio_bplen.xlsx (ver ACCESS-MODEL-DESIGN.md).
+  escopo?: 'public' | 'member'; // entregue em /hub (public) ou /hub/membro (member)
+  concedeSelo?: boolean; // comprar este item concede o selo member_area_access?
+  preRequisitos?: {
+    modo: 'nenhum' | 'todos' | 'qualquer';
+    etapas: string[]; // serviceCodes exigidos
+  };
+  libera?: string[]; // (pacotes) serviceCodes que o pacote entitla
+  sku?: string; // codigo fiscal/SKU do servico
+  fiscal?: {
+    nbs?: string;
+    naturezaOperacao?: string;
+    descricaoFiscal?: string;
+  };
 }

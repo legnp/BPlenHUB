@@ -53,4 +53,9 @@ export interface AdminUser {
     disc_link?: string;
     [key: string]: unknown;
   };
+
+  // 🎫 Dispensa de pré-requisito (Fase A) — serviceCodes liberados manualmente pelo
+  // admin (ou pelo futuro workflow de elegibilidade). Lido pelo motor de acesso (Fase B).
+  // Provisionado sem consumidor ainda. Persiste no doc User_Permissions/access.
+  dispensaPreRequisito?: string[];
 }
