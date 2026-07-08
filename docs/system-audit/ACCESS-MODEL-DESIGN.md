@@ -266,10 +266,26 @@ resiliente**), `Checkpoints` (**por linha — resiliente**); `anuncios_bplen.doc
     → campos populam certo (Excel restaurado do backup, intocado); tsc + build limpos.
   - **Pendente da Gestora:** criar/preencher a aba `Atributos` no `portfolio_bplen.xlsx`
     e sincronizar o portfólio para os campos entrarem no Firestore.
-- **PR A2 — Selo condicional no checkout.** `checkout.ts:125` concede
-  `member_area_access` só se `concedeSelo === true`. Financeiro → gated. Definir o
-  default quando ausente (recomendação: a aba `Atributos` define para todos, então
-  não há ausência; fallback seguro = não conceder para serviços de escopo público).
+- **PR A2 — Selo condicional no checkout. ✅ FEITO (PR #30).**
+  - `src/lib/checkout.ts:grantServiceEntitlement` (ponto **único** que escreve
+    `member_area_access` no código de produto — 2 callers: `actions/checkout.ts`
+    resgate gratuito/cupom-100% e o webhook do Mercado Pago) passa a condicionar o
+    selo ao `concedeSelo` do produto, reusando o `productData` **já pré-buscado**
+    (nenhuma leitura nova, assinatura e transação intactas).
+  - **Default seguro decidido pela Gestora (2026-07-08):** só `concedeSelo === false`
+    deixa de conceder. Campo ausente (aba `Atributos` não preenchida/sincronizada)
+    ou produto não resolvido → concede, como sempre. **O merge é behavior-neutral**:
+    nenhum produto tem o campo no Firestore ainda.
+  - **Nunca revoga:** `...currentServices` precede o spread — quem já tem o selo o
+    mantém ao comprar um item `concedeSelo: false`.
+  - **Sequenciamento decidido pela Gestora:** a **Sync do portfólio com a aba
+    preenchida fica retida até a Fase C** estar mergeada. É a Sync — não o merge —
+    que ativa o comportamento; rodá-la antes da C deixaria o comprador junior sem
+    ponto de entrada navegável (perde `/hub/membro`, hero cai em "Prévia", e a rota
+    `/hub/membro/journey/posicionamento-profissional` só é alcançável por link direto).
+  - `role: "visitor" → "member"` (`checkout.ts:146`) fica **incondicional por
+    decisão explícita** — `role` hoje só é lido para `=== "suspended"`/`=== "admin"`;
+    dar-lhe semântica de selo é escopo da Fase D, não do A2.
 - **PR A3 — Botão admin manual de `dispensaPreRequisito`** (aba "Assessments/
   Devolutivas" e/ou `/admin/fs/devolutiva`).
 - **(Fase B, não A):** derivar a jornada dos produtos + motor `resolverAcesso`.
