@@ -73,7 +73,13 @@
         "onboarding"
       ]
     },
-    "order": 2
+    "order": 2,
+    "escopo": "member",
+    "concedeSelo": false,
+    "preRequisitos": {
+      "modo": "nenhum",
+      "etapas": []
+    }
   },
   {
     "id": "posicionamento-profissional",
@@ -266,6 +272,12 @@
       "allowedEventTypes": [
         "feedback-posicionamento-profissional"
       ]
+    },
+    "escopo": "public",
+    "concedeSelo": false,
+    "preRequisitos": {
+      "modo": "nenhum",
+      "etapas": []
     }
   },
   {
@@ -416,6 +428,12 @@
       "allowedEventTypes": [
         "devolutiva-analise-comportamental"
       ]
+    },
+    "escopo": "member",
+    "concedeSelo": true,
+    "preRequisitos": {
+      "modo": "nenhum",
+      "etapas": []
     }
   },
   {
@@ -581,6 +599,14 @@
       "forms": [],
       "allowedEventTypes": [
         "devolutiva-plano-carreira"
+      ]
+    },
+    "escopo": "member",
+    "concedeSelo": true,
+    "preRequisitos": {
+      "modo": "todos",
+      "etapas": [
+        "BPL-002"
       ]
     }
   },
@@ -777,6 +803,14 @@
         "orientacao-em-grupo",
         "orientacao-em-grupo",
         "orientacao-em-grupo"
+      ]
+    },
+    "escopo": "member",
+    "concedeSelo": true,
+    "preRequisitos": {
+      "modo": "todos",
+      "etapas": [
+        "BPL-003"
       ]
     }
   },
@@ -1026,6 +1060,12 @@
         "sessao-mentocoach",
         "sessao-mentocoach"
       ]
+    },
+    "escopo": "member",
+    "concedeSelo": true,
+    "preRequisitos": {
+      "modo": "nenhum",
+      "etapas": []
     }
   },
   {
@@ -1092,7 +1132,16 @@
       "forms": [],
       "allowedEventTypes": []
     },
-    "order": 7
+    "order": 7,
+    "escopo": "member",
+    "concedeSelo": false,
+    "preRequisitos": {
+      "modo": "qualquer",
+      "etapas": [
+        "BPL-004",
+        "BPL-005"
+      ]
+    }
   },
   {
     "id": "pacote-junior",
@@ -1144,7 +1193,16 @@
       "surveys": [],
       "forms": [],
       "allowedEventTypes": []
-    }
+    },
+    "escopo": "public",
+    "concedeSelo": false,
+    "preRequisitos": {
+      "modo": "nenhum",
+      "etapas": []
+    },
+    "libera": [
+      "BPL-001"
+    ]
   },
   {
     "id": "pacote-pleno",
@@ -1198,7 +1256,17 @@
       "surveys": [],
       "forms": [],
       "allowedEventTypes": []
-    }
+    },
+    "escopo": "member",
+    "concedeSelo": true,
+    "preRequisitos": {
+      "modo": "nenhum",
+      "etapas": []
+    },
+    "libera": [
+      "BPL-001",
+      "BPL-002"
+    ]
   },
   {
     "id": "pacote-senior",
@@ -1254,7 +1322,18 @@
       "surveys": [],
       "forms": [],
       "allowedEventTypes": []
-    }
+    },
+    "escopo": "member",
+    "concedeSelo": true,
+    "preRequisitos": {
+      "modo": "nenhum",
+      "etapas": []
+    },
+    "libera": [
+      "BPL-001",
+      "BPL-002",
+      "BPL-003"
+    ]
   },
   {
     "id": "pacote-lider",
@@ -1312,7 +1391,19 @@
       "surveys": [],
       "forms": [],
       "allowedEventTypes": []
-    }
+    },
+    "escopo": "member",
+    "concedeSelo": true,
+    "preRequisitos": {
+      "modo": "nenhum",
+      "etapas": []
+    },
+    "libera": [
+      "BPL-001",
+      "BPL-002",
+      "BPL-003",
+      "BPL-004"
+    ]
   },
   {
     "id": "pacote-embaixador",
@@ -1371,6 +1462,19 @@
       "surveys": [],
       "forms": [],
       "allowedEventTypes": []
-    }
+    },
+    "escopo": "member",
+    "concedeSelo": true,
+    "preRequisitos": {
+      "modo": "nenhum",
+      "etapas": []
+    },
+    "libera": [
+      "BPL-001",
+      "BPL-002",
+      "BPL-003",
+      "BPL-004",
+      "BPL-005"
+    ]
   }
 ]
