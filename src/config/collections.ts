@@ -16,3 +16,6 @@ export const COUPONS_V2_COLLECTION = "coupons_v2";
 export const COUPON_REDEMPTIONS_COLLECTION = "coupon_redemptions";
 export const COUPON_ACCEPTANCES_COLLECTION = "coupon_acceptances";
 
+// Namespace unico de backups do sync de portfolio (Trilha 3d / BUG-040):
+// um doc por sync (id = timestamp) com subcolecoes products/coupons.
+export const BACKUP_NAMESPACE_COLLECTION = "_portfolio_backups";

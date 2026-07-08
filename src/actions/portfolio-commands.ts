@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 import fs from "fs";
 import path from "path";
 import { getErrorMessage } from "@/lib/utils/errors";
+import { backupPortfolioCollections } from "@/lib/portfolio-backup";
 
 /**
  * BPlen HUB — Portfolio Command Center 🚀
@@ -34,6 +35,10 @@ export async function syncPortfolioFromFilesAction() {
     }
 
     console.log(`[Sync Action] Iniciando sincronização de ${products.length} produtos e ${coupons.length} cupons.`);
+
+    // Backup preventivo (Trilha 3d / BUG-040) — este caminho de sync NAO fazia
+    // backup nenhum; passa a usar o mesmo namespace com rotacao do sync principal.
+    await backupPortfolioCollections(db, { includeCoupons: coupons.length > 0 });
 
     const batch = db.batch();
     const timestamp = new Date().toISOString();

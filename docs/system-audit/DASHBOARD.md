@@ -150,6 +150,17 @@ divergência apontada na conferência). Parser validado por diff — regressão 
 
 ---
 
+## Trilha 3 — Higiene da base
+
+| Passo | Bug | Status |
+|---|---|---|
+| 3d-fonte | BUG-040 | ✓ PR #38 — namespace `_portfolio_backups` + rotação 3, nos DOIS caminhos de sync |
+| 3d-limpeza | BUG-040 | ◐ dry-run feito (47 coleções na fila) — **aguarda OK para `--apply`** |
+| 3b | BUG-042 | ○ migração de chaves (~4 clientes) — falta decidir remap `plano-embaixadores-bplen`/`1-to-1` |
+| 3c | BUG-041 | ○ excluir ~13 produtos legados (após 3b) |
+
+---
+
 ## Em andamento (PRs abertas)
 
 _Nenhuma no momento._

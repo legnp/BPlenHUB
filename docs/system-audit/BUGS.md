@@ -967,9 +967,9 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   navegação — ejeção em tempo real (aba já aberta) fica como follow-up opcional.
   Um não-membro com link antigo de checkout/journey (stubs sob a subárvore) cai em
   `/hub`, navegável até o destino novo — trade-off aceito pela Gestora.
-- Validação: tsc + build + suíte 52/52; conferência de fluxo em produção (BUG-030):
-  revogar o selo de um usuário de teste → ele cai para `/hub`; o
-  `NonMemberOffboardingModal` (F1-03) fica enfim validável.
+- Validação: tsc + build + suíte 52/52. **[CONFIRMADO em produção pela Gestora,
+  2026-07-08]:** revogação testada ao vivo — funcional (o usuário sem selo cai para
+  `/hub`). O `NonMemberOffboardingModal` (F1-03) está desbloqueado para validação.
 - **Refino da correção (2026-07-07, investigação da estrutura antes de codar —
   Lição 3):** a Gestora aprovou "enforçar no `hub/layout.tsx`", mas a leitura da
   estrutura da área logada mostrou que **nenhuma fronteira única serve** — o
@@ -1103,14 +1103,22 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Cenário de falha: de 75 coleções-raiz, ~50 são backups timestamp — a Sync gera
   mais a cada execução (desde 2026-06-21). Não quebra nada, mas suja a raiz e
   dificulta a leitura da base.
-- Status: Aberto — Trilha 3d. Plano: (1) mudar a fonte para rotacionar (manter só
-  os N últimos) **ou** gravar num namespace único (ex.: subcoleções sob um doc
-  `_portfolio_backups/{ts}`), em vez de coleção-raiz nova; (2) remover as ~50
-  existentes. Confirmar retenção com a Gestora antes de apagar.
-- Decisão de execução: Ajuste de higiene; a mudança da fonte toca `products.ts`
-  (sync do portfólio) — avaliar junto do acoplamento Sheets/Docs. Excluir backups
-  antigos = script LOCAL com dry-run + confirmação (como o migrate-journeymap).
-- Commit/PR: —
+- Status: **Em Progresso — fonte corrigida (PR #38); falta o `--apply` da limpeza.**
+  (1) **Fonte corrigida:** helper `src/lib/portfolio-backup.ts` — um doc por sync em
+  `_portfolio_backups/{ts}` (subcoleções `products`/`coupons`) com **rotação de 3**
+  (decisão da Gestora), compartilhado pelos DOIS caminhos de sync. **Achado no
+  processo:** o sync "via repositório" (`syncPortfolioFromFilesAction`, o botão que
+  a Gestora usou em 2026-07-08) **não fazia backup nenhum** — por isso os syncs
+  daquele dia não geraram coleções novas; agora também faz.
+  (2) **Limpeza do legado:** `scripts/cleanup-backup-collections.js` (LOCAL,
+  dry-run por padrão, `--apply` explícito, `--keep=N`/`--limit=N`; exporta cada
+  coleção em JSON para `scratch/portfolio-backup-export/` antes de apagar).
+  **Dry-run executado (2026-07-08):** 27 `products_backup_*` + 26 `coupons_backup_*`
+  na raiz; mantém os 3 mais recentes de cada (2026-06-27/29); **fila de exclusão:
+  47 coleções**. Aguarda OK da Gestora para o `--apply`.
+- Decisão de execução: fonte via PR (código); exclusão via script LOCAL com
+  dry-run + export + OK explícito (padrão migrate-journeymap).
+- Commit/PR: fonte — **PR #38**; limpeza — aguardando `--apply`.
 
 ### BUG-041 Produtos legados/duplicados poluindo a coleção `products`
 
