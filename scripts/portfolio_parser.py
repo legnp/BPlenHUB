@@ -6,6 +6,19 @@ import shutil
 import re
 from datetime import datetime
 
+def safe_float(val, default=0.0):
+    """Le um valor numerico de celula com trava: nunca quebra em celula vazia/texto."""
+    try:
+        return round(float(val), 2)
+    except (TypeError, ValueError):
+        return default
+
+def safe_int(val, default=12):
+    try:
+        return int(val)
+    except (TypeError, ValueError):
+        return default
+
 def extract_cell_markdown(cell):
     paragraphs_md = []
     for p in cell.paragraphs:
@@ -25,10 +38,13 @@ def extract_cell_markdown(cell):
         paragraphs_md.append(p_text)
     return "\n".join(paragraphs_md).strip()
 
-scratch_excel = r"D:\BPlen HUB\v3\scratch\servicos_bplen-v3.xlsx"
-portfolio_path = r"D:\BPlen HUB\v3\portfolio\portfolio_bplen.xlsx"
-docx_path = r"D:\BPlen HUB\v3\portfolio\anuncios_bplen.docx"
-output_payload_path = r"D:\BPlen HUB\v3\portfolio\portfolio_payload.json"
+# Paths relativos a raiz do repo (scripts/ -> ..), robustos ao diretorio de execucao.
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PORTFOLIO_DIR = os.path.join(REPO_ROOT, "portfolio")
+scratch_excel = os.path.join(REPO_ROOT, "scratch", "servicos_bplen-v3.xlsx")
+portfolio_path = os.path.join(PORTFOLIO_DIR, "portfolio_bplen.xlsx")
+docx_path = os.path.join(PORTFOLIO_DIR, "anuncios_bplen.docx")
+output_payload_path = os.path.join(PORTFOLIO_DIR, "portfolio_payload.json")
 
 print("=========================================")
 print("  BPlen HUB Portfolio Parser & Sync      ")
@@ -112,9 +128,9 @@ for code, cfg in services_coords.items():
     max_inst_val = custos_sheet.cell(row=cfg["max_inst_row"], column=4).value
     pix_val = custos_sheet.cell(row=cfg["pix_row"], column=5).value
     
-    price = round(float(price_val), 2) if price_val is not None else 0.0
-    max_installments = int(max_inst_val) if max_inst_val is not None else 12
-    price_pix = round(float(pix_val), 2) if pix_val is not None else 0.0
+    price = safe_float(price_val)
+    max_installments = safe_int(max_inst_val)
+    price_pix = safe_float(pix_val)
     
     services_data[code] = {
         "id": cfg["slug"],
@@ -151,12 +167,9 @@ for code, cfg in package_coords.items():
     # Dynamic installments from row
     max_inst_val = pacotes_sheet.cell(row=cfg["max_inst_row"], column=3).value
     
-    price = round(float(price_card), 2) if price_card is not None else 0.0
-    price_pix = round(float(price_pix), 2) if price_pix is not None else 0.0
-    try:
-        max_installments = int(max_inst_val) if max_inst_val is not None else 12
-    except (ValueError, TypeError):
-        max_installments = 12
+    price = safe_float(price_card)
+    price_pix = safe_float(price_pix)
+    max_installments = safe_int(max_inst_val)
     
     packages_data[code] = {
         "id": cfg["slug"],
@@ -280,7 +293,7 @@ for idx, code in enumerate(["BPL-001", "BPL-002", "BPL-003", "BPL-004", "BPL-005
             "sheet": {
                 "description": long_desc,
                 "shortDescription": short_desc,
-                "coverImage": f"/services-img/{code}.png" if os.path.exists(os.path.join(os.getcwd(), "public", "services-img", f"{code}.png")) else f"/services-img/{code}.jpg" if os.path.exists(os.path.join(os.getcwd(), "public", "services-img", f"{code}.jpg")) else f"/images/products/{services_data[code]['slug']}.png",
+                "coverImage": f"/services-img/{code}.png" if os.path.exists(os.path.join(REPO_ROOT, "public", "services-img", f"{code}.png")) else f"/services-img/{code}.jpg" if os.path.exists(os.path.join(REPO_ROOT, "public", "services-img", f"{code}.jpg")) else f"/images/products/{services_data[code]['slug']}.png",
                 "paymentConditions": f"Pagamento facilitado no cartão em até {services_data[code]['maxInstallments']}x ou PIX com desconto especial.",
                 "faq": faq_list,
                 "termsAndConditions": "Ao contratar este serviço, você concorda com o plano de entrega e as diretrizes do BPlen HUB.",
@@ -314,7 +327,7 @@ for idx, code in enumerate(["BPL-PAC-JR", "BPL-PAC-PL", "BPL-PAC-SR", "BPL-PAC-L
             "sheet": {
                 "description": slogan,
                 "shortDescription": slogan,
-                "coverImage": f"/services-img/{code}.png" if os.path.exists(os.path.join(os.getcwd(), "public", "services-img", f"{code}.png")) else f"/services-img/{code}.jpg" if os.path.exists(os.path.join(os.getcwd(), "public", "services-img", f"{code}.jpg")) else f"/images/products/{packages_data[code]['slug']}.png",
+                "coverImage": f"/services-img/{code}.png" if os.path.exists(os.path.join(REPO_ROOT, "public", "services-img", f"{code}.png")) else f"/services-img/{code}.jpg" if os.path.exists(os.path.join(REPO_ROOT, "public", "services-img", f"{code}.jpg")) else f"/images/products/{packages_data[code]['slug']}.png",
                 "paymentConditions": f"Parcele em até {packages_data[code]['maxInstallments']}x sem juros no cartão de crédito ou obtenha desconto exclusivo via PIX.",
                 "faq": [
                     {"question": "O que está incluso neste pacote?", "answer": f"Este pacote engloba um conjunto estratégico de serviços unificados, eliminando custos redundantes: {slogan}"},
@@ -431,14 +444,14 @@ for code, data in services_data.items():
 
 # 6.B PARSE CAMPAIGNS AND COUPONS (campanhas_bplen.xlsx)
 print("\nStep 6.B: Parsing campaigns and coupons from campanhas_bplen.xlsx...")
-campanhas_path = r"D:\BPlen HUB\v3\portfolio\campanhas_bplen.xlsx"
-campanhas_payload_path = r"D:\BPlen HUB\v3\portfolio\campanhas_payload.json"
+campanhas_path = os.path.join(PORTFOLIO_DIR, "campanhas_bplen.xlsx")
+campanhas_payload_path = os.path.join(PORTFOLIO_DIR, "campanhas_payload.json")
 
 code_to_slug = {
     "BPL-000": "onboarding",
     "BPL-001": "posicionamento-profissional",
     "BPL-002": "analise-comportamental",
-    "BPL-003": "plano-carreira",
+    "BPL-003": "plano-de-carreira",
     "BPL-004": "gestao-e-desenvolvimento",
     "BPL-005": "mentocoach",
     "BPL-006": "offboarding",
@@ -482,8 +495,8 @@ if os.path.exists(campanhas_path):
                 is_active = False
                 
             if is_active:
-                promo_pix = round(float(promo_pix_val), 2) if promo_pix_val is not None else 0.0
-                promo_cartao = round(float(promo_cartao_val), 2) if promo_cartao_val is not None else 0.0
+                promo_pix = safe_float(promo_pix_val)
+                promo_cartao = safe_float(promo_cartao_val)
                 slogan = str(slogan_oferta).strip() if slogan_oferta else ""
                 
                 # Apply promotion
