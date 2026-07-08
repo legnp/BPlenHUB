@@ -1749,3 +1749,28 @@ para embasar essas decisões estão todos disponíveis.
   `00-PLAN.md` (índice +BUG-044), este LOG.
 - Próximo: revisão do design pela Gestora → plano detalhado e executável da Fase A
   (começando pelo endurecimento do parser), PR gated com aprovação.
+
+---
+
+## [2026-07-07] Chat de execução — Fase A / PR A0: endurecimento do portfolio_parser (mergeado)
+
+- Chat/sessão: mesmo chat. A Gestora aprovou o plano executável da Fase A (sub-PRs
+  A0-A3, ver `ACCESS-MODEL-DESIGN.md#94`) e mandou começar pelo A0.
+- Habilitador: confirmado que `portfolio/*.xlsx|.docx` + payloads estão **versionados**
+  e libs Python instaladas → parser testável localmente por diff.
+- **A0 (PR #28, `76bc05d`):** endurecimento do `scripts/portfolio_parser.py` sem mudar
+  o output. (1) paths hardcoded `D:\BPlen HUB\v3\...` → relativos a `REPO_ROOT`
+  (parser volta a rodar; `coverImage` via REPO_ROOT em vez de `os.getcwd()`); (2)
+  **bug real corrigido:** `code_to_slug` BPL-003 `"plano-carreira"` → `"plano-de-carreira"`
+  (o cupom NATAL10 restrito a BPL-003 apontava p/ slug inexistente); (3) travas
+  `safe_float`/`safe_int` nas leituras de preço.
+- **Validação (prova de regressão zero):** rodei o parser e diffei os payloads
+  versionados — `portfolio_payload.json` **byte-idêntico**; `campanhas_payload.json`
+  mudou **uma linha** (o slug BPL-003). Nada mais. Firestore não tocado — a correção
+  do cupom chega no próximo sync de portfólio (passo separado, não neste PR).
+- Itens atualizados: `BUGS.md` (BUG-044 → Parcial/PR #28), `00-PLAN.md` (índice),
+  `ACCESS-MODEL-DESIGN.md` (§9.4 A0 feito), este LOG.
+- Próximo: **PR A1** — adicionar os campos de modelo (`escopo`, `concedeSelo`,
+  `preRequisitos`, `libera`, SKU/fiscais) via nova aba resiliente `Atributos` +
+  `ProductSchema`/`Product` + `dispensaPreRequisito` no user, sem consumidores. Exige
+  a Gestora preencher a aba `Atributos` no `portfolio_bplen.xlsx` (eu passo o formato).

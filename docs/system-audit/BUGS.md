@@ -1192,12 +1192,17 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   aqui, a Fase A precisa endurecer/parametrizar o parser (ler por cabeçalho/coluna
   nomeada em vez de coordenada fixa) OU aceitar o mapeamento manual com muito
   cuidado. Risco de sync incorreto se as coordenadas não baterem.
-- Status: Aberto — tratar como parte do plano da Fase A (a config vive nesses docs;
-  não há como adicionar campos sem tocar o parser).
-- Decisão de execução: Parte da Fase A (gated). Recomendação: migrar o parser para
-  leitura por **nome de coluna/aba** (resiliente) e corrigir os paths, antes de
-  adicionar os campos novos.
-- Commit/PR: —
+- Status: **Parcialmente endereçado** (PR #28 — Fase A / A0): paths corrigidos
+  (relativos à raiz; parser volta a rodar), mismatch de slug BPL-003 corrigido, e
+  travas `safe_float`/`safe_int` adicionadas. **Restante:** as leituras de preço
+  seguem por **coordenada de célula fixa** (mitigadas pelas travas, mas ainda
+  frágeis a inserção de linha). Decisão de projeto: os **campos novos** (A1) entram
+  por uma **aba resiliente `Atributos`** (lida por cabeçalho), sem depender das
+  coordenadas — então não é preciso converter as leituras de preço agora. Validado:
+  parser roda e diff dos payloads = só a correção do slug (regressão zero).
+- Decisão de execução: A0 feito (PR #28). Conversão das leituras de preço p/ nome de
+  coluna fica como melhoria futura opcional (as travas já evitam o crash).
+- Commit/PR: **A0 mergeado** — PR #28 (`76bc05d`, squash).
 
 ---
 

@@ -218,13 +218,15 @@ frágil), `Pacotes de Serviço` (idem), `Jornada` (code→order, **lida por linh
 resiliente**), `Checkpoints` (**por linha — resiliente**); `anuncios_bplen.docx`
 (copy por tabela); `campanhas_bplen.xlsx` (`Ofertas`/`Cupons`, **por linha**).
 
-- **PR A0 — Endurecer o parser (sem mudar o output).**
-  - Paths hardcoded `D:\BPlen HUB\v3\...` → relativos (`__file__/../portfolio`).
-  - Corrigir mismatch `code_to_slug` BPL-003 `"plano-carreira"` → `"plano-de-carreira"`
-    (hoje não casa com o slug do produto → restrição de cupom de BPL-003 falha).
-  - Guardas defensivas nas leituras de preço por coordenada (validar plausibilidade).
-  - **Validação: rodar o parser e diffar o `portfolio_payload.json` — deve sair
-    idêntico** (exceto a correção do slug BPL-003). Sem tocar Firestore.
+- **PR A0 — Endurecer o parser (sem mudar o output). ✅ FEITO (PR #28, `76bc05d`).**
+  - Paths hardcoded `D:\BPlen HUB\v3\...` → relativos (`REPO_ROOT` via `__file__`);
+    `coverImage` via `REPO_ROOT` em vez de `os.getcwd()`.
+  - Mismatch `code_to_slug` BPL-003 `"plano-carreira"` → `"plano-de-carreira"`
+    corrigido (cupom NATAL10 restrito a BPL-003 voltará a casar no próximo sync).
+  - Travas `safe_float`/`safe_int` nas leituras de preço.
+  - **Validado:** parser roda; diff dos payloads = **só** a correção do slug BPL-003
+    (`portfolio_payload.json` byte-idêntico). Regressão zero. Firestore não tocado
+    (a correção do cupom chega no próximo sync de portfólio).
 - **PR A1 — Campos de modelo (nova aba resiliente + schema + tipo), sem consumidores.**
   - Nova aba **`Atributos`** no `portfolio_bplen.xlsx` (lida **por cabeçalho/linha**,
     keyed por `serviceCode` — resiliente), com: `escopo`, `concedeSelo`,

@@ -857,7 +857,7 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-041 | Baixo | Aberto | T-03 — produtos legados/duplicados arquivados poluindo `products`; Trilha 3c (após migração) |
 | BUG-042 | Médio | Aberto | T-03 — chaves de entitlement de cliente inconsistentes (slugs antigos/órfãos); Trilha 3b |
 | BUG-043 | Médio | Aberto | F2-01/Fase A — `steps-registry.ts` fora de sync com os produtos canônicos da jornada |
-| BUG-044 | Médio | Aberto | Fase A — `portfolio_parser.py` frágil (coordenadas hardcoded + paths obsoletos + "DISC" embutido); endurecer antes de add campos |
+| BUG-044 | Médio | Parcial (PR #28) | Fase A/A0 — parser: paths + slug BPL-003 + travas feitos; leituras de preço por coordenada seguem (mitigadas); campos novos via aba resiliente (A1) |
 
 ---
 
