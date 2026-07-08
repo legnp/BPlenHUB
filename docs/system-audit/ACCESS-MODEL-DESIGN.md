@@ -286,8 +286,23 @@ resiliente**), `Checkpoints` (**por linha — resiliente**); `anuncios_bplen.doc
   - `role: "visitor" → "member"` (`checkout.ts:146`) fica **incondicional por
     decisão explícita** — `role` hoje só é lido para `=== "suspended"`/`=== "admin"`;
     dar-lhe semântica de selo é escopo da Fase D, não do A2.
-- **PR A3 — Botão admin manual de `dispensaPreRequisito`** (aba "Assessments/
-  Devolutivas" e/ou `/admin/fs/devolutiva`).
+- **PR A3 — Botão admin manual de `dispensaPreRequisito`. ✅ FEITO (PR #31).**
+  - UI na aba **"Assessments / Devolutivas"** de `admin/users` (ponto único; a
+    2ª opção `/admin/fs/devolutiva` foi dispensada — um só lugar é mais
+    descobrível e evita duas telas escrevendo o mesmo campo).
+  - Lista as **etapas da jornada derivadas dos produtos** (`isStepJourney` +
+    `status: active`, ordenadas por `order`) — **não há lista hardcoded de
+    etapas**, coerente com "produtos = fonte única" (`BUG-043`). Cada linha mostra
+    o `serviceCode` e o pré-requisito declarado (ou "sem pré-requisito declarado",
+    enquanto a aba `Atributos` não for sincronizada) + um botão Dispensar/Dispensado.
+  - Servidor: `updateUserPermissions` aceita `dispensaPreRequisito?: string[]`,
+    normaliza (trim/uppercase/dedup), aplica teto de 20 itens e **valida cada
+    entrada contra um `serviceCode` real do catálogo** — impede reintroduzir
+    chaves-lixo em `User_Permissions` (a classe de defeito do `BUG-042`).
+    `getAdminUsersList` passa a devolver o campo.
+  - Persiste em `User/{matricula}/User_Permissions/access.dispensaPreRequisito`.
+    **Ainda sem consumidor** — quem lê é o motor `resolverAcesso` (Fase B).
+    Array vazio limpa as dispensas.
 - **(Fase B, não A):** derivar a jornada dos produtos + motor `resolverAcesso`.
 
 Observação registrada: os arquivos de `portfolio/` (preços/config comercial) estão

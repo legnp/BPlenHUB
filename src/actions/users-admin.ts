@@ -4,6 +4,7 @@ import { getAdminDb } from "@/lib/firebase-admin";
 import * as admin from "firebase-admin";
 import { requireAdmin } from "@/lib/auth-guards";
 import { AdminUser, UserRole, UserServices } from "@/types/users";
+import { PRODUCTS_COLLECTION } from "@/config/collections";
 import { revalidatePath } from "next/cache";
 
 /**
@@ -19,6 +20,9 @@ const ALLOWED_SERVICE_KEYS = [
   "behavioral_analysis",
   "member_area_access"
 ];
+
+/** Teto defensivo de dispensas de pré-requisito por usuário (Fase A / A3) */
+const MAX_WAIVERS_PER_USER = 20;
 
 import { toISOSafe } from "@/lib/date-utils";
 import { getErrorMessage } from "@/lib/utils/errors";
@@ -44,6 +48,7 @@ export async function getAdminUsersList(adminToken?: string): Promise<{ success:
       role?: UserRole;
       services?: UserServices;
       admin?: boolean;
+      dispensaPreRequisito?: string[];
       metadata?: {
         disc_link?: string;
         [key: string]: unknown;
@@ -99,6 +104,7 @@ export async function getAdminUsersList(adminToken?: string): Promise<{ success:
         isAdmin: resolvedRole === "admin",
         role: resolvedRole,
         services: perm.services || {},
+        dispensaPreRequisito: Array.isArray(perm.dispensaPreRequisito) ? perm.dispensaPreRequisito : [],
         mentoCoachSessionsLimit: quotasMap.get(matricula) ?? 10,
         metadata: perm.metadata || {},
         isProfessional: data.profile?.networking?.isBPlenProfessional || false,
@@ -119,11 +125,12 @@ export async function getAdminUsersList(adminToken?: string): Promise<{ success:
  * Atualiza permissões granulares de um usuário (Papel e Serviços).
  */
 export async function updateUserPermissions(
-  targetMatricula: string, 
-  updates: { 
-    role?: UserRole; 
-    services?: UserServices; 
-    metadata?: { 
+  targetMatricula: string,
+  updates: {
+    role?: UserRole;
+    services?: UserServices;
+    dispensaPreRequisito?: string[];
+    metadata?: {
       disc_link?: string;
       maslow_menor_pilar?: string;
       maslow_maior_pilar?: string;
@@ -144,6 +151,7 @@ export async function updateUserPermissions(
        role?: UserRole;
        admin?: boolean;
        services?: UserServices;
+       dispensaPreRequisito?: string[];
        metadata?: { disc_link?: string; [key: string]: unknown };
     } = {
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -165,6 +173,45 @@ export async function updateUserPermissions(
     
     if (updates.metadata) {
       dataToSave.metadata = updates.metadata;
+    }
+
+    // 🎫 Dispensa de pré-requisito (Fase A / A3 — ver ACCESS-MODEL-DESIGN.md).
+    // Waiver por serviceCode; o motor de acesso (Fase B) pula o pré-requisito da
+    // etapa listada aqui. Array vazio = nenhuma dispensa (limpa as anteriores).
+    // Toda entrada é confrontada com um `serviceCode` real do catálogo — evita
+    // reintroduzir chaves-lixo em User_Permissions (classe de defeito do BUG-042).
+    if (updates.dispensaPreRequisito !== undefined) {
+       if (!Array.isArray(updates.dispensaPreRequisito)) {
+          throw new Error("Dispensa de pré-requisito inválida: esperado um array de serviceCodes.");
+       }
+
+       const waivers = Array.from(new Set(
+          updates.dispensaPreRequisito
+            .filter((code): code is string => typeof code === "string")
+            .map(code => code.trim().toUpperCase())
+            .filter(Boolean)
+       ));
+
+       if (waivers.length > MAX_WAIVERS_PER_USER) {
+          throw new Error(`Dispensa de pré-requisito inválida: máximo de ${MAX_WAIVERS_PER_USER} serviços.`);
+       }
+
+       if (waivers.length > 0) {
+          const productsSnap = await getAdminDb().collection(PRODUCTS_COLLECTION).get();
+          const knownCodes = new Set(
+             productsSnap.docs
+               .map(doc => doc.data().serviceCode)
+               .filter((code): code is string => typeof code === "string")
+               .map(code => code.trim().toUpperCase())
+          );
+
+          const unknown = waivers.filter(code => !knownCodes.has(code));
+          if (unknown.length > 0) {
+             throw new Error(`Dispensa de pré-requisito inválida: serviceCode desconhecido (${unknown.join(", ")}).`);
+          }
+       }
+
+       dataToSave.dispensaPreRequisito = waivers;
     }
 
     // 2. Proteção Anti-Lockout 🚨
