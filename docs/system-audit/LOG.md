@@ -2124,3 +2124,17 @@ para embasar essas decisões estão todos disponíveis.
 - Próximo: **Fase D** — trancar `/hub/membro` (layout exige selo; sem selo → `/hub`;
   remover bypass `isAdmin ||` do índice) = **BUG-035 resolvido**. Gated
   (identidade/acesso) → plano + aprovação antes de codar.
+
+---
+
+## [2026-07-08] Chat de execução — PR de dados: revisão de pré-requisitos da Gestora (mergeado)
+
+- A Gestora ajustou a aba `Atributos` (pós-B2): Onboarding (BPL-000) vira pré-req de
+  análise/plano/GDC/mentocoach; pacotes pleno..embaixador liberam BPL-000. **Primeira
+  mudança de regra 100% por dado** — nenhum código tocado; o motor (B2) aplica.
+  Fecha a lacuna apontada no B2 (nenhum pacote liberava o onboarding).
+- Validação por diff programático: só `preRequisitos`/`libera` mudaram, nos 8 produtos
+  esperados; nada mais. `ACCESS-MODEL-DESIGN.md` §3/§3.1 atualizados para a intenção
+  nova (com marca de revisão).
+- **Vigora no próximo clique de "Sincronizar Portfólio"** (após o deploy deste merge).
+- PR #36.
