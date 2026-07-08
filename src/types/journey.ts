@@ -43,6 +43,16 @@ export interface JourneyStep {
 
   kicker?: string;
   workflow?: WorkflowStep[];
+
+  // Modelo modular de acesso (Fase B2) — atributos herdados do produto principal
+  // da etapa (aba "Atributos" do portfolio; ver ACCESS-MODEL-DESIGN.md). Opcionais:
+  // etapa sem atributos sincronizados cai no comportamento legado do useJourney.
+  serviceCode?: string;
+  escopo?: "public" | "member";
+  preRequisitos?: {
+    modo: "nenhum" | "todos" | "qualquer";
+    etapas: string[];
+  };
 }
 
 export interface UserStepProgress {

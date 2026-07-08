@@ -5,6 +5,7 @@ import { getMemberQuotasAction } from "@/actions/quotas";
 import { fetchUserPermissionsStatus } from "@/actions/auth-permissions";
 import { MemberQuotaWallet } from "@/types/entitlements";
 import { normalizeString } from "@/lib/utils";
+import { resolveStageAccess, conclusoesFromProgress } from "@/lib/access/journey-adapter";
 
 
 export interface StageTelemetry {
@@ -26,6 +27,7 @@ export function useJourney(uid: string) {
   const [progress, setProgress] = useState<JourneyProgress | null>(null);
   const [quotas, setQuotas] = useState<MemberQuotaWallet | null>(null);
   const [services, setServices] = useState<Record<string, boolean>>({});
+  const [dispensaPreRequisito, setDispensaPreRequisito] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   const mergedStages = useMemo(() => {
@@ -66,6 +68,7 @@ export function useJourney(uid: string) {
       if (userPermissions?.services) {
         setServices(userPermissions.services as Record<string, boolean>);
       }
+      setDispensaPreRequisito(userPermissions?.dispensaPreRequisito ?? []);
 
       // 3. Fetch Real Progress from Firestore
       const dbProgress = await getJourneyProgressAction(uid);
@@ -228,19 +231,36 @@ export function useJourney(uid: string) {
     const thisStepIndex = mergedStages.findIndex(s => s.id === stepId);
     const isNext = thisStepIndex === currentStepIndex + 1;
 
-    // 🔒 Trava de Sequência BPlen (Metodologia Linear)
-    // Uma etapa só pode ser ACESSADA se a anterior estiver 'completed'.
-    let isSequenceLocked = false;
     const isOffboarding = stepId.toLowerCase() === 'offboarding';
-    
-    if (thisStepIndex > 0) {
-       // EXCEÇÃO ESTRATÉGICA: Onboarding e Mentocoach podem ser acessados sem concluir a etapa anterior 🧬
+    const finalHasAccessLogic = finalHasAccess || stage?.order === 0 || ((stepId === 'onboarding' || isOffboarding) && hasAnyQuota);
+
+    // 🧬 MOTOR DE ACESSO (Fase B2 — ACCESS-MODEL-DESIGN.md secao 4)
+    // Quando a etapa tem atributos sincronizados (serviceCode + preRequisitos, via
+    // aba Atributos do portfolio), a decisao de acesso/trava e' do motor
+    // resolverAcesso — pre-requisitos por DADO (todos/qualquer/nenhum + dispensa
+    // do admin), substituindo a trava linear hardcoded e suas excecoes.
+    let motorHasAccess = finalHasAccessLogic;
+    let isSequenceLocked = false;
+
+    const motorDecision = stage ? resolveStageAccess(stage, {
+      selo: services?.member_area_access === true,
+      legacyEntitled: finalHasAccessLogic,
+      conclusoes: conclusoesFromProgress(mergedStages, progress),
+      dispensaPreRequisito,
+    }) : null;
+
+    if (motorDecision) {
+      motorHasAccess = motorDecision.hasAccess;
+      isSequenceLocked = motorDecision.isSequenceLocked;
+    } else if (thisStepIndex > 0) {
+       // 🔒 FALLBACK LEGADO (etapa sem atributos sincronizados): trava linear —
+       // uma etapa so pode ser acessada se a anterior estiver 'completed', com
+       // as excecoes estrategicas de onboarding/mentocoach/offboarding.
        const isOnboarding = stepId.toLowerCase() === 'onboarding';
        const isMentocoach = stepId.toLowerCase().includes('mentocoach');
        const isException = isOnboarding || isMentocoach;
-       
+
        if (isOffboarding) {
-          // Offboarding: liberado na conclusão total de Gestão de Carreira ou Mentocoach
           const devProgress = progress?.steps['desenvolvimento-de-carreira']?.status === "completed";
           const mentocoachProgress = progress?.steps['coaching-e-mentoria']?.status === "completed" || progress?.steps['mentocoach']?.status === "completed";
           isSequenceLocked = !(devProgress || mentocoachProgress);
@@ -251,21 +271,19 @@ export function useJourney(uid: string) {
        }
     }
 
-    const finalHasAccessLogic = finalHasAccess || stage?.order === 0 || ((stepId === 'onboarding' || isOffboarding) && hasAnyQuota);
-
     let resolvedStatus = stepProgress?.status || "locked";
-    
+
     // 🚀 Governança Dinâmica Central: Se o DB diz "locked" mas a telemetria libera, destravamos visualmente aqui
-    if (resolvedStatus === "locked" && finalHasAccessLogic && !isSequenceLocked) {
+    if (resolvedStatus === "locked" && motorHasAccess && !isSequenceLocked) {
        resolvedStatus = "current";
     }
 
     return {
       status: resolvedStatus,
       percentage,
-      hasAccess: finalHasAccessLogic, // Step 0 sempre livre, Onboarding/Offboarding livres se tiver algum serviço
+      hasAccess: motorHasAccess,
       isNext,
-      isSequenceLocked, // 🧬 Nova flag de governança metodológica
+      isSequenceLocked, // 🧬 Flag de governança metodológica (motor ou fallback legado)
       substepsLabel: `${completedCount}/${totalSubsteps}`
     };
   };

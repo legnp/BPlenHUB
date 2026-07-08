@@ -169,14 +169,14 @@ export async function syncUserPermissionsOnLogin(uid: string, email: string | nu
 /**
  * Busca o Status de Permissão (Server Authority 🛡️)
  */
-export async function fetchUserPermissionsStatus(uid: string): Promise<{ isAdmin: boolean; role: UserRole; services: UserServices; matricula: string | null }> {
+export async function fetchUserPermissionsStatus(uid: string): Promise<{ isAdmin: boolean; role: UserRole; services: UserServices; matricula: string | null; dispensaPreRequisito: string[] }> {
     // 🛡️ Guard de dono (BUG-020): esta e a porta exposta na rede. Um chamador so
     // pode ler as proprias permissoes. A resolucao crua vive em
     // `@/lib/user-permissions` e e usada por `getServerSession` (identidade ja
     // verificada la), evitando recursao com o guard de sessao.
     const caller = await verifySignedSession();
     if (!caller || caller.uid !== uid) {
-      return { isAdmin: false, role: "visitor", services: {}, matricula: null };
+      return { isAdmin: false, role: "visitor", services: {}, matricula: null, dispensaPreRequisito: [] };
     }
     return resolveUserPermissions(uid);
 }

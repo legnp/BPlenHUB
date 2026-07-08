@@ -1120,6 +1120,10 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   ainda referenciados por clientes (`plano-embaixadores-bplen` ×3, `1-to-1` ×1) →
   **migrar antes de excluir** (ver BUG-042).
 - Status: Aberto — Trilha 3c. Excluir **após** a migração (BUG-042).
+- Nota da Gestora (2026-07-08, pós-Sync): os arquivados seguem listados no painel
+  admin de produtos — a limpeza da Trilha 3c deve deixar o painel limpo também
+  (o painel lista o que está na coleção; excluir do Firestore resolve, conferir
+  na validação).
 - Decisão de execução: Exclusão de dados de produto (financeiro-adjacente) → script
   LOCAL com dry-run + ok da Gestora, e só depois da migração dos clientes.
 - Commit/PR: —
@@ -1256,6 +1260,23 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   (candidato: T-05 integrações, ou fase de validação do calendário) — trocar para
   `baseUrl` + `/hub/membro`. Confirmar com a Gestora se `hub.bplen.com` algum dia
   foi um domínio válido.
+- Commit/PR: —
+
+### BUG-047 Painel admin de produtos não exibe os atributos do modelo de acesso
+
+- Severidade: Baixo (gap de exibição na UI admin; o dado existe)
+- Área/fase onde foi achado: reportado pela Gestora (2026-07-08) ao validar a Sync —
+  os atributos (`escopo`/`concedeSelo`/`preRequisitos`/`libera`) só são conferíveis
+  direto no Firestore, não no painel.
+- Arquivo(s) afetado(s): UI de produtos do admin (tela que consome `getAdminProducts`)
+- Cenário de falha: **[CONFIRMADO]** `getAdminProducts` + `safeSerialize` repassam
+  todos os campos (verificado por leitura — a serialização não corta nada); a tela é
+  que não renderiza os campos novos. Impacto: a Gestora não consegue validar a
+  configuração de acesso pelo painel.
+- Status: Aberto — corrigir na validação da tela admin de produtos (Fase 1/F1-06) ou
+  quando o painel for tocado: exibir os atributos por produto (leitura apenas — a
+  fonte é a planilha, via Sync; não criar edição paralela).
+- Decisão de execução: display-only, baixo risco; aguarda a fase da tela.
 - Commit/PR: —
 
 ---
