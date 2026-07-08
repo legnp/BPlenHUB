@@ -111,6 +111,26 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
     o `DASHBOARD.md` foi atualizado para `~1,5/4`, quando o correto era `1/4`
     exato — erro pego só na reconciliação seguinte, 2026-07-07.)_
 
+14. **Valide com `npm run check`, não só com `tsc` + `build`.** O `check` é
+    `lint && test && type-check && build` — as sessões vinham rodando só os dois
+    últimos, e o pre-commit (lint-staged) só roda eslint. Resultado: a suíte de
+    testes ficou **vermelha na `main` por 4 dias** sem ninguém ver (`BUG-045`: o
+    PR #19 trocou o guard de `createPreferenceAction` e não atualizou o `vi.mock`).
+    Um portão que ninguém executa não é um portão. _(Caso real: achado ao rodar a
+    suíte completa antes de entregar o B1, 2026-07-08.)_
+
+15. **Teste que você escreveu contra o seu próprio código não prova nada até você
+    tentar quebrá-lo.** Depois de escrever os 26 testes do motor de acesso, inverti
+    deliberadamente a ordem das regras (entitlement antes de escopo) — **só 1 dos 26
+    falhou**. A regra mais importante (a ordem que faz a revogação do selo expulsar
+    do clube, `BUG-035`) estava mal coberta: o teste "PREVIA vence entitlement" usava
+    um usuário que *possuía* o serviço, então passava nos dois arranjos. Faltava o
+    caso discriminante (sem selo **e** sem entitlement). Adicionado; a mutação passou
+    a quebrar 2 testes. **Rode uma mutação na regra central antes de confiar na
+    suíte.** _(Caso real: PR B1, 2026-07-08.)_
+
+---
+
 ## Melhorias sugeridas para o PLANO (para o chat de planejamento refinar)
 
 1. **Rollup de progresso nativo.** O plano rastreava itens/bugs mas não tinha
@@ -160,3 +180,6 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
   adicionadas, a partir do F0-01 lote A/B.
 - 2026-07-07 — Lição 13 (contagem fracionária só vale para bug `Em Progresso`)
   adicionada, a partir do erro de % do T-03 pego na reconciliação desta data.
+- 2026-07-08 — Lições 14 (validar com `npm run check`, não só `tsc`+`build` —
+  origem do `BUG-045`) e 15 (mutação na regra central antes de confiar na suíte —
+  origem: PR B1 do motor de acesso) adicionadas.
