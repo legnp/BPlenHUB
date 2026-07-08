@@ -1174,6 +1174,31 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Decisão de execução: Parte do desenho da Fase A (gated — motor de jornada).
 - Commit/PR: —
 
+### BUG-044 `portfolio_parser.py` frágil: coordenadas de célula hardcoded + paths obsoletos + "DISC" embutido
+
+- Severidade: Médio (débito técnico que torna a Fase A mais arriscada — o parser é
+  o gargalo para adicionar qualquer campo novo de serviço)
+- Área/fase onde foi achado: mapeamento do acoplamento config→Firestore (Fase A prep, 2026-07-07)
+- Arquivo(s) afetado(s): `scripts/portfolio_parser.py`
+- Cenário de falha: o parser lê o `portfolio_bplen.xlsx` por **coordenadas de célula
+  fixas por serviço** (`services_coords`: BPL-001 `price_row=41`, BPL-002 `72`,
+  BPL-003 `102`, BPL-004 `133`, ...). Consequências: (a) adicionar um campo novo
+  (escopo/concedeSelo/preRequisitos/libera/SKU) = mapear manualmente novas células
+  por serviço; (b) inserir/remover linhas no Excel quebra os offsets; (c) os **paths
+  são hardcoded e obsoletos** (`D:\BPlen HUB\v3\...` — pasta antiga "v3", não "Dev")
+  → o parser não roda neste ambiente sem ajuste; (d) o título **"Análise
+  Comportamental (DISC)"** está embutido no parser → entra na Trilha 4 (nomenclatura).
+- Cenário de falha (impacto na Fase A): como toda coluna nova de serviço passa por
+  aqui, a Fase A precisa endurecer/parametrizar o parser (ler por cabeçalho/coluna
+  nomeada em vez de coordenada fixa) OU aceitar o mapeamento manual com muito
+  cuidado. Risco de sync incorreto se as coordenadas não baterem.
+- Status: Aberto — tratar como parte do plano da Fase A (a config vive nesses docs;
+  não há como adicionar campos sem tocar o parser).
+- Decisão de execução: Parte da Fase A (gated). Recomendação: migrar o parser para
+  leitura por **nome de coluna/aba** (resiliente) e corrigir os paths, antes de
+  adicionar os campos novos.
+- Commit/PR: —
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em

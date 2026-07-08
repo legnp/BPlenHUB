@@ -1719,3 +1719,33 @@ para embasar essas decisões estão todos disponíveis.
 - Próximo: apresentar o mapa à Gestora + decisões (retenção de backups; classificar
   as chaves de capability; confirmar mapa de migração de slugs). Depois: formalizar
   `ACCESS-MODEL-DESIGN.md` e detalhar a Fase A.
+
+---
+
+## [2026-07-07] Chat de execução — design formalizado + mapa de acoplamento config/Word/Excel (prep Fase A)
+
+- Chat/sessão: mesmo chat. Decisões da Gestora fechadas: backups (manter 3,
+  namespace único, apagar); flags inertes removíveis (dado preservado nas
+  subcoleções — verificado, só `BP-002` as tem, 13 surveys + 1 form íntegros);
+  `career_planning` → `plano-de-carreira` (renomear dado + código); produtos = fonte
+  única da jornada.
+- **`ACCESS-MODEL-DESIGN.md` criado** (commit `feeda77`): modelo modular consolidado
+  (3 sub-áreas, atributos, regras da jornada, motor, workflow de elegibilidade,
+  higiene, roadmap A→E, detalhe da Fase A). Inventário estendido (seção 5) confirmou
+  a garantia de dado pedida pela Gestora. BUG-042 atualizado com o mapa canônico.
+- **Mapa de acoplamento config→Firestore + Word/Excel (read-only) — para a Fase A:**
+  pipeline de 5 camadas confirmado — `portfolio_bplen.xlsx`/`anuncios_bplen.docx` →
+  `scripts/portfolio_parser.py` (coordenadas hardcoded) → `portfolio_payload.json` →
+  `ProductSchema` (Zod, `src/lib/validations/portfolio.ts`) → `products.ts:syncPortfolioAction`
+  → Firestore. Consumidores: `checkout.ts:125` (selo, hoje incondicional), `legal.ts`
+  (contrato Word, sem campo fiscal hoje), motor de jornada.
+- **Achado novo BUG-044:** o parser Python é **frágil** (lê por coordenada de célula
+  fixa por serviço; paths obsoletos `D:\BPlen HUB\v3\...`; "DISC" embutido no título).
+  É o gargalo da Fase A — recomendação: endurecer (ler por nome de coluna) + corrigir
+  paths ANTES de adicionar os campos novos. Registrado; design §9 atualizado com o
+  mapa e a ordem interna sugerida da Fase A.
+- Nenhum código de produto tocado (só docs + investigação read-only).
+- Itens atualizados: `ACCESS-MODEL-DESIGN.md` (§9 acoplamento), `BUGS.md` (+BUG-044),
+  `00-PLAN.md` (índice +BUG-044), este LOG.
+- Próximo: revisão do design pela Gestora → plano detalhado e executável da Fase A
+  (começando pelo endurecimento do parser), PR gated com aprovação.

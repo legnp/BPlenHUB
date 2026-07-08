@@ -169,22 +169,43 @@ Inventário read-only (`scripts/inventory-base.js`). 75 coleções-raiz; catálo
 6. **Fase E — Workflow de elegibilidade** (§6).
 7. **Trilha 4 — Nomenclatura "análise comportamental"** (remover "DISC" conflado).
 
-## 9. Fase A — detalhe (a próxima a detalhar/executar)
+## 9. Fase A — detalhe (mapa de acoplamento confirmado 2026-07-07)
 
-Arquivos/artefatos previstos (a confirmar no plano da Fase A):
-- **Tipos:** `src/types/products.ts` (add `concedeSelo`, `escopo`, `preRequisitos`,
-  `libera`, `sku`/fiscais), `src/types/users.ts` (add `dispensaPreRequisito`).
-- **Sync/parse dos Docs/Sheets** que popula `products` (a mapear — parte no
-  `products.ts`/portfolio) + colunas/abas novas em `anuncios/campanhas/portfolio`.
-- **Word/Excel:** revisar geração que consome produto (contratos/relatórios) se os
-  campos novos aparecem lá.
-- **Checkout:** `src/lib/checkout.ts:125` — conceder selo condicional a `concedeSelo`.
-- **Jornada:** derivar etapas dos produtos (`BUG-043`); aposentar `steps-registry.ts`.
+### 9.1 Pipeline de config (Docs → Firestore) — onde cada campo novo ENTRA
+Confirmado por leitura. Cadeia de 5 camadas; **adicionar 1 campo toca todas**:
+1. **`portfolio_bplen.xlsx`** (fonte da Gestora, fora do repo) — nova célula/coluna.
+2. **`scripts/portfolio_parser.py`** — lê o xlsx por **coordenadas de célula
+   hardcoded por serviço** (`services_coords`; ex. BPL-001 `price_row=41`) + o
+   `anuncios_bplen.docx` (descrições) → emite `portfolio_payload.json`.
+   **FRÁGIL — ver `BUG-044`** (coords fixas, paths obsoletos `v3`, "DISC" embutido).
+3. **`src/lib/validations/portfolio.ts`** — `ProductSchema` (Zod);
+   `PortfolioPayloadSchema = z.array(ProductSchema)` — add o campo aqui.
+4. **`src/types/products.ts`** — `Product` type — add o campo.
+5. **`src/actions/products.ts:syncPortfolioAction`** — grava em `products` (+ o
+   backup diferencial que gera as coleções do `BUG-040`).
+Campos novos a adicionar: `concedeSelo`, `escopo`, `preRequisitos`, `libera`
+(item comprável) e `sku`/fiscais (Trilha 2). `dispensaPreRequisito` vai em
+`src/types/users.ts` (não vem do portfólio — é estado do usuário).
+
+### 9.2 Consumidores (saída) — quem LÊ os campos
+- **Checkout:** `src/lib/checkout.ts:125` — hoje concede o selo **incondicional**;
+  passa a condicionar a `concedeSelo`.
+- **Contrato Word:** `src/actions/legal.ts` consome `product.title`/`price`/`sheet`/
+  `workflow`/`grantedQuotas`. Se SKU/fiscais devem aparecer no contrato/NF → incluir
+  aqui (hoje não há campo fiscal no contrato).
+- **Jornada:** derivar etapas dos produtos (`journey=sim`+`order`+`preRequisitos`);
+  aposentar `steps-registry.ts` (`BUG-043`).
 - **Admin:** botão manual de `dispensaPreRequisito` (aba "Assessments / Devolutivas"
   e/ou `/admin/fs/devolutiva`).
-- **Riscos:** toca financeiro (checkout), motor de jornada (god-file) e o
-  acoplamento Docs/Word/Excel — gated, plano + aprovação por PR. Validar com
-  tsc + build; telas logadas conferidas em produção (BUG-030).
+
+### 9.3 Riscos e ordem interna sugerida da Fase A
+- **Maior risco = o parser (`BUG-044`).** Recomendação: **primeiro** endurecer o
+  parser (ler por **nome de coluna/aba**, não coordenada; corrigir paths), **depois**
+  adicionar os campos. Sem isso, todo campo novo é mapeamento manual arriscado.
+- Toca **financeiro** (checkout) e **motor de jornada** (god-file) → gated, PR com
+  plano + aprovação. Validar tsc + build; telas logadas conferidas em produção
+  (BUG-030). A config é editada em `.xlsx/.docx` — a Gestora precisa adicionar as
+  colunas na fonte em coordenação com o ajuste do parser.
 
 ## Registro de revisões
 - 2026-07-07 — criação, a partir do desenho iterativo com a Gestora (BUG-035 →
