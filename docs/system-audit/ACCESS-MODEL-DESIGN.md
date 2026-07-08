@@ -207,6 +207,45 @@ Campos novos a adicionar: `concedeSelo`, `escopo`, `preRequisitos`, `libera`
   (BUG-030). A config é editada em `.xlsx/.docx` — a Gestora precisa adicionar as
   colunas na fonte em coordenação com o ajuste do parser.
 
+## 9.4 Fase A — plano executável (sub-PRs)
+
+**Habilitador confirmado (2026-07-07):** os arquivos `portfolio/*.xlsx|.docx` +
+payloads **estão versionados no git** e `openpyxl`/`python-docx` estão instalados →
+o parser é **testável localmente por diff do `portfolio_payload.json`** (rodar antes/
+depois; regressão zero = output idêntico). Estrutura real do parser:
+`portfolio_bplen.xlsx` tem abas `Custo de Serviços` (preço por **coordenada fixa** —
+frágil), `Pacotes de Serviço` (idem), `Jornada` (code→order, **lida por linha —
+resiliente**), `Checkpoints` (**por linha — resiliente**); `anuncios_bplen.docx`
+(copy por tabela); `campanhas_bplen.xlsx` (`Ofertas`/`Cupons`, **por linha**).
+
+- **PR A0 — Endurecer o parser (sem mudar o output).**
+  - Paths hardcoded `D:\BPlen HUB\v3\...` → relativos (`__file__/../portfolio`).
+  - Corrigir mismatch `code_to_slug` BPL-003 `"plano-carreira"` → `"plano-de-carreira"`
+    (hoje não casa com o slug do produto → restrição de cupom de BPL-003 falha).
+  - Guardas defensivas nas leituras de preço por coordenada (validar plausibilidade).
+  - **Validação: rodar o parser e diffar o `portfolio_payload.json` — deve sair
+    idêntico** (exceto a correção do slug BPL-003). Sem tocar Firestore.
+- **PR A1 — Campos de modelo (nova aba resiliente + schema + tipo), sem consumidores.**
+  - Nova aba **`Atributos`** no `portfolio_bplen.xlsx` (lida **por cabeçalho/linha**,
+    keyed por `serviceCode` — resiliente), com: `escopo`, `concedeSelo`,
+    `preRequisitos`, `libera`, `sku`, campos fiscais. A Gestora preenche.
+  - Parser injeta os campos no payload; `ProductSchema` (`portfolio.ts`) + `Product`
+    (`types/products.ts`) ganham os campos (opcionais). `dispensaPreRequisito` em
+    `types/users.ts`.
+  - Nada consome ainda → **zero mudança de comportamento**. Validação: parser+diff
+    (agora com os campos novos) + tsc + build. Sync grava o payload.
+- **PR A2 — Selo condicional no checkout.** `checkout.ts:125` concede
+  `member_area_access` só se `concedeSelo === true`. Financeiro → gated. Definir o
+  default quando ausente (recomendação: a aba `Atributos` define para todos, então
+  não há ausência; fallback seguro = não conceder para serviços de escopo público).
+- **PR A3 — Botão admin manual de `dispensaPreRequisito`** (aba "Assessments/
+  Devolutivas" e/ou `/admin/fs/devolutiva`).
+- **(Fase B, não A):** derivar a jornada dos produtos + motor `resolverAcesso`.
+
+Observação registrada: os arquivos de `portfolio/` (preços/config comercial) estão
+**versionados no repo** — decisão deliberada da Gestora (o parser os trata como
+"secure sources"); não é bug, mas fica anotado.
+
 ## Registro de revisões
 - 2026-07-07 — criação, a partir do desenho iterativo com a Gestora (BUG-035 →
   modelo modular). Decisões locked: 3 sub-áreas; `concedeSelo` por item; jornada
