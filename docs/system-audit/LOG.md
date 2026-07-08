@@ -2048,3 +2048,29 @@ para embasar essas decisões estão todos disponíveis.
 - Próximo: **Sync do portfólio** (ativa o A2 — pode rodar agora; aba `Atributos`
   validada em 2026-07-08), depois **B2** (adaptador + troca do lock hardcoded pelo
   motor) e **D** (trancar `/hub/membro` = BUG-035 resolvido).
+
+---
+
+## [2026-07-08] Chat de execução — PR de dados: aba Atributos + payload regenerado (mergeado)
+
+- Chat/sessão: mesmo chat. A Gestora aprovou iniciar a mecânica da Sync (passo 1 de 3).
+- **PR de dados (PR #34):** commita o `portfolio_bplen.xlsx` com a aba `Atributos`
+  preenchida pela Gestora (validada contra o §3.1 em 2026-07-08, incluindo a correção
+  do BPL-PAC-JR) + o `portfolio_payload.json` regenerado pelo parser.
+- **Validação estrita por diff programático** (não visual): nenhum campo existente
+  mudou em nenhum dos 12 produtos; nenhum produto adicionado/removido; campos novos
+  restritos ao conjunto esperado (`escopo`/`concedeSelo`/`preRequisitos`/`libera`/
+  `sku`/`fiscal`); `BPL-PAC-JR` = `public` + `concedeSelo false` + `libera [BPL-001]`.
+  `campanhas_payload.json` inalterado (a correção do slug já entrou no A0).
+- **IMPORTANTE — este merge ainda NÃO muda o Firestore.** A cadeia é: deploy da
+  Vercel → admin clica "Sincronizar Portfólio" (`syncPortfolioAction` lê o payload
+  deployado) → produtos ganham os atributos → **o A2 ativa** (junior/posicionamento
+  param de conceder o selo). O clique da Sync é o momento da virada, sob controle da
+  Gestora, com a Fase C já em produção (rotas novas + stubs).
+- **Passos seguintes da Sync (execução da Gestora ou assistida):** (1) conferir o
+  deploy; (2) painel admin → Sincronizar Portfólio; (3) validação: roteiro da Fase C
+  no LOG + conferir num produto (ex.: pacote-junior) que os campos novos aparecem no
+  Firestore; compra de teste do junior NÃO deve mais conceder `member_area_access`.
+- Próximo (código): **B2** (adaptador leniente + troca do lock hardcoded pelo motor)
+  e **D** (trancar `/hub/membro` = BUG-035 resolvido).
+- Itens atualizados: `DASHBOARD.md` (Sync: dados prontos, falta o clique), este LOG.

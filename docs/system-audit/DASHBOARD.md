@@ -119,7 +119,7 @@ Desenho em `ACCESS-MODEL-DESIGN.md`. Fecha o `BUG-035` na **Fase D**, não antes
 | A3 | Botão admin de `dispensaPreRequisito` | ✓ PR #31 — **sem consumidor até a Fase B** |
 | B1 | Motor puro `resolverAcesso` + 27 testes | ✓ PR #32 — **sem consumidor** |
 | C | Checkout → `/hub/checkout` + journey → `/hub/journey` (stubs de redirect nos paths antigos) | ✓ PR #33 — **destrava a Sync** |
-| — | **Sync do portfólio** (ativa o A2) | ○ próximo — **execução da Gestora ou assistida** |
+| — | **Sync do portfólio** (ativa o A2) | ◐ dados mergeados (PR #34) — falta: deploy + clique em "Sincronizar Portfólio" no admin |
 | B2 | Adaptador + troca do lock hardcoded | ○ depende da Sync |
 | D | Trancar `/hub/membro` (exige selo) | ○ **→ BUG-035 resolvido** |
 
