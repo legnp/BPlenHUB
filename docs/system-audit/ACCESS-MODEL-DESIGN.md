@@ -73,6 +73,32 @@ Notas:
   comportamental" em qualquer string/rótulo de interface (Trilha 4). "DISC" só
   onde for o portal/link externo real.
 
+## 3.1 Valores recomendados da aba `Atributos` (referência de preenchimento)
+
+Colunas: `serviceCode | serviceName | escopo | concedeSelo | preReqModo | preReqEtapas
+| libera | sku | nbs | naturezaOperacao | descricaoFiscal`. `serviceName` é só leitura
+humana (parser ignora). Fiscais podem ficar em branco por ora (provisionados).
+
+| serviceCode | escopo | concedeSelo | preReqModo | preReqEtapas | libera |
+|---|---|---|---|---|---|
+| BPL-001 (Posicionamento) | **public** | FALSE | nenhum | | |
+| BPL-000 (Onboarding) | member | FALSE | nenhum | | |
+| BPL-002 (Análise Comportamental) | member | TRUE | nenhum | | |
+| BPL-003 (Plano de Carreira) | member | TRUE | todos | BPL-002 | |
+| BPL-004 (GDC) | member | TRUE | todos | BPL-003 | |
+| BPL-005 (MentoCoach) | member | TRUE | nenhum | | |
+| BPL-006 (Offboarding) | member | FALSE | qualquer | BPL-004,BPL-005 | |
+| BPL-PAC-JR (Junior) | **public** | **FALSE** | nenhum | | BPL-001 |
+| BPL-PAC-PL (Pleno) | member | TRUE | nenhum | | BPL-001,BPL-002 |
+| BPL-PAC-SR (Senior) | member | TRUE | nenhum | | BPL-001,BPL-002,BPL-003 |
+| BPL-PAC-LD (Líder) | member | TRUE | nenhum | | BPL-001,BPL-002,BPL-003,BPL-004 |
+| BPL-PAC-EB (Embaixador) | member | TRUE | nenhum | | BPL-001,BPL-002,BPL-003,BPL-004,BPL-005 |
+
+**Correção da Gestora (2026-07-07):** o **Pacote Junior (BPL-PAC-JR) é `public`,
+não `member`** — é o pacote de não-membro (entrega o posicionamento em `/hub`); e
+**não concede selo** (`concedeSelo=FALSE`), coerente com "junior é serviço para
+não-membros". (Valores acima a confirmar/ajustar pela Gestora ao preencher a aba.)
+
 ## 4. O motor de decisão (função pura)
 
 ```
