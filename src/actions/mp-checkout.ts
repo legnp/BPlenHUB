@@ -230,9 +230,9 @@ export async function createPreferenceAction(
           email: session.email || ""
         },
         back_urls: {
-          success: `${baseUrl}/hub/membro/checkout/success?orderId=${orderId}`,
-          failure: `${baseUrl}/hub/membro/checkout/failure?orderId=${orderId}`,
-          pending: `${baseUrl}/hub/membro/checkout/status?orderId=${orderId}`
+          success: `${baseUrl}/hub/checkout/success?orderId=${orderId}`,
+          failure: `${baseUrl}/hub/checkout/failure?orderId=${orderId}`,
+          pending: `${baseUrl}/hub/checkout/status?orderId=${orderId}`
         },
         auto_return: "all",
         external_reference: orderId,

@@ -12,7 +12,14 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-08 (chat de execução — **Fase B / B1 mergeada**
+> **Última atualização:** 2026-07-08 (chat de execução — **Fase C mergeada** (PR #33):
+> checkout reposicionado para `/hub/checkout/*` e journey para `/hub/journey/*`, com
+> stubs de redirect (preservando query) em todos os paths antigos — e-mails, back_urls
+> do MP em voo e tour continuam funcionando. Junior → `/hub/journey/posicionamento-
+> profissional`. **A Sync do portfólio está destravada** (ativa o A2). Registrado
+> **BUG-046** (links de e-mail do booking para rota inexistente, não corrigido aqui).
+>
+> _(entrada anterior)_ 2026-07-08 (chat de execução — **Fase B / B1 mergeada**
 > (PR #32): motor puro `resolverAcesso` + 27 testes Vitest, sem consumidor. Achado e
 > corrigido no mesmo PR o **BUG-045**: `npm run test` estava **vermelho na `main`**
 > desde o PR #19 (mock sem `requireMatricula`) — a suíte volta a **39/39**.
@@ -111,8 +118,8 @@ Desenho em `ACCESS-MODEL-DESIGN.md`. Fecha o `BUG-035` na **Fase D**, não antes
 | A2 | Selo condicional no checkout (`concedeSelo`) | ✓ PR #30 — **inerte até a Sync** |
 | A3 | Botão admin de `dispensaPreRequisito` | ✓ PR #31 — **sem consumidor até a Fase B** |
 | B1 | Motor puro `resolverAcesso` + 27 testes | ✓ PR #32 — **sem consumidor** |
-| C | Reposicionar checkout/junior → `/hub` | ○ próximo — **destrava a Sync** |
-| — | **Sync do portfólio** (ativa o A2) | ○ depois da C |
+| C | Checkout → `/hub/checkout` + journey → `/hub/journey` (stubs de redirect nos paths antigos) | ✓ PR #33 — **destrava a Sync** |
+| — | **Sync do portfólio** (ativa o A2) | ○ próximo — **execução da Gestora ou assistida** |
 | B2 | Adaptador + troca do lock hardcoded | ○ depende da Sync |
 | D | Trancar `/hub/membro` (exige selo) | ○ **→ BUG-035 resolvido** |
 

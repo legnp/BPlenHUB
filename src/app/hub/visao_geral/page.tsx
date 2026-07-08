@@ -231,11 +231,11 @@ export default function VisaoGeralPage() {
           // Documentos padrao gerados (dependem do modulo de carreira)
           if (isCompleted) {
             if (sub.referenceId === "master_cv" || sub.referenceId === "cv_focado") {
-              documentUrl = `/hub/membro/journey/${stage.id}`;
+              documentUrl = `/hub/journey/${stage.id}`;
             } else if (sub.referenceId === "disc") {
-              documentUrl = `/hub/membro/journey/${stage.id}`;
+              documentUrl = `/hub/journey/${stage.id}`;
             } else if (sub.referenceId === "survey_plano_fase4") {
-              documentUrl = `/hub/membro/journey/${stage.id}`;
+              documentUrl = `/hub/journey/${stage.id}`;
             }
           }
         }
@@ -297,7 +297,7 @@ export default function VisaoGeralPage() {
           type: sub.type,
           refId: sub.referenceId,
           status,
-          url: `/hub/membro/journey/${stage.id}`,
+          url: `/hub/journey/${stage.id}`,
           documentUrl,
           hasFeedback,
           feedbackText,

@@ -1722,7 +1722,7 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
           
           {returnToCheckoutSlug && (
              <Link
-               href={`/hub/membro/checkout/${returnToCheckoutSlug}`}
+               href={`/hub/checkout/${returnToCheckoutSlug}`}
                className="px-10 py-4 bg-[#ff0080] hover:bg-[#ff00b3] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-[0_10px_20px_rgba(255,0,128,0.2)] flex items-center gap-2"
              >
                 <Rocket size={14} /> Retornar à Contratação

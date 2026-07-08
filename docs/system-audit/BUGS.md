@@ -1237,6 +1237,27 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   `tsc` + `build`. Registrada no `RETROSPECTIVE.md` (Lição 14).
 - Commit/PR: **mergeado** — PR #32 (junto do B1).
 
+### BUG-046 Links hardcoded para rota inexistente em e-mails de booking (`hub.bplen.com/hub/membro/dashboard`)
+
+- Severidade: Baixo (links de e-mail quebrados — apontam para rota que não existe,
+  possivelmente em domínio que não é o de produção)
+- Área/fase onde foi achado: Fase C (2026-07-08), no mapeamento das refs de
+  `/hub/membro/*` para o reposicionamento de rotas
+- Arquivo(s) afetado(s): `src/actions/calendar-module/booking.ts:142/244/351/607`
+- Cenário de falha: 4 ocorrências de `https://hub.bplen.com/hub/membro/dashboard`
+  hardcoded em payloads de e-mail (cancelLink/platformLink/htmlLink). A rota
+  `/hub/membro/dashboard` **não existe** (o dashboard é `/hub/membro`), e o host
+  `hub.bplen.com` diverge do domínio de produção (`bplen.com`) — o link do e-mail
+  leva o membro a um 404 (ou a host inexistente). Viola também o combate ao
+  hardcoded (deveria derivar de `baseUrl`/env, como fazem os e-mails de checkout).
+- Status: Aberto — **não corrigido na Fase C de propósito** (o reposicionamento de
+  rotas não toca booking/e-mails; misturar os riscos violaria o escopo do PR).
+- Decisão de execução: corrigir quando o módulo de booking/e-mails for tocado
+  (candidato: T-05 integrações, ou fase de validação do calendário) — trocar para
+  `baseUrl` + `/hub/membro`. Confirmar com a Gestora se `hub.bplen.com` algum dia
+  foi um domínio válido.
+- Commit/PR: —
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em
