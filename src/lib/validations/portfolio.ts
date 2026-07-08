@@ -67,6 +67,22 @@ export const ProductSchema = z.object({
     sheetId: z.string(),
     sheetUrl: z.string(),
   }).optional(),
+
+  // Modelo modular de acesso (Fase A / A1) — todos opcionais, sem consumidor ainda.
+  // Vêm da aba "Atributos" do portfolio_bplen.xlsx (lida por nome de coluna).
+  escopo: z.enum(["public", "member"]).optional(),
+  concedeSelo: z.boolean().optional(),
+  preRequisitos: z.object({
+    modo: z.enum(["nenhum", "todos", "qualquer"]),
+    etapas: z.array(z.string()),
+  }).optional(),
+  libera: z.array(z.string()).optional(),
+  sku: z.string().optional(),
+  fiscal: z.object({
+    nbs: z.string().optional(),
+    naturezaOperacao: z.string().optional(),
+    descricaoFiscal: z.string().optional(),
+  }).optional(),
 });
 
 export const PortfolioPayloadSchema = z.array(ProductSchema);

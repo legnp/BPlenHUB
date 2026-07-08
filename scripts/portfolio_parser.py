@@ -574,6 +574,83 @@ else:
     print(f"WARNING: campanhas_bplen.xlsx not found at {campanhas_path}. No campaigns processed.")
 
 
+# 6.D PARSE OPTIONAL "Atributos" SHEET (modelo modular de acesso - Fase A/A1)
+# Lido por NOME DE COLUNA (resiliente). Ausencia da aba = nenhum campo novo (compat
+# retro: catalogo sai identico). A coluna "serviceName" e so para leitura humana.
+print("\nStep 6.D: Reading optional 'Atributos' sheet (access model fields)...")
+
+def parse_bool(v):
+    if isinstance(v, bool):
+        return v
+    s = str(v).strip().lower()
+    if s in ("true", "1", "sim", "verdadeiro", "x"):
+        return True
+    if s in ("false", "0", "nao", "não", "falso", ""):
+        return False
+    return None
+
+def split_codes(v):
+    if v is None:
+        return []
+    return [p.strip() for p in str(v).replace(";", ",").split(",") if p.strip()]
+
+attributes_by_code = {}
+try:
+    wb_attr = openpyxl.load_workbook(portfolio_path, data_only=True)
+    if "Atributos" in wb_attr.sheetnames:
+        attr_sheet = wb_attr["Atributos"]
+        headers = {}
+        for col in range(1, attr_sheet.max_column + 1):
+            name = attr_sheet.cell(row=1, column=col).value
+            if name:
+                headers[str(name).strip().lower()] = col
+        def acell(row, colname):
+            c = headers.get(colname.lower())
+            return attr_sheet.cell(row=row, column=c).value if c else None
+        for r in range(2, attr_sheet.max_row + 1):
+            code = acell(r, "serviceCode")
+            if not code:
+                continue
+            code = str(code).strip()
+            attrs = {}
+            escopo = acell(r, "escopo")
+            if escopo and str(escopo).strip() in ("public", "member"):
+                attrs["escopo"] = str(escopo).strip()
+            concede = parse_bool(acell(r, "concedeSelo"))
+            if concede is not None:
+                attrs["concedeSelo"] = concede
+            modo = acell(r, "preReqModo")
+            if modo and str(modo).strip() in ("nenhum", "todos", "qualquer"):
+                attrs["preRequisitos"] = {"modo": str(modo).strip(), "etapas": split_codes(acell(r, "preReqEtapas"))}
+            libera = split_codes(acell(r, "libera"))
+            if libera:
+                attrs["libera"] = libera
+            sku = acell(r, "sku")
+            if sku:
+                attrs["sku"] = str(sku).strip()
+            fiscal = {}
+            for fk in ("nbs", "naturezaOperacao", "descricaoFiscal"):
+                v = acell(r, fk)
+                if v:
+                    fiscal[fk] = str(v).strip()
+            if fiscal:
+                attrs["fiscal"] = fiscal
+            if attrs:
+                attributes_by_code[code] = attrs
+        print(f" -> Loaded attributes for {len(attributes_by_code)} services from 'Atributos' sheet.")
+    else:
+        print(" -> 'Atributos' sheet not found (optional). No access-model fields added.")
+    wb_attr.close()
+except Exception as e:
+    print(f" -> WARNING: could not read 'Atributos' sheet: {e}. Skipping.")
+
+for code, attrs in attributes_by_code.items():
+    if code in services_data:
+        services_data[code].update(attrs)
+    elif code in packages_data:
+        packages_data[code].update(attrs)
+
+
 # 7. EXPORT COMPILED CATALOGUE TO PAYLOAD JSON
 print("\nStep 7: Compiling final payload...")
 all_products = []
