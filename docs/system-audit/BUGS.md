@@ -1103,7 +1103,7 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Cenário de falha: de 75 coleções-raiz, ~50 são backups timestamp — a Sync gera
   mais a cada execução (desde 2026-06-21). Não quebra nada, mas suja a raiz e
   dificulta a leitura da base.
-- Status: **Em Progresso — fonte corrigida (PR #38); falta o `--apply` da limpeza.**
+- Status: **Corrigido** — fonte (PR #38) + limpeza executada (2026-07-08).
   (1) **Fonte corrigida:** helper `src/lib/portfolio-backup.ts` — um doc por sync em
   `_portfolio_backups/{ts}` (subcoleções `products`/`coupons`) com **rotação de 3**
   (decisão da Gestora), compartilhado pelos DOIS caminhos de sync. **Achado no
@@ -1113,12 +1113,15 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   (2) **Limpeza do legado:** `scripts/cleanup-backup-collections.js` (LOCAL,
   dry-run por padrão, `--apply` explícito, `--keep=N`/`--limit=N`; exporta cada
   coleção em JSON para `scratch/portfolio-backup-export/` antes de apagar).
-  **Dry-run executado (2026-07-08):** 27 `products_backup_*` + 26 `coupons_backup_*`
-  na raiz; mantém os 3 mais recentes de cada (2026-06-27/29); **fila de exclusão:
-  47 coleções**. Aguarda OK da Gestora para o `--apply`.
+  **`--apply` executado (2026-07-08, OK da Gestora):** 47 coleções apagadas (24
+  `products_backup_*` + 23 `coupons_backup_*`); mantidos os 3 mais recentes de cada;
+  cada uma exportada em JSON para `scratch/portfolio-backup-export/` (47 arquivos,
+  reversível) antes de apagar. Dry-run final confirma raiz com só 3+3. A raiz do
+  Firestore caiu de ~75 para ~28 coleções.
 - Decisão de execução: fonte via PR (código); exclusão via script LOCAL com
-  dry-run + export + OK explícito (padrão migrate-journeymap).
-- Commit/PR: fonte — **PR #38**; limpeza — aguardando `--apply`.
+  dry-run + export + OK explícito (padrão migrate-journeymap). Ambos concluídos.
+- Commit/PR: fonte — **PR #38**; limpeza — script `cleanup-backup-collections.js`
+  (executado localmente, sem PR de dados — só apaga backups).
 
 ### BUG-041 Produtos legados/duplicados poluindo a coleção `products`
 
@@ -1169,8 +1172,31 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   (ID órfão) → **remover**; `content_premium`/`hub_community`/`survey_welcome` →
   **remover** (inertes, dado preservado nas subcoleções); `plano-embaixadores-bplen`/
   `1-to-1` → decidir remap (produtos arquivados). Migração minúscula (~4 clientes).
-- Status: Aberto — Trilha 3b. Executar a migração (script LOCAL dry-run + backup +
-  OK) **antes** de excluir os produtos legados (BUG-041) e do motor único (Fase B).
+- **Levantamento READ-ONLY executado (2026-07-08, `scripts/inventory-entitlement-keys.js`):**
+  confirmados **4 clientes** com `services` não-vazio. Achados por cliente:
+  - **BP-002** (13 chaves): 3 flags inertes (`content_premium`/`hub_community`/
+    `survey_welcome`) + ID órfão `vLYKPTLII8tTP2Wo5wpV` + `plano_de_Carreira`=true
+    (caixa errada, dead) + 4 chaves de produto ativo (`gestao-e-desenvolvimento`=true;
+    `posicionamento`/`analise`/`plano-de-carreira`=**false**) + 2 arquivados **=false**
+    (`1-to-1`, `desenvolvimento-de-carreira-em-grupo`). **Conflito:** tem
+    `plano_de_Carreira`=true (dead) E `plano-de-carreira`=false (canônico).
+  - **BP-005**: `career_planning`=true (flag lida por `career-module.ts`),
+    `analise-comportamental`=true, `plano-embaixadores-bplen`=true, selo.
+  - **BP-011**: só selo + `plano-embaixadores-bplen`=true.
+  - **BP-012**: selo + `plano-embaixadores-bplen`=true + `1-to-1`=true.
+- **ACHADO NOVO:** `plano-embaixadores-bplen` (×3 clientes) mapeia para o produto
+  **arquivado `SERV-EMB-001`** — existe um `pacote-embaixador` ativo (`BPL-PAC-EB`).
+  **Decisão pendente da Gestora:** remapear `plano-embaixadores-bplen` → `pacote-embaixador`?
+  (os 3 são Embaixadores). Idem `1-to-1`=true de BP-012 (produto arquivado sem
+  equivalente ativo óbvio).
+- **Nuance técnica (leniência do B2):** chave de **pacote** (`pacote-embaixador`) NÃO
+  é chave de **etapa** — o adaptador leniente lê `services[stageId]`, não expande
+  `libera`. Logo remapear para o pacote **não** libera as etapas por si; se o objetivo
+  é dar acesso às etapas, a migração deve gravar as **etapas** que o pacote libera
+  (BPL-000..005 para Embaixador). A decidir com a Gestora.
+- Status: Aberto — Trilha 3b. Levantamento feito; **aguarda 2 decisões da Gestora**
+  (remap dos arquivados; conflito true/false do plano em BP-002) antes de escrever o
+  script de migração. Executar **antes** de excluir os legados (BUG-041).
   Detalhe consolidado em `ACCESS-MODEL-DESIGN.md`.
 - Decisão de execução: Migração de dados de permissão (identidade/acesso) → script
   LOCAL com dry-run + backup + ok da Gestora (padrão do migrate-journeymap).

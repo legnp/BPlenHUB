@@ -2212,3 +2212,30 @@ para embasar essas decisões estão todos disponíveis.
 - Próximo: OK da Gestora para o `--apply` da limpeza; depois Trilha 3b (BUG-042,
   migração das chaves dos 4 clientes — resta decidir o remap de
   `plano-embaixadores-bplen`/`1-to-1`) e 3c (BUG-041, excluir produtos legados).
+
+---
+
+## [2026-07-08] Chat de execução — Trilha 3d limpeza executada + levantamento da 3b
+
+- **Limpeza dos backups legados (BUG-040) EXECUTADA** com OK da Gestora. Rodei
+  `cleanup-backup-collections.js --apply` (após `--limit=5` de conferência):
+  **47 coleções-raiz apagadas** (24 products_backup_* + 23 coupons_backup_*),
+  cada uma exportada em JSON para `scratch/portfolio-backup-export/` antes (47
+  arquivos, reversível). Mantidos os 3 mais recentes de cada tipo. Dry-run final:
+  raiz com só 3+3. A raiz do Firestore caiu de ~75 para ~28 coleções. BUG-040
+  Corrigido (fonte PR #38 + limpeza).
+- **Levantamento da Trilha 3b (BUG-042) — READ-ONLY** via novo
+  `scripts/inventory-entitlement-keys.js` (cruza `services` de cada cliente com a
+  coleção `products`). **4 clientes** com entitlement. Achados: ver `BUGS.md#bug-042`.
+  Resumo: junk claro para remover (3 flags inertes + ID órfão + chaves `=false` de
+  arquivados); rename `plano_de_Carreira`→`plano-de-carreira` (BP-002, com conflito
+  true/false a resolver); `career_planning`→`plano-de-carreira` (BP-005, + código
+  em `career-module.ts`); e o **achado novo** `plano-embaixadores-bplen`→ produto
+  arquivado `SERV-EMB-001` (×3), remap para `pacote-embaixador` (BPL-PAC-EB) a
+  decidir — com a nuance de que chave de pacote não libera etapas no adaptador
+  leniente (teria de gravar as etapas BPL-000..005).
+- **2 decisões pendentes da Gestora** antes de escrever o script de migração 3b:
+  (1) remap dos entitlements de produto arquivado (embaixador/1-to-1); (2) conflito
+  true/false do plano em BP-002.
+- Nenhum código de produto tocado nesta entrada (limpeza = script; levantamento =
+  read-only). Itens atualizados: `BUGS.md` (040/042), `DASHBOARD.md`, este LOG.
