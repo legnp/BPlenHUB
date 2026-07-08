@@ -227,15 +227,19 @@ resiliente**), `Checkpoints` (**por linha — resiliente**); `anuncios_bplen.doc
   - **Validado:** parser roda; diff dos payloads = **só** a correção do slug BPL-003
     (`portfolio_payload.json` byte-idêntico). Regressão zero. Firestore não tocado
     (a correção do cupom chega no próximo sync de portfólio).
-- **PR A1 — Campos de modelo (nova aba resiliente + schema + tipo), sem consumidores.**
-  - Nova aba **`Atributos`** no `portfolio_bplen.xlsx` (lida **por cabeçalho/linha**,
-    keyed por `serviceCode` — resiliente), com: `escopo`, `concedeSelo`,
-    `preRequisitos`, `libera`, `sku`, campos fiscais. A Gestora preenche.
-  - Parser injeta os campos no payload; `ProductSchema` (`portfolio.ts`) + `Product`
-    (`types/products.ts`) ganham os campos (opcionais). `dispensaPreRequisito` em
-    `types/users.ts`.
-  - Nada consome ainda → **zero mudança de comportamento**. Validação: parser+diff
-    (agora com os campos novos) + tsc + build. Sync grava o payload.
+- **PR A1 — Campos de modelo (nova aba resiliente + schema + tipo), sem consumidores.
+  ✅ FEITO (PR #29, `c287b71`).**
+  - Parser lê a aba **opcional `Atributos`** (por **nome de coluna**, keyed por
+    `serviceCode`; colunas: `serviceCode`, `serviceName` [só humano], `escopo`,
+    `concedeSelo`, `preReqModo`, `preReqEtapas`, `libera`, `sku`, `nbs`,
+    `naturezaOperacao`, `descricaoFiscal`) → injeta `escopo`/`concedeSelo`/
+    `preRequisitos`/`libera`/`sku`/`fiscal` no payload. Ausência da aba = catálogo
+    idêntico. `ProductSchema` + `Product` ganham os campos (opcionais);
+    `dispensaPreRequisito?: string[]` em `AdminUser`.
+  - **Validado:** aba ausente → payload byte-idêntico (regressão zero); aba de teste
+    → campos populam certo (Excel restaurado do backup, intocado); tsc + build limpos.
+  - **Pendente da Gestora:** criar/preencher a aba `Atributos` no `portfolio_bplen.xlsx`
+    e sincronizar o portfólio para os campos entrarem no Firestore.
 - **PR A2 — Selo condicional no checkout.** `checkout.ts:125` concede
   `member_area_access` só se `concedeSelo === true`. Financeiro → gated. Definir o
   default quando ausente (recomendação: a aba `Atributos` define para todos, então

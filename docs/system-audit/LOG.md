@@ -1774,3 +1774,29 @@ para embasar essas decisões estão todos disponíveis.
   `preRequisitos`, `libera`, SKU/fiscais) via nova aba resiliente `Atributos` +
   `ProductSchema`/`Product` + `dispensaPreRequisito` no user, sem consumidores. Exige
   a Gestora preencher a aba `Atributos` no `portfolio_bplen.xlsx` (eu passo o formato).
+
+---
+
+## [2026-07-07] Chat de execução — Fase A / PR A1: campos do modelo de acesso (mergeado)
+
+- Chat/sessão: mesmo chat. A Gestora ajustou a aba `Atributos` (add coluna
+  `serviceName`, só leitura humana) e mandou seguir.
+- **A1 (PR #29, `c287b71`):** adiciona os atributos do modelo modular **opcionais e
+  sem consumidor** (comportamento inalterado; Fase B é que lê).
+  - Parser (`portfolio_parser.py`): lê a aba **opcional `Atributos`** por **nome de
+    coluna** (resiliente), keyed por `serviceCode`, injetando `escopo`/`concedeSelo`/
+    `preRequisitos({modo,etapas})`/`libera`/`sku`/`fiscal`. Ausência da aba = catálogo
+    idêntico.
+  - `ProductSchema` (Zod) + `Product` (TS): campos novos opcionais.
+  - `AdminUser`: `dispensaPreRequisito?: string[]` (waiver por serviceCode).
+- **Validação:** (1) sem a aba → payload **byte-idêntico** (regressão zero); (2) com
+  uma aba `Atributos` de teste → os campos populam certo (escopo, concedeSelo booleano,
+  preRequisitos modo+etapas, libera lista, sku) → **Excel restaurado do backup**
+  (arquivo da Gestora intocado, git limpo); (3) tsc limpo, next build exit 0. Pre-commit
+  passou sem `--no-verify`.
+- Itens atualizados: `ACCESS-MODEL-DESIGN.md` (§9.4 A1 feito), este LOG.
+- **Pendente da Gestora:** criar/preencher a aba `Atributos` no `portfolio_bplen.xlsx`
+  (colunas: serviceCode, serviceName, escopo, concedeSelo, preReqModo, preReqEtapas,
+  libera, sku, nbs, naturezaOperacao, descricaoFiscal) e sincronizar o portfólio.
+- Próximo: **PR A2** (selo condicional no checkout — financeiro/gated) e **A3** (botão
+  admin de `dispensaPreRequisito`). Depois, Fase B (motor de acesso).
