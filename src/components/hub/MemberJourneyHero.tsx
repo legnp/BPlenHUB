@@ -22,7 +22,7 @@ interface MemberJourneyHeroProps {
  * Utilizado na Home do HUB e na Área de Membro.
  */
 export function MemberJourneyHero({ showAction = false, variant = "default" }: MemberJourneyHeroProps) {
-  const { user, isAdmin, services } = useAuthContext();
+  const { user, services } = useAuthContext();
   
   // Journey Integration
   const { stages, progress, loading, getStageTelemetry } = useJourney(user?.uid || "guest");
@@ -51,7 +51,9 @@ export function MemberJourneyHero({ showAction = false, variant = "default" }: M
   const isMinimal = variant === "minimal";
   const pathname = usePathname();
   const isHubHome = pathname === "/hub";
-  const isFullMember = isAdmin || services?.member_area_access === true;
+  // Fase D: sem bypass de admin — o selo nao e' herdado (coerente com o cadeado
+  // do /hub/membro); admin sem selo ve a previa como qualquer nao-membro.
+  const isFullMember = services?.member_area_access === true;
   const showPreview = isHubHome && !isFullMember;
 
   return (

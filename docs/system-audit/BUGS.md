@@ -955,9 +955,21 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   `NonMemberOffboardingModal`** (BUG-026, em F1-03) — não dá para colocar um
   usuário no estado "não-membro" e ver o modal enquanto a revogação não expulsa
   do hub de fato.
-- Status: Aberto — **[CONFIRMADO]**, causa-raiz mapeada; correção **gated**
-  (plano+aprovação da Gestora antes de codar — identidade/sessão + controle de
-  acesso).
+- Status: **Corrigido** — 2026-07-08 (Fase D / PR #37, fecho da reestruturação
+  A0→D do modelo de acesso; ver `ACCESS-MODEL-DESIGN.md`). Enforcement:
+  `src/app/hub/membro/layout.tsx` (novo) exige `member_area_access` no servidor a
+  cada request para TODA a subárvore `/hub/membro/*`; sem selo → `redirect("/hub")`.
+  Bypass `isAdmin ||` removido do índice e do `MemberJourneyHero` (admin não herda
+  o clube — se auto-libera pelo painel para testar). Pré-condições que tornaram o
+  gate seguro: Fase C moveu checkout e journey para fora de `/hub/membro` (funil e
+  onboarding não passam mais pelo cadeado); A2+Sync condicionaram o selo ao
+  `concedeSelo`. Revogar o selo agora expulsa o cliente do clube na próxima
+  navegação — ejeção em tempo real (aba já aberta) fica como follow-up opcional.
+  Um não-membro com link antigo de checkout/journey (stubs sob a subárvore) cai em
+  `/hub`, navegável até o destino novo — trade-off aceito pela Gestora.
+- Validação: tsc + build + suíte 52/52; conferência de fluxo em produção (BUG-030):
+  revogar o selo de um usuário de teste → ele cai para `/hub`; o
+  `NonMemberOffboardingModal` (F1-03) fica enfim validável.
 - **Refino da correção (2026-07-07, investigação da estrutura antes de codar —
   Lição 3):** a Gestora aprovou "enforçar no `hub/layout.tsx`", mas a leitura da
   estrutura da área logada mostrou que **nenhuma fronteira única serve** — o
@@ -980,17 +992,13 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   cegas quebraria funil/onboarding — parado antes de codar, aguardando a decisão da
   Gestora sobre a fronteira. (Exemplo do valor de validar antes de implementar,
   Lição 3.)
-- Decisão de execução: Precisa plano+aprovação (identidade/sessão + controle de
-  acesso — área sensível) **e** decisão de produto sobre a fronteira do membro
-  pago (ver refino acima). Opções em aberto para a Gestora: (1) conceder
-  `member_area_access` também no junior grátis e então gatear a área de membro
-  (dashboard + journey + carreira + agenda + contratos) **exceto** `checkout/*`;
-  (2) gatear só as páginas claramente pós-membro (dashboard/carreira/agenda/
-  contratos), deixando journey e checkout abertos; (3) outra fronteira que a
-  Gestora definir. Em todos: admin não herda (auto-libera para testar); remover o
-  bypass `isAdmin ||` do índice por consistência; ejeção em tempo real fica como
-  follow-up opcional.
-- Commit/PR: —
+- Decisão de execução: a "decisão de produto sobre a fronteira" foi resolvida pela
+  Gestora não como opção pontual, mas como a **reestruturação completa do modelo de
+  acesso** (`ACCESS-MODEL-DESIGN.md`): a fronteira é o dado (`escopo`/`concedeSelo`),
+  o funil saiu do clube (Fase C) e o cadeado ficou trivial (Fase D). Plano+aprovação
+  de cada sub-PR registrados no `LOG.md`.
+- Commit/PR: **mergeado** — PR #37 (Fase D). Cadeia completa: #28 (A0), #29 (A1),
+  #30 (A2), #31 (A3), #32 (B1), #33 (C), #34/#36 (dados+Sync), #35 (B2), #37 (D).
 
 ### BUG-036 Erro de hidratação no `ComparisonTable` (whitespace dentro de `<colgroup>`)
 

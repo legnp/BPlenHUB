@@ -2138,3 +2138,45 @@ para embasar essas decisões estão todos disponíveis.
   nova (com marca de revisão).
 - **Vigora no próximo clique de "Sincronizar Portfólio"** (após o deploy deste merge).
 - PR #36.
+
+---
+
+## [2026-07-08] Chat de execução — FASE D: /hub/membro trancado — BUG-035 RESOLVIDO (mergeado)
+
+- Chat/sessão: mesmo chat. Plano da Fase D aprovado pela Gestora ("pode executar a
+  fase d nesse desenho"), incluindo o trade-off do link antigo (abaixo).
+- **Fase D (PR #37):**
+  - **`src/app/hub/membro/layout.tsx` (novo):** Server Component que exige
+    `member_area_access` a cada request para TODA a subárvore `/hub/membro/*`
+    (dashboard, carreira, agenda, contratos e os stubs da Fase C). Sem selo →
+    `redirect("/hub")`. Usa `verifySignedSession` + `resolveUserPermissions`
+    (resolução ao vivo do Firestore — sem cache de serviços no cookie, como o
+    BUG-035 já tinha confirmado).
+  - **Bypass `isAdmin ||` removido** de `hub/membro/page.tsx` (que vira 2ª camada
+    do gate) e de `MemberJourneyHero.tsx` (admin sem selo vê a prévia como qualquer
+    não-membro). Admin não herda o clube (§1 do design); auto-libera pelo painel.
+- **Resposta à dúvida da Gestora ("como um cliente teria URL antiga?"):** as URLs
+  antigas vivem em lugares fora do nosso controle — histórico/autocomplete do
+  navegador dos clientes, e-mails já entregues, links compartilhados em
+  WhatsApp/notas, e **preferências do Mercado Pago criadas antes da Fase C** (um
+  boleto/PIX pendente pago dias depois retorna à back_url antiga registrada na
+  preferência). Não dá para "garantir que ninguém tem" porque não controlamos
+  caixas de entrada nem browsers; o custo dos stubs é ~zero e eles são a garantia.
+  Podem ser removidos numa limpeza futura (meses), quando a cauda do MP passar.
+- **Trade-off aceito:** não-membro com link antigo de checkout/journey (stubs sob
+  `/hub/membro`) cai em `/hub` — um clique a mais num link legado, sem furo no
+  cadeado (alternativa de excetuar os stubs no gate foi rejeitada por abrir furo).
+- **Validação:** suíte 52/52, tsc limpo, build exit 0. `--no-verify` documentado:
+  2 erros de lint baseline no `MemberJourneyHero` (linhas 34/41, pré-existentes na
+  main — confirmado por stash); a warning nova de `isAdmin` não-usado foi limpa.
+  Produção (BUG-030): revogar o selo de um usuário de teste → cai para `/hub` na
+  próxima navegação; offboarding modal (F1-03) enfim validável.
+- **BUG-035 → Corrigido** em `BUGS.md`; removido da Triagem por severidade do
+  `00-PLAN.md` (ficam BUG-001/008/010, nenhum Crítico); índice e campos de F1-06/
+  F1-03 atualizados; `DASHBOARD.md` com a reestruturação completa.
+- **Reestruturação do modelo de acesso COMPLETA**: #28 A0, #29 A1, #30 A2, #31 A3,
+  #32 B1, #33 C, #34/#36 dados, Sync (Gestora), #35 B2, #37 D.
+- Próximo (roadmap): **Trilha 3 — higiene da base** (BUG-040 backups → BUG-042
+  chaves → BUG-041 legados, com scripts LOCAIS dry-run+backup+OK), **Fase E**
+  (workflow de elegibilidade) e **Trilha 4** (nomenclatura DISC). Pendências de
+  validação em produção acumuladas: fluxos da Fase C/D + dispensa do A3.

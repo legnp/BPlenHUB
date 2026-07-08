@@ -231,7 +231,6 @@ ativa furando a ordem das fases.
 
 | Bug | Severidade | Onde se conecta | Por que ainda não fechou |
 |---|---|---|---|
-| BUG-035 | Alto | F1-06 | **[CONFIRMADO por leitura, 2026-07-07]** causa-raiz = enforcement de `member_area_access` num único ponto (`/hub/membro`, com bypass `isAdmin ||`); o `hub/layout.tsx` só autentica → revogar não expulsa do hub. Correção gated (plano+aprovação) |
 | BUG-010 | Alto | T-03 | **[HIPÓTESE]** precisa confirmar se a implementação duplicada em `post-event.ts` é código morto antes de decidir remoção |
 | BUG-008 | Alto | F2-04, T-03 | Requer plano+aprovação (toca fluxo financeiro/cotas) |
 | BUG-001 | Alto | T-06 | Requer plano+aprovação (dado sensível/PII, regra explícita do `CLAUDE.md`) |
@@ -478,9 +477,9 @@ sem copy hardcoded fora do que o guia permitir).
   temas claros pendente em produção (BUG-030: telas logadas não autenticam no
   preview, então isso não foi validável nas sessões de execução); (b)
   `NonMemberOffboardingModal` (F0-01 lote B, inline em `JourneyNav`) convertido
-  ao `GlassModal` — conferência visual **bloqueada pelo `BUG-035`** (F1-06): não
-  dá para colocar um usuário no estado "não-membro" via admin para disparar o
-  modal enquanto a revogação de acesso não funcionar.
+  ao `GlassModal` — conferência visual **DESBLOQUEADA em 2026-07-08** (BUG-035
+  corrigido na Fase D/PR #37): revogar o selo via admin agora surte efeito, então
+  dá para criar o estado "não-membro" e disparar o modal em produção.
 - Log: —
 
 ### [F1-04] Hub — carreira, agenda do membro, contratos, visão geral
@@ -534,7 +533,7 @@ sem copy hardcoded fora do que o guia permitir).
   (`CouponTerms`) — nenhum deles é uma página admin; corrigido nesta
   reconciliação, estavam todos bundlados aqui por engano.)*
 - Resultado: —
-- Bug(s) vinculado(s): BUG-003 (Corrigido), BUG-007 (Corrigido), BUG-023 (Corrigido), BUG-024 (Corrigido), BUG-035 (Aberto — controle de acesso)
+- Bug(s) vinculado(s): BUG-003 (Corrigido), BUG-007 (Corrigido), BUG-023 (Corrigido), BUG-024 (Corrigido), BUG-035 (**Corrigido, PR #37** — via reestruturação do modelo de acesso, ver `ACCESS-MODEL-DESIGN.md`)
 - Log: —
 
 ---
@@ -848,7 +847,7 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-032 | Crítico | Corrigido (PR #14) | T-02 — escalação de privilégio (novo, achado no lote 7) |
 | BUG-033 | Médio | Aberto — **[HIPÓTESE]** | F1-05 — achado colateral do BUG-006, a verificar na Fase 1 |
 | BUG-034 | Baixo | Aberto (futuro) | F0-01 — 2º componente-base p/ modais grandes app-shell (opção iii) |
-| BUG-035 | Alto | Aberto — **[CONFIRMADO]** | F1-06 — causa-raiz mapeada (enforcement de `member_area_access` só em `/hub/membro` + bypass `isAdmin ||`; `hub/layout.tsx` não checa entitlement; guard `requireMemberAccess` sem caller). Correção gated. Bloqueia validação visual do offboarding modal (F1-03) |
+| BUG-035 | Alto | **Corrigido (PR #37 — Fase D)** | F1-06 — resolvido pela reestruturação do modelo de acesso (A0→D, `ACCESS-MODEL-DESIGN.md`): cadeado server-side em `hub/membro/layout.tsx`, bypass `isAdmin \|\|` removido. Desbloqueia a validação do offboarding modal (F1-03) |
 | BUG-036 | Médio | Corrigido (PR #26) | F1-01 — erro de hidratação no `ComparisonTable` (whitespace em `<colgroup>`), verificado ao vivo |
 | BUG-037 | Baixo | Corrigido (PR #26) | F1-01 — acentos/crase em copy de serviços |
 | BUG-038 | Baixo | Aberto (adiado) | F1-01/T-01 — `<Image fill>` sem `sizes` na foto da fundadora (perf) |

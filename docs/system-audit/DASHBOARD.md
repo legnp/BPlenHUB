@@ -12,7 +12,15 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-08 (chat de execução — **Sync executada pela
+> **Última atualização:** 2026-07-08 (chat de execução — **FASE D MERGEADA (PR #37):
+> BUG-035 RESOLVIDO.** `hub/membro/layout.tsx` exige o selo no servidor para toda a
+> subárvore; bypass `isAdmin ||` removido (índice + hero). Revogar o selo expulsa o
+> cliente do clube na próxima navegação. Reestruturação do modelo de acesso
+> **completa** (A0→A3, B1→B2, C, D + 2 PRs de dados + Sync). Também mergeado o PR #36
+> (revisão da Gestora: onboarding como pré-req; 1ª mudança de regra 100% por dado).
+> Restam da trilha: Trilha 3 (higiene), Fase E (elegibilidade), Trilha 4 (DISC).
+>
+> _(entrada anterior)_ 2026-07-08 (chat de execução — **Sync executada pela
 > Gestora** (12 produtos com atributos; A2 ativo) + **Fase B2 mergeada** (PR #35):
 > o motor `resolverAcesso` assume a decisão de acesso/trava da jornada via
 > adaptador leniente no `useJourney`; trava linear hardcoded vira fallback só
@@ -129,7 +137,7 @@ Desenho em `ACCESS-MODEL-DESIGN.md`. Fecha o `BUG-035` na **Fase D**, não antes
 | C | Checkout → `/hub/checkout` + journey → `/hub/journey` (stubs de redirect nos paths antigos) | ✓ PR #33 — **destrava a Sync** |
 | — | **Sync do portfólio** (ativa o A2) | ✓ **executada pela Gestora (2026-07-08)** — 12 produtos com atributos no Firestore; `concedeSelo=false` do junior conferido |
 | B2 | Adaptador leniente + motor assume o lock da jornada | ✓ PR #35 |
-| D | Trancar `/hub/membro` (exige selo) | ○ **próximo → BUG-035 resolvido** |
+| D | Trancar `/hub/membro` (exige selo) | ✓ PR #37 — **BUG-035 RESOLVIDO** |
 
 **Sequenciamento corrigido (2026-07-08):** a ordem `B → C → D` do design não roda —
 o motor precisa de `preRequisitos` no Firestore, que só chegam pela Sync, retida até
@@ -157,7 +165,7 @@ _Nenhuma no momento._
 - **BUG-032** (Crítico, **corrigido** PR #14) — escalação de privilégio: `syncUserPermissionsOnLogin` concedia admin a partir de e-mail não-verificado (achado no lote 7 do BUG-020)
 - **BUG-033** (Médio, **[HIPÓTESE]**, aberto) — networking envia contatos/URLs não-visíveis ao client (a verificar na Fase 1 / F1-05)
 - **BUG-034** (Baixo, aberto/futuro) — falta 2º componente-base para modais grandes "app-shell" (F0-01, opção iii)
-- **BUG-035** (Alto, **[CONFIRMADO]**, aberto) — revogação de acesso de membro via admin não surte efeito; causa-raiz confirmada (F1-06). **Correção parada antes de codar** (Lição 3): gate ingênuo quebraria funil de aquisição (1ª compra passa por `/hub/membro/checkout` sem `member_area_access`) e onboarding (welcome survey em `/hub`) e junior grátis (journey sem o entitlement). Fronteira do "membro pago" = **decisão de produto** aguardando a Gestora. Bloqueia validação visual do offboarding modal (F1-03)
+- **BUG-035** (Alto, **CORRIGIDO** PR #37 — Fase D) — revogação de acesso agora expulsa do clube: cadeado server-side em `hub/membro/layout.tsx` + bypass `isAdmin ||` removido. Resolvido pela reestruturação completa A0→D (`ACCESS-MODEL-DESIGN.md`). Desbloqueia a validação do offboarding modal (F1-03)
 - **BUG-036** (Médio, **corrigido** PR #26) — erro de hidratação no `ComparisonTable` (whitespace em `<colgroup>`) em `/servicos/[audience]`; F1-01
 - **BUG-037** (Baixo, **corrigido** PR #26) — acentos/crase em copy pública de serviços; F1-01
 - **BUG-038** (Baixo, aberto/adiado) — `<Image fill>` sem `sizes` na foto da fundadora (perf); F1-01/T-01
