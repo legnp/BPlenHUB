@@ -156,8 +156,8 @@ divergência apontada na conferência). Parser validado por diff — regressão 
 |---|---|---|
 | 3d-fonte | BUG-040 | ✓ PR #38 — namespace `_portfolio_backups` + rotação 3, nos DOIS caminhos de sync |
 | 3d-limpeza | BUG-040 | ✓ **executada** — 47 coleções apagadas (export prévio); raiz 3+3 |
-| 3b | BUG-042 | ◐ levantamento feito (4 clientes) — **aguarda 2 decisões da Gestora** (remap embaixador; conflito plano BP-002) |
-| 3c | BUG-041 | ○ excluir ~13 produtos legados (após 3b) |
+| 3b | BUG-042 | ✓ **migração executada** — 4 clientes normalizados (Embaixadores c/ jornada total); `career_planning` preservado (correção ao design); backups em scratch/ |
+| 3c | BUG-041 | ○ próximo — excluir ~13 produtos legados (3b concluída) |
 
 ---
 

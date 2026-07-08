@@ -131,6 +131,17 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
 
 ---
 
+16. **`set(..., {merge:true})` faz merge PROFUNDO de mapa e NUNCA remove chave —
+    para apagar chave de um map use `update()` (substitui o campo) ou
+    `FieldValue.delete()`.** A migração 3b (BUG-042) tinha de remover chaves-lixo de
+    `services`; a 1ª passada usou `set(...,{merge:true})` e só as **adições**
+    surtiram efeito — as remoções foram silenciosamente ignoradas (o levantamento
+    pós-migração ainda mostrava o lixo). Corrigido com `doc.ref.update({services:
+    target})`, que troca o valor do campo inteiro, preservando os demais campos do
+    doc. **Sempre reexecute o inventário read-only depois de uma migração para
+    confirmar o estado real — não confie no "APLICADO" do log.** _(Caso real: 3b,
+    2026-07-08. Backups do estado original protegidos de sobrescrita na reexecução.)_
+
 ## Melhorias sugeridas para o PLANO (para o chat de planejamento refinar)
 
 1. **Rollup de progresso nativo.** O plano rastreava itens/bugs mas não tinha
@@ -183,3 +194,5 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
 - 2026-07-08 — Lições 14 (validar com `npm run check`, não só `tsc`+`build` —
   origem do `BUG-045`) e 15 (mutação na regra central antes de confiar na suíte —
   origem: PR B1 do motor de acesso) adicionadas.
+- 2026-07-08 — Lição 16 (`set(merge:true)` não remove chave de map; reexecutar
+  inventário pós-migração — origem: 3b/BUG-042) adicionada.

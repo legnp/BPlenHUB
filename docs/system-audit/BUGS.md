@@ -1194,10 +1194,23 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   `libera`. Logo remapear para o pacote **não** libera as etapas por si; se o objetivo
   é dar acesso às etapas, a migração deve gravar as **etapas** que o pacote libera
   (BPL-000..005 para Embaixador). A decidir com a Gestora.
-- Status: Aberto — Trilha 3b. Levantamento feito; **aguarda 2 decisões da Gestora**
-  (remap dos arquivados; conflito true/false do plano em BP-002) antes de escrever o
-  script de migração. Executar **antes** de excluir os legados (BUG-041).
-  Detalhe consolidado em `ACCESS-MODEL-DESIGN.md`.
+- **Migração EXECUTADA (2026-07-08, OK da Gestora, `scripts/migrate-entitlement-keys.js`).**
+  Decisões aplicadas: (1) Embaixadores (BP-005/011/012) → acesso total às etapas do
+  Pacote Embaixador (BPL-000..005 ligadas por slug); chave arquivada
+  `plano-embaixadores-bplen` removida. (2) BP-002 (conta de teste) → lixo removido,
+  `plano_de_Carreira`→`plano-de-carreira` (true honrado). **Correção ao design:**
+  `career_planning` NÃO foi renomeado — é uma **capability viva** (módulo Gestão de
+  Carreira, lida em 8 sites + toggle admin `toggleCareerPlanningAccessAction`), não
+  apelido de `plano-de-carreira`. Preservada. Backup do doc `access` original de cada
+  cliente em `scratch/entitlement-key-backups/` (reversível).
+  **Bug de escrita pego e corrigido no processo:** `set(...,{merge:true})` faz merge
+  profundo do mapa `services` e **nunca remove** chave ausente — a 1ª passada aplicou
+  adições mas não remoções. Trocado para `update({services: target})` (substitui o
+  campo inteiro). 2ª passada completou as remoções. Verificação final: as chaves dos
+  4 clientes resolvem 100% para produto ATIVO / selo / `career_planning` — zero
+  arquivado/órfão/inerte. (Lição 16 do `RETROSPECTIVE.md`.)
+- Status: **Corrigido** — 2026-07-08. Trilha 3b concluída. Desbloqueia a 3c (BUG-041).
+- Detalhe consolidado em `ACCESS-MODEL-DESIGN.md`.
 - Decisão de execução: Migração de dados de permissão (identidade/acesso) → script
   LOCAL com dry-run + backup + ok da Gestora (padrão do migrate-journeymap).
 - Commit/PR: —
