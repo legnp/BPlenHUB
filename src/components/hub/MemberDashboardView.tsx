@@ -522,7 +522,7 @@ export default function MemberDashboardView() {
                     if (typeof window !== 'undefined') {
                        sessionStorage.setItem("bplen_tour_onboarding", "true");
                     }
-                    window.location.href = "/hub/membro/journey/onboarding?startTour=part2";
+                    window.location.href = "/hub/journey/onboarding?startTour=part2";
                  }
               }
            }

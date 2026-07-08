@@ -115,7 +115,7 @@ export default function StepJourneyPage() {
                   <div 
                     key={ridx} 
                     onClick={() => {
-                       window.location.href = `/hub/membro/journey/${currentStep.id}`;
+                       window.location.href = `/hub/journey/${currentStep.id}`;
                     }}
                     className="p-4 rounded-xl border border-[var(--border-primary)] bg-white/5 flex items-center gap-4 group/item hover:border-[var(--accent-primary)]/40 transition-all cursor-pointer"
                   >
@@ -132,7 +132,7 @@ export default function StepJourneyPage() {
 
               <div className="pt-6 flex flex-wrap gap-4">
                 <button 
-                  onClick={() => window.location.href = `/hub/membro/journey/${currentStep.id}`}
+                  onClick={() => window.location.href = `/hub/journey/${currentStep.id}`}
                   className="px-8 py-3.5 rounded-2xl bg-[var(--text-primary)] text-[var(--bg-primary)] text-xs font-black uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl"
                 >
                   Ir para Etapa

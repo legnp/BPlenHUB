@@ -70,7 +70,7 @@ export function StageOverviewCard({ stage, className }: StageOverviewCardProps) 
 
         <div className="pt-4">
           <Link
-            href={`/hub/membro/journey/${stage.id}`}
+            href={`/hub/journey/${stage.id}`}
             className="inline-flex px-10 py-3.5 rounded-2xl bg-[var(--text-primary)] text-[var(--bg-primary)] text-[10px] font-black uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-black/10"
           >
             Continuar Trilha

@@ -185,7 +185,7 @@ export default async function ContratosPage() {
                     </Link>
                   ) : canRetryPayment(order.status) ? (
                     <Link 
-                      href={`/hub/membro/checkout/${order.productSlug}`}
+                      href={`/hub/checkout/${order.productSlug}`}
                       className="w-full py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all glass hover:bg-[var(--text-primary)] hover:text-[var(--bg-primary)] text-[var(--text-primary)] text-center flex items-center justify-center gap-2 border-[var(--glass-border)]"
                     >
                       Tentar Pagar Novamente

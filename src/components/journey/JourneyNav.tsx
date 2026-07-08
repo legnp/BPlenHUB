@@ -246,8 +246,8 @@ export function JourneyNav({ stages, currentStepId, stepStatusMap, getStageTelem
             const wrapperProps = onSelectStep || isBlocked || isBlockedBySequence
               ? { onClick: () => handleStageClick(stage, telemetry.hasAccess, telemetry.isSequenceLocked), role: "button" } 
               : { href: (stage.id === 'PRIMEIROS_PASSOS' || stage.id === 'primeiros_passos' || stage.order === 0) 
-                  ? "/hub/membro/journey/posicionamento-profissional" 
-                  : `/hub/membro/journey/${stage.id}` 
+                  ? "/hub/journey/posicionamento-profissional" 
+                  : `/hub/journey/${stage.id}` 
                 } as React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string };
 
             return (

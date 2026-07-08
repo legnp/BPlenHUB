@@ -206,7 +206,7 @@ export function HubHomeView() {
           stageId: stage.id,
           type: sub.type,
           status,
-          url: `/hub/membro/journey/${stage.id}`,
+          url: `/hub/journey/${stage.id}`,
           completionDate: compDates[sub.id]
         });
       });

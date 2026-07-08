@@ -53,7 +53,7 @@ export function PaymentStatus({ paymentId }: PaymentStatusProps) {
             <Home size={16} /> Ir para o Dashboard
          </Link>
          <Link 
-           href="/hub/membro/journey?startTour=part2" 
+           href="/hub/journey?startTour=part2" 
            className="w-full sm:w-auto px-8 py-4 bg-white/5 border border-white/10 text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all flex items-center justify-center gap-3"
          >
             Ver Minha Jornada <ArrowRight size={16} />

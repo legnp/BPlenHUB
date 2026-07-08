@@ -77,7 +77,7 @@ export function CheckoutFlow({ product }: CheckoutFlowProps) {
       const result = await processServicePurchaseAction(product.slug, token, couponCode || undefined, true);
       
       if (result.success && result.orderId) {
-         window.location.href = `/hub/membro/checkout/success?orderId=${result.orderId}`;
+         window.location.href = `/hub/checkout/success?orderId=${result.orderId}`;
       } else {
          setError(result.error || "Falha ao ativar serviço.");
       }
@@ -285,7 +285,7 @@ export function CheckoutFlow({ product }: CheckoutFlowProps) {
                          idToken={idToken || undefined}
                          onSuccess={(paymentId) => {
                            if (orderId) {
-                             window.location.href = `/hub/membro/checkout/success?orderId=${orderId}&payment_id=${paymentId || ''}`;
+                             window.location.href = `/hub/checkout/success?orderId=${orderId}&payment_id=${paymentId || ''}`;
                            } else {
                              window.location.href = `/hub/membro/dashboard`; // Fallback
                            }
