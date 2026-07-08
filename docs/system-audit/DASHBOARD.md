@@ -12,7 +12,15 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-08 (chat de execução — **FASE D MERGEADA (PR #37):
+> **Última atualização:** 2026-07-08 (chat de execução — **TRILHA 3 (HIGIENE)
+> COMPLETA**: 3d (backups: fonte em namespace + 47 coleções legadas apagadas), 3b
+> (chaves dos 4 clientes normalizadas; Embaixadores com jornada total; `career_planning`
+> preservado como capability viva), 3c (14 produtos arquivados excluídos → `products`
+> = 12 ativos). Todos os passos com script LOCAL dry-run + export + OK. Design §2.4
+> novo: separação Serviço/Feature/Gatilho (clarificação da Gestora). Restam: Fase E
+> (elegibilidade) e Trilha 4 (nomenclatura DISC).
+>
+> _(entrada anterior)_ 2026-07-08 (chat de execução — **FASE D MERGEADA (PR #37):
 > BUG-035 RESOLVIDO.** `hub/membro/layout.tsx` exige o selo no servidor para toda a
 > subárvore; bypass `isAdmin ||` removido (índice + hero). Revogar o selo expulsa o
 > cliente do clube na próxima navegação. Reestruturação do modelo de acesso
@@ -157,7 +165,7 @@ divergência apontada na conferência). Parser validado por diff — regressão 
 | 3d-fonte | BUG-040 | ✓ PR #38 — namespace `_portfolio_backups` + rotação 3, nos DOIS caminhos de sync |
 | 3d-limpeza | BUG-040 | ✓ **executada** — 47 coleções apagadas (export prévio); raiz 3+3 |
 | 3b | BUG-042 | ✓ **migração executada** — 4 clientes normalizados (Embaixadores c/ jornada total); `career_planning` preservado (correção ao design); backups em scratch/ |
-| 3c | BUG-041 | ○ próximo — excluir ~13 produtos legados (3b concluída) |
+| 3c | BUG-041 | ✓ **executada** — 14 produtos arquivados excluídos; `products` = 12 ativos, 0 arquivados |
 
 ---
 

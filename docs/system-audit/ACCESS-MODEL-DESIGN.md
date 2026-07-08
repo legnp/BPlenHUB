@@ -50,6 +50,34 @@ apenas (a menos que **banida** → nada). Esse é o comportamento-alvo do `BUG-0
 - `conclusões` — etapas concluídas (já existe: `JourneyProgress`).
 - `dispensaPreRequisito: string[]` — **novo**. Waiver por serviço, concedido pelo admin (manual) ou pelo workflow de elegibilidade (§6). O motor pula o pré-req quando presente.
 
+### 2.4 Serviço ≠ Feature ≠ Gatilho (clarificação da Gestora, 2026-07-08)
+
+Três conceitos que hoje estão **conflados** dentro do mesmo mapa `services` e que o
+modelo deve separar de forma explícita (achado durante a Trilha 3b, ao investigar o
+`career_planning`):
+
+| Conceito | O que é | Exemplo | Onde vive hoje |
+|---|---|---|---|
+| **Serviço / etapa** | a "coisa" comprada/entregue (um `BPL-xxx`) | Plano de Carreira (BPL-003) | `products` + chave em `services[slug]` |
+| **Feature / capability** | um recurso do HUB que um serviço **libera** | módulo Gestão de Carreira (`career_planning`) | flag booleana solta em `services` |
+| **Gatilho** | **quando** a feature libera | "ao concluir um checkpoint do Plano de Carreira" | **não modelado** — hoje é toggle admin manual (`toggleCareerPlanningAccessAction`) |
+
+**Caso concreto (`career_planning`):** é a feature "Gestão de Carreira", **condicionada
+a um checkpoint do serviço Plano de Carreira** (BPL-003). Intenção da Gestora: quando o
+membro conclui esse checkpoint, a feature abre sozinha. **Hoje** isso é um toggle admin
+manual — o gatilho automático **não existe como dado**. Por isso, na Trilha 3b, só
+`BP-005` tinha `career_planning=true` (é o único que chegou ao checkpoint); os demais
+não. **Decisão: `career_planning` NÃO é apelido de `plano-de-carreira`** (o design
+antigo assumia isso, erroneamente) — são um serviço e uma feature distintos, e foram
+mantidos separados.
+
+**Lacuna de modelo (candidata a fase futura):** dar à feature um atributo declarativo
+do tipo `liberadaPor: { servico: "BPL-003", checkpoint: "<id>" }`, para o motor abrir a
+capability por conclusão de checkpoint — em vez do toggle manual. Não implementado
+agora (não bloqueia a reestruturação); registrado aqui para não se perder. Relaciona-se
+com o workflow de elegibilidade (§6), que é o mesmo padrão "conclusão de etapa → grava
+entitlement/waiver".
+
 ## 3. Regras canônicas da jornada (aprovadas)
 
 Ordem corrigida (**posicionamento é a etapa 1, antes do onboarding**). Os produtos
