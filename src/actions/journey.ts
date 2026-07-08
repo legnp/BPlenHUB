@@ -182,11 +182,15 @@ export async function getJourneyStagesAction(): Promise<JourneyStep[]> {
           order: order,
           title: main.title,
           subtitle: main.sheet?.description?.slice(0, 60) + "..." || "",
-          icon: getIconName(order, main.slug), 
+          icon: getIconName(order, main.slug),
           description: main.sheet?.description || "",
           substeps: finalSubsteps,
           kicker: main.kicker,
-          workflow: main.workflow || []
+          workflow: main.workflow || [],
+          // Atributos do modelo de acesso (Fase B2) — vem do produto principal
+          serviceCode: main.serviceCode,
+          escopo: main.escopo,
+          preRequisitos: main.preRequisitos
         };
       })
       .sort((a, b) => a.order - b.order);
@@ -300,7 +304,10 @@ export async function getStandaloneStageAction(slug: string): Promise<JourneySte
       icon: "Rocket", // Default para standalone
       substeps: substeps,
       kicker: product.kicker,
-      workflow: product.workflow || []
+      workflow: product.workflow || [],
+      serviceCode: product.serviceCode,
+      escopo: product.escopo,
+      preRequisitos: product.preRequisitos
     };
   } catch (error) {
     console.error(`🚨 [JourneyAction] Erro ao buscar standalone stage (${slug}):`, error);

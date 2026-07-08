@@ -2074,3 +2074,53 @@ para embasar essas decisões estão todos disponíveis.
 - Próximo (código): **B2** (adaptador leniente + troca do lock hardcoded pelo motor)
   e **D** (trancar `/hub/membro` = BUG-035 resolvido).
 - Itens atualizados: `DASHBOARD.md` (Sync: dados prontos, falta o clique), este LOG.
+
+---
+
+## [2026-07-08] Chat de execução — Sync executada (Gestora) + Fase B2: motor assume a jornada (mergeado)
+
+- Chat/sessão: mesmo chat. **Sync do portfólio executada pela Gestora** com sucesso:
+  12 produtos ativos com os atributos no Firestore; `concedeSelo=false` do pacote
+  junior conferido por ela direto na base. **O A2 está ativo em produção.** Card da
+  jornada validado OK (rotas novas da Fase C). Compra de teste fica para o futuro.
+- Registros da validação da Gestora: **BUG-047** (novo — painel admin não exibe os
+  atributos; verificado por leitura que `getAdminProducts`/`safeSerialize` repassam
+  tudo: é gap de exibição da tela, não de dado) e **nota no BUG-041** (a limpeza da
+  Trilha 3c deve deixar o painel de produtos limpo dos arquivados também).
+- **B2 (PR #35):** o motor `resolverAcesso` (B1) assume a decisão de acesso/trava da
+  jornada, via adaptador leniente:
+  - `src/lib/access/journey-adapter.ts` (puro, testável): `resolveStageAccess` traduz
+    etapa+contexto para o motor e o resultado de volta para a telemetria da UI
+    (`hasAccess`/`isSequenceLocked` — shape inalterado, `JourneyNav` intocado).
+    `conclusoesFromProgress` deriva conclusões (serviceCode) do progresso real.
+  - `useJourney.ts`: quando a etapa tem atributos sincronizados (serviceCode +
+    preRequisitos), a decisão é do motor; a trava linear hardcoded (+ exceções
+    onboarding/mentocoach/offboarding) vira **fallback** só para etapa sem atributos.
+  - `journey.ts` (action): etapas passam a carregar `serviceCode`/`escopo`/
+    `preRequisitos` do produto principal (aditivo). `JourneyStep` idem.
+  - `user-permissions.ts`/`auth-permissions.ts`: `dispensaPreRequisito` no retorno
+    (aditivo) — o waiver do A3 agora É consumido (motor pula o pré-req).
+- **Leniência (decisão da Gestora, registrada no B1):** o entitlement da etapa é o
+  cálculo legado (quotas fuzzy + overrides de `services` + grants especiais). **Sem
+  expansão de `libera` em leitura** — verificado que é redundante hoje: o checkout já
+  grava `services[stageId]` por quota na compra de pacote (`checkout.ts`,
+  quotaBasedStageActivations). Estrito por serviceCode só após a Trilha 3b (BUG-042).
+- **Mudanças de comportamento (todas do modelo aprovado §3):**
+  1. Análise Comportamental **destrava sem concluir o onboarding** (pré-req `nenhum`;
+     antes: trava linear exigia onboarding completed).
+  2. Offboarding: trava corrigida — o legado lia `desenvolvimento-de-carreira`
+     (chave de progresso que não existe mais; metade da condição OR estava morta).
+     Motor usa `qualquer [BPL-004, BPL-005]` contra o progresso real.
+  3. Lead sem selo em etapa member: PREVIA (não acionável) mesmo que entitled —
+     preparação direta da Fase D.
+  4. Dispensa de pré-requisito (A3) passa a ter efeito real.
+- **Validação:** suíte **52/52** (39 + 13 novos do adaptador), tsc limpo, build exit
+  0, eslint dos arquivos tocados 0 problemas. Pre-commit sem `--no-verify`.
+  Telas logadas: validar em produção (BUG-030) — roteiro: membro com análise não
+  concluída deve ver o Plano travado citando a análise; admin dispensa BPL-003 no
+  botão do A3 → plano destrava para aquele usuário.
+- Itens atualizados: `BUGS.md` (+BUG-047, nota BUG-041), `DASHBOARD.md` (Sync ✓,
+  B2 ✓), este LOG.
+- Próximo: **Fase D** — trancar `/hub/membro` (layout exige selo; sem selo → `/hub`;
+  remover bypass `isAdmin ||` do índice) = **BUG-035 resolvido**. Gated
+  (identidade/acesso) → plano + aprovação antes de codar.

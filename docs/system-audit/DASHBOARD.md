@@ -12,7 +12,15 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-08 (chat de execução — **Fase C mergeada** (PR #33):
+> **Última atualização:** 2026-07-08 (chat de execução — **Sync executada pela
+> Gestora** (12 produtos com atributos; A2 ativo) + **Fase B2 mergeada** (PR #35):
+> o motor `resolverAcesso` assume a decisão de acesso/trava da jornada via
+> adaptador leniente no `useJourney`; trava linear hardcoded vira fallback só
+> para etapa sem atributos. Registrados **BUG-047** (painel admin não exibe os
+> atributos novos) e nota no BUG-041 (limpeza deve refletir no painel). Falta a
+> **Fase D** para fechar o BUG-035.
+>
+> _(entrada anterior)_ 2026-07-08 (chat de execução — **Fase C mergeada** (PR #33):
 > checkout reposicionado para `/hub/checkout/*` e journey para `/hub/journey/*`, com
 > stubs de redirect (preservando query) em todos os paths antigos — e-mails, back_urls
 > do MP em voo e tour continuam funcionando. Junior → `/hub/journey/posicionamento-
@@ -119,9 +127,9 @@ Desenho em `ACCESS-MODEL-DESIGN.md`. Fecha o `BUG-035` na **Fase D**, não antes
 | A3 | Botão admin de `dispensaPreRequisito` | ✓ PR #31 — **sem consumidor até a Fase B** |
 | B1 | Motor puro `resolverAcesso` + 27 testes | ✓ PR #32 — **sem consumidor** |
 | C | Checkout → `/hub/checkout` + journey → `/hub/journey` (stubs de redirect nos paths antigos) | ✓ PR #33 — **destrava a Sync** |
-| — | **Sync do portfólio** (ativa o A2) | ◐ dados mergeados (PR #34) — falta: deploy + clique em "Sincronizar Portfólio" no admin |
-| B2 | Adaptador + troca do lock hardcoded | ○ depende da Sync |
-| D | Trancar `/hub/membro` (exige selo) | ○ **→ BUG-035 resolvido** |
+| — | **Sync do portfólio** (ativa o A2) | ✓ **executada pela Gestora (2026-07-08)** — 12 produtos com atributos no Firestore; `concedeSelo=false` do junior conferido |
+| B2 | Adaptador leniente + motor assume o lock da jornada | ✓ PR #35 |
+| D | Trancar `/hub/membro` (exige selo) | ○ **próximo → BUG-035 resolvido** |
 
 **Sequenciamento corrigido (2026-07-08):** a ordem `B → C → D` do design não roda —
 o motor precisa de `preRequisitos` no Firestore, que só chegam pela Sync, retida até
