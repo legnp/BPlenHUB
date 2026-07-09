@@ -23,6 +23,9 @@
   --glass-border: 1px solid rgba(255, 255, 255, 0.5);
   --glass-blur: 8px;
   --glass-shadow: 0 4px 16px 0 rgba(31,38,135,0.05);
+  /* Overlay/backdrop dos modais — adapta ao tema (temas claros herdam este valor;
+     temas escuros redefinem abaixo). Consumido por GlassModal e demais modais. */
+  --modal-backdrop: rgba(255, 255, 255, 0.4);
 
   /* Tokens de Input e Bordas */
   --border-primary: rgba(0, 0, 0, 0.1); 
@@ -49,6 +52,7 @@
   --glass-bg: rgba(18, 18, 18, 0.75);
   --glass-border: 1px solid rgba(255, 255, 255, 0.12);
   --glass-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.6);
+  --modal-backdrop: rgba(0, 0, 0, 0.6);
 
   --border-primary: rgba(255, 255, 255, 0.1);
   --input-bg: rgba(255, 255, 255, 0.05);
@@ -147,6 +151,7 @@
   --text-muted: #FFFFFF;
   --glass-bg: #000000;
   --glass-border: 2px solid #FFFF00;
+  --modal-backdrop: rgba(0, 0, 0, 0.7);
 
   --border-primary: #FFFF00;
   --input-bg: #000000;
