@@ -2274,3 +2274,31 @@ para embasar essas decisões estão todos disponíveis.
 - Próximo: **Trilha 3c (BUG-041)** — excluir os ~13 produtos legados/arquivados de
   `products` (agora que nenhum cliente referencia os arquivados). Script LOCAL
   dry-run + export + OK.
+
+---
+
+## [2026-07-08] Chat de execução — Trilha 3c: exclusão dos produtos legados (BUG-041) + design §2.4
+
+- **Trilha 3c EXECUTADA** com OK da Gestora ("pode seguir com 3c").
+  `scripts/cleanup-legacy-products.js` (LOCAL; critério **conservador** — só
+  `status === 'archived'`, produto ativo nunca tocado; export JSON antes de apagar).
+  Dry-run mostrado: 12 ativos preservados, 14 arquivados na fila. Apliquei `--limit=3`
+  (conferência do export) + o resto. **14 excluídos** (1-to-1, coaching,
+  coaching-e-mentoria, desenvolvimento-de-carreira ×3, junior, lider, mentoria,
+  plano-embaixadores-bplen, pleno, preparacao-de-carreira, primeiros-passos, senior).
+  Verificação final: `products` = 12 docs, todos ativos, **0 arquivados**. Backups em
+  `scratch/legacy-products-export/` (14). Resolve também a nota do painel admin listar
+  legados. **TRILHA 3 (higiene da base) COMPLETA.**
+- **Design §2.4 novo (clarificação da Gestora):** separar explicitamente **Serviço**
+  (a coisa, BPL-xxx) × **Feature/capability** (recurso que um serviço libera, ex.
+  `career_planning` = módulo Gestão de Carreira) × **Gatilho** (quando libera — hoje
+  toggle admin manual; a intenção é "ao concluir um checkpoint do Plano de Carreira",
+  ainda NÃO modelado como dado). Confirma por que só BP-005 tinha `career_planning`
+  (único que chegou ao checkpoint). Registrada a lacuna `liberadaPor:{servico,checkpoint}`
+  como candidata a fase futura (relaciona-se com o workflow de elegibilidade §6).
+- Sem código de produto tocado (script + docs). Itens: `BUGS.md` (BUG-041 Corrigido),
+  `ACCESS-MODEL-DESIGN.md` (§2.4), `DASHBOARD.md` (Trilha 3 completa), este LOG.
+- Próximo: **Fase E** (workflow de avaliação de elegibilidade, §6) ou **Trilha 4**
+  (remover "DISC" conflado com análise comportamental). Ambas independentes; a Gestora
+  escolhe a ordem. Também aberto: BUG-047 (painel admin exibir atributos), BUG-033/046,
+  e a validação em produção acumulada (fluxos C/D, dispensa A3).

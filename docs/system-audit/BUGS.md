@@ -1138,11 +1138,17 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Cenário de falha: catálogo poluído com ~13 duplicatas/legados arquivados. Alguns
   ainda referenciados por clientes (`plano-embaixadores-bplen` ×3, `1-to-1` ×1) →
   **migrar antes de excluir** (ver BUG-042).
-- Status: Aberto — Trilha 3c. Excluir **após** a migração (BUG-042).
-- Nota da Gestora (2026-07-08, pós-Sync): os arquivados seguem listados no painel
-  admin de produtos — a limpeza da Trilha 3c deve deixar o painel limpo também
-  (o painel lista o que está na coleção; excluir do Firestore resolve, conferir
-  na validação).
+- Status: **Corrigido** — 2026-07-08 (Trilha 3c). `scripts/cleanup-legacy-products.js`
+  (LOCAL; critério conservador: só `status === 'archived'`; export JSON de cada doc
+  antes de apagar). **Executado com OK da Gestora:** 14 produtos arquivados excluídos
+  (1-to-1, coaching, coaching-e-mentoria, desenvolvimento-de-carreira ×3, junior,
+  lider, mentoria, plano-embaixadores-bplen, pleno, preparacao-de-carreira,
+  primeiros-passos, senior). Verificação final: `products` = 12 docs, todos ativos
+  canônicos, **0 arquivados**. Nenhum ativo tocado. Isto também resolve a nota da
+  Gestora sobre o painel admin listar os arquivados (o painel lista a coleção → some
+  o legado). Backups em `scratch/legacy-products-export/` (14 arquivos, reversível).
+- Nota (BUG-047): o painel admin ainda não **exibe os atributos novos** (escopo/
+  concedeSelo/...) — isso é gap de exibição separado, segue aberto.
 - Decisão de execução: Exclusão de dados de produto (financeiro-adjacente) → script
   LOCAL com dry-run + ok da Gestora, e só depois da migração dos clientes.
 - Commit/PR: —
