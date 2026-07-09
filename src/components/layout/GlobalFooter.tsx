@@ -23,11 +23,11 @@ export function GlobalFooter({ variant = "full", className }: GlobalFooterProps)
 
   const handleHubAccess = async () => {
     if (user) {
-      router.push("/hub");
+      router.push("/hub/membro");
     } else {
       try {
         await signInWithGoogle();
-        router.push("/hub");
+        router.push("/hub/membro");
       } catch (err) {
         console.error("Erro ao acessar HUB via Footer:", err);
       }
@@ -46,7 +46,9 @@ export function GlobalFooter({ variant = "full", className }: GlobalFooterProps)
             
             {/* 1. Branding & Mission */}
             <div className="space-y-6 lg:col-span-2">
-              <BPlenLogo variant="main" size={28} className="opacity-90 hover:opacity-100 transition-opacity" />
+              {/* Logo +50% (item 1): scale visual sem alterar a caixa de layout — o footer
+                  nao tem altura fixa, entao usar scale preserva a altura do componente. */}
+              <BPlenLogo variant="main" size={28} className="opacity-90 hover:opacity-100 transition-opacity scale-[1.5] origin-left" />
               <div className="space-y-4 max-w-md">
                 <p className="text-xs font-black uppercase tracking-[0.2em] text-[var(--text-primary)]">
                   Sua parceira de gestão e desenvolvimento profissional.
@@ -116,7 +118,6 @@ export function GlobalFooter({ variant = "full", className }: GlobalFooterProps)
 
           <div className="flex gap-8 text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60">
             <Link href="/privacidade" className="hover:text-[var(--text-primary)] transition-colors">Privacidade</Link>
-            <Link href="#" className="hover:text-[var(--text-primary)] transition-colors">Governança</Link>
             <Link href="/termos" className="hover:text-[var(--text-primary)] transition-colors">Termos</Link>
           </div>
         </div>

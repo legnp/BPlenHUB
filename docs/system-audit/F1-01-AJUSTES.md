@@ -33,11 +33,11 @@ também têm entrada própria em `BUGS.md`.
 
 | # | Cat | O que | Onde | Status |
 |---|---|---|---|---|
-| 1 | G | Logo do footer +50% **sem alterar a altura** do footer | `GlobalFooter.tsx` | ○ |
+| 1 | G | Logo do footer +50% **sem alterar a altura** do footer | `GlobalFooter.tsx` | ✓ PR-B |
 | 2 | C | "Sua **plataforma** de gestão..." → "Sua **parceira** de gestão..." | `GlobalFooter.tsx` (confirmar) | ✓ PR-A |
-| 3 | G | Link "Área de Membro" → `/hub/membro` | `GlobalFooter.tsx` | ○ |
-| 4 | G | Remover link "Governança" (não aponta p/ lugar nenhum) | `GlobalFooter.tsx` | ○ |
-| 5 | G | Logo do header +50% **sem alterar a altura**, em `/termos`, `/privacidade` e páginas de mesmo padrão | header legal | ○ |
+| 3 | G | Link "Área de Membro" → `/hub/membro` | `GlobalFooter.tsx` | ✓ PR-B |
+| 4 | G | Remover link "Governança" (não aponta p/ lugar nenhum) | `GlobalFooter.tsx` | ✓ PR-B |
+| 5 | G | Logo do header +50% **sem alterar a altura**, em `/termos`, `/privacidade` e páginas de mesmo padrão | header legal | ✓ PR-B |
 | 6 | C | "Explorar soluções" → "Conhecer serviços" (seletor de jornada) | `ServiceSelectionModal.tsx` | ✓ PR-A |
 | 7 | C | `/servicos/empresas`: "Explore nossas soluções..." → "Conheça nossos serviços desenhados especificamente para empresas." | `servicos/[audience]/page.tsx:41` | ✓ PR-A |
 | 8 | L | `/servicos/empresas`: justificar o texto do card "proposta de valor em desenvolvimento" | `servicos/[audience]/page.tsx` | ○ |
@@ -56,7 +56,7 @@ também têm entrada própria em `BUGS.md`.
 ## Sequenciamento recomendado (ver LOG da sessão)
 Fechar como **passada de acabamento da F1-01, agora** (independe das fases logadas):
 - **PR-A — Copy pública** (2,6,7,9,10,12,15,16,17): ✓ **MERGEADA (PR #42)** — verificada ao vivo (SSR + snapshot) e por grep.
-- **PR-B — Footer & header globais** (1,3,4,5): global autorizado; público ao vivo + hub na sessão de produção.
+- **PR-B — Footer & header globais** (1,3,4,5): ✓ **MERGEADA (PR #43)** — logos +50% via scale/size sem alterar altura (medido ao vivo: footer logo caixa 28px→render 42px; header h-16 fixo, logo 26→39); Governança removido; "Área de Membro" roteia p/ `/hub/membro`. Aparência logada (footer) na sessão de produção.
 - **PR-C — Conformidade de design pública** (8,11,13,14,18,19): lente de design + ao vivo; inclui os 3 defeitos (BUG-048/049/050).
 
 Notas de cuidado: #11 (caber em 1 página) e #13 (normalizar header) são layout — verificar
