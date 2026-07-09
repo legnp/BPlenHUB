@@ -169,6 +169,34 @@ divergência apontada na conferência). Parser validado por diff — regressão 
 
 ---
 
+## Fase 1 — Validação por página (progresso)
+
+> A Fase 1 tem **duas camadas** que evoluíram em ritmos diferentes:
+> **(A) Segurança / gating** — praticamente fechada (Track T-02 100% + reestruturação
+> de acesso A0→D). **(B) Validação página-a-página** de UX/copy/responsivo/render —
+> majoritariamente **pendente**, porque telas logadas não autenticam no preview
+> (`BUG-030`) → exige validação em **produção** (execução humana).
+
+| Item | Página(s) | Camada A (segurança) | Camada B (validação UX) | Estado geral |
+|---|---|---|---|---|
+| **F1-01** | Públicas de marketing (home, /servicos, /profissionais, /conteudo) | n/a | ✓ 4 páginas ao vivo + 3 por leitura | **~90%** — falta só a passada final ao vivo de 2 internas + tablet (baixo risco). PRs #26/#27 |
+| **F1-02** | `/checkout` público + contrato retroativo | ✓ (BUG-005/006 via T-02) | ○ | **Bloqueada por decisão de negócio** (BUG-002: convergir ou não o resgate grátis; BUG-022 bypass) |
+| **F1-03** | Hub dashboard + motor de jornada | ✓ | ◐ **motor reescrito (B2)**; modal offboarding **desbloqueado** (D) | Motor de jornada agora por dado (`resolverAcesso`); trava de sequência corrigida. **Validação visual pendente** (agora possível — antes travada pelo BUG-035) |
+| **F1-04** | Hub: carreira, agenda, contratos, visão geral | ✓ (via T-02 + cadeado D) | ○ não iniciada | Agora sob o cadeado `/hub/membro` (Fase D) |
+| **F1-05** | Checkout membro, networking, perfil, entrega | ✓ (BUG-005/006) | ○ | Checkout reposicionado p/ `/hub/checkout` (Fase C); **BUG-033** (privacidade networking) a resolver; BUG-016 |
+| **F1-06** | 19 páginas de admin | ✓ (BUG-003/007/023/024 + **BUG-035 RESOLVIDO**) | ○ não iniciada | O **bloqueador crítico (BUG-035) foi resolvido** via reestruturação A0→D. Botão A3 add em `admin/users`. Validação UI das 19 páginas não começou. BUG-047 (exibir atributos) |
+
+**Resumo honesto:** a Fase 1 avançou muito **na camada de segurança e no motor**
+(nenhum bug de segurança aberto; o maior Alto — BUG-035 — fechado; jornada
+modernizada), mas a **validação visual/UX página-a-página das telas logadas mal
+começou** — ela depende de produção (BUG-030) e é o grosso do trabalho restante da
+Fase 1. Só a F1-01 (pública) está de fato validada ponta-a-ponta.
+
+**Triagem por severidade (Fase 1):** nenhum Crítico; Altos abertos = BUG-001 (T-06),
+BUG-008/010 (T-03). O BUG-035 (Alto) saiu da fila (resolvido).
+
+---
+
 ## Em andamento (PRs abertas)
 
 _Nenhuma no momento._
