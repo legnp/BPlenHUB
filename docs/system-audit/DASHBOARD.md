@@ -179,7 +179,7 @@ divergência apontada na conferência). Parser validado por diff — regressão 
 
 | Item | Página(s) | Camada A (segurança) | Camada B (validação UX) | Estado geral |
 |---|---|---|---|---|
-| **F1-01** | Públicas de marketing (home, /servicos, /profissionais, /conteudo) | n/a | ✓ 4 páginas ao vivo + 3 por leitura | **~90%** — falta só a passada final ao vivo de 2 internas + tablet (baixo risco). PRs #26/#27 |
+| **F1-01** | Públicas de marketing (home, /servicos, /profissionais, /conteudo, /agendar, legais) | n/a | ✓ base validada + **19 ajustes da Gestora** a aplicar (`F1-01-AJUSTES.md`) | **Reaberta p/ passada de acabamento** — 19 ajustes (copy/CSS/footer-header/3 defeitos BUG-048/049/050). PRs #26/#27 na base |
 | **F1-02** | `/checkout` público + contrato retroativo | ✓ (BUG-005/006 via T-02) | ○ | **Bloqueada por decisão de negócio** (BUG-002: convergir ou não o resgate grátis; BUG-022 bypass) |
 | **F1-03** | Hub dashboard + motor de jornada | ✓ | ◐ **motor reescrito (B2)**; modal offboarding **desbloqueado** (D) | Motor de jornada agora por dado (`resolverAcesso`); trava de sequência corrigida. **Validação visual pendente** (agora possível — antes travada pelo BUG-035) |
 | **F1-04** | Hub: carreira, agenda, contratos, visão geral | ✓ (via T-02 + cadeado D) | ○ não iniciada | Agora sob o cadeado `/hub/membro` (Fase D) |

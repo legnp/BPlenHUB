@@ -439,7 +439,8 @@ sem copy hardcoded fora do que o guia permitir).
   remoção gated). Copy geral das páginas conferida contra o guia F0-06 (tom
   formal-acolhedor, títulos em caixa alta) — conforme.
 - Bug(s) vinculado(s): BUG-014 (Corrigido, PR #26), BUG-036 (Corrigido, PR #26),
-  BUG-037 (Corrigido, PR #26), BUG-038 (Aberto/adiado), BUG-039 (Corrigido, PR #27)
+  BUG-037 (Corrigido, PR #26), BUG-038 (Aberto/adiado), BUG-039 (Corrigido, PR #27),
+  BUG-048/049/050 (Abertos — defeitos do cluster de acabamento, ver `F1-01-AJUSTES.md`)
 - Pendência de validação acumulada: `WelcomeRedirectModal` (F0-01 lote A, via
   `MatriculaGuard` em `/servicos/[audience]/[slug]`) foi recolorido de branco
   fixo para vars de tema — conferência visual nos temas claros pendente em

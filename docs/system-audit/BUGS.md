@@ -1340,6 +1340,44 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Decisão de execução: display-only, baixo risco; aguarda a fase da tela.
 - Commit/PR: —
 
+### BUG-048 Nav pública: "Nossos serviços" mantém realce de ativo em páginas que não são a dele
+
+- Severidade: Baixo (defeito de estado visual de navegação)
+- Área/fase onde foi achado: F1-01 (anotações da Gestora, 2026-07-08) — cluster
+  `F1-01-AJUSTES.md` #14
+- Arquivo(s) afetado(s): `src/components/layout/FloatingCTAs.tsx`
+- Cenário de falha: ao navegar nas páginas públicas, o botão de menu "Nossos serviços"
+  fica com o efeito de "selecionado" mesmo fora da sua rota — o realce de ativo deve
+  refletir só a página atual. A lógica de `active`/`pathname` da nav está incorreta.
+- Status: Aberto — corrigir na passada de acabamento da F1-01 (PR-C).
+- Decisão de execução: ajuste de estado de nav em componente público; verificar ao vivo.
+- Commit/PR: —
+
+### BUG-049 `/conteudo`: footer com tema escuro (design de home) em página pública clara
+
+- Severidade: Baixo (inconsistência de tema — regra dos "dois universos visuais" do CLAUDE.md)
+- Área/fase onde foi achado: F1-01 (anotações da Gestora, 2026-07-08) — `F1-01-AJUSTES.md` #18
+- Arquivo(s) afetado(s): `src/components/layout/GlobalFooter.tsx` (adaptação de tema em `/conteudo`)
+- Cenário de falha: o footer da `/conteudo` renderiza com o design escuro da home, quando a
+  página pública é clara — o footer deve adaptar ao tema claro público. Provável dependência
+  de contexto de tema não aplicada nessa rota.
+- Status: Aberto — F1-01 (PR-C). Toca sistema de design (tema) → lente de design + ao vivo.
+- Decisão de execução: adaptar o footer ao tema da área pública sem introduzir padrão novo.
+- Commit/PR: —
+
+### BUG-050 FAQ "Envie sua pergunta": modal com overlay branco translúcido (deveria ser preto)
+
+- Severidade: Baixo (não-conformidade de design system — backdrop divergente do padrão)
+- Área/fase onde foi achado: F1-01 (anotações da Gestora, 2026-07-08) — `F1-01-AJUSTES.md` #19
+- Arquivo(s) afetado(s): `src/components/products/FAQContactModal.tsx`
+- Cenário de falha: o modal "Envie sua pergunta a BPlen" abre translúcido, criando um overlay
+  branco estranho sobre a página pública, quando o padrão é backdrop preto. Diferente da
+  exceção aceita do `ServiceSelectionModal` (F0-01) — este deve **convergir** para o backdrop
+  padrão.
+- Status: Aberto — F1-01 (PR-C). Toca sistema de design (modal/backdrop) → lente de design.
+- Decisão de execução: alinhar ao backdrop canônico; confirmar contra o padrão do GlassModal.
+- Commit/PR: —
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em

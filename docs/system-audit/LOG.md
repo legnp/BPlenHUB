@@ -2302,3 +2302,28 @@ para embasar essas decisões estão todos disponíveis.
   (remover "DISC" conflado com análise comportamental). Ambas independentes; a Gestora
   escolhe a ordem. Também aberto: BUG-047 (painel admin exibir atributos), BUG-033/046,
   e a validação em produção acumulada (fluxos C/D, dispensa A3).
+
+---
+
+## [2026-07-08] Chat de planejamento — cluster de 19 ajustes da F1-01 (páginas públicas) + sequenciamento
+
+- A Gestora entregou **19 ajustes** para as páginas públicas (copy, CSS, footer/header,
+  3 defeitos). Pedido: incorporar ao processo e revisar o melhor momento de aplicar
+  junto da projeção pendente das F1-xx. **Nenhum código tocado nesta entrada** (só docs).
+- **Constatação organizadora:** os 19 são **todos F1-01** — a única fatia da Fase 1
+  validável ponta-a-ponta no preview (público, sem login). Fechá-los **completa a F1-01**
+  e **não compete** com F1-03/04/05/06 (logadas, dependem de sessão em produção, BUG-030).
+- **Registrados:** `docs/system-audit/F1-01-AJUSTES.md` (tabela dos 19, categorizados
+  C/L/G/D, componentes localizados por grep, sequenciamento). 3 defeitos reais em
+  `BUGS.md`: **BUG-048** (nav "Nossos serviços" realce errado), **BUG-049** (footer
+  tema escuro em `/conteudo` clara), **BUG-050** (FAQ modal overlay branco vs preto).
+- **Recomendação de momento: AGORA**, como passada de acabamento da F1-01, em 3 PRs por
+  risco: PR-A copy pública (9 itens, risco ~0); PR-B footer/header globais (1,3,4,5 —
+  logos +50% autorizados, verificar hub na sessão de produção); PR-C conformidade de
+  design pública (8,11,13,14,18,19 — inclui os 3 defeitos). Itens que também aparecem em
+  contexto logado (footer, modais de conteúdo, "slots") têm a mudança de código feita
+  agora e a conferência visual logada na sessão de produção.
+- **Aguardando OK da Gestora** para iniciar a PR-A (as demais na sequência). As fases
+  logadas seguem esperando a sessão de validação em produção — independentes deste cluster.
+- Itens atualizados: `F1-01-AJUSTES.md` (novo), `BUGS.md` (+BUG-048/049/050),
+  `DASHBOARD.md` (F1-01), `00-PLAN.md` (F1-01 bugs), este LOG.
