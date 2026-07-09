@@ -179,7 +179,7 @@ divergência apontada na conferência). Parser validado por diff — regressão 
 
 | Item | Página(s) | Camada A (segurança) | Camada B (validação UX) | Estado geral |
 |---|---|---|---|---|
-| **F1-01** | Públicas de marketing (home, /servicos, /profissionais, /conteudo, /agendar, legais) | n/a | ✓ base + **18/19 ajustes** aplicados (PR-A #42, PR-B #43, PR-C #44) | **Quase fechada** — 18/19 mergeados; resta o item 11 (/agendar header+card por dispositivo). BUG-048/049/050 corrigidos |
+| **F1-01** | Públicas de marketing (home, /servicos, /profissionais, /conteudo, /agendar, legais) | n/a | ✓ base + **19/19 ajustes** aplicados (PR-A #42, PR-B #43, PR-C #44, PR-C2 #45) | **Cluster de ajustes COMPLETO** (copy, footer/header, design, /agendar). BUG-048/049/050 corrigidos. Base validada por leitura+preview; reconferência final ao vivo de baixo risco |
 | **F1-02** | `/checkout` público + contrato retroativo | ✓ (BUG-005/006 via T-02) | ○ | **Bloqueada por decisão de negócio** (BUG-002: convergir ou não o resgate grátis; BUG-022 bypass) |
 | **F1-03** | Hub dashboard + motor de jornada | ✓ | ◐ **motor reescrito (B2)**; modal offboarding **desbloqueado** (D) | Motor de jornada agora por dado (`resolverAcesso`); trava de sequência corrigida. **Validação visual pendente** (agora possível — antes travada pelo BUG-035) |
 | **F1-04** | Hub: carreira, agenda, contratos, visão geral | ✓ (via T-02 + cadeado D) | ○ não iniciada | Agora sob o cadeado `/hub/membro` (Fase D) |

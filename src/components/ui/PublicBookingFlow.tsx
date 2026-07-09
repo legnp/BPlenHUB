@@ -133,7 +133,13 @@ const COUNTRY_CODES = [
   { code: "+27", label: "🇿🇦 ZA +27", iso: "ZA" }
 ];
 
-export function PublicBookingFlow() {
+/**
+ * variant "section" (default): uso em seção rolável (home BookingSection) — layout atual.
+ * variant "page" (/agendar): header normalizado ao padrão /servicos (kicker + tokens) e
+ * card dimensionado para caber em 1 viewport sem scroll de página (item 11 F1-01).
+ */
+export function PublicBookingFlow({ variant = "section" }: { variant?: "section" | "page" }) {
+  const isPage = variant === "page";
   const [step, setStep] = useState<Step>("calendar");
   const [isProposalMode, setIsProposalMode] = useState(false);
   const [proposalOptions, setProposalOptions] = useState<{ date: string; time: string }[]>([]);
@@ -312,19 +318,24 @@ export function PublicBookingFlow() {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto py-4 px-4">
-      {/* 48px Header */}
-      <div className="text-center space-y-1.5 mb-4 animate-in fade-in slide-in-from-top-4 duration-1000">
-        <h1 className="text-[30px] font-black tracking-tighter text-[var(--text-primary)] leading-[1.1]">
+    <div className={`w-full max-w-4xl mx-auto px-4 ${isPage ? "py-2" : "py-4"}`}>
+      {/* Header — normalizado ao padrao /servicos (kicker + tokens) no variant "page" */}
+      <div className={`text-center animate-in fade-in slide-in-from-top-4 duration-1000 ${isPage ? "mb-3 space-y-2" : "mb-4 space-y-1.5"}`}>
+        {isPage && (
+          <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[var(--accent-start)] block mb-3">
+            Agende sua conversa
+          </span>
+        )}
+        <h1 className={`tracking-tighter text-[var(--text-primary)] leading-[1.1] ${isPage ? "text-3xl md:text-5xl font-bold" : "text-[30px] font-black"}`}>
           Reserve seu <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)]">Momento BPlen</span>
         </h1>
-        <p className="text-[var(--text-muted)] opacity-70 text-sm font-medium max-w-xl mx-auto leading-relaxed">
+        <p className={`text-[var(--text-muted)] opacity-70 font-medium mx-auto leading-relaxed ${isPage ? "text-sm md:text-base max-w-2xl" : "text-sm max-w-xl"}`}>
           Que tal descomplicarmos o desenvolvimento humano no trabalho juntos? <br />
           Escolha um slot abaixo e receba a confirmação em seu e-mail.
         </p>
       </div>
 
-      <div className="w-full max-w-4xl mx-auto p-4 sm:p-5 bg-[var(--glass-bg)] backdrop-blur-3xl border border-[var(--border-primary)] rounded-[40px] shadow-2xl relative overflow-hidden group transition-all duration-700 min-h-[600px] flex flex-col justify-center">
+      <div className={`w-full max-w-4xl mx-auto p-4 sm:p-5 bg-[var(--glass-bg)] backdrop-blur-3xl border border-[var(--border-primary)] rounded-[40px] shadow-2xl relative overflow-hidden group transition-all duration-700 flex flex-col ${isPage ? "min-h-[420px] sm:min-h-[480px] max-h-[calc(100svh-220px)] overflow-y-auto custom-scrollbar justify-start" : "min-h-[600px] justify-center"}`}>
 
         {/* 🔮 Glow Decoration */}
         <div className="absolute -top-24 -right-24 w-64 h-64 bg-[var(--accent-start)]/20 rounded-full blur-3xl group-hover:bg-[var(--accent-start)]/30 transition-all duration-700" />

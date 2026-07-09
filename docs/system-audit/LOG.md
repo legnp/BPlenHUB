@@ -2397,3 +2397,28 @@ para embasar essas decisões estão todos disponíveis.
   medições + screenshot ao vivo. Preview instável (navegação revertia) — contornado com SSR.
 - Item 11 (PR-C2, pendente): /agendar header + card em 1 tela por dispositivo (iterativo).
 - F1-01: 18/19 ajustes aplicados; falta o item 11.
+
+---
+
+## [2026-07-08] Chat de execução — F1-01 acabamento PR-C2: /agendar (item 11) — cluster COMPLETO
+
+- Último item do cluster F1-01 (11): normalizar o header do /agendar + encaixar o card em 1
+  viewport sem scroll de página, **por dispositivo**.
+- `PublicBookingFlow` é **compartilhado** (home BookingSection, seção rolável, + /agendar). Para
+  não regredir a home, add prop **`variant`** ("section" default = home intocada; "page" = /agendar).
+  No variant page: (a) header normalizado ao padrão /servicos (kicker "AGENDE SUA CONVERSA" +
+  título `text-3xl md:text-5xl font-bold` tokens, gradiente preservado); (b) card com
+  `max-h-[calc(100svh-220px)]` + `overflow-y-auto` (scroll interno) + `min-h` menor; a página
+  /agendar deixou de usar min-h fixo e o card se ajusta ao viewport.
+- **Medido ao vivo nos 3 dispositivos (card cabe no viewport):** mobile 375×812 → card bottom
+  804 (< 812); desktop 956×964 → 930 (< 964); tablet 768×1024 → 977 (< 1024). O conteúdo alto
+  (calendário) rola **dentro** do card (a lista de horários já rolava por design); a **página**
+  não precisa rolar para ver o card. Header 212px no mobile (título quebra 2 linhas em tela
+  estreita) coberto pela reserva de 220px no cálculo.
+- Home BookingSection: **inalterada** (variant default "section", min-h-600, sem max-h).
+- **Validação:** tsc + lint (0 erros), next build exit 0, medições + screenshot ao vivo nos 3
+  breakpoints (preview /agendar exigiu ~25s de compile no 1º acesso — a navegação SPA revertia
+  antes de compilar; resolvido esperando o compile).
+- Nota honesta: "sem scroll" = o card cabe em 1 tela e a página não rola para vê-lo; o calendário
+  rola internamente no card em telas menores (inerente a um seletor de data+horários no mobile).
+- **F1-01: cluster de 19 ajustes da Gestora COMPLETO** (PR-A #42, PR-B #43, PR-C #44, PR-C2 #45).
