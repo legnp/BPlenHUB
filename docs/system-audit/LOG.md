@@ -2529,3 +2529,47 @@ para embasar essas decisões estão todos disponíveis.
   (BUG-030 — preview não autentica), de baixo risco.
 - Itens atualizados: `F1-01-AJUSTES.md` (itens 19/20 + linha de conclusão do cluster),
   `DASHBOARD.md` (última atualização), este LOG.
+
+---
+
+## [2026-07-09] Chat de execução — F1-02: BUG-002 corrigido (PR #48) + design do subsistema de contratos
+
+- Chat/sessão: mesmo chat de execução (Opus 4.8)
+- Escopo: a Gestora escolheu seguir com a **F1-02** (checkout público + contrato
+  retroativo). Investigação read-only dos fluxos financeiros → decisão + correção do
+  BUG-002 → investigação do "universo de contratos" (pedido expandido) → design doc +
+  plano faseado.
+- **BUG-002 corrigido (PR #48).** Confirmado por leitura que `grantServiceEntitlement`
+  concede o serviço sem checar preço; `processServicePurchaseAction` (só `requireAuth`)
+  permitia ativar produto pago de graça (direto ou pela página órfã `/checkout/[slug]`,
+  não linkada). Decisões da Gestora: trava de preço server-side (recusa se finalPrice>0)
+  + remoção da rota órfã. Validado (eslint/test 52/52/tsc/build; /checkout/[slug] → 404).
+  A action segue no `CheckoutFlow` (ativação grátis do checkout de membro), reforçada.
+- **BUG-022 expandido pela Gestora** para um redesenho do subsistema de contratos
+  (itens a–f): links únicos de uso único vinculados à conta (a/b/c), painel com status
+  de assinatura + documento + nota fiscal (d), visualização do documento no HUB (e),
+  IP na assinatura p/ validade jurídica (f).
+- **Investigação read-only do universo de contratos** (checkout público/membro,
+  `/contrato-retroativo`, `legal.ts`, painel `/hub/membro/contratos`, `ContractGateModal`,
+  `admin/users`). Achados estruturais (registrados como BUG-051..055):
+  - **BUG-051 (Alto):** `generateContractPdf` lê `collection("Products")` (maiúsculo) —
+    o canônico é `products` (minúsculo). Firestore case-sensitive → geração de PDF
+    provavelmente **quebrada** (retroativo + gate). **A verificar em produção.**
+  - **BUG-055:** o gate (`getPendingContracts`) lê a subcoleção legada `User/{uid}/Orders`
+    (sem escritor) — pendências sempre vazias; gate inerte.
+  - **BUG-052 (item e):** documento do contrato não visualizável no HUB (telas mandam
+    "veja no Drive").
+  - **BUG-053 (item d):** painel mostra status de pagamento, não de assinatura; sem
+    documento/NF; botão aponta para `/hub/membro/dashboard` (rota inexistente).
+  - **BUG-054 (item f):** IP hardcoded ("Registrado pelo Gateway") no `Legal_Audits`.
+- **Entregue:** novo **`CONTRACTS-DESIGN.md`** — estado atual (fragmentação/quebra),
+  modelo-alvo (entidade `User/{matricula}/Contracts` com ciclo de assinatura), e
+  roadmap por fases **CT-0→CT-5** (reconciliação+PDF; entidade+status+IP; retroativo
+  robusto a/b/c; viewer do documento; painel reescrito; reforços jurídicos). Cada fase
+  gated (financeiro/identidade/jurídico).
+- **Não foi codado nada do subsistema de contratos** — aguarda aprovação do plano
+  faseado pela Gestora (design-doc-first, precedente do modelo de acesso). A validação
+  de todo o universo de contratos será em **produção** (BUG-030), no próximo deploy.
+- Itens atualizados: `00-PLAN.md` (F1-02 + índice bug→track, incl. reconciliação de
+  BUG-045..050 que faltavam no índice), `BUGS.md` (BUG-002 Corrigido, BUG-022 expandido,
+  +BUG-051..055), novo `CONTRACTS-DESIGN.md`, `DASHBOARD.md`, este LOG.

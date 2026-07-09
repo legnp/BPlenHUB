@@ -455,13 +455,22 @@ sem copy hardcoded fora do que o guia permitir).
   deve convergir para o fluxo oficial de membro ou se a duplicidade é
   intencional (decisão de negócio, não só técnica)
 - Modo de validação: PENDENTE
-- Decisão: Pendente — Gestora decide se `/checkout/[slug]` (resgate
-  gratuito/cupom-100%) converge para o fluxo de membro ou permanece separado
-  e documentado como tal
-- Execução: Não iniciada
-- Resultado: —
-- Bug(s) vinculado(s): BUG-002
-- Log: —
+- Decisão: **Decidida (2026-07-09)** — `/checkout/[slug]` (página órfã, resgate
+  gratuito/cupom-100%) **removida**; a ativação grátis já vive no fluxo de membro
+  `/hub/checkout` (`CheckoutFlow`). O contrato retroativo (BUG-022) foi **expandido pela
+  Gestora** para um redesenho do subsistema de contratos (ver `CONTRACTS-DESIGN.md`).
+- Execução: **Parcial** — BUG-002 corrigido (PR #48: trava de preço server-side +
+  remoção da rota órfã). O "universo de contratos" (retroativo robusto, painel,
+  visualização de documento, IP jurídico) segue em fases CT-0→CT-5 do
+  `CONTRACTS-DESIGN.md`, cada uma gated.
+- Resultado: BUG-002 **[CONFIRMADO]** e corrigido — brecha de concessão gratuita de
+  produto pago fechada. Investigação do subsistema de contratos revelou fragmentação/
+  quebra estrutural: geração de PDF lê coleção errada (`BUG-051`), gate lê subcoleção
+  morta (`BUG-055`), documento não visualizável (`BUG-052`), painel básico com link
+  morto (`BUG-053`), IP placeholder (`BUG-054`). Consolidado em `CONTRACTS-DESIGN.md`.
+- Bug(s) vinculado(s): BUG-002 (Corrigido, PR #48), BUG-022 (retroativo → CT-2),
+  BUG-051/052/053/054/055 (subsistema de contratos, `CONTRACTS-DESIGN.md`)
+- Log: [2026-07-09] BUG-002 corrigido + investigação e design do subsistema de contratos — ver `LOG.md`
 
 ### [F1-03] Hub — dashboard e motor de jornada
 - Categoria(s) de qualidade: Adequação funcional / Usabilidade
@@ -815,7 +824,7 @@ estavam sem nenhum vínculo e foram linkados agora.
 | Bug | Severidade | Status (`BUGS.md`) | Item(s)/Track(s) |
 |---|---|---|---|
 | BUG-001 | Alto | Aberto | T-06 |
-| BUG-002 | Médio | Aberto | F1-02 |
+| BUG-002 | Médio | Corrigido (PR #48) | F1-02 — trava de preço + rota órfã removida |
 | BUG-003 | Crítico | Corrigido (PR #3) | F1-06, T-02 |
 | BUG-004 | ~~Alto~~ Baixo | Corrigido (PR #17) | T-02 |
 | BUG-005 | Médio | Corrigido (PR #19) | F1-05, T-02 |
@@ -858,6 +867,17 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-042 | Médio | Aberto | T-03 — chaves de entitlement de cliente inconsistentes (slugs antigos/órfãos); Trilha 3b |
 | BUG-043 | Médio | Aberto | F2-01/Fase A — `steps-registry.ts` fora de sync com os produtos canônicos da jornada |
 | BUG-044 | Médio | Parcial (PR #28) | Fase A/A0 — parser: paths + slug BPL-003 + travas feitos; leituras de preço por coordenada seguem (mitigadas); campos novos via aba resiliente (A1) |
+| BUG-045 | Médio | Corrigido (PR #32) | Fase B — suíte de testes vermelha na baseline desde PR #19 (mock sem `requireMatricula`) |
+| BUG-046 | Baixo | Aberto | T-05/booking — links de e-mail p/ rota inexistente `/hub/membro/dashboard` |
+| BUG-047 | Baixo | Aberto | F1-06 — painel admin não exibe atributos do modelo de acesso |
+| BUG-048 | Baixo | Corrigido (PR #44) | F1-01 — realce de nav pública por rota |
+| BUG-049 | Baixo | Corrigido (PR #44) | F1-01 — footer /conteudo adaptado ao tema claro |
+| BUG-050 | Baixo | Corrigido (PR #44/#47) | F1-01 — backdrop do FAQ; resolvido de fato na regra global de tema dos modais (PR #47) |
+| BUG-051 | Alto | Aberto | F1-02 — `generateContractPdf` lê `Products` (maiúsculo) inexistente; CT-0 (`CONTRACTS-DESIGN.md`) |
+| BUG-052 | Médio | Aberto | F1-02 — documento do contrato não visualizável no HUB; CT-3 |
+| BUG-053 | Médio | Aberto | F1-02 — painel de contratos básico (status pagamento, sem assinatura/doc/NF, link morto); CT-4 |
+| BUG-054 | Médio | Aberto | F1-02 — IP placeholder na assinatura (validade jurídica); CT-1/CT-5 |
+| BUG-055 | Médio | Aberto | F1-02 — gate lê subcoleção morta `User/{uid}/Orders`; CT-0 |
 
 ---
 

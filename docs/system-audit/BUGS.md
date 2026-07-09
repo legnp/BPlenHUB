@@ -70,9 +70,25 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   mas isso não impede a concessão em si, dependendo de como `grantServiceEntitlement`
   decide o `orderId`). Não documentado em lugar nenhum do código/UI que este é
   o comportamento intencional.
-- Status: Aberto
-- Decisão de execução: Precisa plano+aprovação (fluxo financeiro/checkout)
-- Commit/PR: —
+- **[CONFIRMADO por leitura, 2026-07-09 / F1-02]:** `grantServiceEntitlement`
+  (`src/lib/checkout.ts`) concede o serviço (entitlement + cotas + selo condicional)
+  **sem** verificar que o preço efetivo é zero. Como `processServicePurchaseAction` é
+  `"use server"` (endpoint real), um chamador direto com o slug de um produto **pago**
+  e sem cupom ganhava o serviço de graça; a página pública **órfã** `/checkout/[slug]`
+  (nenhum `href`/`push` aponta para ela — todo roteamento vai para `/hub/checkout`)
+  fazia o mesmo pela URL. O único gate era client-side no `CheckoutFlow`
+  (`finalPrice===0`), que o servidor não pode assumir.
+- Status: **Corrigido** — 2026-07-09 (PR #48). Decisões da Gestora: (1) **trava de
+  preço server-side** na `processServicePurchaseAction` — recalcula `finalPrice =
+  max(0, price − desconto de cupom válido)` e recusa se > 0 (não quebra o fluxo grátis
+  legítimo: produto price 0 ou cupom-100% → finalPrice 0 → passa); (2) **remoção da
+  página órfã** `/checkout/[slug]` (page + layout) — rota morta, a ativação grátis já
+  acontece no fluxo de membro `/hub/checkout` via `CheckoutFlow`. Validado: eslint (0
+  erros), test 52/52, tsc, build; `/checkout/[slug]` retorna 404 ao vivo. Conferência
+  do fluxo logado em produção (BUG-030).
+- Decisão de execução: Plano+decisão apresentados e **aprovados pela Gestora**
+  (2026-07-09). Corrigido via branch `fix/f1-02-bug002-checkout-price-guard`.
+- Commit/PR: **mergeado** — PR #48 (`c0f1459`, squash).
 
 ### BUG-003 `/api/admin/recover` concede admin sem autenticação
 
@@ -538,10 +554,18 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   não está documentado/confirmado como regra de negócio aprovada, e o padrão
   se soma a `checkout.ts` (`bplen_free_bypass`) como um terceiro caminho que
   gera pedido "aprovado" sem passar pelo Mercado Pago.
-- Status: Aberto
-- Decisão de execução: Precisa plano+aprovação (fluxo financeiro) — primeiro
-  confirmar com a Gestora se os 2 bypasses (`bplen_free_bypass`,
-  `retroactive_bypass`) são intencionais e documentá-los como tal
+- **Decisão da Gestora (2026-07-09):** os bypasses são intencionais (contrato de
+  serviço pago por fora), mas o fluxo retroativo deve ser **endurecido** — a Gestora
+  expandiu o escopo para um redesenho do subsistema de contratos (itens a–f, ver
+  `CONTRACTS-DESIGN.md`). Endurecimentos pedidos: (a) aviso de duplicidade no admin se
+  já existe contrato do mesmo serviço p/ o cliente; (b) acesso ao contrato **vinculado
+  à conta específica** liberada pelo admin (logado nela, não por outro e-mail nem
+  deslogado); (c) link de geração **único e de uso único**. Vira a **fase CT-2** do
+  `CONTRACTS-DESIGN.md`.
+- Status: Aberto — endereçado na fase **CT-2** do subsistema de contratos
+  (`CONTRACTS-DESIGN.md`), gated (plano+aprovação por fase).
+- Decisão de execução: Precisa plano+aprovação (fluxo financeiro). Bypasses aceitos
+  como intencionais; endurecimento do retroativo planejado em CT-2.
 - Commit/PR: —
 
 ### BUG-023 Rotas de debug órfãs em produção com dado hardcoded (`/api/ghosts`, `/api/liandra`)
@@ -1384,6 +1408,80 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   modal (página de produto) fica p/ produção; código verificado.
 - Decisão de execução: prop aditivo (default preservado). Backdrop escuro global = decisão à parte.
 - Commit/PR: **mergeado** — PR #44.
+
+### BUG-051 `generateContractPdf` lê coleção `Products` (maiúsculo) inexistente — geração de contrato quebrada
+
+- Severidade: **Alto** (a geração do PDF do contrato provavelmente falha em produção)
+- Área/fase onde foi achado: F1-02 / investigação do subsistema de contratos (2026-07-09)
+- Arquivo(s) afetado(s): `src/actions/legal.ts:63` e `:100`
+- Cenário de falha: **[CONFIRMADO por leitura, A VERIFICAR EM PRODUÇÃO]** o canônico é
+  `products` (minúsculo, `PRODUCTS_COLLECTION`); todo o sistema (checkout, journey,
+  portfolio) escreve/lê lá. Mas `legal.ts` usa `db.collection("Products")` (maiúsculo)
+  em `getPendingContracts` (linha 63) e `generateContractPdf` (linha 100). Firestore é
+  case-sensitive → `productDoc.exists` é falso → `throw "Produto não encontrado."`. A
+  geração do PDF quebra tanto no retroativo (`retroactive-contract.ts:75`) quanto no
+  `ContractGateModal:35`. A Gestora pode ter visto "Ordem criada, mas falha ao gerar
+  PDF".
+- Status: Aberto — fase **CT-0** do `CONTRACTS-DESIGN.md` (reconciliação estrutural).
+- Decisão de execução: Precisa plano+aprovação (fluxo financeiro/jurídico). Verificar
+  em produção se `Products` maiúsculo de fato não existe antes de corrigir.
+- Commit/PR: —
+
+### BUG-052 Documento do contrato não é visualizável dentro do HUB
+
+- Severidade: Médio (item e da Gestora)
+- Área/fase onde foi achado: F1-02 / contratos (2026-07-09)
+- Arquivo(s) afetado(s): `src/app/hub/checkout/success` (tela de sucesso do checkout),
+  `src/app/contrato-retroativo/[slug]/page.tsx`, `src/app/hub/membro/contratos/page.tsx`
+- Cenário de falha: **[CONFIRMADO por leitura]** as telas de contrato citam o contrato
+  e mandam "veja o PDF no seu Google Drive", mas **não exibem o texto do documento nem
+  um link/botão direto** para visualizar/baixar. O `documentUrl` (Drive webViewLink)
+  gravado em `Legal_Audits` não é surfado ao membro.
+- Status: Aberto — fase **CT-3** do `CONTRACTS-DESIGN.md` (viewer in-app).
+- Decisão de execução: display de documento; baixo risco funcional, aguarda a fase.
+- Commit/PR: —
+
+### BUG-053 Painel de contratos mostra status de pagamento, não de assinatura; sem documento/nota fiscal; link morto
+
+- Severidade: Médio (item d da Gestora)
+- Área/fase onde foi achado: F1-02 / contratos (2026-07-09)
+- Arquivo(s) afetado(s): `src/app/hub/membro/contratos/page.tsx`
+- Cenário de falha: **[CONFIRMADO por leitura]** o painel renderiza 1 card por order de
+  `User_Orders` com badge de **status de pagamento** (`StatusBadge`), sem status de
+  **assinatura** (pendente/retificação/assinado), sem link do documento, sem nota
+  fiscal. O botão de aprovado aponta para `/hub/membro/dashboard` (**rota inexistente**
+  — mesmo defeito do BUG-046); o ramo "Ver Fatura" é morto (cursor-not-allowed).
+- Status: Aberto — fase **CT-4** do `CONTRACTS-DESIGN.md` (painel reescrito).
+- Decisão de execução: Precisa plano+aprovação (área de contratos). Aguarda a fase.
+- Commit/PR: —
+
+### BUG-054 IP do cliente na assinatura é placeholder hardcoded (validade jurídica)
+
+- Severidade: Médio (item f da Gestora — validade jurídica)
+- Área/fase onde foi achado: F1-02 / contratos (2026-07-09)
+- Arquivo(s) afetado(s): `src/actions/legal.ts:176`
+- Cenário de falha: **[CONFIRMADO por leitura]** o registro em `Legal_Audits` grava
+  `ipAddress: "Registrado pelo Gateway"` (string fixa), não o IP real do cliente no
+  momento da assinatura. Para validade jurídica do aceite clickwrap, é preciso capturar
+  o IP real (+ user-agent + timestamp confiável). A Gestora indicará ajustes adicionais.
+- Status: Aberto — fase **CT-1** (assinatura grava IP real) + **CT-5** (reforços) do
+  `CONTRACTS-DESIGN.md`.
+- Decisão de execução: Precisa plano+aprovação (jurídico/identidade). Aguarda a fase.
+- Commit/PR: —
+
+### BUG-055 Gate de contrato lê subcoleção legada `User/{uid}/Orders` sem escritor (inerte)
+
+- Severidade: Médio
+- Área/fase onde foi achado: F1-02 / contratos (2026-07-09)
+- Arquivo(s) afetado(s): `src/actions/legal.ts:52` (`getPendingContracts`),
+  `src/components/hub/ContractGateModal.tsx`
+- Cenário de falha: **[CONFIRMADO por leitura]** `getPendingContracts` consulta
+  `User/{uid}/Orders` (subcoleção legada, **sem escritor conhecido** — as orders reais
+  estão em `User_Orders` raiz). Resultado: a lista de pendências é sempre vazia e o
+  `ContractGateModal` provavelmente **nunca** apresenta contratos pendentes de fato.
+- Status: Aberto — fase **CT-0** do `CONTRACTS-DESIGN.md` (reconciliação de loja).
+- Decisão de execução: Precisa plano+aprovação (área de contratos). Aguarda a fase.
+- Commit/PR: —
 
 ---
 

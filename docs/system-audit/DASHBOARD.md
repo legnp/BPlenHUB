@@ -12,7 +12,16 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-09 (chat de execução — **Regra global de tema dos
+> **Última atualização:** 2026-07-09 (chat de execução — **F1-02 iniciada**:
+> BUG-002 corrigido (PR #48 — trava de preço server-side + remoção da rota órfã
+> `/checkout/[slug]`). O contrato retroativo (BUG-022) foi expandido pela Gestora para
+> um **redesenho do subsistema de contratos** (itens a–f) — investigação revelou
+> fragmentação/quebra estrutural (PDF lê coleção errada `BUG-051`, gate lê subcoleção
+> morta `BUG-055`, documento não visualizável `BUG-052`, painel básico `BUG-053`, IP
+> placeholder `BUG-054`). Design + plano faseado CT-0→CT-5 em novo `CONTRACTS-DESIGN.md`,
+> aguardando aprovação. Validação de todo o universo em produção (BUG-030).
+>
+> _(entrada anterior)_ 2026-07-09 (chat de execução — **Regra global de tema dos
 > modais (itens 19+20, PR #47)**: modal adapta o overlay/cor ao tema da tela que o
 > chama. `GlassModal` detecta o tema via âncora e reaplica ao portal (para antes do
 > `body` p/ ignorar o tema stale do usuário); nova var `--modal-backdrop`;
