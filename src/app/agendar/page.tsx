@@ -21,13 +21,14 @@ export default function AgendarPage() {
       {/* 🌌 Camada Global de Partículas (Herança da Home) */}
       <ParticleNexus />
 
-      {/* Card em 1 viewport, sem scroll de página (item 11 F1-01). O footer fica
-          abaixo da dobra; a altura do card é responsiva (variant="page"). */}
-      <div className="z-10 relative w-full max-w-4xl mx-auto px-4 flex flex-col items-center justify-center min-h-[100svh]">
-         <div className="w-full">
-            <PublicBookingFlow variant="page" />
-         </div>
-      </div>
+      {/* Header no mesmo padrão/altura das páginas de produto (/servicos): topo
+          alinhado com pt-12, sem centralização vertical. O card cresce conforme o
+          conteúdo, sem barra de rolagem própria (item 11 F1-01, revisão 2026-07-09). */}
+      <section className="pt-12 pb-20 px-4 relative z-10">
+        <div className="w-full max-w-4xl mx-auto">
+          <PublicBookingFlow variant="page" />
+        </div>
+      </section>
 
       {/* 🛰️ Navegação Global (Herança da Home) */}
       <FloatingCTAs />

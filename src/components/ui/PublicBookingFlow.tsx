@@ -318,13 +318,19 @@ export function PublicBookingFlow({ variant = "section" }: { variant?: "section"
   };
 
   return (
-    <div className={`w-full max-w-4xl mx-auto px-4 ${isPage ? "py-2" : "py-4"}`}>
-      {/* Header — normalizado ao padrao /servicos (kicker + tokens) no variant "page" */}
+    <div className={`w-full max-w-4xl mx-auto px-4 ${isPage ? "pb-2" : "py-4"}`}>
+      {/* Header — normalizado ao padrao /servicos (icone + kicker + tokens) no variant "page" */}
       <div className={`text-center animate-in fade-in slide-in-from-top-4 duration-1000 ${isPage ? "mb-3 space-y-2" : "mb-4 space-y-1.5"}`}>
         {isPage && (
-          <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[var(--accent-start)] block mb-3">
-            Agende sua conversa
-          </span>
+          <>
+            {/* Caixa de icone identica as paginas de produto (/servicos) */}
+            <div className="mb-6 p-4 bg-white/5 rounded-2xl w-fit mx-auto border border-white/10 shadow-2xl">
+              <CalendarIcon className="w-8 h-8 text-[var(--accent-start)]" />
+            </div>
+            <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[var(--accent-start)] block mb-3">
+              Agende sua conversa
+            </span>
+          </>
         )}
         <h1 className={`tracking-tighter text-[var(--text-primary)] leading-[1.1] ${isPage ? "text-3xl md:text-5xl font-bold" : "text-[30px] font-black"}`}>
           Reserve seu <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)]">Momento BPlen</span>
@@ -335,7 +341,7 @@ export function PublicBookingFlow({ variant = "section" }: { variant?: "section"
         </p>
       </div>
 
-      <div className={`w-full max-w-4xl mx-auto p-4 sm:p-5 bg-[var(--glass-bg)] backdrop-blur-3xl border border-[var(--border-primary)] rounded-[40px] shadow-2xl relative overflow-hidden group transition-all duration-700 flex flex-col ${isPage ? "min-h-[420px] sm:min-h-[480px] max-h-[calc(100svh-220px)] overflow-y-auto custom-scrollbar justify-start" : "min-h-[600px] justify-center"}`}>
+      <div className={`w-full max-w-4xl mx-auto p-4 sm:p-5 bg-[var(--glass-bg)] backdrop-blur-3xl border border-[var(--border-primary)] rounded-[40px] shadow-2xl relative overflow-hidden group transition-all duration-700 flex flex-col ${isPage ? "min-h-[420px] sm:min-h-[480px] justify-start" : "min-h-[600px] justify-center"}`}>
 
         {/* 🔮 Glow Decoration */}
         <div className="absolute -top-24 -right-24 w-64 h-64 bg-[var(--accent-start)]/20 rounded-full blur-3xl group-hover:bg-[var(--accent-start)]/30 transition-all duration-700" />
