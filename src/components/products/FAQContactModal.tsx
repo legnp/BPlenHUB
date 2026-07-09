@@ -103,6 +103,7 @@ export default function FAQContactModal({ productName, productSlug }: FAQContact
               : "Tudo pronto por aqui"
         }
         maxWidth="max-w-md"
+        backdropClassName="bg-black/60 backdrop-blur-[8px]"
       >
         {step === "choose" && (
           <div className="space-y-6 pt-4 text-left">

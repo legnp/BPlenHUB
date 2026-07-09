@@ -13,6 +13,12 @@ interface GlassModalProps {
   subtitle?: string;
   maxWidth?: string;
   className?: string;
+  /**
+   * Classe do backdrop (overlay). Default = backdrop claro unificado (F0-01), correto
+   * nos temas logados claros. Páginas públicas ESCURAS devem passar um backdrop escuro
+   * (ex.: "bg-black/60 backdrop-blur-[8px]") para não gerar o overlay branco (BUG-050).
+   */
+  backdropClassName?: string;
 }
 
 /**
@@ -27,6 +33,7 @@ export default function GlassModal({
   subtitle,
   maxWidth = "max-w-md",
   className = "",
+  backdropClassName = "bg-white/40 backdrop-blur-[8px]",
 }: GlassModalProps) {
 
   const [mounted, setMounted] = useState(false);
@@ -68,8 +75,8 @@ export default function GlassModal({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-white/40 backdrop-blur-[8px]" 
-            onClick={onClose} 
+            className={`absolute inset-0 ${backdropClassName}`}
+            onClick={onClose}
           />
 
           {/* Wrapper de Animação (Invisível) */}

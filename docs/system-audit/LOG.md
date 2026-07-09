@@ -2379,3 +2379,21 @@ para embasar essas decisões estão todos disponíveis.
   `.next` — mesmo artefato de tipos gerados da PR-A), medições ao vivo + screenshot de
   `/termos`, console sem erros.
 - Próximo: **PR-C** — conformidade de design (itens 8,11,13,14,18,19 + BUG-048/049/050).
+
+---
+
+## [2026-07-08] Chat de execução — F1-01 acabamento PR-C: conformidade de design (mergeado)
+
+- Terceiro lote (PR-C) do cluster F1-01: itens 8,13,14,18,19 (5 de 6; o item 11 vira PR-C2).
+- Item 8 (justify) nos 2 parágrafos do card /servicos/empresas. Item 13: header do /conteudo
+  normalizado aos LANDING_TOKENS do /servicos (h1 60px→48px), cores preservadas.
+- Item 14 / BUG-048: helper navState no FloatingCTAs; realce por pathname; "Nossos Serviços"
+  (modal, sem página) neutralizado. Screenshot: em /conteudo só "Explorar Conteúdos" destacado.
+- Item 18 / BUG-049: removido o wrapper bg-black do footer do /conteudo → herda o :root claro.
+  Medido: footer claro (oklab 0.975/0.3), texto #1D1D1F.
+- Item 19 / BUG-050: GlassModal ganha backdropClassName opcional (default inalterado);
+  FAQContactModal passa bg-black/60. Aditivo, sem tocar o default. Visual do FAQ p/ produção.
+- Validação: tsc + lint (0 erros), next build exit 0 (rm -rf .next após dev server), SSR +
+  medições + screenshot ao vivo. Preview instável (navegação revertia) — contornado com SSR.
+- Item 11 (PR-C2, pendente): /agendar header + card em 1 tela por dispositivo (iterativo).
+- F1-01: 18/19 ajustes aplicados; falta o item 11.
