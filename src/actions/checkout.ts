@@ -96,6 +96,17 @@ export async function processServicePurchaseAction(
        }
     }
 
+    // 🛡️ 2.2 Trava de preço (BUG-002): esta action concede o serviço de graça (sem
+    // gateway). So pode ser usada quando o preço efetivo e ZERO — produto gratuito
+    // ou cupom que zera o total. Sem esta trava server-side, um chamador direto (ou a
+    // antiga pagina orfa /checkout/[slug]) poderia ativar um produto PAGO sem pagar.
+    // O CheckoutFlow ja gateia por finalPrice===0 no client; aqui reforçamos no server.
+    const finalPriceGuard = Math.max(0, (product.price || 0) - appliedDiscount);
+    if (finalPriceGuard > 0) {
+      console.warn(`[Checkout] Bloqueado: ativacao gratuita de produto pago ${productSlug} (finalPrice=${finalPriceGuard}, uid=${session.uid}).`);
+      return { success: false, error: "Este serviço não é gratuito. Conclua o pagamento pelo checkout." };
+    }
+
     // 🏛️ 3. Ativação Soberana (via Matrícula 🛡️)
     const grantResult = await grantServiceEntitlement({
       uid: session.uid,
