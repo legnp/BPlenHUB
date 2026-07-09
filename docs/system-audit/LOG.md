@@ -2479,3 +2479,53 @@ para embasar essas decisões estão todos disponíveis.
   à tela que o chama**: página dark → modal dark; página clara → modal claro; em
   `/hub` `/admin` (onde o tema do usuário vale) → seguir o tema selecionado. Toca o
   **sistema de design** (global) → exige plano + aprovação antes de codar.
+
+---
+
+## [2026-07-09] Chat de execução — regra global de tema dos modais (itens 19+20, PR #47)
+
+- Chat/sessão: mesmo chat de execução (Opus 4.8)
+- Escopo: a Gestora reabriu o item 19 (modal FAQ branco no fundo preto) e adicionou o
+  item 20 — **regra global**: o overlay/cor de um modal deve adaptar ao tema da tela
+  que o chamou (dark->dark, claro->claro; `/hub` `/admin` seguem o tema do usuário).
+  Área sensível (sistema de design, global) → plano+risco apresentados e **aprovados
+  pela Gestora** (opção "converter tudo para vars de tema") antes de codar.
+- Causa-raiz (por leitura, confirmada ao vivo): o `GlassModal` faz
+  `createPortal(..., document.body)` e por isso escapa do escopo de tema — nas páginas
+  públicas o `theme-dark` fica no `<main>`, não no `body`. As vars (`--glass-bg`/
+  `--text-*`/`--glass-border`) caíam no `:root` (claro) → **painel** branco/translúcido
+  no fundo preto (o item 19 real era o painel, não o backdrop, que já estava escuro
+  desde o PR #44). No hub/admin funcionava porque o `ThemeContext` grava a classe de
+  tema no `document.body` (o portal herdava).
+- Mudança (PR #47, branch `fix/f1-01-modais-tema-adaptavel`):
+  - **`GlassModal`**: detecção de tema via âncora invisível (`<span className="hidden">`)
+    renderizada NO LUGAR (dentro do escopo de tema da página); ao abrir, sobe a árvore a
+    partir dela e **para antes do `<body>`** — o body carrega o tema stale do usuário
+    (localStorage) mesmo em página pública; o correto é o do `<main>`/wrapper da área.
+    A classe de tema detectada é reaplicada ao wrapper do portal. Sem ancestral temático
+    (`/conteudo`, página clara) → `null` → `:root` (claro). Backdrop padrão passa a usar
+    a var nova `--modal-backdrop`.
+  - **`globals.css`**: `--modal-backdrop` (claro `rgba(255,255,255,0.4)` no `:root`;
+    escuro `rgba(0,0,0,0.6)` em `theme-dark`, `rgba(0,0,0,0.7)` em `theme-daltonico`;
+    temas claros herdam do `:root`).
+  - **`FAQContactModal`**: removido o override `backdropClassName="bg-black/60"` (usa o
+    default agora ciente do tema).
+  - **`ServiceSelectionModal`** (não usa GlassModal; renderiza no lugar, já herda o
+    escopo do `<main>`): cores dark hardcoded (`bg-[#111]`, `text-white`, `border-white/10`,
+    `bg-white/5`...) convertidas para vars de tema → adapta dark em `/` e `/servicos`,
+    claro em `/conteudo`. Cores de marca (ícones rosa/azul dos audiences) preservadas.
+- Validação ao vivo (preview, medido): ServiceSelection na home `/` — painel
+  `rgba(18,18,18,0.75)` (glass dark), backdrop `rgba(0,0,0,0.6)`, título branco; em
+  `/conteudo` — painel `rgba(255,255,255,0.4)` (claro), border/backdrop claros, título
+  preto. FAQ (GlassModal) na página de produto — o portal recebeu `theme-dark`, painel
+  `rgba(18,18,18,0.75)` glass dark (antes branco), backdrop `rgba(0,0,0,0.6)`.
+  Build: eslint dos 3 arquivos (0 erros), `npm run test` 52/52, `tsc --noEmit` limpo,
+  `next build` exit 0.
+- Entrega: **PR #47 mergeado** (squash, `fc1aaa5`) via API REST após a Gestora aprovar
+  no preview ("ficou perfeito"). Branch deletada (local+remota), `main` por ff-only.
+- Preservação hub/admin: a detecção acha o mesmo tema que o `body` já carregava (o
+  wrapper `theme-${theme}` do `HubShell`/`AdminLayoutClient` é ancestral do modal, abaixo
+  do body) → aparência dos modais logados inalterada. Conferência visual em produção
+  (BUG-030 — preview não autentica), de baixo risco.
+- Itens atualizados: `F1-01-AJUSTES.md` (itens 19/20 + linha de conclusão do cluster),
+  `DASHBOARD.md` (última atualização), este LOG.

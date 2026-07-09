@@ -12,12 +12,18 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-09 (chat de execução — **F1-01 item 11
+> **Última atualização:** 2026-07-09 (chat de execução — **Regra global de tema dos
+> modais (itens 19+20, PR #47)**: modal adapta o overlay/cor ao tema da tela que o
+> chama. `GlassModal` detecta o tema via âncora e reaplica ao portal (para antes do
+> `body` p/ ignorar o tema stale do usuário); nova var `--modal-backdrop`;
+> `ServiceSelectionModal` convertido p/ vars. Resolve o item 19 (painel branco no
+> fundo preto — causa era o painel, não o backdrop). Validado ao vivo + aprovado pela
+> Gestora. **F1-01 fechado** (19 ajustes + refino #46 + regra global #47).
+>
+> _(entrada anterior)_ 2026-07-09 (chat de execução — **F1-01 item 11
 > (/agendar) reaberto e refinado**: PR #46 — caixa de ícone como as páginas de
 > produto, header alinhado ao topo (`pt-12`, ícone em `top:48px` = padrão /servicos)
 > e remoção da barra de rolagem feia do card. Aprovado no preview pela Gestora.
-> Próximo pedido: itens 19 + 20 (overlay/tema dos modais adaptável à tela — global,
-> gated).
 >
 > _(entrada anterior)_ 2026-07-08 (chat de execução — **TRILHA 3 (HIGIENE)
 > COMPLETA**: 3d (backups: fonte em namespace + 47 coleções legadas apagadas), 3b
