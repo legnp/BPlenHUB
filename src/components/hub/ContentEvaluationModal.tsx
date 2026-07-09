@@ -135,7 +135,7 @@ export function ContentEvaluationModal({ isOpen, onClose, uid, matricula }: Cont
                   Avaliar Conteúdos
                 </h2>
                 <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60">
-                  Sua opinião ajuda a moldar o editorial BPlen
+                  Sua opinião ajuda a melhorar o editorial BPlen
                 </p>
               </div>
               <button 
@@ -243,9 +243,9 @@ export function ContentEvaluationModal({ isOpen, onClose, uid, matricula }: Cont
                           : "bg-black text-white hover:bg-[var(--accent-start)]"
                         } disabled:opacity-50`}
                       >
-                        {submittingId === post.id ? <Loader2 size={12} className="animate-spin" /> : 
-                         successId === post.id ? <CheckCircle2 size={12} /> : "Enviar"}
-                        {successId === post.id ? "Salvo" : "Salvar"}
+                        {submittingId === post.id ? <Loader2 size={12} className="animate-spin" /> :
+                         successId === post.id ? <CheckCircle2 size={12} /> : null}
+                        {successId === post.id ? "Registrado" : "Registrar"}
                       </button>
                     </div>
                   </div>
@@ -255,7 +255,7 @@ export function ContentEvaluationModal({ isOpen, onClose, uid, matricula }: Cont
 
             {/* Footer */}
             <div className="p-8 border-t border-[var(--border-primary)] bg-[var(--input-bg)]/50 shrink-0 text-center">
-              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--accent-start)]">© BPlen Feedback Cycle</p>
+              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--accent-start)]">© BPlen Feedback Practice</p>
             </div>
           </motion.div>
         </div>

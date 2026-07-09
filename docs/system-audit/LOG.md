@@ -2327,3 +2327,27 @@ para embasar essas decisões estão todos disponíveis.
   logadas seguem esperando a sessão de validação em produção — independentes deste cluster.
 - Itens atualizados: `F1-01-AJUSTES.md` (novo), `BUGS.md` (+BUG-048/049/050),
   `DASHBOARD.md` (F1-01), `00-PLAN.md` (F1-01 bugs), este LOG.
+
+---
+
+## [2026-07-08] Chat de execução — F1-01 acabamento PR-A: copy das páginas públicas (mergeado)
+
+- Primeiro lote (PR-A) do cluster de 19 ajustes da Gestora (`F1-01-AJUSTES.md`): as **9
+  mudanças de copy pura** (itens 2,6,7,9,10,12,15,16,17). CLAUDE.md permite copy direto.
+- Arquivos: `GlobalFooter.tsx` (2), `ServiceSelectionModal.tsx` (6), `servicos/[audience]/
+  page.tsx` (7,9,10), `PublicBookingFlow.tsx` (12), `FeedbackSection.tsx` (15),
+  `ContentEvaluationModal.tsx` + `content-evaluation.ts` (16), `ThemeSuggestionModal.tsx`
+  + `theme-suggestion.ts` (17).
+- Correções de ortografia PT aplicadas no item 10 ("transformar", "conjunto",
+  "extraordinários" — o texto original da anotação tinha typos). Item 6 em Title Case
+  ("Conhecer Serviços") p/ casar com o estilo (renderiza uppercase). Item 16: botão
+  "Enviar"+"Salvar" → "Registrar"/"Registrado".
+- **Validação:** tsc limpo, lint 0 erros (8 warnings pré-existentes). **Ao vivo:** SSR
+  fetch confirmou itens 2/7/9/10/15 (texto novo presente, antigo sumido); snapshot de
+  `/servicos/empresas` confirmou 2/7/9 renderizando. Itens 6/12/16/17 são estados
+  client-side (modais/loading) — confirmados por grep (zero texto antigo em `src/`).
+- Preview local instável (navegação revertia p/ `/`) — contornado com fetch server-side
+  do dev server, mais confiável. Não é defeito das páginas.
+- Próximo: **PR-B** (footer/header globais: logos +50%, link Área de Membro, remover
+  Governança) e **PR-C** (conformidade de design: 8/11/13/14/18/19 + defeitos
+  BUG-048/049/050).

@@ -741,7 +741,7 @@ export function PublicBookingFlow() {
                     {isLoadingSlots ? (
                       <div className="h-full flex flex-col items-center justify-center gap-3 opacity-20 py-20">
                         <Loader2 className="w-8 h-8 animate-spin text-[var(--text-primary)]" />
-                        <span className="text-[9px] font-black uppercase tracking-widest text-[var(--text-primary)]">Calculando Slots...</span>
+                        <span className="text-[9px] font-black uppercase tracking-widest text-[var(--text-primary)]">Buscando horários</span>
                       </div>
                     ) : (isProposalMode ? proposalSlots : slots).length === 0 ? (
                       <div className="h-full flex flex-col items-center justify-center text-center py-20">

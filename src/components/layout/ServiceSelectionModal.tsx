@@ -99,7 +99,7 @@ export function ServiceSelectionModal({ isOpen, onClose }: ServiceSelectionModal
                     </div>
 
                     <div className="pt-8 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0 text-[9px] font-black uppercase tracking-widest text-white/50">
-                       Explorar Soluções
+                       Conhecer Serviços
                        <ArrowRight size={14} className="text-[#ff0080]" />
                     </div>
                  </Link>

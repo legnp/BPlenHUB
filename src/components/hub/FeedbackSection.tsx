@@ -33,7 +33,7 @@ export function FeedbackSection() {
               O que você gostaria de <br /> ver por aqui?
             </h2>
             <p className="text-gray-500 text-sm leading-relaxed max-w-sm">
-              Estamos sempre evoluindo nosso ecossistema de conteúdo. 
+              Estamos sempre melhorando a qualidade de nosso conteúdo.
               Deixe seu feedback para nos ajudar a priorizar novos temas.
             </p>
           </div>

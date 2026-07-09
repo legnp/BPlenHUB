@@ -10,7 +10,7 @@ export const contentEvaluationSurveyConfig: SurveyConfig = {
   steps: [
     {
       id: "feedback",
-      question: "Sua opinião ajuda a moldar o editorial BPlen",
+      question: "Sua opinião ajuda a melhorar o editorial BPlen",
       fields: [
         {
           id: "rating",
