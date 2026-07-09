@@ -55,25 +55,26 @@ export function ServiceSelectionModal({ isOpen, onClose }: ServiceSelectionModal
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute inset-0 bg-black/20 backdrop-blur-3xl transition-all"
+            className="absolute inset-0 bg-[var(--modal-backdrop)] backdrop-blur-3xl transition-all"
           />
 
-          {/* Modal Content */}
+          {/* Modal Content — cores via vars de tema: adapta a tela que chama
+              (dark em / e /servicos, claro em /conteudo). */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="relative w-full max-w-4xl bg-[#111] border border-white/10 rounded-[3rem] shadow-[0_50px_100px_rgba(0,0,0,0.8)] overflow-hidden"
+            className="relative w-full max-w-4xl bg-[var(--glass-bg)] border border-[var(--border-primary)] backdrop-blur-2xl rounded-[3rem] shadow-[0_50px_100px_rgba(0,0,0,0.8)] overflow-hidden"
           >
             {/* Header */}
-            <div className="p-10 pb-6 flex items-center justify-between border-b border-white/5">
+            <div className="p-10 pb-6 flex items-center justify-between border-b border-[var(--border-primary)]">
                <div className="space-y-1">
-                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#ff0080]">Selecione sua jornada</span>
-                  <h2 className="text-3xl font-black tracking-tighter text-white">Como podemos <span className="text-gray-500">te apoiar?</span></h2>
+                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--accent-start)]">Selecione sua jornada</span>
+                  <h2 className="text-3xl font-black tracking-tighter text-[var(--text-primary)]">Como podemos <span className="text-[var(--text-muted)]">te apoiar?</span></h2>
                </div>
-               <button 
+               <button
                  onClick={onClose}
-                 className="p-3 bg-white/5 border border-white/10 rounded-2xl text-gray-400 hover:text-white transition-all flex items-center justify-center"
+                 className="p-3 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-2xl text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-all flex items-center justify-center"
                >
                  <X size={20} />
                </button>
@@ -86,19 +87,19 @@ export function ServiceSelectionModal({ isOpen, onClose }: ServiceSelectionModal
                    key={audience.id}
                    href={audience.href}
                    onClick={onClose}
-                   className={`flex flex-col justify-between p-8 bg-white/5 border border-white/5 rounded-[2.5rem] transition-all group ${audience.color} hover:bg-white/[0.08] min-h-[240px] shadow-sm`}
+                   className={`flex flex-col justify-between p-8 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-[2.5rem] transition-all group ${audience.color} hover:bg-[var(--accent-soft)] min-h-[240px] shadow-sm`}
                  >
                     <div className="space-y-6">
-                       <div className="p-4 bg-white/5 rounded-2xl w-fit group-hover:scale-110 transition-transform">
+                       <div className="p-4 bg-[var(--input-bg)] rounded-2xl w-fit group-hover:scale-110 transition-transform">
                           {audience.icon}
                        </div>
                        <div className="space-y-1">
-                          <span className="text-[8px] font-black uppercase tracking-widest text-gray-500">{audience.subtitle}</span>
-                          <h3 className="text-xl font-black text-white">{audience.title}</h3>
+                          <span className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)]">{audience.subtitle}</span>
+                          <h3 className="text-xl font-black text-[var(--text-primary)]">{audience.title}</h3>
                        </div>
                     </div>
 
-                    <div className="pt-8 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0 text-[9px] font-black uppercase tracking-widest text-white/50">
+                    <div className="pt-8 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0 text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)]">
                        Conhecer Serviços
                        <ArrowRight size={14} className="text-[#ff0080]" />
                     </div>
@@ -107,8 +108,8 @@ export function ServiceSelectionModal({ isOpen, onClose }: ServiceSelectionModal
             </div>
 
             {/* Footer Footer */}
-            <div className="p-8 bg-white/[0.02] border-t border-white/5 text-center">
-               <p className="text-[9px] font-bold text-gray-600 uppercase tracking-widest">
+            <div className="p-8 bg-[var(--input-bg)] border-t border-[var(--border-primary)] text-center">
+               <p className="text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-widest">
                   Foco em estratégia e desenvolvimento humano prático.
                </p>
             </div>
