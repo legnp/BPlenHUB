@@ -1349,9 +1349,11 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Cenário de falha: ao navegar nas páginas públicas, o botão de menu "Nossos serviços"
   fica com o efeito de "selecionado" mesmo fora da sua rota — o realce de ativo deve
   refletir só a página atual. A lógica de `active`/`pathname` da nav está incorreta.
-- Status: Aberto — corrigir na passada de acabamento da F1-01 (PR-C).
-- Decisão de execução: ajuste de estado de nav em componente público; verificar ao vivo.
-- Commit/PR: —
+- Status: **Corrigido** — PR #44. `FloatingCTAs.tsx`: realce dirigido por `pathname` (helper
+  `navState`); "Nossos Serviços" (abre modal, sem página) neutralizado; "Agendar"/"Conteúdos"
+  destacam só na rota própria. Screenshot: em /conteudo só "Explorar Conteúdos" destacado.
+- Decisão de execução: ajuste de estado de nav; verificado ao vivo.
+- Commit/PR: **mergeado** — PR #44.
 
 ### BUG-049 `/conteudo`: footer com tema escuro (design de home) em página pública clara
 
@@ -1361,9 +1363,11 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Cenário de falha: o footer da `/conteudo` renderiza com o design escuro da home, quando a
   página pública é clara — o footer deve adaptar ao tema claro público. Provável dependência
   de contexto de tema não aplicada nessa rota.
-- Status: Aberto — F1-01 (PR-C). Toca sistema de design (tema) → lente de design + ao vivo.
-- Decisão de execução: adaptar o footer ao tema da área pública sem introduzir padrão novo.
-- Commit/PR: —
+- Status: **Corrigido** — PR #44. O `/conteudo` (página clara) embrulhava o `HomeFooter`
+  (=`GlobalFooter`) num `<div bg-black text-white>`, forçando escuro. Wrapper removido → o footer
+  herda o `:root` claro (o /conteudo não tem `theme-dark`). Medido: footer claro (oklab 0.975/0.3).
+- Decisão de execução: remoção do wrapper; footer passa a usar as vars de tema.
+- Commit/PR: **mergeado** — PR #44.
 
 ### BUG-050 FAQ "Envie sua pergunta": modal com overlay branco translúcido (deveria ser preto)
 
@@ -1374,9 +1378,12 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   branco estranho sobre a página pública, quando o padrão é backdrop preto. Diferente da
   exceção aceita do `ServiceSelectionModal` (F0-01) — este deve **convergir** para o backdrop
   padrão.
-- Status: Aberto — F1-01 (PR-C). Toca sistema de design (modal/backdrop) → lente de design.
-- Decisão de execução: alinhar ao backdrop canônico; confirmar contra o padrão do GlassModal.
-- Commit/PR: —
+- Status: **Corrigido** — PR #44. `GlassModal` tinha backdrop `bg-white/40` fixo (overlay branco
+  na página pública escura). Add prop opcional `backdropClassName` (**default inalterado**, zero
+  impacto nos outros modais); `FAQContactModal` passa `bg-black/60`. Aditivo. Confirmação visual do
+  modal (página de produto) fica p/ produção; código verificado.
+- Decisão de execução: prop aditivo (default preservado). Backdrop escuro global = decisão à parte.
+- Commit/PR: **mergeado** — PR #44.
 
 ---
 

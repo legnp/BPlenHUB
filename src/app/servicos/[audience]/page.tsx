@@ -124,10 +124,10 @@ export default async function SegmentedServicesPage({ params }: PageProps) {
                  <h2 className="text-2xl md:text-3xl font-black text-white mb-6 leading-tight">
                     A proposta de valor para sua empresa está em desenvolvimento.
                  </h2>
-                 <p className="text-gray-400 text-sm md:text-base leading-relaxed mb-6 font-medium">
+                 <p className="text-gray-400 text-sm md:text-base leading-relaxed mb-6 font-medium text-justify">
                     Como parte do nosso compromisso com a excelência técnica e o desenvolvimento humano organizacional profundo, estamos preparando uma proposta de valor exclusiva para que a BPlen possa auxiliar na potencialização dos resultados do seu negócio.
                  </p>
-                 <p className="text-gray-400 text-sm md:text-base leading-relaxed mb-8 font-medium">
+                 <p className="text-gray-400 text-sm md:text-base leading-relaxed mb-8 font-medium text-justify">
                     Enquanto desenhamos esta solução, convidamos você para <Link href="/agendar" className="text-[#667eea] hover:text-white transition-colors underline underline-offset-4 decoration-[#667eea]/50">agendar uma conversa conosco</Link>, sem qualquer compromisso. O objetivo é apresentarmos os principais marcos e resultados da BPlen, além de compreendermos a fundo o contexto e a visão de futuro da sua empresa.
                  </p>
 

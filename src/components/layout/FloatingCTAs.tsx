@@ -97,6 +97,14 @@ export function FloatingCTAs() {
   }, []);
   
   const isHomePage = pathname === "/";
+
+  // Nav desktop (item 14 / BUG-048): o realce de "selecionado" deve aparecer só no
+  // botao da PAGINA atual. "Nossos Servicos" abre um modal (nao tem pagina) -> nunca ativo.
+  const navBase = "w-[126px] md:w-[153px] h-8 md:h-9 px-3 md:px-4 backdrop-blur-md rounded-xl text-[10px] md:text-xs font-normal tracking-wide transition-all flex items-center justify-center shadow-lg cursor-pointer";
+  const navNeutral = "bg-[var(--input-bg)] border border-[var(--border-primary)] text-[var(--text-muted)] hover:bg-[var(--accent-soft)] hover:border-[var(--accent-start)]/20 hover:text-[var(--text-primary)]";
+  const navActive = "bg-[var(--accent-soft)] border border-[var(--accent-start)]/40 text-[var(--text-primary)]";
+  const navState = (active: boolean) => `${navBase} ${active ? navActive : navNeutral}`;
+
   const { user, isLoggingIn, signInWithGoogle } = useAuth();
   const router = useRouter();
 
@@ -285,22 +293,22 @@ export function FloatingCTAs() {
           )}
         </AnimatePresence>
 
-        <button 
+        <button
           onClick={toggleServiceModal}
-          className="w-[126px] md:w-[153px] h-8 md:h-9 px-3 md:px-4 bg-white/5 border border-white/10 backdrop-blur-md rounded-xl text-[10px] md:text-xs font-normal tracking-wide text-gray-400 hover:bg-white/10 hover:border-white/20 hover:text-white transition-all flex items-center justify-center shadow-lg cursor-pointer"
+          className={navState(false)}
         >
           Nossos Serviços
         </button>
 
-        <Link 
+        <Link
           href="/agendar"
-          className="w-[126px] md:w-[153px] h-8 md:h-9 px-3 md:px-4 bg-[var(--input-bg)] border border-[var(--border-primary)] backdrop-blur-md rounded-xl text-[10px] md:text-xs font-normal tracking-wide text-[var(--text-muted)] hover:bg-[var(--accent-soft)] hover:border-[var(--accent-start)]/20 hover:text-[var(--text-primary)] transition-all flex items-center justify-center shadow-lg cursor-pointer"
+          className={navState(pathname.startsWith("/agendar"))}
         >
           Agendar Conversa
         </Link>
-        <Link 
+        <Link
           href="/conteudo"
-          className="w-[126px] md:w-[153px] h-8 md:h-9 px-3 md:px-4 bg-[var(--input-bg)] border border-[var(--border-primary)] backdrop-blur-md rounded-xl text-[10px] md:text-xs font-normal tracking-wide text-[var(--text-muted)] hover:bg-[var(--accent-soft)] hover:border-[var(--accent-start)]/20 hover:text-[var(--text-primary)] transition-all flex items-center justify-center shadow-lg cursor-pointer"
+          className={navState(pathname.startsWith("/conteudo"))}
         >
           Explorar Conteúdos
         </Link>

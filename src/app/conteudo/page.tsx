@@ -32,8 +32,10 @@ export default async function ContentPage() {
       <section className="pt-[60px] pb-[40px] px-6">
         <div className={LANDING_TOKENS.container}>
           <div className="text-center mb-5 space-y-4">
-            <span className="text-[10px] font-black tracking-[0.3em] uppercase text-[#ff0080]">Editorial BPlen</span>
-            <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-black">
+            {/* Tipografia normalizada conforme /servicos (LANDING_TOKENS.header) — item 13.
+                Só tamanho/tipo de fonte; cores preservadas (kicker rosa, título preto). */}
+            <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#ff0080]">Editorial BPlen</span>
+            <h1 className="text-3xl md:text-5xl font-bold tracking-tighter leading-[1.1] text-black">
               Pontos que <span className="text-gray-400">Conectam</span>
             </h1>
             <DynamicSubtitle />
@@ -51,10 +53,9 @@ export default async function ContentPage() {
       {/* Fluxo de Feedback e Sugestão 📡🗳️ */}
       <FeedbackSection />
 
-      {/* Elementos Institucionais (Ajustados para o fundo claro do rodapé ou mantendo o dark original) */}
-      <div className="bg-black text-white pt-2">
-         <HomeFooter />
-      </div>
+      {/* Rodapé adaptativo ao tema claro da página pública (item 18 / BUG-049) —
+          o wrapper bg-black forçava o footer escuro numa página clara. */}
+      <HomeFooter />
 
       {/* 🏙️ Elementos de Interface */}
       <FloatingCTAs />
