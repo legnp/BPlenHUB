@@ -12,7 +12,14 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-08 (chat de execução — **TRILHA 3 (HIGIENE)
+> **Última atualização:** 2026-07-09 (chat de execução — **F1-01 item 11
+> (/agendar) reaberto e refinado**: PR #46 — caixa de ícone como as páginas de
+> produto, header alinhado ao topo (`pt-12`, ícone em `top:48px` = padrão /servicos)
+> e remoção da barra de rolagem feia do card. Aprovado no preview pela Gestora.
+> Próximo pedido: itens 19 + 20 (overlay/tema dos modais adaptável à tela — global,
+> gated).
+>
+> _(entrada anterior)_ 2026-07-08 (chat de execução — **TRILHA 3 (HIGIENE)
 > COMPLETA**: 3d (backups: fonte em namespace + 47 coleções legadas apagadas), 3b
 > (chaves dos 4 clientes normalizadas; Embaixadores com jornada total; `career_planning`
 > preservado como capability viva), 3c (14 produtos arquivados excluídos → `products`

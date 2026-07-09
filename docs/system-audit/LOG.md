@@ -2422,3 +2422,60 @@ para embasar essas decisões estão todos disponíveis.
 - Nota honesta: "sem scroll" = o card cabe em 1 tela e a página não rola para vê-lo; o calendário
   rola internamente no card em telas menores (inerente a um seletor de data+horários no mobile).
 - **F1-01: cluster de 19 ajustes da Gestora COMPLETO** (PR-A #42, PR-B #43, PR-C #44, PR-C2 #45).
+
+---
+
+## [2026-07-09] Chat de execução — F1-01 item 11 (/agendar) reaberto + refino (PR #46)
+
+- Chat/sessão: chat de execução (Opus 4.8)
+- Escopo: a Gestora reabriu o item 11 do cluster F1-01 — a `/agendar` ainda estava
+  fora do padrão das páginas de produto. 3 ajustes na página pública, espelhando
+  `/servicos` (área pública, validável ao vivo no preview).
+- Achados/diagnóstico (por leitura + medição ao vivo no preview):
+  - **(a) sem ícone:** as páginas de produto têm uma caixa de ícone antes do título
+    (`mb-6 p-4 bg-white/5 rounded-2xl w-fit mx-auto border border-white/10 shadow-2xl`);
+    `/agendar` não tinha nenhuma.
+  - **(b) título no meio + espaço enorme no topo:** `agendar/page.tsx` centralizava
+    tudo verticalmente (`min-h-[100svh] flex justify-center`), então o título caía no
+    meio do viewport — diferente das páginas de produto, que alinham no topo (`pt-12`).
+  - **(c) barra de rolagem feia no card:** o `variant="page"` tinha
+    `max-h-[calc(100svh-220px)] overflow-y-auto custom-scrollbar`. A classe
+    `.custom-scrollbar` **não está definida no CSS** do projeto → caía na barra padrão
+    do browser (feia). Origem: PR-C2 (#45) usou o scroll do card para caber "em 1
+    viewport".
+- Mudança (PR #46, branch `fix/f1-01-agendar-refino-item11`):
+  - `PublicBookingFlow.tsx` (variant page): adicionada a caixa de ícone (`CalendarIcon`,
+    `text-[var(--accent-start)]`) idêntica às páginas de produto; removido o
+    `max-h`/`overflow-y-auto custom-scrollbar` do card (cresce conforme o conteúdo);
+    top padding do wrapper zerado no page para o ícone iniciar exatamente no `pt-12`.
+    Variant `"section"` (home) intocado.
+  - `agendar/page.tsx`: troca da centralização vertical por `<section pt-12 pb-20>`,
+    alinhando o header ao topo como `/servicos`.
+- Medição ao vivo (preview): ícone em `top:48px` nos 3 breakpoints — **mesma altura**
+  do título das páginas de produto. Desktop (1280): card inteiro no viewport (bottom
+  770/900), conteúdo 398px cabe no card 480px. Mobile (375): conteúdo 711px cabe no
+  card 745px **sem clipping** e **sem barra própria**; a página rola para revelar o
+  card (trade-off explícito aceito pela Gestora — no mobile não dá para ter "1 viewport"
+  E "sem barra no card" ao mesmo tempo; priorizado o pedido dela de tirar a barra feia).
+  O `scrollHeight` do card > `clientHeight` é só o glow decorativo (`-bottom-24`,
+  absoluto), sempre clipado por `overflow-hidden` — não é conteúdo cortado.
+- Validação: eslint dos 2 arquivos (0 erros), `npm run test` 52/52, `tsc --noEmit`
+  limpo, `next build` exit 0. (`npm run check` global segue vermelho no passo `lint`
+  por 207 erros pré-existentes na baseline — débito legado documentado desde
+  2026-07-02, não introduzido aqui.)
+- Entrega: **PR #46 mergeado** (squash, `e644e53`) via API REST do GitHub após a
+  Gestora aprovar no preview ("vi o pr e está ótimo"). Branch deletada (local+remota),
+  `main` sincronizada por ff-only.
+- Nota de processo: o `@'...'@` (here-string PowerShell) vazou um `@` para o subject do
+  commit no Bash/sh — corrigido com `git commit --amend -F` via heredoc `<<'EOF'`
+  (reforça a Lição 5 do RETROSPECTIVE: Bash tool é sh, usar heredoc).
+- Itens atualizados: `F1-01-AJUSTES.md` (item 11 + sequenciamento), `DASHBOARD.md`
+  (última atualização), este LOG.
+
+### Próximo escopo pedido pela Gestora (2026-07-09): itens 19 + 20 — overlay/tema dos modais
+- **Item 19 (reaberto):** o modal "Envie sua pergunta a BPlen" (`/servicos`) ainda
+  aparece translúcido com overlay branco (PR #44/BUG-050 não resolveu de fato).
+- **Item 20 (novo, global):** regra global — o overlay/cor do modal deve **adaptar-se
+  à tela que o chama**: página dark → modal dark; página clara → modal claro; em
+  `/hub` `/admin` (onde o tema do usuário vale) → seguir o tema selecionado. Toca o
+  **sistema de design** (global) → exige plano + aprovação antes de codar.
