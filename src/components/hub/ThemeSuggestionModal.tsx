@@ -108,7 +108,7 @@ export function ThemeSuggestionModal({ isOpen, onClose, uid, matricula }: ThemeS
                   Sugerir Temas
                 </h2>
                 <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60">
-                  Qual próximo passo você quer ver na BPlen?
+                  Qual próximo tema você quer ver na BPlen?
                 </p>
               </div>
               <button 
@@ -259,7 +259,7 @@ export function ThemeSuggestionModal({ isOpen, onClose, uid, matricula }: ThemeS
 
             {/* Footer */}
             <div className="p-8 border-t border-[var(--border-primary)] bg-[var(--input-bg)]/50 shrink-0 text-center">
-              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--accent-start)]">© BPlen Lab Ideation</p>
+              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--accent-start)]">© BPlen co-creation</p>
             </div>
           </motion.div>
         </div>

@@ -49,7 +49,7 @@ export function GlobalFooter({ variant = "full", className }: GlobalFooterProps)
               <BPlenLogo variant="main" size={28} className="opacity-90 hover:opacity-100 transition-opacity" />
               <div className="space-y-4 max-w-md">
                 <p className="text-xs font-black uppercase tracking-[0.2em] text-[var(--text-primary)]">
-                  Sua plataforma de gestão e desenvolvimento profissional.
+                  Sua parceira de gestão e desenvolvimento profissional.
                 </p>
                 <p className="text-[11px] leading-relaxed text-[var(--text-muted)] font-medium">
                   BPlen é uma Consultoria de Negócios com Foco em Desenvolvimento Humano que utiliza método, dados e abordagens humanas holísticas para descomplicar o desenvolvimento humano no trabalho.

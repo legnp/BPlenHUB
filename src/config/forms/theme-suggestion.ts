@@ -11,7 +11,7 @@ export const themeSuggestionFormConfig: FormConfig = {
     {
       id: "suggestion",
       title: "Voz do Usuário: Temas",
-      description: "Qual o seu próximo passo você quer ver na BPlen?",
+      description: "Qual o seu próximo tema você quer ver na BPlen?",
       fields: [
         {
           id: "suggestion",

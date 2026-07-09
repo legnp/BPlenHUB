@@ -38,14 +38,14 @@ const audienceMap: Record<string, { id: 'people' | 'companies' | 'partners', tit
     id: 'companies', 
     title: "Para Empresas", 
     kicker: "HRBP & Estratégia",
-    description: "Explore nossas soluções desenhadas especificamente para empresas. Transforme potencial em resultados reais com o ecossistema BPlen.",
+    description: "Conheça nossos serviços desenhados especificamente para empresas. Transforme potencial em resultados reais com o ecossistema BPlen.",
     icon: <Users className="w-8 h-8 text-[#667eea]" />
   },
   "parceiros": { 
     id: 'partners', 
     title: "Para Parceiros", 
     kicker: "Ecossistema BPlen",
-    description: "Explore nossas soluções desenhadas especificamente para parceiros. Transforme potencial em resultados reais com o ecossistema BPlen.",
+    description: "Conheça os nossos parceiros e se inspire para transformar projetos potenciais em resultados extraordinários em conjunto com a BPlen.",
     icon: <Handshake className="w-8 h-8 text-[#ff0080]" />
   }
 };
@@ -143,7 +143,7 @@ export default async function SegmentedServicesPage({ params }: PageProps) {
                      <li className="flex gap-4">
                        <div className="mt-0.5 shrink-0"><ChevronRight size={16} className="text-[#667eea]" /></div>
                        <span className="text-sm text-gray-300">
-                         Explorar as soluções dos <Link href="/servicos/parceiros" className="text-white hover:text-[#667eea] transition-colors underline decoration-white/20 underline-offset-4">Nossos Parceiros</Link>
+                         Conhecer os <Link href="/servicos/parceiros" className="text-white hover:text-[#667eea] transition-colors underline decoration-white/20 underline-offset-4">Nossos Parceiros</Link>
                        </span>
                      </li>
                      <li className="flex gap-4">
