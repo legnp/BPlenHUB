@@ -43,7 +43,7 @@ também têm entrada própria em `BUGS.md`.
 | 8 | L | `/servicos/empresas`: justificar o texto do card "proposta de valor em desenvolvimento" | `servicos/[audience]/page.tsx` | ✓ PR-C |
 | 9 | C | `/servicos/empresas`: "Explorar as soluções dos Nossos Parceiros" → "Conhecer os Nossos Parceiros" | `servicos/[audience]/page.tsx:146` | ✓ PR-A |
 | 10 | C | `/servicos/parceiros`: novo texto (ortografia PT corrigida: "transformar", "conjunto") | `servicos/[audience]/page.tsx:48` | ✓ PR-A |
-| 11 | L/D | `/agendar`: normalizar header/título conforme `/servicos` + **card de agendamento em 1 página sem scroll** | `agendar/page.tsx` | ○ |
+| 11 | L/D | `/agendar`: normalizar header/título conforme `/servicos` + **card de agendamento em 1 página sem scroll** | `agendar/page.tsx` + `PublicBookingFlow.tsx` | ✓ PR-C2 |
 | 12 | C | "Calculando Slots..." → "Buscando horários" (+ mesmos textos em outros componentes de agendamento, se houver) | `PublicBookingFlow.tsx:744` (+ hub) | ✓ PR-A |
 | 13 | D | `/conteudo`: normalizar header/título conforme `/servicos` (preservar text-center + frases dinâmicas; **sem ícone** antes do título; só igualar tamanho/tipo de fonte; não mexer na cor) | página `/conteudo` | ✓ PR-C |
 | 14 | D-bug | Nav pública: "Nossos serviços" fica com efeito de "selecionado" em páginas que não são a dele — o realce deve ficar só na página ativa | `FloatingCTAs.tsx` (**BUG-048**) | ✓ PR-C |
@@ -58,7 +58,8 @@ Fechar como **passada de acabamento da F1-01, agora** (independe das fases logad
 - **PR-A — Copy pública** (2,6,7,9,10,12,15,16,17): ✓ **MERGEADA (PR #42)** — verificada ao vivo (SSR + snapshot) e por grep.
 - **PR-B — Footer & header globais** (1,3,4,5): ✓ **MERGEADA (PR #43)** — logos +50% via scale/size sem alterar altura (medido ao vivo: footer logo caixa 28px→render 42px; header h-16 fixo, logo 26→39); Governança removido; "Área de Membro" roteia p/ `/hub/membro`. Aparência logada (footer) na sessão de produção.
 - **PR-C** (8,13,14,18,19): ✓ MERGEADA (PR #44) — justify, header /conteudo normalizado (cor preservada), nav realce por rota (BUG-048), footer /conteudo claro (BUG-049), backdrop do GlassModal configurável + FAQ escuro (BUG-050).
-- **PR-C2 — /agendar** (item 11): header + card em 1 tela por dispositivo — **pendente** (layout iterativo mobile/tablet/desktop).
+- **PR-C2 — /agendar** (item 11): ✓ **MERGEADA (PR #45)** — `PublicBookingFlow` ganhou `variant="page"` (home intocada); header normalizado (kicker + tokens /servicos); card com `max-h-[calc(100svh-220px)]` + scroll interno → cabe no viewport nos 3 dispositivos (medido: mobile bottom 804/812, desktop 930/964, tablet 977/1024).
+- **F1-01: 19/19 ajustes aplicados — cluster COMPLETO.**
 
 Notas de cuidado: #11 (caber em 1 página) e #13 (normalizar header) são layout — verificar
 em mobile/tablet/desktop; #19 (overlay do FAQ) deve convergir para o backdrop padrão

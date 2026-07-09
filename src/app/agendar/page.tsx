@@ -21,10 +21,11 @@ export default function AgendarPage() {
       {/* 🌌 Camada Global de Partículas (Herança da Home) */}
       <ParticleNexus />
 
-      <div className="z-10 w-full max-w-4xl mx-auto py-4 flex flex-col items-center justify-center min-h-[40vh]">
-         {/* 📅 O Motor de Agendamento (Centralizado) */}
-         <div className="w-full px-4">
-            <PublicBookingFlow />
+      {/* Card em 1 viewport, sem scroll de página (item 11 F1-01). O footer fica
+          abaixo da dobra; a altura do card é responsiva (variant="page"). */}
+      <div className="z-10 relative w-full max-w-4xl mx-auto px-4 flex flex-col items-center justify-center min-h-[100svh]">
+         <div className="w-full">
+            <PublicBookingFlow variant="page" />
          </div>
       </div>
 
