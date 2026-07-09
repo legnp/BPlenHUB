@@ -2351,3 +2351,31 @@ para embasar essas decisões estão todos disponíveis.
 - Próximo: **PR-B** (footer/header globais: logos +50%, link Área de Membro, remover
   Governança) e **PR-C** (conformidade de design: 8/11/13/14/18/19 + defeitos
   BUG-048/049/050).
+
+---
+
+## [2026-07-08] Chat de execução — F1-01 acabamento PR-B: footer & header globais (mergeado)
+
+- Segundo lote (PR-B) do cluster F1-01 (`F1-01-AJUSTES.md`): itens 1,3,4,5 — componentes
+  **globais** (compartilhados com a área logada). Arquivos: `GlobalFooter.tsx`,
+  `LegalPageShell.tsx`.
+- **Item 1 (logo footer +50% sem alterar altura):** o footer NÃO tem altura fixa →
+  usei `scale-[1.5] origin-left` (transform) em vez de aumentar `size`. Transform não
+  afeta a caixa de layout → altura do footer inalterada por construção. **Medido ao vivo:**
+  caixa de layout do logo 28px (inalterada), render 42px (=+50%).
+- **Item 5 (logo header +50% sem alterar altura):** o header legal tem altura FIXA
+  (`h-16`) e centraliza → aqui bastou `size` 26→39. **Medido ao vivo:** header 65px
+  (h-16+borda, inalterado), logo render 39px. Cobre `/termos` e `/privacidade` (únicos
+  usuários do `LegalPageShell`).
+- **Item 4 (remover "Governança"):** o link ia para `href="#"` (lugar nenhum) — removido.
+  Confirmado ausente ao vivo.
+- **Item 3 ("Área de Membro" → `/hub/membro`):** era um `<button>` com fluxo de login
+  (Google popup → `/hub`). **Decisão:** mantive o botão (preserva o login-on-click) e
+  troquei o destino `router.push("/hub")` → `router.push("/hub/membro")` (2 ocorrências).
+  Assim membro logado cai direto na área de membro; não-logado faz login e vai p/ lá.
+  (Alternativa de virar Link puro foi descartada: regrediria a UX de login e, para
+  não-membro, bounce imediato.) — **a Gestora pode pedir Link puro se preferir.**
+- **Validação:** tsc + lint (0/0), `next build` exit 0 (após parar o dev server e limpar
+  `.next` — mesmo artefato de tipos gerados da PR-A), medições ao vivo + screenshot de
+  `/termos`, console sem erros.
+- Próximo: **PR-C** — conformidade de design (itens 8,11,13,14,18,19 + BUG-048/049/050).
