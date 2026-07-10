@@ -38,7 +38,11 @@ export function CheckoutFlow({ product }: CheckoutFlowProps) {
 
   async function handleInitCheckout() {
     if (finalPrice === 0) {
+      // Fluxo grátis: sem checkbox redundante — ativa direto e segue para a formalização
+      // do contrato na tela de sucesso (ponto único de consentimento). O passo intermediário
+      // de aceite foi removido; o loader abaixo mostra o progresso até o redirect.
       setStep("free_activation");
+      await handleFreeActivation();
       return;
     }
 
@@ -74,7 +78,7 @@ export function CheckoutFlow({ product }: CheckoutFlowProps) {
       const { processServicePurchaseAction } = await import("@/actions/checkout");
       
       // Call backend with legalConsent = true
-      const result = await processServicePurchaseAction(product.slug, token, couponCode || undefined, true);
+      const result = await processServicePurchaseAction(product.slug, token, couponCode || undefined);
       
       if (result.success && result.orderId) {
          window.location.href = `/hub/checkout/success?orderId=${result.orderId}`;
@@ -191,57 +195,13 @@ export function CheckoutFlow({ product }: CheckoutFlowProps) {
                     >
                        <Loader2 size={40} className="text-[var(--accent-start)] animate-spin" />
                        <div className="space-y-2">
-                          <h4 className="text-sm font-bold text-[var(--text-primary)] uppercase tracking-widest">Iniciando Checkout Seguro</h4>
-                          <p className="text-[10px] text-[var(--text-muted)] font-medium">Conectando com Mercado Pago...</p>
+                          <h4 className="text-sm font-bold text-[var(--text-primary)] uppercase tracking-widest">
+                             {step === "free_activation" ? "Ativando seu acesso" : "Iniciando Checkout Seguro"}
+                          </h4>
+                          <p className="text-[10px] text-[var(--text-muted)] font-medium">
+                             {step === "free_activation" ? "Preparando a formalização do contrato..." : "Conectando com Mercado Pago..."}
+                          </p>
                        </div>
-                     </motion.div>
-                  ) : step === "free_activation" ? (
-                     <motion.div 
-                       key="free_activation"
-                       initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
-                       className="w-full space-y-8 my-auto"
-                     >
-                        <div className="text-center space-y-3">
-                           <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 mx-auto mb-6">
-                              <Zap size={32} />
-                           </div>
-                           <h3 className="text-2xl font-black tracking-tight text-[var(--text-primary)] uppercase italic">
-                              Ativação Gratuita
-                           </h3>
-                           <p className="text-xs text-[var(--text-muted)] font-medium leading-relaxed max-w-sm mx-auto">
-                              Este serviço possui valor promocional de R$ 0,00. Confirme seu aceite para liberarmos o acesso imediatamente.
-                           </p>
-                        </div>
-                        
-                        <div className="p-6 rounded-2xl bg-[var(--input-bg)] border border-[var(--border-primary)] space-y-4 shadow-sm">
-                           <label className="flex items-start gap-4 cursor-pointer group">
-                              <input type="checkbox" required id="legalConsent" className="mt-1 w-5 h-5 rounded border border-[var(--border-primary)] text-emerald-500 focus:ring-emerald-500" />
-                              <span className="text-xs text-[var(--text-secondary)] leading-relaxed group-hover:text-[var(--text-primary)] transition-colors">
-                                 Declaro que li e concordo com os <a href="/termos" target="_blank" className="text-emerald-500 hover:underline">Termos de Uso</a> e a <a href="/privacidade" target="_blank" className="text-emerald-500 hover:underline">Política de Privacidade</a> da BPlen.
-                              </span>
-                           </label>
-                        </div>
-                        
-                        <button 
-                           onClick={() => {
-                              const checkbox = document.getElementById("legalConsent") as HTMLInputElement;
-                              if (!checkbox || !checkbox.checked) {
-                                 setError("Você precisa aceitar os Termos de Uso para prosseguir.");
-                                 return;
-                              }
-                              handleFreeActivation();
-                           }}
-                           className="w-full px-8 py-4 bg-emerald-500 text-black rounded-full text-[12px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-emerald-500/20"
-                        >
-                            Concluir Ativação Gratuita
-                        </button>
-                        
-                        <button 
-                           onClick={() => setStep("registration")}
-                           className="mt-8 text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)] hover:text-[var(--text-primary)] block mx-auto"
-                         >
-                             ← Voltar para Revisão de Dados
-                         </button>
                      </motion.div>
                  ) : error ? (
                     <motion.div 
