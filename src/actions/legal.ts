@@ -11,6 +11,22 @@ import fs from "fs";
 import { getErrorMessage } from "@/lib/utils/errors";
 import { safeSerialize } from "@/lib/utils/firestore";
 import { Product, ProductSheet } from "@/types/products";
+import { PRODUCTS_COLLECTION, USER_ORDERS_COLLECTION, USER_COLLECTION } from "@/config/collections";
+
+/**
+ * Rótulo humano do meio de contratação, a partir do `gateway` gravado em User_Orders.
+ * Evita expor strings internas (`retroactive_bypass`/`bplen_free_bypass`) no contrato.
+ */
+function friendlyGateway(gateway?: string): string {
+  switch (gateway) {
+    case "retroactive_bypass":
+      return "Faturamento Interno (Retroativo)";
+    case "bplen_free_bypass":
+      return "Cortesia / Cupom BPlen";
+    default:
+      return "Pagamento Online";
+  }
+}
 
 export interface LegalAudit {
   auditId: string;
@@ -30,13 +46,6 @@ interface LegacyOrderDoc {
   productId?: string;
   totalAmount?: number;
   paymentMethod?: string;
-}
-
-// Documento raiz `User/{uid}` legado (nomenclatura Pascal_Snake, distinta de
-// AdminUser/WelcomeSurveyData que modelam outras visões do usuário).
-interface RawUserDoc {
-  User_Nickname?: string;
-  User_Name?: string;
 }
 
 // `product.sheet` no Firestore carrega campos além do schema atual de ProductSheet
@@ -95,37 +104,49 @@ export async function getUserLegalAudits(userId: string) {
 export async function generateContractPdf(userId: string, productId: string, orderId?: string) {
   try {
     const db = getAdminDb();
-    
-    // Fetch Product
-    const productDoc = await db.collection("Products").doc(productId).get();
+
+    // Resolve a matrícula: os docs de `User` são chaveados por matrícula (BP-xxx), não
+    // por uid. O caller passa o uid; resolvemos via _AuthMap (mesmo padrão do
+    // grantServiceEntitlement). Sem isto, `User/{uid}` nunca existe. (BUG-051 / CT-0)
+    const authMapSnap = await db.collection("_AuthMap").doc(userId).get();
+    const matricula = authMapSnap.exists ? (authMapSnap.data()?.matricula as string | undefined) : undefined;
+    if (!matricula) throw new Error("Matrícula não encontrada para o usuário.");
+
+    // Produto — coleção canônica `products` (minúscula). Antes lia `Products`
+    // (maiúsculo, inexistente) -> "Produto não encontrado". Por id, com fallback por slug.
+    let productDoc = await db.collection(PRODUCTS_COLLECTION).doc(productId).get();
+    if (!productDoc.exists) {
+      const bySlug = await db.collection(PRODUCTS_COLLECTION).where("slug", "==", productId).limit(1).get();
+      if (!bySlug.empty) productDoc = bySlug.docs[0];
+    }
     if (!productDoc.exists) throw new Error("Produto não encontrado.");
     const product = safeSerialize<Product>({ ...productDoc.data(), id: productDoc.id });
 
-    // Fetch User
-    const userDoc = await db.collection("User").doc(userId).get();
-    if (!userDoc.exists) throw new Error("Usuário não encontrado.");
-    const user = userDoc.data() as RawUserDoc;
-    const matricula = user.User_Nickname || userId;
-    
-    // Fetch Dados Cadastrais
-    const dadosCadastraisDoc = await db.collection("User").doc(userId).collection("forms").doc("dados-cadastrais").get();
-    const dados = dadosCadastraisDoc.exists
-      ? (dadosCadastraisDoc.data() as { fullName?: string; cpf?: string; address?: string })
-      : { fullName: user.User_Name || "", cpf: "", address: "" };
-    
-    // Fetch Order (if provided)
+    // Dados do contratante — fonte canônica `User/{matricula}.profile` (F0-03).
+    // Antes lia `User/{uid}/forms/dados-cadastrais` (uid errado + id com hífen).
+    const userDoc = await db.collection(USER_COLLECTION).doc(matricula).get();
+    const profile = (userDoc.data()?.profile ?? {}) as {
+      fullName?: string;
+      cpf?: string;
+      address?: { street?: string; number?: string; complement?: string; city?: string; state?: string; cep?: string };
+    };
+    const addr = profile.address ?? {};
+    const addressStr = [addr.street, addr.number, addr.complement, addr.city, addr.state, addr.cep]
+      .filter(Boolean)
+      .join(", ") || "endereço cadastrado na plataforma";
+    const dados = { fullName: profile.fullName || "", cpf: profile.cpf || "", address: addressStr };
+
+    // Order — loja raiz `User_Orders` (antes lia a subcoleção legada `User/{uid}/Orders`).
     let orderAmount = "Valor registrado na contratação";
     let orderMethod = "Gateway Digital";
     if (orderId) {
-      const orderDoc = await db.collection("User").doc(userId).collection("Orders").doc(orderId).get();
+      const orderDoc = await db.collection(USER_ORDERS_COLLECTION).doc(orderId).get();
       if (orderDoc.exists) {
-         const order = orderDoc.data() as LegacyOrderDoc;
-         if (order.totalAmount !== undefined) {
-            orderAmount = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(order.totalAmount);
-         }
-         if (order.paymentMethod) {
-            orderMethod = order.paymentMethod;
-         }
+        const order = orderDoc.data() as { finalPrice?: number; gateway?: string };
+        if (order.finalPrice !== undefined) {
+          orderAmount = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(order.finalPrice);
+        }
+        orderMethod = friendlyGateway(order.gateway);
       }
     }
     
@@ -163,17 +184,19 @@ export async function generateContractPdf(userId: string, productId: string, ord
       buffer
     );
     
-    // Save Audit Log
-    const auditId = db.collection("User").doc(userId).collection("Legal_Audits").doc().id;
+    // Save Audit Log (subcoleção soberana chaveada por matrícula)
+    const auditRef = db.collection(USER_COLLECTION).doc(matricula).collection("Legal_Audits");
+    const auditId = auditRef.doc().id;
     const now = new Date();
-    
-    await db.collection("User").doc(userId).collection("Legal_Audits").doc(auditId).set({
+
+    await auditRef.doc(auditId).set({
       auditId,
       userId,
+      matricula,
       productId,
       orderId: orderId || null,
       timestamp: now.toISOString(),
-      ipAddress: "Registrado pelo Gateway", 
+      ipAddress: "Registrado pelo Gateway", // TODO CT-1: capturar IP real na assinatura (BUG-054)
       documentUrl: result.webViewLink,
       documentHash: hash
     });
