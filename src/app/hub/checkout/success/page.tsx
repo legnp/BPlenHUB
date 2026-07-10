@@ -1,5 +1,6 @@
 import React from "react";
 import { PaymentStatus } from "@/components/checkout/PaymentStatus";
+import { CheckoutContractSigning } from "@/components/contracts/CheckoutContractSigning";
 import { ShieldCheck } from "lucide-react";
 
 /**
@@ -55,7 +56,7 @@ export default async function CheckoutSuccessPage({
            <p className="text-xs text-gray-500 font-bold uppercase tracking-widest">
               Aguardando confirmação do gateway...
            </p>
-           <a 
+           <a
              href="/hub/membro?startTour=true"
              className="text-[10px] font-black uppercase tracking-widest text-accent-start hover:underline block"
            >
@@ -63,6 +64,10 @@ export default async function CheckoutSuccessPage({
            </a>
         </div>
       )}
+
+      {/* Assinatura de contrato pós-checkout (CT-3b.2) — grátis e pago. Auto-oculta
+          quando não há contrato pendente para a conta/pedido. */}
+      {orderId ? <CheckoutContractSigning orderId={orderId} /> : null}
 
     </div>
   );
