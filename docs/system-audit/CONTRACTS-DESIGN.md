@@ -132,7 +132,10 @@ Ordenado por **risco decrescente de "quebrado hoje"** e dependência.
   status de assinatura, resumo, timestamp, botões (serviço, documento, assinar,
   termos), atalho de assinatura para pendentes, e **anexo de nota fiscal** (upload via
   admin + consulta/download pelo cliente). Corrige o link morto `/hub/membro/dashboard`.
-  Fecha `BUG-053`.
+  Fecha `BUG-053`. **Pendência do gate de liberação (CT-3b.2):** com a regra "serviço
+  liberado só com pagamento aprovado E contrato assinado", surge o estado **"pago,
+  aguardando assinatura"** (`order.serviceReleased === false` com pagamento aprovado) —
+  o painel deve destacar esses casos com atalho para assinar.
 - **CT-5 — Reforços jurídicos adicionais (item f, sob demanda).** Ajustes técnicos que
   a Gestora indicará (além do IP): ex. carimbo de tempo confiável, versionamento de
   cláusulas, trilha de auditoria consultável.
@@ -200,6 +203,15 @@ A Gestora expandiu o escopo das telas de assinatura para um **motor reutilizáve
   difere: token vs orderId — evita desestabilizar o avulso validado em produção).
 
 ## Registro de revisões
+- 2026-07-10 — **CT-3b.2 gate de liberação + carimbo (PRs #59/#60)**: (#59) o PDF passa a
+  ser **estampado** com data/hora, IP, **código único de verificação**
+  (`BPLEN-{serviceCode}-{orderId}-{paymentRef}` + hash) e hash de integridade, amarrando
+  serviço + pedido + pagamento MP; `paymentId`/`verificationCode`/`verificationHash`
+  gravados no Contract/Legal_Audits. (#60) **regra de liberação** da Gestora: o serviço só
+  é liberado com **pagamento aprovado E contrato assinado** — helper `maybeReleaseService`
+  idempotente, chamado do webhook MP e das assinaturas (checkout/avulso); fluxo grátis vai
+  **direto** para a formalização (sem checkbox redundante); **avulso passa a liberar ao
+  assinar**. Concessão (selo/cotas/cupom) migra do webhook/ativação para a assinatura.
 - 2026-07-10 — **CT-3b.2 correção de UX + padrão Gestão Funcional (PR #58, `BUG-056`)**:
   após validação da Gestora, unificado o componente de assinatura (grátis == pago), CTAs de
   navegação só após assinar, migração das telas de contrato/checkout para theme vars (avulso

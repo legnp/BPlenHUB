@@ -472,7 +472,10 @@ sem copy hardcoded fora do que o guia permitir).
   BUG-051/052/053/054/055 (subsistema de contratos, `CONTRACTS-DESIGN.md`)
 - Log: [2026-07-09] BUG-002 corrigido + investigação e design do subsistema de contratos;
   [2026-07-10] contratos CT-0..CT-2 (PRs #49/#50/#51), CT-3a (PR #55), CT-3b.1 (PR #56),
-  **CT-3b.2 — assinatura pós-checkout grátis+pago, PR #57** — ver `LOG.md` e `CONTRACTS-DESIGN.md`
+  **CT-3b.2 — assinatura pós-checkout grátis+pago (PR #57)**, correção UX/design + padrão
+  Gestão Funcional (PR #58, BUG-056), carimbo + código único no PDF (PR #59) e **gate de
+  liberação — serviço só com pagamento aprovado E contrato assinado + fluxo grátis direto
+  + avulso libera ao assinar (PR #60)** — ver `LOG.md` e `CONTRACTS-DESIGN.md`
 
 ### [F1-03] Hub — dashboard e motor de jornada
 - Categoria(s) de qualidade: Adequação funcional / Usabilidade

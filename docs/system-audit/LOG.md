@@ -2832,3 +2832,33 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
 - Validado: eslint dos arquivos tocados (limpo), test 52/52, tsc, build `Compiled
   successfully`. Telas logadas — validação funcional em produção (BUG-030).
 - Próximo: validação em produção pela Gestora; depois CT-3c/CT-4 e a expansão do F2-05.
+
+## [2026-07-10] Chat de execução — CT-3b.2: carimbo/código (PR #59) + gate de liberação + grátis direto (PR #60)
+
+- Contexto: a Gestora validou o contrato pós-checkout do PAGO (design casou) e levantou 3
+  pontos: (1) redundância do fluxo grátis (checkbox antes da formalização), (2) o serviço
+  só pode ser liberado com **pagamento aprovado E contrato assinado** (avulso e checkout),
+  (3) o carimbo da assinatura deve constar **no documento** (timestamp/IP/data) + um
+  **código único** amarrando serviço/contrato/pagamento MP. Áreas financeiro/jurídico
+  (gated): plano + riscos apresentados; duas decisões travadas — avulso **libera** ao
+  assinar; código = **composto legível + hash**.
+- **PR #59 (carimbo + código):** `generateContractPdf` captura IP+UA+timestamp ANTES de
+  gerar o PDF e estampa "Carimbo de Assinatura Eletrônica" (data/hora, IP, código,
+  hash). Código `BPLEN-{serviceCode}-{orderId}-{paymentRef}` + hash curto SHA-256; sem MP
+  (grátis/avulso), `paymentRef` = id do pedido. Novo param `paymentId` (checkout passa
+  `order.mpPaymentId`). `paymentId`/`verificationCode`/`verificationHash` gravados no
+  Contract + Legal_Audits (tipos atualizados).
+- **PR #60 (gate + grátis direto):** novo `maybeReleaseService(orderId)` idempotente
+  (flag `serviceReleased`) que só concede quando pagamento aprovado E contrato assinado.
+  Concessão migra do webhook/ativação para a assinatura: webhook chama `maybeReleaseService`
+  (não concede direto; e-mail "serviço liberado" migra p/ o helper), `signCheckoutContractAction`
+  e `processAvulsoContractAction` também chamam ao assinar; grátis (`processServicePurchaseAction`)
+  cria pedido aprovado SEM conceder. Fluxo grátis vai direto à formalização (checkbox
+  removido). Avulso passa a liberar ao assinar.
+- Risco registrado: quem paga e não assina fica sem serviço/selo/cotas (comportamento
+  pedido) → estado "pago, aguardando assinatura" a destacar no painel CT-4.
+- Validado: eslint dos arquivos tocados (limpo; corrigidos warnings legados de passagem),
+  test 52/52, tsc, build `Compiled successfully`. Fluxos logados/financeiros/webhook —
+  validação funcional em produção (BUG-030): grátis, pago e avulso.
+- Próximo: validação em produção (os 3 fluxos); depois CT-4 (painel + estado aguardando
+  assinatura), CT-3c, expansão do F2-05.

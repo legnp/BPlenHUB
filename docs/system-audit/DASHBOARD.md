@@ -12,7 +12,17 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-10 (chat de execução — **CT-3b.2 correção de UX + padrão
+> **Última atualização:** 2026-07-10 (chat de execução — **CT-3b.2 carimbo + gate de
+> liberação (PRs #59/#60)**: (#59) o PDF passa a ser **estampado** com data/hora, IP,
+> **código único de verificação** (amarrando serviço + pedido + pagamento MP) e hash;
+> (#60) **regra de liberação** — o serviço só é liberado com **pagamento aprovado E
+> contrato assinado** (helper idempotente `maybeReleaseService` no webhook MP e nas
+> assinaturas); fluxo **grátis vai direto** à formalização (sem checkbox redundante);
+> **avulso libera ao assinar**. Concessão (selo/cotas/cupom) migra do webhook/ativação
+> para a assinatura. Risco: quem paga e não assina fica sem o serviço → estado "aguardando
+> assinatura" a destacar no painel (CT-4). Validação dos 3 fluxos em produção.
+>
+> _(entrada anterior)_ 2026-07-10 (chat de execução — **CT-3b.2 correção de UX + padrão
 > Gestão Funcional (PR #58, `BUG-056`)**: a Gestora validou a CT-3b.2 e reportou defeitos —
 > grátis divergia do pago (parecia "só checkbox"), CTAs de navegação apareciam antes da
 > assinatura, e telas de contrato/checkout não herdavam o tema (cores hardcoded). Corrigido:
