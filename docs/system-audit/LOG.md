@@ -2862,3 +2862,19 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   validação funcional em produção (BUG-030): grátis, pago e avulso.
 - Próximo: validação em produção (os 3 fluxos); depois CT-4 (painel + estado aguardando
   assinatura), CT-3c, expansão do F2-05.
+
+## [2026-07-10] Chat de execução — CT-3b.2: status real na tela de sucesso (PR #61)
+
+- Gestora validou os pontos anteriores (redundância grátis resolvida, avulso ok, carimbo
+  ok) e apontou 1 defeito: a tela de sucesso mostrava tag "Serviço Liberado" + "o serviço
+  já está disponível na sua conta" **hardcoded**, contradizendo o gate CT-3b.2 (serviço só
+  libera após assinar). Confirmado hardcoded (não status real).
+- PR #61: `CheckoutContractSigning` passa a donar o cabeçalho + faixa de confirmação, com
+  **status dinâmico** (Aguardando Pagamento -> Aguardando Assinatura -> Serviço Liberado).
+  Faixa do grátis: "Ativação gratuita registrada. O serviço será liberado após a
+  assinatura" (não mais "já disponível"). `success/page.tsx` fica fino; `PaymentStatus`
+  renderizado dentro do componente cliente (init do MP inalterado).
+- Validado: eslint (limpo), test 52/52, tsc, build. Tela logada — produção (BUG-030).
+- Confirmações à Gestora: o **IP no PDF é real** (`x-forwarded-for`/`x-real-ip`); geo do
+  usuário é viável via headers de edge da Vercel (país/cidade/região/lat-long) sem serviço
+  externo — a avaliar como adição futura ao carimbo.

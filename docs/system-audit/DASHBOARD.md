@@ -12,7 +12,14 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-10 (chat de execução — **CT-3b.2 carimbo + gate de
+> **Última atualização:** 2026-07-10 (chat de execução — **CT-3b.2 status real na tela de
+> sucesso (PR #61)**: corrigida a tag "Serviço Liberado" + "já disponível" que apareciam
+> **hardcoded** antes da assinatura, contradizendo o gate — agora o status é dinâmico
+> (Aguardando Pagamento -> Aguardando Assinatura -> Serviço Liberado) e a faixa do grátis
+> diz "liberado após a assinatura". IP no PDF confirmado real; geo por headers de edge da
+> Vercel viável como adição futura.
+>
+> _(entrada anterior)_ 2026-07-10 (chat de execução — **CT-3b.2 carimbo + gate de
 > liberação (PRs #59/#60)**: (#59) o PDF passa a ser **estampado** com data/hora, IP,
 > **código único de verificação** (amarrando serviço + pedido + pagamento MP) e hash;
 > (#60) **regra de liberação** — o serviço só é liberado com **pagamento aprovado E
