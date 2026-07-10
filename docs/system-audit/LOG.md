@@ -2678,3 +2678,26 @@ link único; se já houver contrato assinado, aparece o aviso de retificação. 
 DESLOGADO → tela de login. (3) Logar na conta CERTA → resumo + assinar → PDF gerado (CT-0),
 com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado" (uso único).
 (5) Abrir um link em conta ERRADA → "contrato de outra conta".
+
+---
+
+## [2026-07-09] Chat de execução — Contratos CT-0.1: fontes .afm do pdfkit no bundle (PR #52)
+
+- Chat/sessão: mesmo chat de execução (Opus 4.8)
+- Origem: teste da Gestora em produção (CT-0/1/2). Passos 1 (aviso de duplicidade — não
+  disparou, correto: sem contrato assinado prévio) e 2 (vínculo à conta) OK. Passo 3
+  (assinar) falhou: "Ordem criada, mas falha ao gerar PDF: ENOENT ... pdfkit/js/data/
+  Helvetica.afm".
+- Diagnóstico: o CT-0 destravou a geração (produto encontrado); o fluxo avançou até o
+  **pdfkit**, que resolve os `.afm` (métrica de fonte) de `node_modules/pdfkit/js/data/`
+  em runtime, mas o file-tracing do Next não inclui esses assets no bundle serverless da
+  Vercel → ENOENT. Bundling, não lógica.
+- Correção (config-only, `next.config.ts`): `outputFileTracingIncludes: { "/**":
+  ["./node_modules/pdfkit/**/*.afm"] }`. Área sensível → plano+aprovação da Gestora.
+  Build local: Next aceita a chave, exit 0. Efeito real no bundle da Vercel → validar
+  assinando um contrato em produção (retomar o teste do CT-2 no passo "Assinar").
+- Entrega: **PR #52 mergeado** (`3a03383`, squash). Branch deletada; `main` ff-only.
+- Nota: o retroativo cria a order ANTES do PDF; a tentativa de assinatura da Gestora
+  (BP-002) deixou uma order retroativa sem PDF/contrato assinado — o token NÃO foi
+  consumido (o consumo só ocorre após o PDF gerar), então o mesmo link ainda serve para
+  reassinar quando o deploy sair. (Se sobrar order órfã, limpeza é cosmética.)
