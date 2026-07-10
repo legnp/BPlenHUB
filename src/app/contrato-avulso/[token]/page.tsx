@@ -3,9 +3,9 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import {
-  resolveRetroactiveContractTokenAction,
-  processRetroactiveContractAction,
-} from "@/actions/retroactive-contract";
+  resolveAvulsoContractTokenAction,
+  processAvulsoContractAction,
+} from "@/actions/avulso-contract";
 import {
   ShieldCheck,
   FileText,
@@ -21,9 +21,26 @@ import Link from "next/link";
 import { auth } from "@/lib/firebase";
 import { GoogleLoginButton } from "@/components/auth/google-login-button";
 import { getErrorMessage } from "@/lib/utils/errors";
+import { ContractTermsCheckboxes, allRequiredAccepted, type ContractTerm } from "@/components/contracts/ContractTermsCheckboxes";
 
 type ResolvedProduct = { slug: string | null; title: string | null; serviceCode: string | null; price: number };
 type Screen = "loading" | "logged_out" | "blocked" | "summary" | "processing" | "success";
+
+// Termos de aceite (configuráveis, obrigatórios + opcionais). Novos termos entram aqui.
+const AVULSO_TERMS: ContractTerm[] = [
+  {
+    id: "contrato-servico",
+    required: true,
+    label: (
+      <>
+        Declaro que li e concordo com o <b>contrato de prestação de serviço</b> acima, os{" "}
+        <a href="/termos" target="_blank" className="text-[#ff0080] hover:underline">Termos de Uso</a> e a{" "}
+        <a href="/privacidade" target="_blank" className="text-[#ff0080] hover:underline">Política de Privacidade</a> da BPlen,
+        formalizando via Clickwrap.
+      </>
+    ),
+  },
+];
 
 const BLOCK_MESSAGES: Record<string, { title: string; hint: string }> = {
   invalid: { title: "Link inválido", hint: "Este link de contrato não é válido. Solicite um novo à BPlen." },
@@ -36,10 +53,11 @@ const BLOCK_MESSAGES: Record<string, { title: string; hint: string }> = {
 };
 
 /**
- * Assinatura de contrato retroativo por TOKEN (CT-2). O link é único, de uso único e
- * vinculado à conta liberada pelo admin — a validação real acontece no servidor.
+ * Assinatura de contrato AVULSO por TOKEN (CT-2/CT-3). O link é único, de uso único e
+ * vinculado à conta liberada pelo admin — a validação real acontece no servidor. O
+ * cliente lê o contrato completo (cláusulas) e aceita os termos configuráveis antes de assinar.
  */
-export default function RetroactiveContractPage() {
+export default function AvulsoContractPage() {
   const params = useParams();
   const token = (params.token as string) || "";
 
@@ -47,7 +65,7 @@ export default function RetroactiveContractPage() {
   const [product, setProduct] = useState<ResolvedProduct | null>(null);
   const [clauses, setClauses] = useState<{ heading: string; body: string }[]>([]);
   const [blockReason, setBlockReason] = useState<string>("invalid");
-  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [accepted, setAccepted] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [successUrl, setSuccessUrl] = useState<string | null>(null);
 
@@ -60,7 +78,7 @@ export default function RetroactiveContractPage() {
       }
       try {
         const idToken = await user.getIdToken();
-        const res = await resolveRetroactiveContractTokenAction(token, idToken);
+        const res = await resolveAvulsoContractTokenAction(token, idToken);
         if (res.valid) {
           setProduct(res.product);
           setClauses(res.clauses ?? []);
@@ -80,14 +98,16 @@ export default function RetroactiveContractPage() {
     return () => unsub();
   }, [token]);
 
+  const canSign = allRequiredAccepted(AVULSO_TERMS, accepted);
+
   const handleSign = useCallback(async () => {
-    if (!acceptedTerms) return;
+    if (!allRequiredAccepted(AVULSO_TERMS, accepted)) return;
     setScreen("processing");
     setError(null);
     try {
       const idToken = await auth.currentUser?.getIdToken();
       if (!idToken) throw new Error("Sessão expirada. Faça login novamente.");
-      const result = await processRetroactiveContractAction(token, idToken);
+      const result = await processAvulsoContractAction(token, idToken, accepted);
       if (result.success) {
         setSuccessUrl(result.documentUrl || null);
         setScreen("success");
@@ -99,7 +119,7 @@ export default function RetroactiveContractPage() {
       setError(getErrorMessage(err, "Erro inesperado."));
       setScreen("summary");
     }
-  }, [acceptedTerms, token]);
+  }, [accepted, token]);
 
   return (
     <main className="min-h-screen bg-black text-white relative isolate overflow-hidden flex items-center justify-center p-6 theme-dark">
@@ -211,17 +231,7 @@ export default function RetroactiveContractPage() {
 
                 <div className="p-6 rounded-[2rem] bg-white/5 border border-white/10 space-y-4">
                   <p className="text-[10px] font-black uppercase tracking-widest text-gray-500">Termos Legais</p>
-                  <label className="flex items-start gap-4 cursor-pointer group">
-                    <div className="relative mt-1">
-                      <input type="checkbox" className="peer sr-only" checked={acceptedTerms} onChange={(e) => setAcceptedTerms(e.target.checked)} />
-                      <div className="w-5 h-5 rounded border border-gray-600 peer-checked:bg-[#ff0080] peer-checked:border-[#ff0080] transition-all flex items-center justify-center">
-                        <CheckCircle2 size={14} className="text-white opacity-0 peer-checked:opacity-100" />
-                      </div>
-                    </div>
-                    <p className="text-sm text-gray-400 font-medium leading-relaxed group-hover:text-white transition-colors">
-                      Declaro ter lido e estou de acordo com os <Link href="/termos" target="_blank" className="text-[#ff0080] hover:underline">Termos de Uso</Link>, a <Link href="/privacidade" target="_blank" className="text-[#ff0080] hover:underline">Política de Privacidade</Link> da BPlen, e concordo com o escopo e valores registrados acima para formalização via Clickwrap.
-                    </p>
-                  </label>
+                  <ContractTermsCheckboxes terms={AVULSO_TERMS} value={accepted} onChange={setAccepted} />
                 </div>
               </div>
 
@@ -248,7 +258,7 @@ export default function RetroactiveContractPage() {
                   <div className="mt-8 relative z-10">
                     <button
                       onClick={handleSign}
-                      disabled={!acceptedTerms}
+                      disabled={!canSign}
                       className="w-full py-5 rounded-2xl bg-[#ff0080] hover:bg-[#ff00b3] text-white font-black text-xs tracking-[0.2em] uppercase hover:scale-[1.02] shadow-[0_20px_40px_rgba(255,0,128,0.3)] transition-all flex items-center justify-center gap-3 group disabled:opacity-30 disabled:hover:scale-100"
                     >
                       Assinar Contrato

@@ -83,7 +83,7 @@ async function validateToken(
   };
 }
 
-export interface RetroactiveInvitationResult {
+export interface AvulsoInvitationResult {
   success: boolean;
   /** Já existe contrato assinado — reenviar com confirmRetification=true para retificar. */
   needsConfirmation?: boolean;
@@ -100,11 +100,11 @@ export interface RetroactiveInvitationResult {
  * ADMIN — gera um link único de contrato retroativo para {matricula, produto}.
  * Retorna `needsConfirmation` se já houver contrato assinado (item a).
  */
-export async function createRetroactiveContractInvitationAction(
+export async function createAvulsoContractInvitationAction(
   matricula: string,
   productId: string,
   confirmRetification: boolean = false
-): Promise<RetroactiveInvitationResult> {
+): Promise<AvulsoInvitationResult> {
   try {
     await requireAdmin();
     const db = getAdminDb();
@@ -143,7 +143,7 @@ export async function createRetroactiveContractInvitationAction(
         productSlug: product.slug ?? null,
         productTitle: product.title ?? null,
         status,
-        origin: "retroativo",
+        origin: "avulso",
         updatedAt: FieldValue.serverTimestamp(),
         ...(existing.exists
           ? {}
@@ -169,7 +169,7 @@ export async function createRetroactiveContractInvitationAction(
       status,
     });
 
-    return { success: true, token: rawToken, path: `/contrato-retroativo/${rawToken}`, status };
+    return { success: true, token: rawToken, path: `/contrato-avulso/${rawToken}`, status };
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : "Erro ao gerar link de contrato.";
     console.error("❌ [Retroactive Invitation]:", error);
@@ -181,7 +181,7 @@ export async function createRetroactiveContractInvitationAction(
  * CLIENTE — resolve o token para exibir o resumo do contrato. Exige login na conta
  * liberada (matrícula do token === matrícula da sessão). Não consome o token.
  */
-export async function resolveRetroactiveContractTokenAction(token: string, idToken?: string) {
+export async function resolveAvulsoContractTokenAction(token: string, idToken?: string) {
   try {
     const session = await requireMatricula(idToken);
     const matricula = session.matricula as string;
@@ -214,7 +214,7 @@ export async function resolveRetroactiveContractTokenAction(token: string, idTok
           dados: { fullName: profile.fullName || "", cpf: profile.cpf || "", address: addressStr },
           matricula,
           orderAmount,
-          orderMethod: "Faturamento Interno (Retroativo)",
+          orderMethod: "Faturamento Interno (Avulso)",
         })
       : null;
 
@@ -239,7 +239,7 @@ export async function resolveRetroactiveContractTokenAction(token: string, idTok
  * CLIENTE — processa a assinatura do contrato retroativo a partir do token.
  * Valida vínculo à conta + uso único, cria a ordem, gera o PDF e CONSOME o token.
  */
-export async function processRetroactiveContractAction(token: string, idToken?: string) {
+export async function processAvulsoContractAction(token: string, idToken?: string, acceptedTerms: string[] = []) {
   try {
     const session = await requireMatricula(idToken);
 
@@ -292,10 +292,17 @@ export async function processRetroactiveContractAction(token: string, idToken?: 
     });
 
     // Gera o PDF e vira o Contract para `assinado` (CT-1).
-    const pdfResult = await generateContractPdf(session.uid, productId, orderId, "retroativo");
+    const pdfResult = await generateContractPdf(session.uid, productId, orderId, "avulso");
     if (!pdfResult.success) {
       console.error(`❌ [Retroactive Contract] Falha ao gerar PDF para ${session.uid}:`, pdfResult.error);
       return { success: false, error: `Ordem criada, mas falha ao gerar PDF: ${pdfResult.error}` };
+    }
+
+    // Registra quais termos (checkboxes) foram aceitos na assinatura — merge deep no
+    // map `signature` (não apaga signedAt/ip/userAgent gravados pelo generateContractPdf).
+    if (v.data.contractId) {
+      await db.collection(USER_COLLECTION).doc(matricula).collection("Contracts").doc(v.data.contractId)
+        .set({ signature: { acceptedTerms } }, { merge: true });
     }
 
     // (c) Consome o token — uso único.
