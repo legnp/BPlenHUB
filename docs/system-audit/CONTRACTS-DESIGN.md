@@ -121,9 +121,13 @@ Ordenado por **risco decrescente de "quebrado hoje"** e dependência.
   token === sessão. Rota `/contrato-retroativo/[slug]` → `[token]`; página reescrita com
   estados (login / conta errada / expirado / consumido / assinar). **BREAKING intencional:**
   links genéricos antigos param de funcionar (eram a vulnerabilidade). Fecha `BUG-022`.
-- **CT-3 — Visualização do documento no HUB (item e).** Viewer in-app (stream/embed do
-  PDF) + download nas telas de contrato (checkout, retroativo) e no painel. Fecha
-  `BUG-052`.
+- **CT-3 — Conteúdo do contrato VISÍVEL ANTES de assinar + motor reutilizável (item e,
+  redefinido pela Gestora 2026-07-10).** Ver §10. O cliente lê as cláusulas do contrato
+  **na tela** antes de assinar (hoje só via após assinar — contrassenso jurídico do
+  clickwrap). Fonte única `buildContractClauses` compartilhada entre o PDF e a tela.
+  Motor/tela de assinatura reutilizável (checkboxes obrigatórios/opcionais configuráveis;
+  audiências pessoas/empresas/parceiros). O documento com validade jurídica (IP/timestamp)
+  é gerado **após** a assinatura. Fecha `BUG-052`.
 - **CT-4 — Painel de contratos reescrito (item d).** 1 card por serviço/pacote com
   status de assinatura, resumo, timestamp, botões (serviço, documento, assinar,
   termos), atalho de assinatura para pendentes, e **anexo de nota fiscal** (upload via
@@ -143,7 +147,50 @@ Ordenado por **risco decrescente de "quebrado hoje"** e dependência.
 - **Verificar em produção antes de codar o CT-0:** confirmar se `Products` (maiúsculo)
   de fato não existe (por isso a geração falha) — é a hipótese de leitura.
 
+## 10. Motor de contratos reutilizável + área "Legal" (visão da Gestora, 2026-07-10)
+
+A Gestora expandiu o escopo das telas de assinatura para um **motor reutilizável** e uma
+**área Legal** no HUB. Requisitos:
+
+1. **Ler antes de assinar.** O contrato (cláusulas) é **renderizado na tela** para o
+   cliente ler ANTES do aceite. O PDF com validade jurídica (IP + timestamp + data + hash)
+   é gerado **só após** a assinatura. Hoje é o inverso (só vê depois de assinar) — corrigir.
+2. **Assinatura após o checkout (grátis E pago).** No fluxo de compra, o contrato é visto e
+   assinado **depois de concluir o checkout** (não antes do pagamento). Vale para os dois
+   tipos. (Alinha com o conceito de "gate pós-compra".)
+3. **Checkboxes configuráveis.** A tela de assinatura deve suportar **múltiplos aceites**
+   (obrigatórios + opcionais), data-driven — a Gestora incluirá novos termos em breve.
+   Antecipar o modelo (`terms: { id, label, required }[]`), mesmo usando 1 hoje.
+4. **Reutilizável por audiência.** O mesmo motor serve **pessoas** (hoje), **empresas**
+   (`/hub/companies`, futuro) e **parceiros** (`/hub/partners`, futuro; B2C e B2B) — todos
+   logados no `/hub`, em suas áreas próprias (ainda não existem). Contrato B2B/B2C pode ter
+   cláusulas/termos distintos → o motor recebe a config por audiência.
+5. **Área "Legal".** Projetar uma área legal no HUB (rota + gestão) reaproveitável entre as
+   audiências — provável `/hub/legal/...` (contratos, termos assinados, documentos), além do
+   painel de gestão que já existe (a evoluir no CT-4).
+
+### Peças (arquitetura proposta)
+- `src/lib/contract-content.ts` — **`buildContractClauses(dados)`** puro: fonte ÚNICA das
+  cláusulas (título + `{heading, body}[]` + rodapé), usado pelo **PDF** (`createContractBuffer`)
+  e pela **tela** (via action de preview). Nunca divergem.
+- `src/components/contracts/ContractDocumentView.tsx` — renderiza as cláusulas (rolável).
+- `src/components/contracts/ContractSigning.tsx` — componente **reutilizável**: recebe as
+  cláusulas + a config de checkboxes + a action de assinatura; agnóstico de audiência/rota.
+- Action de preview guardada (`requireMatricula`) que devolve as cláusulas do cliente.
+- Superfícies: retroativo (`/contrato-retroativo/[token]`), pós-checkout (grátis+pago), e a
+  futura área `/hub/legal` / `/hub/companies` / `/hub/partners`.
+
+### Fases (redefinição do CT-3, subfaseado)
+- **CT-3a** — `buildContractClauses` (fonte única) + PDF renderiza dela + tela **retroativo**
+  mostra as cláusulas antes de assinar, com checkboxes data-driven. *(fundação; primeiro PR)*
+- **CT-3b** — assinatura **pós-checkout** (grátis e pago) reusando o `ContractSigning`.
+- **CT-3c** — área **`/hub/legal`** e generalização por **audiência** (empresas/parceiros)
+  quando as áreas `/hub/companies` `/hub/partners` existirem. Decisões de produto pendentes.
+
 ## Registro de revisões
+- 2026-07-10 — §10 (motor reutilizável + área Legal): a Gestora redefiniu o CT-3 —
+  contrato visível antes de assinar, assinatura pós-checkout (grátis+pago), checkboxes
+  configuráveis, motor reutilizável por audiência (pessoas/empresas/parceiros) e área Legal.
 - 2026-07-09 — criação, a partir da investigação read-only do universo de contratos
   (checkout público/membro, retroativo, `legal.ts`, painel `/hub/membro/contratos`,
   `ContractGateModal`, `admin/users`) e da expansão do BUG-022 pela Gestora (itens a–f).

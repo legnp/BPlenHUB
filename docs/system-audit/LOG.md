@@ -2742,3 +2742,18 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   contratos reescrito com status de assinatura + documento + nota fiscal, consolidando o
   Contract e o Legal_Audits — item d; hoje ainda mostra o painel basico por pagamento),
   CT-5 (reforcos juridicos extras que a Gestora indicara).
+
+## [2026-07-10] Chat de execução — Contratos CT-3a: contrato visível antes de assinar (PR #55)
+
+- Escopo: a Gestora apontou o contrassenso (cliente só vê o contrato após assinar) e
+  expandiu para um motor de contratos reutilizável + área "Legal" (design em
+  `CONTRACTS-DESIGN.md` §10). CT-3a é a fundação.
+- Mudanças (PR #55): novo `src/lib/contract-content.ts` (`buildContractClauses`, fonte
+  única das 9 cláusulas, texto jurídico verbatim); `createContractBuffer` (PDF) renderiza
+  da fonte única; `resolveRetroactiveContractTokenAction` devolve as cláusulas preenchidas;
+  `/contrato-retroativo/[token]` renderiza o contrato completo (rolável) antes do aceite.
+- Validado: eslint (0 erros), test 52/52, tsc, build exit 0. Tela em produção (BUG-030).
+- Próximas (§10): CT-3b (assinatura pós-checkout grátis+pago, checkboxes configuráveis,
+  componente `ContractSigning` reutilizável); CT-3c (área `/hub/legal` + audiências
+  empresas/parceiros quando `/hub/companies` `/hub/partners` existirem); CT-4 (painel);
+  CT-5 (jurídico).
