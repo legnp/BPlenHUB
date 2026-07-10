@@ -2728,3 +2728,17 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
 - Padrão observado: a cadeia de geração do contrato tinha 3 defeitos latentes empilhados
   (produto/matrícula → fontes pdfkit → stream do Drive), revelados um a um só quando o
   anterior é corrigido, pois só produção exercita esse caminho (BUG-030).
+
+## [2026-07-10] VALIDADO EM PRODUÇÃO pela Gestora — fluxo de contrato retroativo ponta a ponta
+
+- A Gestora confirmou: assinar (na conta certa, via link único) -> gera o PDF -> pagina de
+  sucesso com "ver contrato assinado" (abre o documento no Drive) + "ir a pagina de
+  contratos", ambos funcionais. Valida de uma vez: CT-0 (BUG-051), CT-0.2 (pdfkit .afm),
+  CT-0.3 (upload Drive via stream), CT-1 (entidade Contract + status + IP real), CT-2
+  (link unico de uso unico + vinculo a conta). O universo de contratos esta funcional
+  do retroativo ate a assinatura.
+- Restam do subsistema: CT-3 (viewer do documento in-app alem do link do Drive — item e,
+  parcialmente coberto pelo link "ver contrato assinado"), CT-4 (painel /hub/membro/
+  contratos reescrito com status de assinatura + documento + nota fiscal, consolidando o
+  Contract e o Legal_Audits — item d; hoje ainda mostra o painel basico por pagamento),
+  CT-5 (reforcos juridicos extras que a Gestora indicara).
