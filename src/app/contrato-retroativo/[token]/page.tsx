@@ -45,6 +45,7 @@ export default function RetroactiveContractPage() {
 
   const [screen, setScreen] = useState<Screen>("loading");
   const [product, setProduct] = useState<ResolvedProduct | null>(null);
+  const [clauses, setClauses] = useState<{ heading: string; body: string }[]>([]);
   const [blockReason, setBlockReason] = useState<string>("invalid");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -62,6 +63,7 @@ export default function RetroactiveContractPage() {
         const res = await resolveRetroactiveContractTokenAction(token, idToken);
         if (res.valid) {
           setProduct(res.product);
+          setClauses(res.clauses ?? []);
           setScreen("summary");
         } else if (res.reason === "auth") {
           setScreen("logged_out");
@@ -189,6 +191,23 @@ export default function RetroactiveContractPage() {
                     </div>
                   </div>
                 </div>
+
+                {clauses.length > 0 ? (
+                  <div className="rounded-[2rem] bg-white/5 border border-white/10 overflow-hidden">
+                    <div className="px-6 pt-6 pb-3">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-gray-500">Contrato de Prestação de Serviço</p>
+                      <p className="text-[10px] text-gray-500 mt-1">Leia o contrato completo abaixo antes de assinar.</p>
+                    </div>
+                    <div className="max-h-[380px] overflow-y-auto px-6 pb-6 space-y-4 custom-scrollbar text-left">
+                      {clauses.map((c, i) => (
+                        <div key={i} className="space-y-1">
+                          <h4 className="text-xs font-black text-[#ff0080]">{c.heading}</h4>
+                          <p className="text-[11px] text-gray-300 leading-relaxed whitespace-pre-line">{c.body}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
 
                 <div className="p-6 rounded-[2rem] bg-white/5 border border-white/10 space-y-4">
                   <p className="text-[10px] font-black uppercase tracking-widest text-gray-500">Termos Legais</p>

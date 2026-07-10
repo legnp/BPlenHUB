@@ -5,6 +5,7 @@ import { requireAdmin, requireMatricula } from "@/lib/auth-guards";
 import { PRODUCTS_COLLECTION, USER_ORDERS_COLLECTION, USER_COLLECTION } from "@/config/collections";
 import { Product } from "@/types/products";
 import { generateContractPdf } from "@/actions/legal";
+import { buildContractClauses } from "@/lib/contract-content";
 import { FieldValue } from "firebase-admin/firestore";
 import crypto from "crypto";
 
@@ -183,13 +184,39 @@ export async function createRetroactiveContractInvitationAction(
 export async function resolveRetroactiveContractTokenAction(token: string, idToken?: string) {
   try {
     const session = await requireMatricula(idToken);
+    const matricula = session.matricula as string;
     const db = getAdminDb();
-    const v = await validateToken(db, hashToken(token), session.matricula as string);
+    const v = await validateToken(db, hashToken(token), matricula);
     if (!v.ok) return { valid: false as const, reason: v.reason };
 
     // Preço/título atuais para o resumo.
     const productDoc = await db.collection(PRODUCTS_COLLECTION).doc(v.data.productId).get();
     const p = productDoc.exists ? (productDoc.data() as Product) : null;
+
+    // Dados do contratante para preencher as cláusulas (mesma fonte do PDF — CT-3a).
+    const userDoc = await db.collection(USER_COLLECTION).doc(matricula).get();
+    const profile = (userDoc.data()?.profile ?? {}) as {
+      fullName?: string;
+      cpf?: string;
+      address?: { street?: string; number?: string; complement?: string; city?: string; state?: string; cep?: string };
+    };
+    const addr = profile.address ?? {};
+    const addressStr = [addr.street, addr.number, addr.complement, addr.city, addr.state, addr.cep]
+      .filter(Boolean)
+      .join(", ") || "endereço cadastrado na plataforma";
+    const price = p?.price ?? 0;
+    const orderAmount = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(price);
+
+    // Cláusulas renderizadas na tela ANTES de assinar (o cliente lê o que vai assinar).
+    const content = p
+      ? buildContractClauses({
+          product: p,
+          dados: { fullName: profile.fullName || "", cpf: profile.cpf || "", address: addressStr },
+          matricula,
+          orderAmount,
+          orderMethod: "Faturamento Interno (Retroativo)",
+        })
+      : null;
 
     return {
       valid: true as const,
@@ -197,8 +224,10 @@ export async function resolveRetroactiveContractTokenAction(token: string, idTok
         slug: v.data.productSlug,
         title: p?.title ?? v.data.productTitle,
         serviceCode: v.data.serviceCode,
-        price: p?.price ?? 0,
+        price,
       },
+      clauses: content?.clauses ?? [],
+      documentTitle: content?.documentTitle ?? "TERMO E FORMALIZAÇÃO DE PRESTAÇÃO DE SERVIÇO",
     };
   } catch {
     // requireMatricula lança se não logado / sem matrícula -> a página pede login.

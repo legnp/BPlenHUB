@@ -11,7 +11,8 @@ import fs from "fs";
 import { Readable } from "stream";
 import { getErrorMessage } from "@/lib/utils/errors";
 import { safeSerialize } from "@/lib/utils/firestore";
-import { Product, ProductSheet } from "@/types/products";
+import { Product } from "@/types/products";
+import { buildContractClauses, ContractContentData } from "@/lib/contract-content";
 import { PRODUCTS_COLLECTION, USER_ORDERS_COLLECTION, USER_COLLECTION } from "@/config/collections";
 import { headers } from "next/headers";
 import { FieldValue } from "firebase-admin/firestore";
@@ -51,13 +52,6 @@ interface LegacyOrderDoc {
   totalAmount?: number;
   paymentMethod?: string;
 }
-
-// `product.sheet` no Firestore carrega campos além do schema atual de ProductSheet
-// (débito legado, preservado sem alteração de comportamento).
-type ProductSheetWithLegacyFields = ProductSheet & {
-  rules?: string;
-  methodologyLink?: string;
-};
 
 export async function getPendingContracts(userId: string) {
   try {
@@ -259,22 +253,10 @@ export async function generateContractPdf(
   }
 }
 
-interface ContractBufferData {
-  product: Product;
-  dados: { fullName?: string; cpf?: string; address?: string };
-  matricula: string;
-  orderAmount: string;
-  orderMethod: string;
-}
-
-function createContractBuffer(data: ContractBufferData): Promise<Buffer> {
+function createContractBuffer(data: ContractContentData): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     try {
-      const { product, dados, matricula, orderAmount, orderMethod } = data;
-      // `sheet` legado: campos que existem no Firestore mas não no
-      // schema atual de ProductSheet (comportamento preservado, ver Onda 3).
-      const sheet = product.sheet as ProductSheetWithLegacyFields | undefined;
-      const grantedQuotas = product.grantedQuotas;
+      const content = buildContractClauses(data);
       const doc = new PDFDocument({ margin: 50 });
       const buffers: Buffer[] = [];
       doc.on("data", buffers.push.bind(buffers));
@@ -294,99 +276,21 @@ function createContractBuffer(data: ContractBufferData): Promise<Buffer> {
         doc.moveDown(1);
       }
 
-      doc.fontSize(16).font("Helvetica-Bold").fillColor("#111111").text("TERMO E FORMALIZAÇÃO DE PRESTAÇÃO DE SERVIÇO", { align: "center" });
+      doc.fontSize(16).font("Helvetica-Bold").fillColor("#111111").text(content.documentTitle, { align: "center" });
       doc.moveDown(1.5);
 
-      const dateStr = new Intl.DateTimeFormat("pt-BR", { dateStyle: "short" }).format(new Date());
-
-      // Clause 1
-      doc.fontSize(12).font("Helvetica-Bold").fillColor(primaryColor).text("Cláusula 1 - Das Partes e do Objeto");
-      doc.moveDown(0.5);
-      doc.font("Helvetica").fontSize(11).fillColor(textColor).text(
-        `O presente documento formaliza a contratação do serviço denominado ${product.title || "Pacote BPlen"}, doravante referido como 'Serviço', adquirido através da plataforma BPlen HUB na data de ${dateStr}.\n\n` +
-        `CONTRATADA: BPlen Desenvolvimento Humano LTDA, inscrita no CNPJ 40.540.093/0001-44, com sede em Porto Alegre/RS.\n` +
-        `CONTRATANTE: ${dados.fullName || "Cliente não identificado"}, portador(a) do CPF ${dados.cpf || "não informado"}, residente em ${dados.address || "endereço cadastrado na plataforma"}, identificado(a) na plataforma pelo código ${matricula}.`
-      );
-      doc.moveDown(1);
-
-      // Clause 2
-      doc.fontSize(12).font("Helvetica-Bold").fillColor(primaryColor).text("Cláusula 2 - Do Escopo e Entregáveis (Ficha Técnica Integrada)");
-      doc.moveDown(0.5);
-      doc.font("Helvetica").fontSize(11).fillColor(textColor).text(
-        `O Serviço compreende as seguintes etapas, objetivos e entregáveis metodológicos:\n\n` +
-        `${sheet?.description || "Descrição padrão do serviço."}\n\nEtapas da Jornada:\n` +
-        (product.workflow?.map((w) => `- ${w.title}`).join("\n") || "- Etapas detalhadas na plataforma.")
-      );
-      doc.moveDown(1);
-
-      // Clause 3
-      doc.fontSize(12).font("Helvetica-Bold").fillColor(primaryColor).text("Cláusula 3 - Das Regras Operacionais e Eventos");
-      doc.moveDown(0.5);
-      
-      let sessionsText = "- Acesso contínuo à plataforma HUB\n";
-      if (grantedQuotas) {
-         sessionsText += Object.entries(grantedQuotas)
-           .filter(([, qty]) => qty > 0)
-           .map(([k, qty]) => `- ${qty}x ${k.replace(/-/g, " ")}`).join("\n");
+      // Renderiza as cláusulas da fonte única (contract-content.ts) — o mesmo texto
+      // que o cliente lê na tela antes de assinar (CT-3a).
+      for (const clause of content.clauses) {
+        doc.fontSize(12).font("Helvetica-Bold").fillColor(primaryColor).text(clause.heading);
+        doc.moveDown(0.5);
+        doc.font("Helvetica").fontSize(11).fillColor(textColor).text(clause.body);
+        doc.moveDown(1);
       }
-
-      doc.font("Helvetica").fontSize(11).fillColor(textColor).text(
-        `A prestação do Serviço obedecerá aos seguintes limites e tipos de sessão/eventos (conforme cadastro do produto):\n` +
-        sessionsText +
-        `\n\n${sheet?.rules || "Regras de reagendamento regidas pelos Termos de Uso gerais da plataforma."}`
-      );
       doc.moveDown(1);
-
-      // Clause 4
-      doc.fontSize(12).font("Helvetica-Bold").fillColor(primaryColor).text("Cláusula 4 - Do Valor e Condições de Pagamento");
-      doc.moveDown(0.5);
-      doc.font("Helvetica").fontSize(11).fillColor(textColor).text(
-        `Pela prestação dos Serviços ora pactuados, o CONTRATANTE compromete-se a pagar à CONTRATADA o valor líquido total de ${orderAmount}, cuja quitação e aprovação ocorreu na modalidade [${orderMethod}] no momento do checkout pela plataforma. A emissão da respectiva Nota Fiscal obedecerá às normas tributárias vigentes.`
-      );
-      doc.moveDown(1);
-
-      // Clause 5
-      doc.fontSize(12).font("Helvetica-Bold").fillColor(primaryColor).text("Cláusula 5 - Da Política de Cancelamento e Reembolso");
-      doc.moveDown(0.5);
-      doc.font("Helvetica").fontSize(11).fillColor(textColor).text(
-        "Em estrita observância ao Código de Defesa do Consumidor (Lei nº 8.078/1990), o CONTRATANTE detém o direito de arrependimento, podendo solicitar o cancelamento do serviço com restituição integral dos valores pagos no prazo improrrogável de 7 (sete) dias corridos a contar da data de contratação. Ultrapassado este período, a solicitação de cancelamento imotivado por parte do CONTRATANTE ensejará a restituição de 50% (cinquenta por cento) do valor proporcional referente estritamente às sessões, etapas ou horas não consumidas do pacote. Os 50% restantes serão retidos pela CONTRATADA a título de multa rescisória e cobertura de custos operacionais e de agenda já provisionados."
-      );
-      doc.moveDown(1);
-
-      // Clause 6
-      doc.fontSize(12).font("Helvetica-Bold").fillColor(primaryColor).text("Cláusula 6 - Da Metodologia Aplicada");
-      doc.moveDown(0.5);
-      doc.font("Helvetica").fontSize(11).fillColor(textColor).text(
-        `A metodologia e as ferramentas aplicadas pela BPlen fundamentam-se em referenciais bibliográficos consolidados nas áreas de psicologia, gestão e comportamento organizacional, cujas diretrizes teóricas podem ser livremente consultadas no endereço eletrônico ${sheet?.methodologyLink || "disponibilizado na plataforma institucional"}. Ao formalizar este contrato, o CONTRATANTE declara ter plena consciência da natureza científica e estrutural dos métodos, submetendo-se voluntariamente às suas dinâmicas propostas.`
-      );
-      doc.moveDown(1);
-
-      // Clause 7
-      doc.fontSize(12).font("Helvetica-Bold").fillColor(primaryColor).text("Cláusula 7 - Da Natureza do Serviço e Delimitação de Responsabilidades (Obrigação de Meio)");
-      doc.moveDown(0.5);
-      doc.font("Helvetica").fontSize(11).fillColor(textColor).text(
-        "O Serviço prestado pela CONTRATADA caracteriza-se juridicamente como uma obrigação de meio, fornecendo conhecimentos, estratégias, métodos, espaços estruturados para prática e facilitação na formulação de planos de ação. O atingimento de resultados específicos (como recolocação, promoções ou metas) dependerá exclusivamente do engajamento, aplicação e execução prática por parte do CONTRATANTE. Adicionalmente, reitera-se que os serviços possuem cunho estritamente voltado ao desenvolvimento de carreira e profissional, não caracterizando, nem substituindo, em qualquer hipótese, diagnósticos, tratamentos clínicos ou o devido acompanhamento com especialistas médicos e de saúde mental."
-      );
-      doc.moveDown(1);
-
-      // Clause 8
-      doc.fontSize(12).font("Helvetica-Bold").fillColor(primaryColor).text("Cláusula 8 - Da Evolução do Sistema (Trava de Versão V01.01)");
-      doc.moveDown(0.5);
-      doc.font("Helvetica").fontSize(11).fillColor(textColor).text(
-        "O CONTRATANTE reconhece de forma expressa que o ecossistema BPlen HUB encontra-se em sua versão V01.01. Todas as funcionalidades, painéis digitais, integrações e fluxos sistêmicos atualmente disponibilizados são fornecidos no estado técnico em que se encontram (as-is). Modificações, adições de novos recursos, interrupções sistêmicas temporárias para manutenção ou descontinuidade de funcionalidades de software em versões futuras da plataforma não caracterizam falha na prestação do Serviço, não constituem quebra do escopo base ora contratado e não geram obrigação de reembolso."
-      );
-      doc.moveDown(1);
-
-      // Clause 9
-      doc.fontSize(12).font("Helvetica-Bold").fillColor(primaryColor).text("Cláusula 9 - Do Aceite Conjunto e Finalização");
-      doc.moveDown(0.5);
-      doc.font("Helvetica").fontSize(11).fillColor(textColor).text(
-        `Ao formalizar este termo via plataforma digital (Clickwrap), mediante registro e carimbo de tempo (Timestamp) atual, o CONTRATANTE reafirma seu consentimento integral com os Termos de Uso da Plataforma e a Política de Privacidade da BPlen. O presente aceite possui validade jurídica conforme a legislação brasileira em vigor (MP 2.200-2/2001).`
-      );
-      doc.moveDown(2);
 
       // Footer
-      doc.fontSize(10).font("Helvetica-Oblique").fillColor("#666666").text("Documento gerado eletronicamente pelo Sistema BPlen HUB.\nAceite logado e rastreado nos servidores de segurança Firebase.", { align: "center" });
+      doc.fontSize(10).font("Helvetica-Oblique").fillColor("#666666").text(content.footer, { align: "center" });
 
       doc.end();
     } catch (e) {
