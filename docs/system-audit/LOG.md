@@ -2757,3 +2757,24 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   componente `ContractSigning` reutilizável); CT-3c (área `/hub/legal` + audiências
   empresas/parceiros quando `/hub/companies` `/hub/partners` existirem); CT-4 (painel);
   CT-5 (jurídico).
+
+## [2026-07-10] Chat de execução — Contratos: rename avulso + checkboxes configuráveis (PR #56)
+
+- Gestora validou o CT-3a em produção (contrato aparece antes de assinar). Duas
+  observações endereçadas:
+  1. **Rename conceitual** "contrato retroativo" → **"contrato avulso"**: a ferramenta é
+     uma emissão de contrato avulsa, iniciada pelo admin, independente do checkout —
+     plano B (se o checkout/tela falhar) + contratos de serviços que o hub não entrega.
+     Renomeado: rota `/contrato-retroativo/[token]`→`/contrato-avulso/[token]`;
+     `retroactive-contract.ts`→`avulso-contract.ts` (create/resolve/process Avulso...);
+     `origin` "retroativo"→"avulso"; textos do admin. Strings internas de DB (gateway
+     `retroactive_bypass`, statusDetail, prefixo `BPLEN-RETRO`) preservadas p/ não churnar
+     registros existentes.
+  2. **Checkboxes configuráveis** também no avulso, reutilizáveis: novo
+     `ContractTermsCheckboxes` (data-driven, obrigatórios+opcionais) + `allRequiredAccepted`.
+     Tela avulso usa `AVULSO_TERMS` (1 obrigatório hoje, pronto p/ mais); Assinar só habilita
+     com os obrigatórios; ids em `signature.acceptedTerms`.
+- Validado: eslint (0 erros), test 52/52, tsc, build; rota nova 200 + deslogado ao vivo,
+  antiga 404. Logado em produção (BUG-030).
+- Próximo: **CT-3b.2** — assinatura pós-checkout (grátis+pago) reusando `ContractDocumentView`
+  (cláusulas) + `ContractTermsCheckboxes`. Depois CT-3c (área /hub/legal + audiências), CT-4.
