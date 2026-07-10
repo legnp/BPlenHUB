@@ -181,13 +181,28 @@ A Gestora expandiu o escopo das telas de assinatura para um **motor reutilizáve
   futura área `/hub/legal` / `/hub/companies` / `/hub/partners`.
 
 ### Fases (redefinição do CT-3, subfaseado)
-- **CT-3a** — `buildContractClauses` (fonte única) + PDF renderiza dela + tela **retroativo**
-  mostra as cláusulas antes de assinar, com checkboxes data-driven. *(fundação; primeiro PR)*
-- **CT-3b** — assinatura **pós-checkout** (grátis e pago) reusando o `ContractSigning`.
+- **CT-3a — ✅ FEITO (PR #55).** `buildContractClauses` (fonte única) + PDF renderiza dela
+  + tela **avulso** mostra as cláusulas antes de assinar, com checkboxes data-driven. *(fundação)*
+- **CT-3b.1 — ✅ FEITO (PR #56).** Rename "retroativo"→"avulso" + `ContractTermsCheckboxes`
+  configurável (obrigatórios+opcionais, `allRequiredAccepted`), reutilizável.
+- **CT-3b.2 — ✅ FEITO (PR #57).** Assinatura **pós-checkout** (grátis E pago) na tela
+  `/hub/checkout/success`, keyed por `orderId`. Novo `ContractDocumentView` (render das
+  cláusulas, extraído do avulso e compartilhado) + `CheckoutContractSigning` (ilha cliente)
+  + actions `resolveCheckoutContractAction`/`signCheckoutContractAction` (`requireMatricula`
+  + trava de dono `order.matricula === sessão`). Reusa `buildContractClauses`,
+  `ContractTermsCheckboxes` e `generateContractPdf` (origin "checkout", IP/timestamp reais).
+  Decisões da Gestora: pago só assina após a order estar `approved` (grátis assina na hora);
+  **convite forte, não bloqueio** (pode assinar depois em Meus Contratos). Gate transversal
+  e painel ficam para CT-4/F2-02.
 - **CT-3c** — área **`/hub/legal`** e generalização por **audiência** (empresas/parceiros)
   quando as áreas `/hub/companies` `/hub/partners` existirem. Decisões de produto pendentes.
+  Só aqui vale unificar avulso+checkout num `ContractSigning` genérico (hoje a orquestração
+  difere: token vs orderId — evita desestabilizar o avulso validado em produção).
 
 ## Registro de revisões
+- 2026-07-10 — **CT-3b.2 feito (PR #57)**: assinatura pós-checkout (grátis+pago) na tela
+  de sucesso, `ContractDocumentView` extraído/compartilhado, actions por orderId com trava
+  de dono. Pago assina só após `approved`; convite forte (não bloqueio).
 - 2026-07-10 — §10 (motor reutilizável + área Legal): a Gestora redefiniu o CT-3 —
   contrato visível antes de assinar, assinatura pós-checkout (grátis+pago), checkboxes
   configuráveis, motor reutilizável por audiência (pessoas/empresas/parceiros) e área Legal.

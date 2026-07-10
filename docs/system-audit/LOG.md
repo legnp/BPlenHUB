@@ -2778,3 +2778,31 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   antiga 404. Logado em produção (BUG-030).
 - Próximo: **CT-3b.2** — assinatura pós-checkout (grátis+pago) reusando `ContractDocumentView`
   (cláusulas) + `ContractTermsCheckboxes`. Depois CT-3c (área /hub/legal + audiências), CT-4.
+
+## [2026-07-10] Chat de execução — Contratos CT-3b.2: assinatura pós-checkout (PR #57)
+
+- Escopo: assinatura do contrato **depois de concluir o checkout**, para os dois tipos
+  (grátis e pago), na tela `/hub/checkout/success` — ambos os fluxos já convergiam ali
+  (grátis via `processServicePurchaseAction`, pago via `PaymentBrick.onSuccess`). Área
+  financeira/jurídica: plano apresentado e aprovado pela Gestora antes de codar.
+- Decisões da Gestora (travadas antes de codar): (1) **timing do pago** — só libera a
+  assinatura quando a order estiver `approved` (order paga nasce `pending`, confirmação
+  assíncrona do Mercado Pago; a Cláusula 4 cita a quitação); grátis (order já `approved`)
+  assina na hora, pago pendente mostra "aguardando confirmação" com auto-poll. (2)
+  **convite forte, não bloqueio** — apresenta e permite assinar em destaque, mas não trava
+  o acesso ao hub (pode assinar depois em Meus Contratos); gate transversal fica p/ CT-4/F2-02.
+- Mudanças (PR #57): novo `src/actions/checkout-contract.ts` — `resolveCheckoutContractAction`
+  (preview das cláusulas via `buildContractClauses` + estado do contrato, idempotente) e
+  `signCheckoutContractAction` (gera PDF via `generateContractPdf` origin "checkout" +
+  registra termos aceitos); ambas `requireMatricula` + trava de dono (`order.matricula ===
+  sessão`). Novo `ContractDocumentView` (render rolável das cláusulas, **extraído do avulso**
+  e compartilhado — avulso passa a consumi-lo). Novo `CheckoutContractSigning` (ilha cliente:
+  awaiting_payment / sign / processing / signed; auto-oculta quando não há contrato pendente).
+  `success/page.tsx` monta o componente quando há `orderId`.
+- Reuso: `buildContractClauses`, `ContractTermsCheckboxes`, `generateContractPdf` sem
+  alteração. **Não** unifiquei avulso+checkout num `ContractSigning` genérico — orquestração
+  difere (token vs orderId) e o avulso está validado em produção; generalização fica p/ CT-3c.
+- Validado: eslint dos arquivos tocados (0 erros; 1 warning de import não usado corrigido),
+  test 52/52, tsc limpo, build `Compiled successfully` (exit 0). Tela logada — validação
+  funcional em produção pela Gestora (BUG-030).
+- Próximo: CT-3c (área `/hub/legal` + audiências empresas/parceiros), CT-4 (painel reescrito).

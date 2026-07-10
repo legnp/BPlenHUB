@@ -470,7 +470,9 @@ sem copy hardcoded fora do que o guia permitir).
   morto (`BUG-053`), IP placeholder (`BUG-054`). Consolidado em `CONTRACTS-DESIGN.md`.
 - Bug(s) vinculado(s): BUG-002 (Corrigido, PR #48), BUG-022 (retroativo → CT-2),
   BUG-051/052/053/054/055 (subsistema de contratos, `CONTRACTS-DESIGN.md`)
-- Log: [2026-07-09] BUG-002 corrigido + investigação e design do subsistema de contratos — ver `LOG.md`
+- Log: [2026-07-09] BUG-002 corrigido + investigação e design do subsistema de contratos;
+  [2026-07-10] contratos CT-0..CT-2 (PRs #49/#50/#51), CT-3a (PR #55), CT-3b.1 (PR #56),
+  **CT-3b.2 — assinatura pós-checkout grátis+pago, PR #57** — ver `LOG.md` e `CONTRACTS-DESIGN.md`
 
 ### [F1-03] Hub — dashboard e motor de jornada
 - Categoria(s) de qualidade: Adequação funcional / Usabilidade

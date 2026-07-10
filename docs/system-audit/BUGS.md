@@ -1455,9 +1455,14 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   e mandam "veja o PDF no seu Google Drive", mas **não exibem o texto do documento nem
   um link/botão direto** para visualizar/baixar. O `documentUrl` (Drive webViewLink)
   gravado em `Legal_Audits` não é surfado ao membro.
-- Status: Aberto — fase **CT-3** do `CONTRACTS-DESIGN.md` (viewer in-app).
-- Decisão de execução: display de documento; baixo risco funcional, aguarda a fase.
-- Commit/PR: —
+- Status: Em Progresso — CT-3a (PR #55, avulso) e **CT-3b.2 (PR #57, checkout)** já exibem
+  as cláusulas na tela antes de assinar e um link direto ao documento após assinar (grátis
+  e pago, em `/hub/checkout/success`). Resta o **painel** `/hub/membro/contratos` surfar o
+  documento por contrato (CT-4) e, se a Gestora quiser, um viewer in-app embutido (PDF embed)
+  em vez do link ao Drive.
+- Decisão de execução: display de documento; baixo risco funcional. Superfícies de assinatura
+  (avulso + checkout) cobertas; painel fica no CT-4.
+- Commit/PR: PR #55 (avulso), PR #57 (checkout)
 
 ### BUG-053 Painel de contratos mostra status de pagamento, não de assinatura; sem documento/nota fiscal; link morto
 

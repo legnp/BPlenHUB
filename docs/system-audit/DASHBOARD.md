@@ -12,7 +12,20 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-09 (chat de execução — **Contratos CT-2 (PR #51)**:
+> **Última atualização:** 2026-07-10 (chat de execução — **Contratos CT-3b.2 (PR #57)**:
+> assinatura de contrato **pós-checkout** (grátis E pago) na tela `/hub/checkout/success`,
+> keyed por `orderId`. Novo `ContractDocumentView` (cláusulas, extraído do avulso e
+> compartilhado) + `CheckoutContractSigning` (ilha cliente) + actions
+> `resolveCheckoutContractAction`/`signCheckoutContractAction` (`requireMatricula` + trava
+> de dono). Reusa `buildContractClauses`/`ContractTermsCheckboxes`/`generateContractPdf`
+> (origin "checkout"). Pago assina só após `approved`; **convite forte, não bloqueio**.
+> Restam: CT-3c (área /hub/legal + audiências), CT-4 (painel), CT-5 (jurídico). Logado em produção.
+>
+> _(entrada anterior)_ 2026-07-10 (chat de execução — **Contratos CT-3a/CT-3b.1 (PRs #55/#56)**:
+> contrato visível antes de assinar via fonte única `buildContractClauses`; rename
+> retroativo→avulso; `ContractTermsCheckboxes` configurável reutilizável).
+>
+> _(entrada anterior)_ 2026-07-09 (chat de execução — **Contratos CT-2 (PR #51)**:
 > retroativo robusto — link **único de uso único** (`_ContractTokens`, expira 30d, consumido
 > na assinatura) **vinculado à conta** (matrícula do token === sessão) + **aviso de
 > duplicidade** no admin (retificação). Rota `[slug]`→`[token]`, página reescrita, admin
