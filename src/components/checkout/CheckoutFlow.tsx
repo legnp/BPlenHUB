@@ -216,7 +216,7 @@ export function CheckoutFlow({ product }: CheckoutFlowProps) {
                         <div className="p-6 rounded-2xl bg-[var(--input-bg)] border border-[var(--border-primary)] space-y-4 shadow-sm">
                            <label className="flex items-start gap-4 cursor-pointer group">
                               <input type="checkbox" required id="legalConsent" className="mt-1 w-5 h-5 rounded border border-[var(--border-primary)] text-emerald-500 focus:ring-emerald-500" />
-                              <span className="text-xs text-[var(--text-secondary)] leading-relaxed group-hover:text-white transition-colors">
+                              <span className="text-xs text-[var(--text-secondary)] leading-relaxed group-hover:text-[var(--text-primary)] transition-colors">
                                  Declaro que li e concordo com os <a href="/termos" target="_blank" className="text-emerald-500 hover:underline">Termos de Uso</a> e a <a href="/privacidade" target="_blank" className="text-emerald-500 hover:underline">Política de Privacidade</a> da BPlen.
                               </span>
                            </label>
@@ -238,7 +238,7 @@ export function CheckoutFlow({ product }: CheckoutFlowProps) {
                         
                         <button 
                            onClick={() => setStep("registration")}
-                           className="mt-8 text-[9px] font-black uppercase tracking-widest text-gray-500 hover:text-white block mx-auto"
+                           className="mt-8 text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)] hover:text-[var(--text-primary)] block mx-auto"
                          >
                              ← Voltar para Revisão de Dados
                          </button>
@@ -265,7 +265,7 @@ export function CheckoutFlow({ product }: CheckoutFlowProps) {
                         </button>
                         <button 
                           onClick={() => setStep("registration")}
-                          className="text-[9px] font-black uppercase tracking-widest text-gray-500 hover:text-white"
+                          className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)] hover:text-[var(--text-primary)]"
                         >
                             Voltar para Revisão de Dados
                         </button>
@@ -293,7 +293,7 @@ export function CheckoutFlow({ product }: CheckoutFlowProps) {
                        />
                        <button 
                           onClick={() => setStep("registration")}
-                          className="mt-8 text-[9px] font-black uppercase tracking-widest text-gray-500 hover:text-white block mx-auto"
+                          className="mt-8 text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)] hover:text-[var(--text-primary)] block mx-auto"
                         >
                             Editar Dados de Faturamento
                         </button>

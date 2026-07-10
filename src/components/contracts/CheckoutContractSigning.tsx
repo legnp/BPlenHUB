@@ -6,7 +6,7 @@ import {
   signCheckoutContractAction,
   type CheckoutContractResolution,
 } from "@/actions/checkout-contract";
-import { ShieldCheck, FileText, CheckCircle2, Loader2, ArrowRight, Clock } from "lucide-react";
+import { ShieldCheck, FileText, CheckCircle2, Loader2, ArrowRight, Clock, Home } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { auth } from "@/lib/firebase";
@@ -17,13 +17,15 @@ import { ContractTermsCheckboxes, allRequiredAccepted, type ContractTerm } from 
 /**
  * Assinatura de contrato PÓS-CHECKOUT (CT-3b.2, ver CONTRACTS-DESIGN.md §10).
  *
- * Ilha cliente na tela `/hub/checkout/success`. O membro já chegou logado do próprio
- * checkout, então não há ramos de token/conta-errada como no avulso — só:
+ * Ilha cliente na tela `/hub/checkout/success`. IDÊNTICA para grátis e pago (o
+ * contrato é o mesmo). O membro já chegou logado do próprio checkout, então não há
+ * ramos de token/conta-errada como no avulso — só:
  *  - `awaiting_payment`: pago ainda pendente (aguarda confirmação do MP; auto-poll);
  *  - `sign`: order aprovada e contrato não assinado (lê as cláusulas + aceita termos);
- *  - `signed`: contrato já assinado (idempotente — mostra o documento).
+ *  - `signed`: contrato assinado (idempotente) — só aqui aparecem os CTAs de navegação.
  *
- * Convite forte, não bloqueio: o membro pode assinar depois em "Meus Contratos".
+ * Convite forte, não bloqueio: um link discreto permite assinar depois em Meus Contratos.
+ * Estilo em theme vars (padrão Gestão Funcional) — legível em todos os temas.
  */
 
 // Termos de aceite (configuráveis, obrigatórios + opcionais). Novos termos entram aqui.
@@ -34,8 +36,8 @@ const CHECKOUT_TERMS: ContractTerm[] = [
     label: (
       <>
         Declaro que li e concordo com o <b>contrato de prestação de serviço</b> acima, os{" "}
-        <a href="/termos" target="_blank" className="text-[#ff0080] hover:underline">Termos de Uso</a> e a{" "}
-        <a href="/privacidade" target="_blank" className="text-[#ff0080] hover:underline">Política de Privacidade</a> da BPlen,
+        <a href="/termos" target="_blank" className="text-[var(--accent-start)] hover:underline">Termos de Uso</a> e a{" "}
+        <a href="/privacidade" target="_blank" className="text-[var(--accent-start)] hover:underline">Política de Privacidade</a> da BPlen,
         formalizando via Clickwrap.
       </>
     ),
@@ -43,6 +45,36 @@ const CHECKOUT_TERMS: ContractTerm[] = [
 ];
 
 type Screen = "loading" | "unavailable" | "awaiting_payment" | "sign" | "processing" | "signed";
+
+/** CTAs de navegação — só aparecem quando não há mais contrato pendente (assinado ou sem contrato). */
+function NavCtas({ documentUrl }: { documentUrl?: string | null }) {
+  return (
+    <div className="flex flex-col sm:flex-row gap-3 justify-center items-center pt-2">
+      <Link
+        href="/hub/membro?startTour=true"
+        className="w-full sm:w-auto px-8 py-4 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-full text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all flex items-center justify-center gap-3"
+      >
+        <Home size={16} /> Ir para o Dashboard
+      </Link>
+      <Link
+        href="/hub/journey?startTour=part2"
+        className="w-full sm:w-auto px-8 py-4 bg-[var(--input-bg)] border border-[var(--border-primary)] text-[var(--text-primary)] rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-[var(--accent-soft)] transition-all flex items-center justify-center gap-3"
+      >
+        Ver Minha Jornada <ArrowRight size={16} />
+      </Link>
+      {documentUrl ? (
+        <a
+          href={documentUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full sm:w-auto px-8 py-4 bg-transparent border border-[var(--border-primary)] text-[var(--text-muted)] rounded-full text-[10px] font-black uppercase tracking-widest hover:text-[var(--text-primary)] transition-all flex items-center justify-center gap-3"
+        >
+          Ver Documento
+        </a>
+      ) : null}
+    </div>
+  );
+}
 
 export function CheckoutContractSigning({ orderId }: { orderId: string }) {
   const [screen, setScreen] = useState<Screen>("loading");
@@ -126,33 +158,37 @@ export function CheckoutContractSigning({ orderId }: { orderId: string }) {
     }
   }, [accepted, orderId]);
 
-  // Sem contrato disponível para esta conta/pedido: não polui a tela de sucesso.
-  if (screen === "unavailable") return null;
-
   return (
     <div className="max-w-3xl mx-auto text-left">
       <AnimatePresence mode="wait">
         {screen === "loading" && (
           <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center gap-4 py-10">
-            <Loader2 size={32} className="animate-spin text-[#ff0080]" />
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">Carregando seu contrato...</p>
+            <Loader2 size={32} className="animate-spin text-[var(--accent-start)]" />
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)]">Carregando seu contrato...</p>
+          </motion.div>
+        )}
+
+        {/* Sem contrato pendente (edge / sessão) — não deixa o membro preso: oferece navegação. */}
+        {screen === "unavailable" && (
+          <motion.div key="unavailable" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="py-6">
+            <NavCtas />
           </motion.div>
         )}
 
         {screen === "awaiting_payment" && (
-          <motion.div key="awaiting" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="p-8 rounded-[2.5rem] bg-white/[0.03] border border-white/10 text-center space-y-4">
-            <div className="w-14 h-14 rounded-2xl bg-[#ff0080]/10 text-[#ff0080] flex items-center justify-center mx-auto">
+          <motion.div key="awaiting" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="p-8 rounded-[2rem] bg-[var(--input-bg)] border border-[var(--border-primary)] text-center space-y-4 shadow-sm">
+            <div className="w-14 h-14 rounded-2xl bg-[var(--accent-soft)] text-[var(--accent-start)] flex items-center justify-center mx-auto">
               <Clock size={26} />
             </div>
             <div className="space-y-2">
-              <h3 className="text-lg font-black tracking-tight text-white">Seu contrato está quase pronto</h3>
-              <p className="text-xs text-gray-400 font-medium leading-relaxed max-w-md mx-auto">
+              <h3 className="text-lg font-black tracking-tight text-[var(--text-primary)]">Seu contrato está quase pronto</h3>
+              <p className="text-xs text-[var(--text-muted)] font-medium leading-relaxed max-w-md mx-auto">
                 Assim que o pagamento for confirmado, o contrato de prestação de serviço aparecerá aqui para você ler e assinar.
               </p>
             </div>
             <button
               onClick={() => resolve()}
-              className="text-[9px] font-black uppercase tracking-widest text-[#ff0080] hover:underline"
+              className="text-[9px] font-black uppercase tracking-widest text-[var(--accent-start)] hover:underline"
             >
               Verificar novamente
             </button>
@@ -161,45 +197,51 @@ export function CheckoutContractSigning({ orderId }: { orderId: string }) {
 
         {screen === "sign" && resolution?.product && (
           <motion.div key="sign" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.97 }} className="space-y-6">
-            <div className="text-center space-y-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#ff0080]/10 text-[9px] font-black uppercase tracking-widest text-[#ff0080] border border-[#ff0080]/20">
-                <FileText size={12} /> Falta assinar seu contrato
+            <div className="rounded-[2rem] bg-[var(--accent-soft)] border border-[var(--accent-start)]/15 p-6 flex items-start gap-4">
+              <div className="w-11 h-11 rounded-2xl bg-[var(--accent-start)]/10 text-[var(--accent-start)] flex items-center justify-center shrink-0">
+                <FileText size={20} />
               </div>
-              <h3 className="text-2xl font-black tracking-tight text-white">
-                Formalize o serviço <span className="text-[#ff0080]">{resolution.product.title}</span>
-              </h3>
-              <p className="text-xs text-gray-400 font-medium max-w-md mx-auto">
-                Leia o contrato completo abaixo e confirme os termos para registrar sua assinatura com validade jurídica.
-              </p>
+              <div className="space-y-1">
+                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-start)]">Falta assinar seu contrato</p>
+                <p className="text-sm font-bold text-[var(--text-primary)] leading-snug">
+                  Formalize o serviço {resolution.product.title}
+                </p>
+                <p className="text-xs text-[var(--text-muted)] font-medium">
+                  Leia o contrato completo e confirme os termos para registrar sua assinatura com validade jurídica.
+                </p>
+              </div>
             </div>
 
             <ContractDocumentView clauses={resolution.clauses ?? []} title={resolution.documentTitle} />
 
-            <div className="p-6 rounded-[2rem] bg-white/5 border border-white/10 space-y-4">
-              <p className="text-[10px] font-black uppercase tracking-widest text-gray-500">Termos Legais</p>
+            <div className="p-6 rounded-[2rem] bg-[var(--input-bg)] border border-[var(--border-primary)] space-y-4 shadow-sm">
+              <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Termos Legais</p>
               <ContractTermsCheckboxes terms={CHECKOUT_TERMS} value={accepted} onChange={setAccepted} />
             </div>
 
-            <div className="p-4 rounded-2xl bg-[#ff0080]/5 border border-[#ff0080]/20 flex items-start gap-3">
-              <ShieldCheck size={16} className="text-[#ff0080] shrink-0 mt-0.5" />
-              <p className="text-[9px] text-gray-500 font-bold leading-relaxed">
+            <div className="p-4 rounded-2xl bg-[var(--accent-soft)] border border-[var(--accent-start)]/15 flex items-start gap-3">
+              <ShieldCheck size={16} className="text-[var(--accent-start)] shrink-0 mt-0.5" />
+              <p className="text-[9px] text-[var(--text-muted)] font-bold leading-relaxed">
                 Ao confirmar, um PDF oficial do contrato será gerado com carimbo de tempo e IP em nossos servidores e armazenado na sua pasta BPlen no Google Drive.
               </p>
             </div>
 
-            {error ? <p className="text-[11px] text-red-400 font-bold text-center">{error}</p> : null}
+            {error ? <p className="text-[11px] text-red-500 font-bold text-center">{error}</p> : null}
 
             <button
               onClick={handleSign}
               disabled={!canSign}
-              className="w-full py-5 rounded-2xl bg-[#ff0080] hover:bg-[#ff00b3] text-white font-black text-xs tracking-[0.2em] uppercase hover:scale-[1.01] shadow-[0_20px_40px_rgba(255,0,128,0.3)] transition-all flex items-center justify-center gap-3 group disabled:opacity-30 disabled:hover:scale-100"
+              className="w-full py-5 rounded-2xl bg-[var(--accent-start)] text-white font-black text-xs tracking-[0.2em] uppercase hover:scale-[1.01] shadow-lg transition-all flex items-center justify-center gap-3 group disabled:opacity-30 disabled:hover:scale-100"
             >
               Assinar Contrato
               <ArrowRight size={18} className="group-hover:translate-x-1 duration-300" />
             </button>
 
-            <p className="text-center text-[9px] font-bold uppercase tracking-widest text-gray-600">
-              Prefere assinar depois? Você encontra este contrato em Meus Contratos.
+            <p className="text-center text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
+              Prefere assinar depois?{" "}
+              <Link href="/hub/membro/contratos" className="text-[var(--accent-start)] hover:underline">
+                Encontre este contrato em Meus Contratos.
+              </Link>
             </p>
           </motion.div>
         )}
@@ -207,40 +249,31 @@ export function CheckoutContractSigning({ orderId }: { orderId: string }) {
         {screen === "processing" && (
           <motion.div key="processing" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.1 }} className="text-center space-y-6 py-10">
             <div className="relative inline-block">
-              <div className="absolute inset-0 bg-[#ff0080] rounded-full blur-3xl opacity-20 animate-pulse" />
-              <Loader2 size={80} className="text-[#ff0080] animate-spin relative z-10 opacity-40" strokeWidth={1} />
+              <div className="absolute inset-0 bg-[var(--accent-start)] rounded-full blur-3xl opacity-20 animate-pulse" />
+              <Loader2 size={80} className="text-[var(--accent-start)] animate-spin relative z-10 opacity-40" strokeWidth={1} />
               <div className="absolute inset-0 flex items-center justify-center">
-                <FileText size={28} className="text-white animate-pulse" />
+                <FileText size={28} className="text-[var(--text-primary)] animate-pulse" />
               </div>
             </div>
             <div className="space-y-2">
-              <h3 className="text-xl font-black tracking-tight uppercase italic text-white">Gerando <span className="opacity-40">Documento</span></h3>
-              <p className="text-gray-500 text-[9px] font-black uppercase tracking-[0.4em] animate-pulse">Registrando log de auditoria (IP + timestamp)...</p>
+              <h3 className="text-xl font-black tracking-tight uppercase italic text-[var(--text-primary)]">Gerando <span className="opacity-40">Documento</span></h3>
+              <p className="text-[var(--text-muted)] text-[9px] font-black uppercase tracking-[0.4em] animate-pulse">Registrando log de auditoria (IP + timestamp)...</p>
             </div>
           </motion.div>
         )}
 
         {screen === "signed" && (
           <motion.div key="signed" initial={{ opacity: 0, scale: 0.95, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }} className="text-center space-y-6 py-6">
-            <div className="w-20 h-20 bg-emerald-500/20 rounded-[1.75rem] flex items-center justify-center text-emerald-500 border border-emerald-500/20 mx-auto shadow-[0_0_60px_rgba(16,185,129,0.2)]">
+            <div className="w-20 h-20 bg-emerald-500/15 rounded-[1.75rem] flex items-center justify-center text-emerald-500 border border-emerald-500/20 mx-auto">
               <CheckCircle2 size={40} />
             </div>
             <div className="space-y-2">
-              <h3 className="text-2xl font-black tracking-tight text-white">Contrato <span className="text-emerald-500">Assinado.</span></h3>
-              <p className="text-sm text-gray-400 font-medium leading-relaxed max-w-md mx-auto">
+              <h3 className="text-2xl font-black tracking-tight text-[var(--text-primary)]">Contrato <span className="text-emerald-500">Assinado.</span></h3>
+              <p className="text-sm text-[var(--text-muted)] font-medium leading-relaxed max-w-md mx-auto">
                 Sua formalização foi registrada com IP e carimbo de tempo. O PDF já está disponível na sua pasta BPlen no Google Drive.
               </p>
             </div>
-            <div className="flex flex-col gap-3 max-w-sm mx-auto">
-              {documentUrl ? (
-                <a href={documentUrl} target="_blank" rel="noopener noreferrer" className="w-full py-4 rounded-2xl bg-white/10 border border-white/20 text-white font-black text-[10px] tracking-[0.3em] uppercase hover:bg-white/20 transition-all">
-                  Visualizar Documento
-                </a>
-              ) : null}
-              <Link href="/hub/membro/contratos" className="w-full py-4 rounded-2xl bg-white text-black font-black text-[10px] tracking-[0.3em] uppercase hover:scale-[1.01] transition-all">
-                Ver Meus Contratos
-              </Link>
-            </div>
+            <NavCtas documentUrl={documentUrl} />
           </motion.div>
         )}
       </AnimatePresence>

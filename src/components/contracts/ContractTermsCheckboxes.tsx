@@ -46,13 +46,13 @@ export function ContractTermsCheckboxes({
                 checked={checked}
                 onChange={() => toggle(term.id)}
               />
-              <div className="w-5 h-5 rounded border border-gray-600 peer-checked:bg-[#ff0080] peer-checked:border-[#ff0080] transition-all flex items-center justify-center">
+              <div className="w-5 h-5 rounded border border-[var(--border-primary)] peer-checked:bg-[var(--accent-start)] peer-checked:border-[var(--accent-start)] transition-all flex items-center justify-center">
                 <CheckCircle2 size={14} className="text-white opacity-0 peer-checked:opacity-100" />
               </div>
             </div>
-            <p className="text-sm text-gray-400 font-medium leading-relaxed group-hover:text-white transition-colors">
+            <p className="text-sm text-[var(--text-secondary)] font-medium leading-relaxed group-hover:text-[var(--text-primary)] transition-colors">
               {term.label}
-              {!term.required ? <span className="ml-1 text-[10px] uppercase tracking-widest text-gray-500">(opcional)</span> : null}
+              {!term.required ? <span className="ml-1 text-[10px] uppercase tracking-widest text-[var(--text-muted)]">(opcional)</span> : null}
             </p>
           </label>
         );
