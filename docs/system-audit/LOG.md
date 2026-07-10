@@ -2701,3 +2701,17 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   (BP-002) deixou uma order retroativa sem PDF/contrato assinado — o token NÃO foi
   consumido (o consumo só ocorre após o PDF gerar), então o mesmo link ainda serve para
   reassinar quando o deploy sair. (Se sobrar order órfã, limpeza é cosmética.)
+
+## [2026-07-09] Chat de execução — Contratos CT-0.2: pdfkit externo (PR #53)
+
+- O CT-0.1 (`outputFileTracingIncludes`) NÃO resolveu o ENOENT do pdfkit em produção
+  (print da Gestora). Motivo provável: a chave de rota do tracing é frágil para server
+  actions compartilhadas (`generateContractPdf` roda num chunk SSR).
+- Esclarecimento: o log "Produto não encontrado" (23:54) recolado pela Gestora é ANTIGO
+  (pré-CT-0). O CT-0 fixou aquele passo; o erro atual é só o ENOENT do pdfkit.
+- Correção robusta (PR #53): `serverExternalPackages: ["pdfkit"]` — deixa o pdfkit fora
+  do bundle; a Vercel envia o pacote inteiro (com `js/data/*.afm`) para a função, então
+  os `.afm` lidos dinamicamente existem em runtime. `outputFileTracingIncludes` mantido
+  como reforço. Build local exit 0. Revalidar a assinatura em produção após o deploy.
+- Fallback (se ainda falhar): registrar uma fonte TTF embarcada no `generateContractPdf`
+  (pdfkit com TTF não lê os `.afm`) — exige adicionar um arquivo de fonte ao repo.
