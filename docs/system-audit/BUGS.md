@@ -1510,6 +1510,27 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Decisão de execução: Precisa plano+aprovação (área de contratos). Aguarda a fase.
 - Commit/PR: —
 
+### BUG-056 Assinatura pós-checkout (CT-3b.2): grátis divergia do pago, CTAs antes da assinatura, sem herança de tema
+- Severidade: Médio (UX/design + defeito funcional de paridade)
+- Área/fase onde foi achado: F1-02 / contratos + F2-05 (design) — reportado pela Gestora (2026-07-10)
+- Arquivo(s) afetado(s): `src/app/hub/checkout/success/page.tsx`,
+  `src/components/contracts/CheckoutContractSigning.tsx`, `.../ContractDocumentView.tsx`,
+  `.../ContractTermsCheckboxes.tsx`, `src/components/checkout/PaymentStatus.tsx`,
+  `src/components/checkout/CheckoutFlow.tsx`, `src/app/contrato-avulso/[token]/page.tsx`
+- Cenário de falha: **[CONFIRMADO em produção pela Gestora]** (a) o fluxo **grátis** não
+  apresentava o contrato como o **pago** (aparência de "só checkbox") — telas divergentes
+  em vez de um componente único; (b) os CTAs "Ir para o Dashboard"/"Ver Minha Jornada"
+  (de `PaymentStatus` no pago e do bloco verde no grátis) apareciam **antes** da
+  assinatura — deveriam surgir só **após** assinar; (c) as telas de contrato/checkout
+  usavam cores **hardcoded** (não theme vars; avulso forçava `theme-dark`), tornando o
+  texto ilegível em temas claros.
+- Status: **Corrigido** — PR #58. Componente de assinatura unificado (grátis == pago),
+  CTAs só no estado assinado (`PaymentStatus` ganhou `showActions`), migração para theme
+  vars + header canônico Gestão Funcional (`FunctionalPageHeader`).
+- Decisão de execução: área design system (gated) — plano + aprovação da Gestora antes de
+  codar (escopo: uma PR coesa, só contrato + checkout). Ver `00-PLAN.md#f2-05`.
+- Commit/PR: PR #58
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em

@@ -12,7 +12,18 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-10 (chat de execução — **Contratos CT-3b.2 (PR #57)**:
+> **Última atualização:** 2026-07-10 (chat de execução — **CT-3b.2 correção de UX + padrão
+> Gestão Funcional (PR #58, `BUG-056`)**: a Gestora validou a CT-3b.2 e reportou defeitos —
+> grátis divergia do pago (parecia "só checkbox"), CTAs de navegação apareciam antes da
+> assinatura, e telas de contrato/checkout não herdavam o tema (cores hardcoded). Corrigido:
+> componente de assinatura **unificado** grátis/pago, CTAs só após assinar (`PaymentStatus`
+> ganhou `showActions`), migração para **theme vars** + novo header canônico
+> `FunctionalPageHeader` (padrão **Gestão Funcional**). Novo item **F2-05** — categorização
+> das páginas logadas nos 4 conceitos (Fullscreen/Journey/Gestão Funcional/Autênticas) +
+> padrão de design por conceito (conceitos definidos; aplicado a contrato/checkout, demais
+> pendentes). Logado em produção.
+>
+> _(entrada anterior)_ 2026-07-10 (chat de execução — **Contratos CT-3b.2 (PR #57)**:
 > assinatura de contrato **pós-checkout** (grátis E pago) na tela `/hub/checkout/success`,
 > keyed por `orderId`. Novo `ContractDocumentView` (cláusulas, extraído do avulso e
 > compartilhado) + `CheckoutContractSigning` (ilha cliente) + actions

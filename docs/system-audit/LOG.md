@@ -2806,3 +2806,29 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   test 52/52, tsc limpo, build `Compiled successfully` (exit 0). Tela logada — validação
   funcional em produção pela Gestora (BUG-030).
 - Próximo: CT-3c (área `/hub/legal` + audiências empresas/parceiros), CT-4 (painel reescrito).
+
+## [2026-07-10] Chat de execução — CT-3b.2: correção de UX + padrão Gestão Funcional (PR #58)
+
+- Contexto: a Gestora validou a CT-3b.2 em produção e reportou defeitos + pediu
+  padronização de design. Área design system (gated): plano + risco apresentados,
+  duas decisões dela travadas antes de codar — (1) **uma PR de design coesa** (bugs +
+  padrão + tema juntos, já que tocam as mesmas telas), (2) **escopo só contrato + checkout**
+  (demais páginas de Gestão Funcional depois, sob o item global).
+- Diagnóstico: os CTAs "Ir para o Dashboard"/"Ver Minha Jornada" vinham do `PaymentStatus`
+  (pago) e do bloco verde (grátis), **acima** do contrato; grátis e pago renderizavam
+  caminhos divergentes na success page (grátis parecia "só checkbox"); telas de contrato/
+  checkout usavam cores hardcoded (avulso forçava `theme-dark`) → ilegível em temas claros.
+  Tema é classe `theme-*` no `document.body` (default light); vars globais.
+- Mudanças (PR #58, `BUG-056`): novo `FunctionalPageHeader` (header canônico Gestão
+  Funcional, destilado de `gestao_carreira` + `/conteudo`); success page reescrita
+  (header padrão + confirmação compacta + contrato **idêntico** grátis/pago); CTAs só no
+  estado assinado (`PaymentStatus` ganhou `showActions`, default true); `CheckoutContractSigning`,
+  `ContractDocumentView`, `ContractTermsCheckboxes`, `CheckoutFlow` e a página **avulso**
+  migrados para theme vars (avulso deixa de forçar `theme-dark`, herda o tema).
+- Novo item de plano **F2-05** (categorização das páginas logadas nos 4 conceitos —
+  Fullscreen / BPlen Journey / Gestão Funcional / Autênticas — + padrão de design por
+  conceito). Conceitos definidos pela Gestora; aplicação a contrato/checkout feita, demais
+  páginas pendentes.
+- Validado: eslint dos arquivos tocados (limpo), test 52/52, tsc, build `Compiled
+  successfully`. Telas logadas — validação funcional em produção (BUG-030).
+- Próximo: validação em produção pela Gestora; depois CT-3c/CT-4 e a expansão do F2-05.

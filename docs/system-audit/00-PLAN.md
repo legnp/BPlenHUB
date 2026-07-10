@@ -598,6 +598,35 @@ sem copy hardcoded fora do que o guia permitir).
 - Bug(s) vinculado(s): BUG-008, BUG-013
 - Log: —
 
+### [F2-05] Categorização das páginas logadas nos 4 conceitos + padrão de design por conceito
+- Categoria(s) de qualidade: Usabilidade / Manutenibilidade (sistema de design)
+- Critério de aceite: os 4 conceitos de página da área logada estão **formalmente
+  definidos e documentados**, e cada página logada está **categorizada** em um deles;
+  cada conceito tem um **padrão de design canônico** (header, título, tema) com
+  páginas de referência. Conceitos (Gestora, 2026-07-10):
+  - **a) Fullscreen** — só interação, nada além dos textos/interações na tela
+    (ex.: tourguide, `welcome_survey`).
+  - **b) BPlen Journey** — entrega dos serviços da jornada, com checkpoints (paradas)
+    e o nav da jornada do membro sempre presente.
+  - **c) Gestão Funcional** — `gestao_agenda`, `gestao_carreira`, `profile_settings`,
+    `contratos`, `visao_geral` (e as telas de **contrato** e **checkout**). Padrão de
+    referência: `gestao_carreira` (posicionamento do título, botão de retorno, linha
+    de cabeçalho, status-tag) + `/conteudo` (título cor dupla, tamanho de fonte).
+  - **d) Autênticas** — características próprias (ex.: `bplen.com`, `/hub`, `/hub/membro`).
+- Modo de validação: Requer execução humana (decisão de design da Gestora) + passada
+  página-a-página (gated — sistema de design)
+- Decisão: **Parcial (2026-07-10)** — conceitos definidos pela Gestora; padrão Gestão
+  Funcional destilado num header canônico reutilizável
+  (`src/components/layout/FunctionalPageHeader.tsx`, PR #58) e aplicado às telas de
+  contrato (avulso + checkout) e checkout. Categorização formal das demais páginas e
+  aplicação do padrão a elas: pendente.
+- Execução: **Parcial** — PR #58 (contrato + checkout). Páginas públicas já normalizadas
+  mas ainda não categorizadas formalmente; demais páginas de Gestão Funcional
+  (`gestao_agenda`, `profile_settings`, `visao_geral`, `contratos`) pendentes.
+- Resultado: —
+- Bug(s) vinculado(s): BUG-056 (defeitos de UX/tema da CT-3b.2 — Corrigido, PR #58)
+- Log: [2026-07-10] conceitos definidos + padrão Gestão Funcional aplicado a contrato/checkout (PR #58)
+
 ---
 
 ### Fase 3 — Auditoria de regras de negócio (Mapa 3)

@@ -200,6 +200,11 @@ A Gestora expandiu o escopo das telas de assinatura para um **motor reutilizáve
   difere: token vs orderId — evita desestabilizar o avulso validado em produção).
 
 ## Registro de revisões
+- 2026-07-10 — **CT-3b.2 correção de UX + padrão Gestão Funcional (PR #58, `BUG-056`)**:
+  após validação da Gestora, unificado o componente de assinatura (grátis == pago), CTAs de
+  navegação só após assinar, migração das telas de contrato/checkout para theme vars (avulso
+  deixa de forçar `theme-dark`) e novo header canônico `FunctionalPageHeader`. Ver `00-PLAN.md#f2-05`
+  (categorização das páginas logadas nos 4 conceitos + padrão de design por conceito).
 - 2026-07-10 — **CT-3b.2 feito (PR #57)**: assinatura pós-checkout (grátis+pago) na tela
   de sucesso, `ContractDocumentView` extraído/compartilhado, actions por orderId com trava
   de dono. Pago assina só após `approved`; convite forte (não bloqueio).
