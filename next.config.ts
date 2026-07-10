@@ -7,6 +7,16 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
 
   // ──────────────────────────────
+  // 0.0 File tracing — inclui os arquivos de métrica de fonte do pdfkit (.afm) no
+  //     bundle das funções serverless. Sem isto, a geração de PDF do contrato falha
+  //     em produção com ENOENT em pdfkit/js/data/Helvetica.afm (o Next não rastreia
+  //     esses assets de node_modules automaticamente). Custo mínimo (arquivos pequenos).
+  // ──────────────────────────────
+  outputFileTracingIncludes: {
+    "/**": ["./node_modules/pdfkit/**/*.afm"],
+  },
+
+  // ──────────────────────────────
   // 0. Configurações Experimentais (Limite de Upload de Server Actions)
   // ──────────────────────────────
   experimental: {
