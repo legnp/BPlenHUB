@@ -56,6 +56,8 @@ interface OrderDoc {
   finalPrice?: number;
   gateway?: string;
   status?: string;
+  /** Id do pagamento Mercado Pago (gravado pelo webhook na aprovação). */
+  mpPaymentId?: string;
 }
 
 export interface CheckoutContractResolution {
@@ -212,8 +214,9 @@ export async function signCheckoutContractAction(
     const productKey = order.productId || order.productSlug || "";
     if (!productKey) return { success: false, error: "Serviço do pedido não identificado." };
 
-    // Gera o PDF e vira o Contract para `assinado` (CT-1), com IP/timestamp reais.
-    const pdfResult = await generateContractPdf(session.uid, productKey, orderId, "checkout");
+    // Gera o PDF e vira o Contract para `assinado` (CT-1), com IP/timestamp reais e
+    // o carimbo/código único amarrando o pagamento MP (item f).
+    const pdfResult = await generateContractPdf(session.uid, productKey, orderId, "checkout", order.mpPaymentId);
     if (!pdfResult.success) {
       console.error(`[Checkout Contract] Falha ao gerar PDF para ${session.uid}:`, pdfResult.error);
       return { success: false, error: `Falha ao gerar o contrato: ${pdfResult.error}` };

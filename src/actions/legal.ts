@@ -1,6 +1,6 @@
 "use server";
 
-import { getAdminAuth, getAdminDb } from "@/lib/firebase-admin";
+import { getAdminDb } from "@/lib/firebase-admin";
 import { getDriveClient } from "@/lib/google-auth";
 import { ensureFolder, uploadFileToDrive } from "@/lib/drive-utils";
 import { serverEnv } from "@/env";
@@ -38,10 +38,13 @@ export interface LegalAudit {
   userId: string;
   productId: string;
   orderId: string | null;
+  paymentId?: string | null;
   timestamp: string;
   ipAddress: string;
   documentUrl: string;
   documentHash: string;
+  verificationCode?: string;
+  verificationHash?: string;
 }
 
 // Subcoleção legada `User/{uid}/Orders` — sem escritor conhecido no código atual,
@@ -94,16 +97,39 @@ export async function getUserLegalAudits(userId: string) {
     const auditsSnap = await db.collection("User").doc(userId).collection("Legal_Audits").orderBy("timestamp", "desc").get();
     const audits = auditsSnap.docs.map(d => d.data() as LegalAudit);
     return { success: true, audits };
-  } catch (e: unknown) {
+  } catch {
     return { success: false, audits: [] as LegalAudit[] };
   }
+}
+
+/**
+ * Código único de verificação estampado no contrato (item f / carimbo). Amarra
+ * serviço + contrato/pedido + pagamento MP num formato legível, com um hash curto
+ * (ids + timestamp) para integridade/unicidade. Para grátis/avulso sem pagamento MP,
+ * `paymentRef` é o próprio id do pedido.
+ */
+function buildVerificationCode(
+  serviceCode: string,
+  orderId: string,
+  paymentRef: string,
+  signedAtIso: string
+): { code: string; hash: string } {
+  const code = `BPLEN-${serviceCode}-${orderId}-${paymentRef}`;
+  const hash = crypto
+    .createHash("sha256")
+    .update(`${serviceCode}|${orderId}|${paymentRef}|${signedAtIso}`)
+    .digest("hex")
+    .slice(0, 12)
+    .toUpperCase();
+  return { code, hash };
 }
 
 export async function generateContractPdf(
   userId: string,
   productId: string,
   orderId?: string,
-  origin: ContractOrigin = "checkout"
+  origin: ContractOrigin = "checkout",
+  paymentId?: string
 ) {
   try {
     const db = getAdminDb();
@@ -153,16 +179,41 @@ export async function generateContractPdf(
       }
     }
     
-    // Build PDF Buffer
-    const buffer = await createContractBuffer({
-      product,
-      dados,
-      matricula,
-      orderAmount,
-      orderMethod
-    });
-    
-    // Generate Hash
+    // Prova de aceite (clickwrap): IP real + user-agent + timestamp do cliente,
+    // capturados ANTES de gerar o PDF para serem ESTAMPADOS no documento (carimbo —
+    // item f / validade jurídica). Server action -> lê os headers do request.
+    const hdrs = await headers();
+    const ip =
+      hdrs.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      hdrs.get("x-real-ip") ||
+      "desconhecido";
+    const userAgent = hdrs.get("user-agent") || "desconhecido";
+    const now = new Date();
+    const signedAtIso = now.toISOString();
+
+    // Código único de verificação (amarra serviço + pedido + pagamento MP). Sem MP
+    // (grátis/avulso), o pagamento é referenciado pelo próprio id do pedido.
+    const serviceCodeForContract = product.serviceCode || product.slug || productId;
+    const paymentRef = paymentId || orderId || "SEM-PAGAMENTO";
+    const { code: verificationCode, hash: verificationHash } = buildVerificationCode(
+      serviceCodeForContract,
+      orderId || "SEM-PEDIDO",
+      paymentRef,
+      signedAtIso
+    );
+    const dateTimeStr = new Intl.DateTimeFormat("pt-BR", {
+      dateStyle: "short",
+      timeStyle: "medium",
+      timeZone: "America/Sao_Paulo",
+    }).format(now);
+
+    // Build PDF Buffer (com o carimbo de assinatura estampado)
+    const buffer = await createContractBuffer(
+      { product, dados, matricula, orderAmount, orderMethod },
+      { dateTimeStr, ip, verificationCode, verificationHash }
+    );
+
+    // Generate Hash (integridade do arquivo final)
     const hash = crypto.createHash("sha256").update(buffer).digest("hex");
     
     // Upload to Drive
@@ -193,16 +244,6 @@ export async function generateContractPdf(
       pdfStream
     );
     
-    // Prova de aceite (clickwrap): IP real + user-agent do cliente na assinatura
-    // (validade jurídica — item f / BUG-054). Server action -> lê os headers do request.
-    const hdrs = await headers();
-    const ip =
-      hdrs.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-      hdrs.get("x-real-ip") ||
-      "desconhecido";
-    const userAgent = hdrs.get("user-agent") || "desconhecido";
-    const now = new Date();
-
     // Save Audit Log (subcoleção soberana chaveada por matrícula) — transitório;
     // consolidado na entidade Contracts (CT-4).
     const auditRef = db.collection(USER_COLLECTION).doc(matricula).collection("Legal_Audits");
@@ -214,10 +255,13 @@ export async function generateContractPdf(
       matricula,
       productId,
       orderId: orderId || null,
-      timestamp: now.toISOString(),
+      paymentId: paymentId || null,
+      timestamp: signedAtIso,
       ipAddress: ip,
       documentUrl: result.webViewLink,
-      documentHash: hash
+      documentHash: hash,
+      verificationCode,
+      verificationHash
     });
 
     // Entidade de contrato (CT-1) — `User/{matricula}/Contracts/{contractId}`.
@@ -236,9 +280,10 @@ export async function generateContractPdf(
         status: "assinado",
         origin,
         orderId: orderId || null,
+        paymentId: paymentId || null,
         documentUrl: result.webViewLink,
         documentHash: hash,
-        signature: { signedAt: now.toISOString(), ip, userAgent },
+        signature: { signedAt: signedAtIso, ip, userAgent, verificationCode, verificationHash },
         updatedAt: FieldValue.serverTimestamp(),
         ...(contractExists ? {} : { createdAt: FieldValue.serverTimestamp() })
       },
@@ -253,7 +298,14 @@ export async function generateContractPdf(
   }
 }
 
-function createContractBuffer(data: ContractContentData): Promise<Buffer> {
+interface ContractStamp {
+  dateTimeStr: string;
+  ip: string;
+  verificationCode: string;
+  verificationHash: string;
+}
+
+function createContractBuffer(data: ContractContentData, stamp?: ContractStamp): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     try {
       const content = buildContractClauses(data);
@@ -288,6 +340,24 @@ function createContractBuffer(data: ContractContentData): Promise<Buffer> {
         doc.moveDown(1);
       }
       doc.moveDown(1);
+
+      // Carimbo de Assinatura Eletrônica (item f / validade jurídica) — data/hora,
+      // IP, código único de verificação e hash de integridade estampados no documento.
+      if (stamp) {
+        doc.moveDown(1.5);
+        doc.fontSize(12).font("Helvetica-Bold").fillColor(primaryColor).text("Carimbo de Assinatura Eletrônica");
+        doc.moveDown(0.4);
+        doc.font("Helvetica").fontSize(10).fillColor(textColor);
+        doc.text(`Data e hora do aceite: ${stamp.dateTimeStr} (horário de Brasília)`);
+        doc.text(`IP do signatário: ${stamp.ip}`);
+        doc.text(`Código de verificação: ${stamp.verificationCode}`);
+        doc.text(`Hash de integridade: ${stamp.verificationHash}`);
+        doc.moveDown(0.4);
+        doc.fontSize(9).fillColor("#666666").text(
+          "Aceite eletrônico registrado com validade jurídica conforme a MP 2.200-2/2001. O código de verificação amarra o serviço, o pedido e o pagamento correspondentes.",
+        );
+        doc.moveDown(1);
+      }
 
       // Footer
       doc.fontSize(10).font("Helvetica-Oblique").fillColor("#666666").text(content.footer, { align: "center" });

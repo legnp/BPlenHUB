@@ -26,6 +26,14 @@ export interface ContractSignature {
   userAgent: string;
   /** Ids dos termos (checkboxes) aceitos na assinatura. */
   acceptedTerms?: string[];
+  /**
+   * Código único de verificação estampado no PDF, amarrando serviço + contrato +
+   * pagamento MP: `BPLEN-{serviceCode}-{orderId}-{paymentRef}`. Para grátis/avulso
+   * sem pagamento MP, `paymentRef` é o próprio id do pedido.
+   */
+  verificationCode?: string;
+  /** Hash curto SHA-256 (ids + signedAt) para integridade/unicidade do carimbo. */
+  verificationHash?: string;
 }
 
 export interface Contract {
@@ -37,6 +45,8 @@ export interface Contract {
   status: ContractStatus;
   origin: ContractOrigin;
   orderId: string | null;
+  /** Id do pagamento Mercado Pago que originou o contrato (nulo p/ grátis/avulso). */
+  paymentId?: string | null;
   /** Link do documento no Google Drive (nulo enquanto pendente de assinatura). */
   documentUrl: string | null;
   /** SHA-256 do PDF gerado (nulo enquanto pendente). */
