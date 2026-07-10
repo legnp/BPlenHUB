@@ -8,6 +8,7 @@ import PDFDocument from "pdfkit";
 import path from "path";
 import crypto from "crypto";
 import fs from "fs";
+import { Readable } from "stream";
 import { getErrorMessage } from "@/lib/utils/errors";
 import { safeSerialize } from "@/lib/utils/firestore";
 import { Product, ProductSheet } from "@/types/products";
@@ -184,12 +185,18 @@ export async function generateContractPdf(
     const cleanProductName = (product.title || "Contrato").replace(/[^a-zA-Z0-9.\-_]/g, "_");
     const fileName = `CONTRATO_${dateStr}_${cleanProductName}.pdf`;
     
+    // O googleapis faz `.pipe()` no corpo da mídia — precisa de um Readable stream,
+    // não de um Buffer (senão: "body.pipe is not a function"). Envolvemos o buffer.
+    const pdfStream = new Readable();
+    pdfStream.push(buffer);
+    pdfStream.push(null);
+
     const result = await uploadFileToDrive(
       drive,
       docsFolderId,
       fileName,
       "application/pdf",
-      buffer
+      pdfStream
     );
     
     // Prova de aceite (clickwrap): IP real + user-agent do cliente na assinatura
