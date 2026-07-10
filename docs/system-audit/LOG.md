@@ -2715,3 +2715,16 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   como reforço. Build local exit 0. Revalidar a assinatura em produção após o deploy.
 - Fallback (se ainda falhar): registrar uma fonte TTF embarcada no `generateContractPdf`
   (pdfkit com TTF não lê os `.afm`) — exige adicionar um arquivo de fonte ao repo.
+
+## [2026-07-10] Chat de execução — Contratos CT-0.3: upload do PDF ao Drive via stream (PR #54)
+
+- CT-0.2 resolveu o pdfkit (.afm sumiu). O fluxo avançou ao upload no Drive e falhou:
+  "TypeError: b.body.pipe is not a function" (googleapis `drive.files.create`).
+- Causa: `uploadFileToDrive` passava o Buffer do PDF como `media.body`; o googleapis faz
+  `.pipe()` no corpo (espera Readable stream). Caminho nunca alcançado antes (BUG-051 +
+  pdfkit barravam), defeito latente.
+- Fix contido (`legal.ts`): envolve o buffer num `Readable` (push+null) antes do upload —
+  não toca o util compartilhado nem outros callers. eslint/tsc/build ok. PR #54 (`2d21bf3`).
+- Padrão observado: a cadeia de geração do contrato tinha 3 defeitos latentes empilhados
+  (produto/matrícula → fontes pdfkit → stream do Drive), revelados um a um só quando o
+  anterior é corrigido, pois só produção exercita esse caminho (BUG-030).
