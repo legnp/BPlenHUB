@@ -14,7 +14,7 @@ export type ContractStatus =
   | "cancelado";
 
 /** Origem do contrato (por qual fluxo foi formalizado). */
-export type ContractOrigin = "checkout" | "retroativo";
+export type ContractOrigin = "checkout" | "avulso";
 
 /** Prova de aceite (clickwrap) capturada no momento da assinatura. */
 export interface ContractSignature {
@@ -24,6 +24,8 @@ export interface ContractSignature {
   ip: string;
   /** User-Agent do cliente na assinatura. */
   userAgent: string;
+  /** Ids dos termos (checkboxes) aceitos na assinatura. */
+  acceptedTerms?: string[];
 }
 
 export interface Contract {

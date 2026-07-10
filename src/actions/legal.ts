@@ -25,7 +25,7 @@ import { ContractOrigin } from "@/types/contracts";
 function friendlyGateway(gateway?: string): string {
   switch (gateway) {
     case "retroactive_bypass":
-      return "Faturamento Interno (Retroativo)";
+      return "Faturamento Interno (Avulso)";
     case "bplen_free_bypass":
       return "Cortesia / Cupom BPlen";
     default:

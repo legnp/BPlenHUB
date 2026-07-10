@@ -948,7 +948,7 @@ export default function UsersManagementPage() {
 
                         <div className="mt-8 pt-8 border-t border-[var(--border-primary)] space-y-4">
                           <h4 className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--accent-start)] flex items-center gap-3">
-                            <Link2 size={16} /> Gerar Link de Contrato Retroativo
+                            <Link2 size={16} /> Gerar Link de Contrato Avulso
                           </h4>
                           <p className="text-xs text-[var(--text-muted)]">
                             Crie um link para que clientes antigos possam assinar formalmente serviços que já possuem.
@@ -964,11 +964,11 @@ export default function UsersManagementPage() {
                                      onClick={async () => {
                                         const matricula = selectedUser.matricula || selectedUser.uid;
                                         if (!matricula) { alert("Usuário sem matrícula."); return; }
-                                        const { createRetroactiveContractInvitationAction } = await import("@/actions/retroactive-contract");
-                                        let res = await createRetroactiveContractInvitationAction(matricula, p.id);
+                                        const { createAvulsoContractInvitationAction } = await import("@/actions/avulso-contract");
+                                        let res = await createAvulsoContractInvitationAction(matricula, p.id);
                                         if (!res.success && res.needsConfirmation) {
                                            if (!window.confirm(`${res.message}\n\nDeseja gerar o link mesmo assim (retificacao)?`)) return;
-                                           res = await createRetroactiveContractInvitationAction(matricula, p.id, true);
+                                           res = await createAvulsoContractInvitationAction(matricula, p.id, true);
                                         }
                                         if (res.success && res.path) {
                                            await navigator.clipboard.writeText(`${window.location.origin}${res.path}`);
@@ -978,7 +978,7 @@ export default function UsersManagementPage() {
                                         }
                                      }}
                                      className="p-2 rounded-lg bg-[var(--input-bg)] hover:bg-[var(--accent-start)] hover:text-white transition-all group flex gap-2 items-center"
-                                     title="Gerar link único de contrato"
+                                     title="Gerar link único de contrato avulso"
                                   >
                                      <span className="text-[10px] font-bold uppercase opacity-0 group-hover:opacity-100 transition-opacity">Gerar link</span>
                                      <Copy size={16} />
