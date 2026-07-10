@@ -95,10 +95,15 @@ O `Legal_Audits` atual é absorvido por este modelo (migração leve; poucos reg
 
 Ordenado por **risco decrescente de "quebrado hoje"** e dependência.
 
-- **CT-0 — Reconciliação estrutural + correção do PDF (correções, baixo risco visual).**
-  `generateContractPdf` e `getPendingContracts` passam a ler `products` (minúsculo) e
-  `User_Orders` (raiz). Desbloqueia a geração do PDF e o gate. Sem UI nova.
-  Fecha `BUG-051` e `BUG-055`. **[verificar em produção primeiro]**.
+- **CT-0 — Correção da geração do PDF. ✅ FEITO (PR #49).** `generateContractPdf`
+  reescrito: resolve a matrícula via `_AuthMap/{uid}` (docs de User são chaveados por
+  matrícula, não uid), lê o produto de `products` (minúsculo, antes `Products`), o
+  contratante de `User/{matricula}.profile`, a order de `User_Orders`, e grava
+  `Legal_Audits` sob a matrícula. Fecha `BUG-051`. **BUG-051 confirmado em produção**
+  antes do fix (erro "Produto não encontrado" no retroativo). **Escopo narrado:** o
+  `getPendingContracts`/gate (`BUG-055`) **não** foi tocado — mudar a fonte de dados do
+  gate tem risco comportamental (poderia passar a bloquear membros); movido para a fase
+  da entidade/gate (CT-1/CT-4). Validação funcional em produção (BUG-030).
 - **CT-1 — Entidade de contrato + status.** Introduz `User/{matricula}/Contracts` e o
   ciclo `pendente_assinatura → em_retificacao → assinado`. Checkout/retroativo passam a
   criar a entidade; a assinatura grava `signature.ip` real (item f) + hash. Absorve

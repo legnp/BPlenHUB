@@ -873,7 +873,7 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-048 | Baixo | Corrigido (PR #44) | F1-01 — realce de nav pública por rota |
 | BUG-049 | Baixo | Corrigido (PR #44) | F1-01 — footer /conteudo adaptado ao tema claro |
 | BUG-050 | Baixo | Corrigido (PR #44/#47) | F1-01 — backdrop do FAQ; resolvido de fato na regra global de tema dos modais (PR #47) |
-| BUG-051 | Alto | Aberto | F1-02 — `generateContractPdf` lê `Products` (maiúsculo) inexistente; CT-0 (`CONTRACTS-DESIGN.md`) |
+| BUG-051 | Alto | Corrigido (PR #49) | F1-02 — geração do PDF lê `products`/matrícula/`User_Orders` corretos; CT-0 (`CONTRACTS-DESIGN.md`) — confirmado em produção antes do fix |
 | BUG-052 | Médio | Aberto | F1-02 — documento do contrato não visualizável no HUB; CT-3 |
 | BUG-053 | Médio | Aberto | F1-02 — painel de contratos básico (status pagamento, sem assinatura/doc/NF, link morto); CT-4 |
 | BUG-054 | Médio | Aberto | F1-02 — IP placeholder na assinatura (validade jurídica); CT-1/CT-5 |

@@ -1422,10 +1422,21 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   geração do PDF quebra tanto no retroativo (`retroactive-contract.ts:75`) quanto no
   `ContractGateModal:35`. A Gestora pode ter visto "Ordem criada, mas falha ao gerar
   PDF".
-- Status: Aberto — fase **CT-0** do `CONTRACTS-DESIGN.md` (reconciliação estrutural).
-- Decisão de execução: Precisa plano+aprovação (fluxo financeiro/jurídico). Verificar
-  em produção se `Products` maiúsculo de fato não existe antes de corrigir.
-- Commit/PR: —
+- **[CONFIRMADO em produção pela Gestora, 2026-07-09]:** `/contrato-retroativo/analise-comportamental`
+  retornou "Ordem criada, mas falha ao gerar PDF: Produto não encontrado"; log Vercel
+  `[Contract Generator] Erro: Produto não encontrado`. A order foi criada em `User_Orders`
+  (BP-002), só o PDF falhou.
+- Status: **Corrigido** — 2026-07-09 (PR #49, CT-0). `generateContractPdf` reescrito:
+  resolve a matrícula via `_AuthMap/{uid}` (os docs de User são chaveados por matrícula,
+  não uid — outra causa de falha), lê o produto de `products` (minúsculo), o contratante
+  de `User/{matricula}.profile`, a order de `User_Orders`, e grava `Legal_Audits` sob a
+  matrícula. **Escopo do CT-0 limitado a `generateContractPdf`**; o `getPendingContracts`/
+  gate (BUG-055) não foi tocado (risco comportamental) — vai para a fase da entidade/gate.
+  Validado: eslint (0 erros), test 52/52, tsc, build. **Validação funcional em produção
+  pela Gestora** (BUG-030).
+- Decisão de execução: Roadmap CT-0→CT-5 **aprovado pela Gestora** (2026-07-09).
+  Corrigido via branch `fix/f1-02-ct0-contract-pdf`.
+- Commit/PR: **mergeado** — PR #49 (`54e7a90`, squash).
 
 ### BUG-052 Documento do contrato não é visualizável dentro do HUB
 

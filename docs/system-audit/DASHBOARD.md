@@ -12,7 +12,13 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-09 (chat de execução — **F1-02 iniciada**:
+> **Última atualização:** 2026-07-09 (chat de execução — **Contratos CT-0 (PR #49)**:
+> geração do PDF do contrato corrigida — `generateContractPdf` resolve a matrícula
+> (`_AuthMap`) e lê `products`/`User_Orders`/`profile` corretos. **BUG-051 confirmado em
+> produção** antes do fix e agora fechado. Roadmap CT-0→CT-5 aprovado (`CONTRACTS-DESIGN.md`).
+> Próximas: CT-1 (entidade+status+IP), CT-2 (retroativo robusto), CT-3 (viewer), CT-4 (painel).
+>
+> _(entrada anterior)_ 2026-07-09 (chat de execução — **F1-02 iniciada**:
 > BUG-002 corrigido (PR #48 — trava de preço server-side + remoção da rota órfã
 > `/checkout/[slug]`). O contrato retroativo (BUG-022) foi expandido pela Gestora para
 > um **redesenho do subsistema de contratos** (itens a–f) — investigação revelou

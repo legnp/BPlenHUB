@@ -2573,3 +2573,33 @@ para embasar essas decisões estão todos disponíveis.
 - Itens atualizados: `00-PLAN.md` (F1-02 + índice bug→track, incl. reconciliação de
   BUG-045..050 que faltavam no índice), `BUGS.md` (BUG-002 Corrigido, BUG-022 expandido,
   +BUG-051..055), novo `CONTRACTS-DESIGN.md`, `DASHBOARD.md`, este LOG.
+
+---
+
+## [2026-07-09] Chat de execução — Contratos CT-0: geração do PDF corrigida (BUG-051, PR #49)
+
+- Chat/sessão: mesmo chat de execução (Opus 4.8)
+- Escopo: primeira fase do `CONTRACTS-DESIGN.md`. A Gestora aprovou o roadmap CT-0→CT-5
+  e **confirmou o BUG-051 em produção** (screenshot `/contrato-retroativo/analise-comportamental`
+  → "Ordem criada, mas falha ao gerar PDF: Produto não encontrado"; log Vercel
+  `[Contract Generator] Erro: Produto não encontrado`, order de BP-002 criada em
+  `User_Orders`).
+- Correção (`generateContractPdf`, `src/actions/legal.ts`): além do `Products`→`products`
+  (minúsculo), a leitura estava errada em mais eixos — descobertos ao aterrissar no log
+  de produção (que mostra `User/BP-002-PF-260331`, docs chaveados por **matrícula**, não
+  uid). Reescrito: (1) resolve matrícula via `_AuthMap/{uid}`; (2) produto de `products`
+  por id + fallback slug; (3) contratante de `User/{matricula}.profile` (fonte canônica
+  F0-03, antes lia `User/{uid}/forms/dados-cadastrais` com uid + id com hífen); (4) order
+  de `User_Orders` (antes subcoleção legada `User/{uid}/Orders`); (5) `Legal_Audits` sob
+  a matrícula; (6) rótulo humano do gateway; (7) remove interface morta `RawUserDoc`.
+- **Escopo do CT-0 narrado**: só `generateContractPdf` (BUG-051). O `getPendingContracts`/
+  `ContractGateModal` (BUG-055) **não** foi tocado — mudar a fonte de dados do gate tem
+  risco comportamental (poderia passar a bloquear membros); movido para a fase da
+  entidade/gate (CT-1/CT-4). IP placeholder (BUG-054) segue no CT-1.
+- Validação: server-side (sem UI); eslint (0 erros), test 52/52, tsc, build exit 0.
+  Funcional em produção pela Gestora (BUG-030): reabrir o retroativo e conferir o PDF.
+- Entrega: **PR #49 mergeado** (`54e7a90`, squash). Branch deletada; `main` ff-only.
+- Itens atualizados: `BUGS.md` (BUG-051 → Corrigido), `CONTRACTS-DESIGN.md` (CT-0 feito +
+  escopo), `00-PLAN.md` (índice), `DASHBOARD.md`, este LOG.
+- Próximas fases (aguardam priorização da Gestora): CT-1 (entidade de contrato + status +
+  IP real), CT-2 (retroativo robusto a/b/c), CT-3 (viewer do documento), CT-4 (painel).
