@@ -958,17 +958,29 @@ export default function UsersManagementPage() {
                                <div key={p.id} className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
                                   <div>
                                      <p className="text-xs font-bold">{p.title}</p>
-                                     <p className="text-[10px] text-[var(--text-muted)]">/contrato-retroativo/{p.slug}</p>
+                                     <p className="text-[10px] text-[var(--text-muted)]">Link único, uso único, vinculado a esta conta (30 dias)</p>
                                   </div>
-                                  <button 
-                                     onClick={() => {
-                                        navigator.clipboard.writeText(`${window.location.origin}/contrato-retroativo/${p.slug}`);
-                                        alert("Link copiado para a área de transferência!");
+                                  <button
+                                     onClick={async () => {
+                                        const matricula = selectedUser.matricula || selectedUser.uid;
+                                        if (!matricula) { alert("Usuário sem matrícula."); return; }
+                                        const { createRetroactiveContractInvitationAction } = await import("@/actions/retroactive-contract");
+                                        let res = await createRetroactiveContractInvitationAction(matricula, p.id);
+                                        if (!res.success && res.needsConfirmation) {
+                                           if (!window.confirm(`${res.message}\n\nDeseja gerar o link mesmo assim (retificacao)?`)) return;
+                                           res = await createRetroactiveContractInvitationAction(matricula, p.id, true);
+                                        }
+                                        if (res.success && res.path) {
+                                           await navigator.clipboard.writeText(`${window.location.origin}${res.path}`);
+                                           alert("Link unico gerado e copiado. Valido por 30 dias, uso unico, vinculado a esta conta.");
+                                        } else {
+                                           alert("Falha ao gerar link: " + (res.error || "erro desconhecido"));
+                                        }
                                      }}
                                      className="p-2 rounded-lg bg-[var(--input-bg)] hover:bg-[var(--accent-start)] hover:text-white transition-all group flex gap-2 items-center"
-                                     title="Copiar Link Retroativo"
+                                     title="Gerar link único de contrato"
                                   >
-                                     <span className="text-[10px] font-bold uppercase opacity-0 group-hover:opacity-100 transition-opacity">Copiar</span>
+                                     <span className="text-[10px] font-bold uppercase opacity-0 group-hover:opacity-100 transition-opacity">Gerar link</span>
                                      <Copy size={16} />
                                   </button>
                                </div>
