@@ -844,7 +844,7 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-019 | Alto | Corrigido (PR #4) | T-02 |
 | BUG-020 | Alto | Corrigido (7 lotes: PR #8/#9/#10/#11/#12/#13/#14) | T-02 |
 | BUG-021 | Baixo | Corrigido (PR #13) | T-02 |
-| BUG-022 | Médio | Aberto | F3-03 *(recém-linkado)* — **[HIPÓTESE]** |
+| BUG-022 | Médio | Corrigido (PR #51) | F1-02/CT-2 — retroativo robusto (link único de uso único + vínculo à conta + aviso de duplicidade); bypasses aceitos |
 | BUG-023 | Alto | Corrigido (PR #3) | F1-06, T-02, T-06 |
 | BUG-024 | Médio | Corrigido (PR #5) | F1-06, T-02 |
 | BUG-025 | Médio | Corrigido (PR #16) | T-02 |

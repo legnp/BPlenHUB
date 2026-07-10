@@ -2636,3 +2636,45 @@ para embasar essas decisões estão todos disponíveis.
   (CT-1 feito), `00-PLAN.md` (índice), `DASHBOARD.md`, este LOG.
 - Próximas fases: CT-2 (retroativo robusto a/b/c), CT-3 (viewer do documento), CT-4
   (painel + consolidação de Legal_Audits), CT-5 (reforços jurídicos que a Gestora indicará).
+
+---
+
+## [2026-07-09] Chat de execução — Contratos CT-2: retroativo robusto (BUG-022, PR #51)
+
+- Chat/sessão: mesmo chat de execução (Opus 4.8)
+- Escopo: CT-2 do `CONTRACTS-DESIGN.md` (aprovado pela Gestora). Endurece o contrato
+  retroativo (itens a/b/c do BUG-022 expandido).
+- Antes: admin copiava um link genérico `/contrato-retroativo/{slug}` — não-único, não
+  vinculado, reutilizável; qualquer logado gerava contrato "aprovado" para si.
+- Mudanças:
+  - `retroactive-contract.ts` reescrito com 3 actions: `createRetroactiveContractInvitationAction`
+    (admin, `requireAdmin`, aviso de duplicidade → `needsConfirmation`/retificação),
+    `resolveRetroactiveContractTokenAction` (cliente, `requireMatricula`, valida vínculo à
+    conta), `processRetroactiveContractAction` (agora por **token**, valida + consome).
+  - Token único de uso único: `crypto.randomBytes` → `_ContractTokens/{sha256}` (lookup por
+    hash, sem índice), expira 30 dias, `consumed` na assinatura. Vínculo: matrícula do token
+    === `session.matricula`.
+  - Rota `/contrato-retroativo/[slug]` → `[token]`; página reescrita com estados
+    (loading / logged_out+login Google / blocked[invalid|consumed|expired|wrong_account] /
+    summary+assinar / success com link do documento).
+  - `admin/users`: botão "Gerar link" chama a action, trata duplicidade e copia o link único.
+  - Integra o CT-1: Contract criado em `pendente_assinatura`/`em_retificacao` na geração e
+    vira `assinado` na assinatura.
+- **BREAKING intencional:** links genéricos antigos `/contrato-retroativo/{slug}` param de
+  funcionar (eram a vulnerabilidade). O admin reemite um link próprio por cliente.
+- Validação: eslint dos arquivos (0 erros), test 52/52, tsc, build exit 0. Página pública
+  renderiza o estado "deslogado" (login) sem erro de console ao vivo. **Fluxo logado**
+  (resolver na conta certa, bloqueio de conta errada, assinatura+consumo) validado em
+  **produção** pela Gestora (BUG-030).
+- Entrega: **PR #51 mergeado** (`0e1bc38`, squash). Branch deletada; `main` ff-only.
+- Itens atualizados: `BUGS.md` (BUG-022 → Corrigido), `CONTRACTS-DESIGN.md` (CT-2 feito),
+  `00-PLAN.md` (índice), `DASHBOARD.md`, este LOG.
+- Restantes do subsistema: CT-3 (viewer do documento — item e), CT-4 (painel + consolidar
+  Legal_Audits — item d + BUG-053/055), CT-5 (reforços jurídicos extras).
+
+### Protocolo de validação em produção (Gestora) — CT-0 a CT-2
+No próximo deploy, no admin (aba de um usuário): (1) "Gerar link" de um serviço → copia um
+link único; se já houver contrato assinado, aparece o aviso de retificação. (2) Abrir o link
+DESLOGADO → tela de login. (3) Logar na conta CERTA → resumo + assinar → PDF gerado (CT-0),
+com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado" (uso único).
+(5) Abrir um link em conta ERRADA → "contrato de outra conta".

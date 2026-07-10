@@ -12,7 +12,14 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-09 (chat de execução — **Contratos CT-1 (PR #50)**:
+> **Última atualização:** 2026-07-09 (chat de execução — **Contratos CT-2 (PR #51)**:
+> retroativo robusto — link **único de uso único** (`_ContractTokens`, expira 30d, consumido
+> na assinatura) **vinculado à conta** (matrícula do token === sessão) + **aviso de
+> duplicidade** no admin (retificação). Rota `[slug]`→`[token]`, página reescrita, admin
+> "Gerar link". Fecha **BUG-022**. BREAKING: links genéricos antigos param de funcionar.
+> Restam: CT-3 (viewer), CT-4 (painel), CT-5 (jurídico). Validação logada em produção.
+>
+> _(entrada anterior)_ 2026-07-09 (chat de execução — **Contratos CT-1 (PR #50)**:
 > entidade de contrato de 1ª classe (`User/{matricula}/Contracts`) com ciclo de status
 > (pendente_assinatura/em_retificação/assinado/cancelado) + **IP real** capturado na
 > assinatura (fecha a parte IP do BUG-054, item f). `generateContractPdf` grava a entidade

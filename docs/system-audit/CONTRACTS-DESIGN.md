@@ -113,10 +113,14 @@ Ordenado por **risco decrescente de "quebrado hoje"** e dependência.
   (checkout/retroativo) registrado. `Legal_Audits` mantido transitório (consolidado no
   CT-4). **Escopo:** criação de `pendente_assinatura` no checkout e transição
   `em_retificacao` pelo admin ficam para CT-2/CT-4.
-- **CT-2 — Retroativo robusto (itens a/b/c).** Token de convite de uso único atado à
-  matrícula (gerado pelo admin em `admin/users`), guard de dono, aviso de duplicidade
-  no admin (item a). `/contrato-retroativo/[slug]` passa a exigir token válido +
-  sessão da conta certa. Fecha/endurece `BUG-022`.
+- **CT-2 — Retroativo robusto (itens a/b/c). ✅ FEITO (PR #51).** Token de uso único
+  (`_ContractTokens/{sha256}`, expira 30 dias, consumido na assinatura) atado à
+  `{matricula, serviço}`; gerado pelo admin em `admin/users` (botão "Gerar link").
+  Aviso de duplicidade (item a): contrato já assinado exige confirmação de retificação.
+  Vínculo à conta (item b): `resolve`/`process` exigem `requireMatricula` + matrícula do
+  token === sessão. Rota `/contrato-retroativo/[slug]` → `[token]`; página reescrita com
+  estados (login / conta errada / expirado / consumido / assinar). **BREAKING intencional:**
+  links genéricos antigos param de funcionar (eram a vulnerabilidade). Fecha `BUG-022`.
 - **CT-3 — Visualização do documento no HUB (item e).** Viewer in-app (stream/embed do
   PDF) + download nas telas de contrato (checkout, retroativo) e no painel. Fecha
   `BUG-052`.

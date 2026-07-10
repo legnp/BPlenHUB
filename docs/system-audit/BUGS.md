@@ -562,11 +562,18 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   à conta específica** liberada pelo admin (logado nela, não por outro e-mail nem
   deslogado); (c) link de geração **único e de uso único**. Vira a **fase CT-2** do
   `CONTRACTS-DESIGN.md`.
-- Status: Aberto — endereçado na fase **CT-2** do subsistema de contratos
-  (`CONTRACTS-DESIGN.md`), gated (plano+aprovação por fase).
-- Decisão de execução: Precisa plano+aprovação (fluxo financeiro). Bypasses aceitos
-  como intencionais; endurecimento do retroativo planejado em CT-2.
-- Commit/PR: —
+- Status: **Corrigido** — 2026-07-09 (PR #51, CT-2). Retroativo endurecido: (a) aviso
+  de duplicidade no admin (contrato assinado exige confirmação de retificação); (b)
+  vínculo à conta (token atado à matrícula; `resolve`/`process` exigem `requireMatricula`
+  + matrícula do token === sessão — conta errada/deslogado bloqueados); (c) link único
+  de uso único (`_ContractTokens/{sha256}`, expira 30d, consumido na assinatura). Rota
+  `[slug]`→`[token]`; página reescrita. Bypasses aceitos como intencionais (documentados).
+  **BREAKING intencional:** links genéricos antigos param de funcionar. Validado: eslint/
+  test 52/52/tsc/build; página pública "deslogada" sem erro ao vivo. Fluxo logado em
+  produção (BUG-030).
+- Decisão de execução: **Aprovado pela Gestora** (2026-07-09). Corrigido via branch
+  `feat/f1-02-ct2-retroactive-robust`.
+- Commit/PR: **mergeado** — PR #51 (`0e1bc38`, squash).
 
 ### BUG-023 Rotas de debug órfãs em produção com dado hardcoded (`/api/ghosts`, `/api/liandra`)
 
