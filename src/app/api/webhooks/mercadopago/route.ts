@@ -5,9 +5,9 @@ import { mpClient } from "@/lib/mercadopago";
 import { serverEnv } from "@/env";
 import { getAdminDb } from "@/lib/firebase-admin";
 import { USER_ORDERS_COLLECTION } from "@/config/collections";
-import { grantServiceEntitlement } from "@/lib/checkout";
+import { maybeReleaseService } from "@/lib/checkout";
 import admin from "@/lib/firebase-admin";
-import { sendPaymentApprovedEmail, sendServiceGrantedEmail } from "@/lib/checkout-emails";
+import { sendPaymentApprovedEmail } from "@/lib/checkout-emails";
 import { syncOrderToUserDrive } from "@/lib/drive-sync";
 
 /**
@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
     let bodyData: { type?: string; data?: { id?: string } } = {};
     try {
       bodyData = await req.json();
-    } catch (e) {
+    } catch {
       // Body vazio ou não-JSON
     }
 
@@ -114,7 +114,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Payment not found" }, { status: 404 });
     }
 
-    const { status, status_detail, external_reference, metadata } = payment;
+    const { status, status_detail, external_reference } = payment;
     const orderId = external_reference;
 
     if (!orderId) {
@@ -142,18 +142,17 @@ export async function POST(req: NextRequest) {
     // 3. Ativação de Serviço (Apenas se aprovado 🏆)
     if (status === "approved") {
       const order = orderSnap.data();
-      const { userId, userEmail, productId, productSlug, productTitle, finalPrice, matricula, createdAt, basePrice, appliedDiscount } = order!;
+      const { userId, userEmail, productTitle, finalPrice, matricula, createdAt, basePrice, appliedDiscount } = order!;
 
-      // Ativação da Permissão
-      await grantServiceEntitlement({
-        uid: userId,
-        productId,
-        productSlug,
-        productTitle,
-        orderId
-      });
-
-      console.log(`✅ [Webhook:MP] Ordem ${orderId} APROVADA e Serviço Ativado.`);
+      // Gate de liberação (CT-3b.2): o serviço só é liberado quando o pagamento está
+      // aprovado E o contrato do serviço está assinado. Aqui o pagamento acabou de ser
+      // aprovado; libera se o contrato já estiver assinado, senão fica aguardando a
+      // assinatura (que também chama maybeReleaseService). O e-mail de "serviço liberado"
+      // agora sai de dentro de maybeReleaseService, só quando de fato libera.
+      const release = await maybeReleaseService(orderId);
+      console.log(
+        `✅ [Webhook:MP] Ordem ${orderId} APROVADA. Liberacao: ${release.released ? "liberada" : "aguardando (" + release.reason + ")"}.`
+      );
 
       // 📧 Disparos Assíncronos de E-mail (Personalizados 🧬)
       const { resolveUserNickname } = await import("@/lib/user-identity");
@@ -176,7 +175,6 @@ export async function POST(req: NextRequest) {
       // Passamos a promessa adiante mas não seguramos o Webhook. Mercado Pago exige resposta rápida!
       Promise.allSettled([
         sendPaymentApprovedEmail(userObj, orderObj, dataId),
-        sendServiceGrantedEmail(userObj, productTitle),
         ...(matricula && matricula !== "NAO_MAPEADA" ? [syncOrderToUserDrive(matricula, rowData)] : [])
       ]).catch(err => console.error("🚨 Erro assíncrono no webhook (Email/Sync):", err));
 

@@ -1,5 +1,5 @@
 import admin, { getAdminDb } from "@/lib/firebase-admin";
-import { USER_PERMISSIONS_COLLECTION } from "@/config/collections";
+import { USER_ORDERS_COLLECTION, PRODUCTS_COLLECTION, USER_COLLECTION } from "@/config/collections";
 import { sendServiceGrantedEmail } from "@/lib/checkout-emails";
 import { normalizeString } from "@/lib/utils";
 
@@ -214,5 +214,88 @@ export async function grantServiceEntitlement(params: GrantEntitlementParams) {
   }
 
   return transactionResult;
+}
+
+/** Status de pagamento da order que contam como "aprovado" para liberar o serviço. */
+const APPROVED_ORDER_STATUSES = ["approved", "active", "completed", "accredited"];
+
+/**
+ * Gate de liberação do serviço (CT-3b.2 — regra da Gestora, 2026-07-10): o serviço só é
+ * liberado quando **ambas** as condições são verdade — o pedido está com pagamento
+ * APROVADO (grátis/avulso nascem aprovados) **E** o contrato do serviço está ASSINADO.
+ *
+ * Idempotente e chamado de todos os pontos (webhook MP na aprovação, assinatura de
+ * checkout/avulso): a liberação dispara no evento que completar por último. `serviceReleased`
+ * na order evita re-concessão e e-mail duplicado. `grantServiceEntitlement` (que concede
+ * selo/cotas e marca o cupom) só roda aqui, no momento da liberação real.
+ */
+export async function maybeReleaseService(orderId: string): Promise<{ released: boolean; reason?: string }> {
+  const db = getAdminDb();
+  const orderRef = db.collection(USER_ORDERS_COLLECTION).doc(orderId);
+  const orderSnap = await orderRef.get();
+  if (!orderSnap.exists) return { released: false, reason: "order_not_found" };
+  const order = orderSnap.data() as {
+    userId?: string;
+    userEmail?: string;
+    matricula?: string;
+    productId?: string;
+    productSlug?: string;
+    productTitle?: string;
+    status?: string;
+    serviceReleased?: boolean;
+  };
+
+  // Idempotência: já liberado antes.
+  if (order.serviceReleased === true) return { released: true };
+
+  // Condição 1 — pagamento aprovado.
+  if (!APPROVED_ORDER_STATUSES.includes(String(order.status))) {
+    return { released: false, reason: "payment_pending" };
+  }
+
+  const { userId, matricula, productId, productSlug, productTitle } = order;
+  if (!userId || !matricula || !productId) return { released: false, reason: "order_incomplete" };
+
+  // Condição 2 — contrato do serviço assinado. contractId determinístico por serviço
+  // (mesmo do generateContractPdf/CT-1): serviceCode -> resolve o produto.
+  let serviceCode: string | null = null;
+  try {
+    const pSnap = await db.collection(PRODUCTS_COLLECTION).doc(productId).get();
+    serviceCode = pSnap.exists ? ((pSnap.data()?.serviceCode as string) ?? null) : null;
+  } catch {
+    serviceCode = null;
+  }
+  const contractId = String(serviceCode || productSlug || productId).replace(/[^a-zA-Z0-9._-]/g, "_");
+  const contractSnap = await db.collection(USER_COLLECTION).doc(matricula).collection("Contracts").doc(contractId).get();
+  if (!contractSnap.exists || contractSnap.data()?.status !== "assinado") {
+    return { released: false, reason: "contract_pending" };
+  }
+
+  // Ambas as condições satisfeitas -> concede (idempotente) e marca a order como liberada.
+  await grantServiceEntitlement({
+    uid: userId,
+    productId,
+    productSlug: productSlug || "",
+    productTitle: productTitle || "",
+    orderId,
+    // Liberação só ocorre com o contrato assinado -> registra o consentimento legal.
+    legalConsent: true,
+  });
+  await orderRef.update({
+    serviceReleased: true,
+    serviceReleasedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  // E-mail de serviço liberado — só agora que de fato liberou (antes saía do webhook,
+  // na aprovação do pagamento, quando o contrato ainda podia não estar assinado).
+  try {
+    const { resolveUserNickname } = await import("@/lib/user-identity");
+    const nickname = await resolveUserNickname(userId);
+    void sendServiceGrantedEmail({ email: order.userEmail || "", name: nickname }, productTitle || "");
+  } catch (e) {
+    console.error("[Release] Erro ao enviar e-mail de servico liberado:", e);
+  }
+
+  return { released: true };
 }
 

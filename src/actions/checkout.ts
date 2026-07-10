@@ -5,7 +5,7 @@ import { requireAuth } from "@/lib/auth-guards";
 import { Product } from "@/types/products";
 import { PRODUCTS_COLLECTION, USER_ORDERS_COLLECTION } from "@/config/collections";
 import { revalidatePath } from "next/cache";
-import { grantServiceEntitlement } from "@/lib/checkout";
+import { maybeReleaseService } from "@/lib/checkout";
 
 /**
  * BPlen HUB — Lógica de Checkout e Provisionamento 💳🧬
@@ -17,10 +17,9 @@ import { resolveMatricula } from "./get-user-results";
 import { hashCpf } from "@/utils/crypto";
 
 export async function processServicePurchaseAction(
-  productSlug: string, 
+  productSlug: string,
   idToken: string,
-  couponCode?: string,
-  legalConsent?: boolean
+  couponCode?: string
 ) {
   try {
     // 🛡️ 1. Validar Autenticação
@@ -107,57 +106,60 @@ export async function processServicePurchaseAction(
       return { success: false, error: "Este serviço não é gratuito. Conclua o pagamento pelo checkout." };
     }
 
-    // 🏛️ 3. Ativação Soberana (via Matrícula 🛡️)
-    const grantResult = await grantServiceEntitlement({
-      uid: session.uid,
-      productId: product.id || productSnap.docs[0].id,
-      productSlug: product.slug,
-      productTitle: product.title,
-      legalConsent
-    });
-
-    // 🧾 4. Registrar a transação no Histórico Financeiro (User_Orders) para aparecer em "Meus Contratos"
-    if (grantResult.orderId?.startsWith("BPLEN-FREE-")) {
-      const orderRef = db.collection(USER_ORDERS_COLLECTION).doc(grantResult.orderId);
-      const { FieldValue } = await import("firebase-admin/firestore");
-      await orderRef.set({
-        orderId: grantResult.orderId,
-        userId: session.uid,
-        matricula: grantResult.matricula,
-        userEmail: session.email || "",
-        productId: productId,
-        productSlug: product.slug,
-        productTitle: product.title,
-        productKicker: product.kicker || "",
-        basePrice: product.price || 0,
-        couponCode: couponCode || null,
-        appliedDiscount: appliedDiscount,
-        finalPrice: Math.max(0, (product.price || 0) - appliedDiscount),
-        currency: "BRL",
-        status: "approved",
-        statusDetail: "accredited",
-        gateway: "bplen_free_bypass",
-        createdAt: FieldValue.serverTimestamp(),
-        updatedAt: FieldValue.serverTimestamp(),
-      });
-
-      // 📧 5. Disparar E-mail de Confirmação para Serviços Gratuitos
-      const { resolveUserNickname } = await import("@/lib/user-identity");
-      const nickname = await resolveUserNickname(session.uid);
-      const { sendFreeOrderApprovedEmail } = await import("@/lib/checkout-emails");
-      
-      sendFreeOrderApprovedEmail(
-        { name: nickname, email: session.email || "" },
-        { orderId: grantResult.orderId, productTitle: product.title, finalPrice: Math.max(0, (product.price || 0) - appliedDiscount) }
-      );
+    // 🏛️ 3. Registrar o pedido gratuito (aprovado) — SEM liberar o serviço ainda.
+    // A liberação (selo/cotas/cupom) só ocorre quando o contrato for ASSINADO na tela
+    // de sucesso (gate CT-3b.2 — pagamento aprovado E contrato assinado). Antes, esta
+    // action concedia o serviço já na ativação.
+    const matricula = await resolveMatricula(session.uid, session.email || "");
+    if (!matricula) {
+      return { success: false, error: "Usuário sem matrícula válida para ativação." };
     }
 
-    console.log(`✅ [Checkout] Serviço ${product.title} ativado para ${session.email}`);
+    const orderId = `BPLEN-FREE-${matricula}-${(product.slug || productId).toUpperCase().substring(0, 10)}-${Date.now()}`;
+    const finalPrice = Math.max(0, (product.price || 0) - appliedDiscount);
+
+    const { FieldValue } = await import("firebase-admin/firestore");
+    await db.collection(USER_ORDERS_COLLECTION).doc(orderId).set({
+      orderId,
+      userId: session.uid,
+      matricula,
+      userEmail: session.email || "",
+      productId,
+      productSlug: product.slug,
+      productTitle: product.title,
+      productKicker: product.kicker || "",
+      basePrice: product.price || 0,
+      couponCode: couponCode || null,
+      appliedDiscount,
+      finalPrice,
+      currency: "BRL",
+      status: "approved",
+      statusDetail: "accredited",
+      gateway: "bplen_free_bypass",
+      serviceReleased: false,
+      createdAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
+    });
+
+    // Tenta liberar já (não vai: contrato ainda não assinado). Mantém a idempotência do
+    // gate — a liberação real dispara em signCheckoutContractAction, na assinatura.
+    await maybeReleaseService(orderId);
+
+    // 📧 E-mail de pedido gratuito registrado (pendente de assinatura do contrato).
+    const { resolveUserNickname } = await import("@/lib/user-identity");
+    const nickname = await resolveUserNickname(session.uid);
+    const { sendFreeOrderApprovedEmail } = await import("@/lib/checkout-emails");
+    sendFreeOrderApprovedEmail(
+      { name: nickname, email: session.email || "" },
+      { orderId, productTitle: product.title, finalPrice }
+    );
+
+    console.log(`✅ [Checkout] Pedido gratuito ${product.title} registrado para ${session.email} (aguardando assinatura).`);
 
     revalidatePath("/hub");
     revalidatePath("/admin/users");
-    
-    return { success: true, productTitle: product.title, orderId: grantResult.orderId };
+
+    return { success: true, productTitle: product.title, orderId };
 
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : "Erro interno ao processar contratação.";

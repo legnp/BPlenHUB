@@ -233,7 +233,13 @@ export async function signCheckoutContractAction(
         .set({ signature: { acceptedTerms } }, { merge: true });
     }
 
-    console.log(`[Checkout Contract] Contrato assinado por ${session.email} (${matricula}) — order ${orderId}`);
+    // Gate de liberação (CT-3b.2): agora que o contrato está assinado, libera o serviço
+    // se o pagamento também estiver aprovado (grátis nasce aprovado; pago já foi gateado
+    // acima). Idempotente — o webhook do MP também chama maybeReleaseService.
+    const { maybeReleaseService } = await import("@/lib/checkout");
+    const release = await maybeReleaseService(orderId);
+
+    console.log(`[Checkout Contract] Contrato assinado por ${session.email} (${matricula}) — order ${orderId} — liberacao: ${release.released ? "liberada" : release.reason}`);
     return { success: true, documentUrl: pdfResult.url };
   } catch (error: unknown) {
     console.error("[Checkout Contract Error]:", error);

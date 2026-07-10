@@ -321,7 +321,13 @@ export async function processAvulsoContractAction(token: string, idToken?: strin
       });
     }
 
-    console.log(`✅ [Retroactive Contract] Contrato assinado por ${session.email} (${matricula}) — ${product.title}`);
+    // Gate de liberação (CT-3b.2): a assinatura do avulso libera o serviço (decisão da
+    // Gestora). Avulso não tem pagamento MP (é pago por fora) — a order nasce `approved`,
+    // então a condição efetiva é o contrato assinado. Idempotente.
+    const { maybeReleaseService } = await import("@/lib/checkout");
+    const release = await maybeReleaseService(orderId);
+
+    console.log(`✅ [Avulso Contract] Contrato assinado por ${session.email} (${matricula}) — ${product.title} — liberacao: ${release.released ? "liberada" : release.reason}`);
     return { success: true, productTitle: product.title || v.data.productTitle, orderId, documentUrl: pdfResult.url };
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : "Erro interno ao processar contrato.";
