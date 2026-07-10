@@ -12,6 +12,9 @@ import { getErrorMessage } from "@/lib/utils/errors";
 import { safeSerialize } from "@/lib/utils/firestore";
 import { Product, ProductSheet } from "@/types/products";
 import { PRODUCTS_COLLECTION, USER_ORDERS_COLLECTION, USER_COLLECTION } from "@/config/collections";
+import { headers } from "next/headers";
+import { FieldValue } from "firebase-admin/firestore";
+import { ContractOrigin } from "@/types/contracts";
 
 /**
  * Rótulo humano do meio de contratação, a partir do `gateway` gravado em User_Orders.
@@ -101,7 +104,12 @@ export async function getUserLegalAudits(userId: string) {
   }
 }
 
-export async function generateContractPdf(userId: string, productId: string, orderId?: string) {
+export async function generateContractPdf(
+  userId: string,
+  productId: string,
+  orderId?: string,
+  origin: ContractOrigin = "checkout"
+) {
   try {
     const db = getAdminDb();
 
@@ -184,10 +192,20 @@ export async function generateContractPdf(userId: string, productId: string, ord
       buffer
     );
     
-    // Save Audit Log (subcoleção soberana chaveada por matrícula)
+    // Prova de aceite (clickwrap): IP real + user-agent do cliente na assinatura
+    // (validade jurídica — item f / BUG-054). Server action -> lê os headers do request.
+    const hdrs = await headers();
+    const ip =
+      hdrs.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      hdrs.get("x-real-ip") ||
+      "desconhecido";
+    const userAgent = hdrs.get("user-agent") || "desconhecido";
+    const now = new Date();
+
+    // Save Audit Log (subcoleção soberana chaveada por matrícula) — transitório;
+    // consolidado na entidade Contracts (CT-4).
     const auditRef = db.collection(USER_COLLECTION).doc(matricula).collection("Legal_Audits");
     const auditId = auditRef.doc().id;
-    const now = new Date();
 
     await auditRef.doc(auditId).set({
       auditId,
@@ -196,11 +214,36 @@ export async function generateContractPdf(userId: string, productId: string, ord
       productId,
       orderId: orderId || null,
       timestamp: now.toISOString(),
-      ipAddress: "Registrado pelo Gateway", // TODO CT-1: capturar IP real na assinatura (BUG-054)
+      ipAddress: ip,
       documentUrl: result.webViewLink,
       documentHash: hash
     });
-    
+
+    // Entidade de contrato (CT-1) — `User/{matricula}/Contracts/{contractId}`.
+    // Id determinístico por serviço: não duplica (base do aviso de duplicidade, item a /
+    // CT-2) e uma re-assinatura/retificação atualiza o mesmo doc, preservando createdAt.
+    const contractId = (product.serviceCode || product.slug || productId).replace(/[^a-zA-Z0-9._-]/g, "_");
+    const contractRef = db.collection(USER_COLLECTION).doc(matricula).collection("Contracts").doc(contractId);
+    const contractExists = (await contractRef.get()).exists;
+    await contractRef.set(
+      {
+        contractId,
+        matricula,
+        serviceCode: product.serviceCode ?? null,
+        productSlug: product.slug ?? null,
+        productTitle: product.title ?? null,
+        status: "assinado",
+        origin,
+        orderId: orderId || null,
+        documentUrl: result.webViewLink,
+        documentHash: hash,
+        signature: { signedAt: now.toISOString(), ip, userAgent },
+        updatedAt: FieldValue.serverTimestamp(),
+        ...(contractExists ? {} : { createdAt: FieldValue.serverTimestamp() })
+      },
+      { merge: true }
+    );
+
     return { success: true, url: result.webViewLink, hash };
     
   } catch (error: unknown) {

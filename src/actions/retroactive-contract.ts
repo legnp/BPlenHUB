@@ -72,7 +72,7 @@ export async function processRetroactiveContractAction(
     });
 
     // 📄 5. Gerar PDF do Contrato e Auditoria Imediatamente
-    const pdfResult = await generateContractPdf(session.uid, productId, orderId);
+    const pdfResult = await generateContractPdf(session.uid, productId, orderId, "retroativo");
     
     if (!pdfResult.success) {
       // Se falhar o PDF, não abortamos completamente, mas podemos logar ou avisar
