@@ -7,11 +7,14 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
 
   // ──────────────────────────────
-  // 0.0 File tracing — inclui os arquivos de métrica de fonte do pdfkit (.afm) no
-  //     bundle das funções serverless. Sem isto, a geração de PDF do contrato falha
-  //     em produção com ENOENT em pdfkit/js/data/Helvetica.afm (o Next não rastreia
-  //     esses assets de node_modules automaticamente). Custo mínimo (arquivos pequenos).
+  // 0.0 pdfkit em serverless — a geração de PDF do contrato lia os arquivos de
+  //     métrica de fonte (.afm) de node_modules/pdfkit/js/data em runtime e falhava
+  //     em produção com ENOENT (o Next não empacota esses assets lidos dinamicamente).
+  //     `serverExternalPackages` deixa o pdfkit FORA do bundle -> a Vercel envia o
+  //     pacote inteiro (com os .afm) para a função. O `outputFileTracingIncludes`
+  //     reforça, incluindo explicitamente os .afm no trace.
   // ──────────────────────────────
+  serverExternalPackages: ["pdfkit"],
   outputFileTracingIncludes: {
     "/**": ["./node_modules/pdfkit/**/*.afm"],
   },
