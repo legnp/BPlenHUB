@@ -2603,3 +2603,36 @@ para embasar essas decisões estão todos disponíveis.
   escopo), `00-PLAN.md` (índice), `DASHBOARD.md`, este LOG.
 - Próximas fases (aguardam priorização da Gestora): CT-1 (entidade de contrato + status +
   IP real), CT-2 (retroativo robusto a/b/c), CT-3 (viewer do documento), CT-4 (painel).
+
+---
+
+## [2026-07-09] Chat de execução — Contratos CT-1: entidade + status + IP real (PR #50)
+
+- Chat/sessão: mesmo chat de execução (Opus 4.8)
+- Escopo: CT-1 do `CONTRACTS-DESIGN.md` (aprovado pela Gestora). Fundação do subsistema.
+- Mudanças:
+  - Novo tipo `Contract` (`src/types/contracts.ts`): ciclo `pendente_assinatura →
+    em_retificacao → assinado → cancelado`, `origin` (checkout/retroativo), `signature`
+    (signedAt/ip/userAgent), documentUrl/hash, orderId, serviceCode, slot de `invoice`.
+  - `generateContractPdf`: captura **IP real** + user-agent via `headers()`
+    (x-forwarded-for/x-real-ip) → fecha a parte IP do **BUG-054** (item f), tanto na
+    entidade `Contracts.signature` quanto no `Legal_Audits.ipAddress`. Grava
+    `User/{matricula}/Contracts/{contractId}` com status `assinado`; id determinístico
+    por serviceCode/slug (não duplica; re-assinatura atualiza o mesmo doc, preserva
+    createdAt — base do aviso de duplicidade do CT-2). Novo parâmetro `origin` (default
+    "checkout"; retroativo passa "retroativo").
+  - `Legal_Audits` mantido transitório (consolidado no CT-4).
+- Nota de processo: o `ContractGateModal` tem um **erro de lint pré-existente**
+  (`react-hooks/immutability` no `loadPending`/useEffect) — para não tocar o arquivo, o
+  parâmetro `origin` ficou com default "checkout" (o caso do gate), evitando editar a
+  linha do caller. Só o retroativo passa "retroativo" explicitamente.
+- Escopo do CT-1: entidade + status `assinado` + IP. Criação de `pendente_assinatura` no
+  checkout e transição `em_retificacao` pelo admin → CT-2/CT-4. `getPendingContracts`/gate
+  (BUG-055) intocado.
+- Validação: server-side; eslint dos arquivos (0 erros), test 52/52, tsc, build exit 0.
+  Funcional em produção pela Gestora (BUG-030).
+- Entrega: **PR #50 mergeado** (`4ade038`, squash). Branch deletada; `main` ff-only.
+- Itens atualizados: `BUGS.md` (BUG-054 → Corrigido parte IP), `CONTRACTS-DESIGN.md`
+  (CT-1 feito), `00-PLAN.md` (índice), `DASHBOARD.md`, este LOG.
+- Próximas fases: CT-2 (retroativo robusto a/b/c), CT-3 (viewer do documento), CT-4
+  (painel + consolidação de Legal_Audits), CT-5 (reforços jurídicos que a Gestora indicará).

@@ -876,7 +876,7 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-051 | Alto | Corrigido (PR #49) | F1-02 — geração do PDF lê `products`/matrícula/`User_Orders` corretos; CT-0 (`CONTRACTS-DESIGN.md`) — confirmado em produção antes do fix |
 | BUG-052 | Médio | Aberto | F1-02 — documento do contrato não visualizável no HUB; CT-3 |
 | BUG-053 | Médio | Aberto | F1-02 — painel de contratos básico (status pagamento, sem assinatura/doc/NF, link morto); CT-4 |
-| BUG-054 | Médio | Aberto | F1-02 — IP placeholder na assinatura (validade jurídica); CT-1/CT-5 |
+| BUG-054 | Médio | Corrigido parte IP (PR #50) | F1-02 — IP real capturado na assinatura (CT-1); reforços jurídicos extras → CT-5 |
 | BUG-055 | Médio | Aberto | F1-02 — gate lê subcoleção morta `User/{uid}/Orders`; CT-0 |
 
 ---

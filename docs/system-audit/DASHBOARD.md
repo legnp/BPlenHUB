@@ -12,7 +12,14 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-09 (chat de execução — **Contratos CT-0 (PR #49)**:
+> **Última atualização:** 2026-07-09 (chat de execução — **Contratos CT-1 (PR #50)**:
+> entidade de contrato de 1ª classe (`User/{matricula}/Contracts`) com ciclo de status
+> (pendente_assinatura/em_retificação/assinado/cancelado) + **IP real** capturado na
+> assinatura (fecha a parte IP do BUG-054, item f). `generateContractPdf` grava a entidade
+> + origin; `Legal_Audits` transitório. Próximas: CT-2 (retroativo robusto), CT-3 (viewer),
+> CT-4 (painel). Validação em produção (BUG-030).
+>
+> _(entrada anterior)_ 2026-07-09 (chat de execução — **Contratos CT-0 (PR #49)**:
 > geração do PDF do contrato corrigida — `generateContractPdf` resolve a matrícula
 > (`_AuthMap`) e lê `products`/`User_Orders`/`profile` corretos. **BUG-051 confirmado em
 > produção** antes do fix e agora fechado. Roadmap CT-0→CT-5 aprovado (`CONTRACTS-DESIGN.md`).

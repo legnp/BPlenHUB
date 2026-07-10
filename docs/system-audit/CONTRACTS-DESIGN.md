@@ -104,10 +104,15 @@ Ordenado por **risco decrescente de "quebrado hoje"** e dependência.
   `getPendingContracts`/gate (`BUG-055`) **não** foi tocado — mudar a fonte de dados do
   gate tem risco comportamental (poderia passar a bloquear membros); movido para a fase
   da entidade/gate (CT-1/CT-4). Validação funcional em produção (BUG-030).
-- **CT-1 — Entidade de contrato + status.** Introduz `User/{matricula}/Contracts` e o
-  ciclo `pendente_assinatura → em_retificacao → assinado`. Checkout/retroativo passam a
-  criar a entidade; a assinatura grava `signature.ip` real (item f) + hash. Absorve
-  `Legal_Audits`.
+- **CT-1 — Entidade de contrato + status + IP real. ✅ FEITO (PR #50).** Novo tipo
+  `Contract` (`src/types/contracts.ts`) com ciclo `pendente_assinatura → em_retificacao
+  → assinado → cancelado`. `generateContractPdf` captura o **IP real** + user-agent via
+  `headers()` (fecha `BUG-054`, item f) e grava `User/{matricula}/Contracts/{contractId}`
+  com status `assinado` (id determinístico por serviceCode/slug — base do aviso de
+  duplicidade do CT-2; re-assinatura atualiza o mesmo doc, preserva createdAt). `origin`
+  (checkout/retroativo) registrado. `Legal_Audits` mantido transitório (consolidado no
+  CT-4). **Escopo:** criação de `pendente_assinatura` no checkout e transição
+  `em_retificacao` pelo admin ficam para CT-2/CT-4.
 - **CT-2 — Retroativo robusto (itens a/b/c).** Token de convite de uso único atado à
   matrícula (gerado pelo admin em `admin/users`), guard de dono, aviso de duplicidade
   no admin (item a). `/contrato-retroativo/[slug]` passa a exigir token válido +

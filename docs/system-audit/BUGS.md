@@ -1475,10 +1475,14 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   `ipAddress: "Registrado pelo Gateway"` (string fixa), não o IP real do cliente no
   momento da assinatura. Para validade jurídica do aceite clickwrap, é preciso capturar
   o IP real (+ user-agent + timestamp confiável). A Gestora indicará ajustes adicionais.
-- Status: Aberto — fase **CT-1** (assinatura grava IP real) + **CT-5** (reforços) do
-  `CONTRACTS-DESIGN.md`.
-- Decisão de execução: Precisa plano+aprovação (jurídico/identidade). Aguarda a fase.
-- Commit/PR: —
+- Status: **Corrigido (parte IP)** — 2026-07-09 (PR #50, CT-1). `generateContractPdf`
+  captura o **IP real** + user-agent via `headers()` (x-forwarded-for/x-real-ip) e grava
+  em `Contracts.signature` **e** no `Legal_Audits.ipAddress` (não mais o placeholder). Os
+  **reforços jurídicos adicionais** (timestamp confiável, etc.) que a Gestora indicará
+  ficam para o **CT-5**. Validado por eslint/test 52/52/tsc/build; funcional em produção
+  (BUG-030).
+- Decisão de execução: Corrigido via branch `feat/f1-02-ct1-contract-entity` (CT-1).
+- Commit/PR: **mergeado** — PR #50 (`4ade038`, squash). Reforços extras → CT-5.
 
 ### BUG-055 Gate de contrato lê subcoleção legada `User/{uid}/Orders` sem escritor (inerte)
 
