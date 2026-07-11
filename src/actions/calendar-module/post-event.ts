@@ -1,8 +1,8 @@
 import admin, { getAdminDb } from "@/lib/firebase-admin";
 import { requireAdmin } from "@/lib/auth-guards";
-import { parseISO, isBefore, format } from "date-fns";
+import { parseISO, isBefore } from "date-fns";
 import { getSheetsClient, getDriveClient } from "@/lib/google-auth";
-import { ensureFolder, createSpreadsheet, renameFile, getEventDriveFolder, syncDataToSheet } from "@/lib/drive-utils";
+import { createSpreadsheet, getEventDriveFolder, syncDataToSheet } from "@/lib/drive-utils";
 import { GoogleCalendarEvent, EventLifecycleStatus, AttendanceStatus, ProgramacaoEntry } from "@/types/calendar";
 import { getEventAttendees } from "./queries";
 import { sendAttendanceRegisteredEmail, sendAbsenceRegisteredEmail } from "@/lib/attendance-emails";
@@ -471,64 +471,7 @@ export async function healProgramacaoMasterAction(idToken: string) {
   }
 }
 
-/**
- * Adiciona um participante manualmente a um evento (Admin)
- */
-export async function adminAddAttendeeAction(
-  eventId: string, 
-  matricula: string, 
-  idToken: string
-) {
-  try {
-    await requireAdmin(idToken);
-    const db = getAdminDb();
-    
-    // Buscar dados do usuário
-    const userSnap = await db.collection("User").doc(matricula).get();
-    if (!userSnap.exists) throw new Error("Usuário não encontrado.");
-    const userData = userSnap.data();
-    
-    const eventRef = db.collection("Calendar_Events").doc(eventId);
-    const eventSnap = await eventRef.get();
-    if (!eventSnap.exists) throw new Error("Evento não encontrado.");
-    const eventData = eventSnap.data();
-
-    // Adicionar à subcoleção de participantes do evento
-    await eventRef.collection("attendees").doc(matricula).set({
-      matricula,
-      nickname: userData?.nickname || matricula,
-      email: userData?.email || "",
-      isLead: userData?.isLead || false,
-      timestamp: admin.firestore.FieldValue.serverTimestamp(),
-      attendanceStatus: "pending"
-    });
-
-    // Incrementar contador de inscritos
-    await eventRef.update({
-      registeredCount: admin.firestore.FieldValue.increment(1)
-    });
-
-    // Opcional: Criar o booking do usuário se não existir
-    const userBookingRef = db.collection("User").doc(matricula).collection("User_Bookings").doc(eventId);
-    const bookingSnap = await userBookingRef.get();
-    
-    if (!bookingSnap.exists) {
-       const startDate = parseISO(eventData?.start);
-       await userBookingRef.set({
-         eventId,
-         week: format(startDate, "w"), // Need to import format from date-fns
-         year: format(startDate, "yyyy"),
-         timestamp: admin.firestore.FieldValue.serverTimestamp(),
-         attendanceStatus: "pending",
-         rating: 0,
-         feedback: ""
-       });
-    }
-
-    await updateGlobalProgramacaoRegistryAction();
-    return { success: true };
-  } catch (error) {
-    console.error("Erro ao adicionar participante manual:", error);
-    return { success: false, message: (error as Error).message };
-  }
-}
+// Nota (BUG-010): a versão divergente de `adminAddAttendeeAction` que vivia aqui era
+// CÓDIGO MORTO — o dispatcher `calendar.ts` sempre usou a de `booking.ts`, e nada
+// importava/chamava esta. Removida para eliminar a duplicidade (que gravava attendee
+// com id/tipos diferentes). Fonte única: `booking.ts:adminAddAttendeeAction`.
