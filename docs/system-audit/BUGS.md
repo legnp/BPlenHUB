@@ -1534,6 +1534,21 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   codar (escopo: uma PR coesa, só contrato + checkout). Ver `00-PLAN.md#f2-05`.
 - Commit/PR: PR #58
 
+### BUG-057 Admin: modal de contratos aparecia vazio (lê Legal_Audits pela chave uid, não matrícula)
+- Severidade: Médio (admin não enxerga os contratos do cliente)
+- Área/fase onde foi achado: F1-02 / contratos (2026-07-10) — reportado pela Gestora
+- Arquivo(s) afetado(s): `src/app/admin/users/page.tsx`, `src/actions/legal.ts` (`getUserLegalAudits`)
+- Cenário de falha: **[CONFIRMADO em produção pela Gestora]** a aba "Contratos & Aceites"
+  mostrava "Nenhum contrato" mesmo para usuários com contratos assinados. O admin chamava
+  `getUserLegalAudits(selectedUser.uid || selectedUser.matricula)` — **uid primeiro** —, mas
+  os docs vivem em `User/{matrícula}/...` (chaveados por matrícula). Lia caminho vazio. Além
+  disso, só olhava `Legal_Audits` (assinados), não a entidade `Contracts` (pendentes também).
+- Status: **Corrigido** — PR #65. Nova action `getUserContractsAdminAction(matricula)`
+  (`requireAdmin`) lê `User/{matricula}/Contracts` com todos os status; admin/users carrega
+  pela matrícula e mostra badge de status real + documento (quando assinado) + nota fiscal.
+- Decisão de execução: correção alinhada ao CT-4 (mesma entidade de contrato).
+- Commit/PR: PR #65
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em

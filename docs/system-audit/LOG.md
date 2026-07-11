@@ -2908,3 +2908,9 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   pré-existente), test 52/52, tsc, build. Telas logadas → validação em produção (BUG-030).
 - **CT-4 completo.** Restam no subsistema: CT-3c (área /hub/legal + audiências), CT-5
   (reforços jurídicos sob demanda) e a validação em produção dos fluxos (adiada).
+- **Follow-up (PR #65, `BUG-057`):** a Gestora achou o modal de admin (Contratos & Aceites)
+  vazio — buscava `Legal_Audits` pela chave errada (uid, não matrícula) e só assinados. Nova
+  action `getUserContractsAdminAction(matricula)` lê a entidade `Contracts` com todos os
+  status; admin/users carrega pela matrícula, com badge de status + documento + nota fiscal.
+  (Nota de higiene: o commit foi feito por engano na main local e movido para branch própria
+  antes do push — main remota nunca recebeu commit direto; PR #65.)
