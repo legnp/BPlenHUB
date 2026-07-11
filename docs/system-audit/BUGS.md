@@ -262,10 +262,13 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   algum caminho (a confirmar — só a de `booking.ts` está no dispatcher
   `calendar.ts`), pode criar dois documentos diferentes para o mesmo par
   evento/usuário, com tipos de campo incompatíveis entre si.
-- Status: Aberto
-- Decisão de execução: Precisa plano+aprovação (investigar se é código morto
-  antes de qualquer remoção — toca dado de booking)
-- Commit/PR: —
+- Status: **Corrigido** — PR #69. Auditoria confirmou que a versão de `post-event.ts` era
+  **código morto**: o dispatcher `calendar.ts` sempre delega para `Booking.adminAddAttendeeAction`,
+  e a de post-event não era importada/chamada em lugar nenhum (os 2 componentes admin importam
+  de `@/actions/calendar`). Removida — fonte única passa a ser `booking.ts`.
+- Decisão de execução: investigado (código morto confirmado por grep de todos os usos) e
+  removido; sem risco de dado (nenhum caminho chamava a versão removida).
+- Commit/PR: PR #69
 
 ### BUG-011 Regra de antecedência mínima de agendamento não é reforçada na gravação
 

@@ -2954,3 +2954,17 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   `FloatingHubActions`).
 - Validado: eslint (arquivos tocados) limpo, test 52/52, tsc, build. Telas logadas →
   validação em produção (BUG-030).
+
+## [2026-07-11] Chat de execução — BUG-058 (painel data inválida) + BUG-010 (código morto)
+
+- **BUG-058 (PR #68):** a Gestora reportou (log Vercel) que `/hub/membro/contratos` não
+  carregava — `RangeError: Invalid time value`. Causa: contrato sem pedido (avulso pendente)
+  caía no fallback `contract.createdAt` (Timestamp cru, não serializado) → `new Date` inválido
+  → date-fns lança no `.map`. Corrigido: serializa `contract.createdAt` via `toIso` + helper
+  `fmtDate` seguro no painel (nunca lança). Validado em produção pela Gestora.
+- **Triagem — BUG-010 (PR #69, Alto):** confirmado por auditoria que a `adminAddAttendeeAction`
+  de `post-event.ts` era **código morto** (o dispatcher `calendar.ts` sempre usou a de
+  `booking.ts`; nada importava a de post-event). Removida — fonte única `booking.ts`. Limpeza
+  de imports órfãos de passagem. Fecha BUG-010.
+- Restam na triagem Alto: **BUG-008** (cotas 1-to-1, gated) e **BUG-001** (PII Support_Tickets,
+  gated) — ambos exigem plano+aprovação antes de codar.

@@ -231,7 +231,6 @@ ativa furando a ordem das fases.
 
 | Bug | Severidade | Onde se conecta | Por que ainda não fechou |
 |---|---|---|---|
-| BUG-010 | Alto | T-03 | **[HIPÓTESE]** precisa confirmar se a implementação duplicada em `post-event.ts` é código morto antes de decidir remoção |
 | BUG-008 | Alto | F2-04, T-03 | Requer plano+aprovação (toca fluxo financeiro/cotas) |
 | BUG-001 | Alto | T-06 | Requer plano+aprovação (dado sensível/PII, regra explícita do `CLAUDE.md`) |
 
