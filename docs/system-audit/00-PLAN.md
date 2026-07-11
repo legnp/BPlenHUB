@@ -231,8 +231,10 @@ ativa furando a ordem das fases.
 
 | Bug | Severidade | Onde se conecta | Por que ainda não fechou |
 |---|---|---|---|
-| BUG-008 | Alto | F2-04, T-03 | Requer plano+aprovação (toca fluxo financeiro/cotas) |
+| _(vazia)_ | — | — | Nenhum `Crítico`/`Alto` com Status `Aberto` |
 
+**Fila vazia (2026-07-11):** o último Alto aberto — `BUG-008` (chave de cota
+1-to-1) — foi corrigido (PR #71). Nenhum `Crítico`/`Alto` aberto no momento.
 Nenhum `Crítico` aberto no momento. Os dois Críticos registrados no processo
 (`BUG-003` recover sem auth, PR #3; `BUG-032` escalação de privilégio no login,
 PR #14) foram corrigidos e mergeados. `BUG-020` (Alto, sistêmico) também foi
@@ -612,14 +614,19 @@ sem copy hardcoded fora do que o guia permitir).
 - Categoria(s) de qualidade: Adequação funcional / Confiabilidade
 - Critério de aceite: chave de cota 1-to-1 unificada (uppercase vs lowercase),
   e decisão tomada sobre conectar `consumeQuotaAction` ao fluxo real de booking
-- Modo de validação: PENDENTE
-- Decisão: Pendente — unificar a chave "1-to-1" é técnico e direto; conectar
-  `consumeQuotaAction` ao booking real é decisão de negócio (Gestora confirma
-  se cota deve travar agendamento)
-- Execução: Não iniciada
-- Resultado: —
-- Bug(s) vinculado(s): BUG-008, BUG-013
-- Log: —
+- Modo de validação: Automatizado (unificação de chave — decisão técnica embasada por leitura)
+- Decisão: **Parcial (2026-07-11)** — chave "1-to-1" unificada em minúsculo
+  canônico (aprovada pela Gestora, PR #71). A 2ª parte — conectar
+  `consumeQuotaAction` ao booking real — segue **Pendente** (decisão de negócio,
+  Gestora confirma se cota deve travar agendamento; é o BUG-013).
+- Execução: **Parcial** — BUG-008 corrigido (PR #71): chave canônica minúscula,
+  helper `src/lib/quota-keys.ts`, gravador auto-cura o drift, leitores tolerantes,
+  migração `scripts/normalize-quota-keys.js` (a rodar pela Gestora). BUG-013
+  (ligar consumo ao booking) não iniciado.
+- Resultado: ✓ BUG-008 (chave 1-to-1 unificada, PR #71). ○ BUG-013 (consumo não
+  conectado ao booking — aguarda decisão de negócio).
+- Bug(s) vinculado(s): BUG-008 (Corrigido, PR #71), BUG-013 (Aberto)
+- Log: [2026-07-11] BUG-008 corrigido — ver `LOG.md`
 
 ### [F2-05] Categorização das páginas logadas nos 4 conceitos + padrão de design por conceito
 - Categoria(s) de qualidade: Usabilidade / Manutenibilidade (sistema de design)
@@ -806,20 +813,16 @@ O mapeamento das jornadas abaixo é entregável desta fase (não pré-existente)
 - Modo de validação: PENDENTE (executável via análise de código — profundidade
   igual às Fases 0-4)
 - Decisão: —
-- Execução: Em andamento — **1/4 (25%)** (ver `DASHBOARD.md`) — `BUG-018` fechou
-  por completo e conta como **unidade inteira** no numerador (critério de
-  fechamento de Track); os outros 3 bugs vinculados seguem `Aberto`. *(Corrigido
-  nesta sessão de reconciliação — o valor anterior aqui (`~0,5/4`) e no
-  `DASHBOARD.md` (`~1,5/4`) estava incorreto em ambos os documentos: a contagem
-  fracionária só é válida enquanto um bug está `Em Progresso` — precedente
-  correto é o `BUG-020`/T-02 antes de fechar — e não se aplica a um bug já
-  `Corrigido`.)*
+- Execução: Em andamento — **3/4 (75%)** (ver `DASHBOARD.md`) — `BUG-018` (F0-04),
+  `BUG-010` (código morto removido, PR #69) e `BUG-008` (chave de cota unificada,
+  PR #71) fechados; cada um conta como **unidade inteira** no numerador (critério
+  de fechamento de Track). Só `BUG-009` segue `Aberto`.
 - Resultado: ✓ Corrigido: BUG-018 (`entitlements` removida via F0-04 +
   consolidação completa de `User_JourneyMap` no v3 — Ações 1a/2/1b, PRs
-  #22/#23/#24/#25; ver `BUGS.md#bug-018`). ○ Abertos: BUG-008 (chave de cota),
-  BUG-009 (**[HIPÓTESE]** `UserBooking.timestamp` sempre nulo, não confirmado
-  em produção), BUG-010 (**[HIPÓTESE]** `adminAddAttendeeAction` duplicado,
-  código morto a confirmar).
+  #22/#23/#24/#25; ver `BUGS.md#bug-018`); BUG-010 (`adminAddAttendeeAction`
+  morta removida, PR #69); BUG-008 (chave de cota 1-to-1 unificada em minúsculo
+  canônico + migração, PR #71). ○ Aberto: BUG-009 (**[HIPÓTESE]**
+  `UserBooking.timestamp` sempre nulo, não confirmado em produção).
 - Bug(s) vinculado(s): BUG-008, BUG-009, BUG-010, BUG-018
 - Log: —
 
@@ -884,7 +887,7 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-005 | Médio | Corrigido (PR #19) | F1-05, T-02 |
 | BUG-006 | Médio | Corrigido (PR #18) | F1-05, T-02 |
 | BUG-007 | Médio | Corrigido (PR #1) | F0-05, F1-06, T-02 |
-| BUG-008 | Alto | Aberto | F2-04, T-03 |
+| BUG-008 | Alto | Corrigido (PR #71) | F2-04, T-03 — chave de cota 1-to-1 unificada |
 | BUG-009 | Médio | Aberto | F0-02, T-03 — **[HIPÓTESE]** |
 | BUG-010 | Alto | Aberto | T-03 — **[HIPÓTESE]** |
 | BUG-011 | Médio | Aberto | F3-01 — **[HIPÓTESE]** |

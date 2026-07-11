@@ -12,7 +12,16 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-11 (chat de execução — **Acabamento de UX de checkout/
+> **Última atualização:** 2026-07-11 (chat de execução — **BUG-008 corrigido — chave de
+> cota 1-to-1 unificada (PR #71)**: o gravador `updateMemberQuotasAction` forçava UPPERCASE
+> (`1-TO-1`) enquanto o catálogo e o modal de agendamento usam `1-to-1` — saldo aparecia
+> nulo e a mesma cota duplicava em dois cases. Chave canônica = minúsculo; novo
+> `src/lib/quota-keys.ts` (fold com merge total=maior/used=soma); gravador auto-cura o drift
+> via `update()` (não `set(merge:true)`, L16); leitores tolerantes. Migração
+> `scripts/normalize-quota-keys.js` (dry-run + backup) a rodar pela Gestora. **Último Alto
+> aberto fechado — triagem por severidade vazia (0 Crítico / 0 Alto).**
+>
+> _(entrada anterior)_ 2026-07-11 (chat de execução — **Acabamento de UX de checkout/
 > contratos (PR #67)**: ajustes de copy revisados pela Gestora, preços em BRL "x.xxx,xx"
 > (novo `formatBRL`), checkout normalizado ao padrão Gestão Funcional (F2-05), info do
 > serviço formatada, suporte no WhatsApp nos erros, e correção da alegação "dados
@@ -228,10 +237,12 @@ mergeados na `main` sobre o total do track.
 - ✓ Mergeados: BUG-023
 - ○ Abertos: BUG-001 (`Support_Tickets` com PII em coleção raiz)
 
-### T-03 — Integridade de dados · **1 / 4 (25%)**  `███░░░░░░░`
+### T-03 — Integridade de dados · **3 / 4 (75%)**  `████████░░`
 
 - ✓ BUG-018 **Corrigido** — `entitlements` removida (F0-04) + consolidação de jornada completa: `User_Journey`(v3) mantido, `User_JourneyMap`(legado) parou de ser escrito (PR #22), migrado dos 5 clientes atuais (script PRs #23/#24, executado) e fallback removido (PR #25). Conta como unidade inteira no numerador (critério de fechamento de Track) — resíduo de nomenclatura no networking segue à parte no BUG-033 (Fase 1).
-- ○ Abertos: BUG-008 (chave de cota), BUG-009 (`UserBooking.timestamp`), BUG-010 (`adminAddAttendee` duplicado)
+- ✓ BUG-010 **Corrigido** (PR #69) — `adminAddAttendeeAction` morta (versão de `post-event.ts`) removida; fonte única em `booking.ts`.
+- ✓ BUG-008 **Corrigido** (PR #71) — chave de cota `1-to-1` unificada em minúsculo canônico (`src/lib/quota-keys.ts` + gravador auto-cura o drift + migração `normalize-quota-keys.js`). Merge de duplicatas total=maior/used=soma.
+- ○ Aberto: BUG-009 (`UserBooking.timestamp` provavelmente sempre nulo — **[HIPÓTESE]**, a confirmar em produção)
 
 ### Outros tracks (ainda não iniciados)
 
@@ -302,8 +313,9 @@ modernizada), mas a **validação visual/UX página-a-página das telas logadas 
 começou** — ela depende de produção (BUG-030) e é o grosso do trabalho restante da
 Fase 1. Só a F1-01 (pública) está de fato validada ponta-a-ponta.
 
-**Triagem por severidade (Fase 1):** nenhum Crítico; Altos abertos = BUG-001 (T-06),
-BUG-008/010 (T-03). O BUG-035 (Alto) saiu da fila (resolvido).
+**Triagem por severidade (Fase 1):** **vazia** — nenhum Crítico e nenhum Alto aberto.
+Os últimos Altos foram fechados: BUG-035 (PR #37), BUG-010 (PR #69), BUG-001 (PR #70,
+com 2 passos manuais da Gestora em andamento) e BUG-008 (PR #71).
 
 ---
 

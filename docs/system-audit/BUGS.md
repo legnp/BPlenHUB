@@ -236,9 +236,32 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   `"1-TO-1"` (uppercase); `consumeQuotaAction`/`getMemberQuotasAction` esperam
   `"1-to-1"` (lowercase-hífen). Uma cota concedida por um caminho pode não ser
   enxergada/consumida corretamente pelo outro.
-- Status: Aberto
-- Decisão de execução: Precisa plano+aprovação (fluxo financeiro/cotas)
-- Commit/PR: —
+- **[CONFIRMADO por leitura, 2026-07-11 / F2-04]:** o único gravador
+  (`updateMemberQuotasAction`) fazia `type.toUpperCase()` em toda chave (gravava
+  `1-TO-1`), enquanto o catálogo de produtos (`portfolio_parser.py`), a migração
+  anterior (`archive/migrate-quotas-v3.js`) e o `OneToOneBookingModal` usam
+  `1-to-1` (minúsculo). Leitores divididos: `getUserOneToOneQuotaAction`/
+  `users-admin` liam `1-TO-1` (funcionavam); `OneToOneBookingModal`/
+  `consumeQuotaAction` liam `1-to-1` (quebrados → saldo nulo). Amostra em
+  `scripts/test-quota-match.js` confirma dados reais com cases misturados e até a
+  MESMA cota duplicada em dois cases no mesmo mapa (`ANALISE-COMPORTAMENTAL`:8 +
+  `analise-comportamental`:2).
+- Status: **Corrigido** — 2026-07-11 (PR #71). Chave canônica = minúsculo
+  `1-to-1`. Novo `src/lib/quota-keys.ts` (`normalizeQuotaKey` + `foldQuotaMap`,
+  merge de duplicatas com **total=maior, used=soma, lastUpdated=mais recente**,
+  política aprovada pela Gestora). `updateMemberQuotasAction` para de forçar
+  UPPERCASE, auto-cura o drift a cada escrita e substitui o campo `quotas` inteiro
+  via `update()` (não `set(merge:true)` — L16). Leitores dobram para `1-to-1` com
+  fallback tolerante a `1-TO-1`. Migração `scripts/normalize-quota-keys.js`
+  (LOCAL, dry-run + backup) normaliza as carteiras já gravadas — **a rodar pela
+  Gestora pós-merge**. Não liga `consumeQuotaAction` ao booking (é o BUG-013, à
+  parte). Validado: eslint 0 erros, test 52/52, type-check, build exit 0.
+- Decisão de execução: Plano + política de merge apresentados e **aprovados pela
+  Gestora** (2026-07-11, área financeiro/cotas). Corrigido via branch
+  `fix/f2-04-bug008-quota-key-case`.
+- Commit/PR: **mergeado** — PR #71 (`72b9985`, squash).
+- Passo manual pendente (Gestora): `node scripts/normalize-quota-keys.js` (dry-run
+  → conferir diff → `--apply` → dry-run de novo para confirmar 0 a normalizar).
 
 ### BUG-009 `UserBooking.timestamp` provavelmente sempre nulo
 

@@ -2983,3 +2983,40 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
 - Validado: eslint (action) limpo, test 52/52, tsc, build. Fecha **BUG-001**.
 - **Pós-merge (Gestora):** `firebase deploy --only firestore:rules` + rodar o script `--apply`.
 - **Triagem Alto agora só tem BUG-008** (cotas 1-to-1, gated).
+
+## [2026-07-11] Chat de execução — BUG-008: chave de cota 1-to-1 unificada (PR #71)
+
+- Chat/sessão: chat de execução (Opus 4.8), retomando a triagem por severidade — último
+  Alto aberto (F2-04 / T-03). Gated (fluxo financeiro/cotas): plano + política de merge
+  apresentados e **aprovados pela Gestora** antes de codar.
+- Investigação (por leitura): o único gravador `updateMemberQuotasAction` fazia
+  `type.toUpperCase()` em toda chave (gravava `1-TO-1`), enquanto o catálogo de produtos
+  (`portfolio_parser.py`), a migração antiga (`archive/migrate-quotas-v3.js`) e o
+  `OneToOneBookingModal` usam `1-to-1` (minúsculo). Leitores divididos: `getUserOneToOneQuotaAction`/
+  `users-admin` liam `1-TO-1` (funcionavam); `OneToOneBookingModal`/`consumeQuotaAction` liam
+  `1-to-1` (quebrados → saldo nulo). Amostra em `scripts/test-quota-match.js` confirma dados
+  reais com cases misturados e até a MESMA cota duplicada em dois cases no mesmo mapa.
+- Decisões da Gestora: (1) escopo = **código + migração de limpeza**; (2) política de merge de
+  duplicatas = **total=maior, used=soma, lastUpdated=mais recente** (trata a duplicata como o
+  mesmo crédito, nunca devolve consumido); (3) chave canônica = minúsculo `1-to-1` (implícita
+  no plano, sem objeção).
+- Mudanças (PR #71): novo `src/lib/quota-keys.ts` (`normalizeQuotaKey` + `foldQuotaMap`) —
+  helper fora do módulo `"use server"` para poder exportar funções síncronas.
+  `updateMemberQuotasAction` para de forçar UPPERCASE, dobra as chaves existentes antes de
+  somar (auto-cura o drift a cada escrita) e substitui o campo `quotas` inteiro via `update()`
+  (não `set(merge:true)`, que nunca apaga chave de map — Lição 16). `getMemberQuotasAction`/
+  `consumeQuotaAction`/`getUserOneToOneQuotaAction`/`users-admin` leem/dobram para `1-to-1`
+  com fallback tolerante a `1-TO-1`. Migração `scripts/normalize-quota-keys.js` (LOCAL,
+  dry-run por padrão, `--apply` faz backup em `scratch/`) espelha o `foldQuotaMap`.
+- **Fora de escopo (registrado):** não liga `consumeQuotaAction` ao fluxo de booking — é o
+  **BUG-013** (decisão de negócio separada, cota travar agendamento). F2-04 fica **Parcial**
+  (BUG-008 fechado, BUG-013 aberto).
+- Validado: eslint dos arquivos tocados (0 erros, só warnings pré-existentes), test 52/52,
+  type-check limpo, build exit 0. Telas logadas não autenticam no preview (BUG-030) →
+  conferência funcional em produção pela Gestora.
+- **Pós-merge (Gestora):** rodar `node scripts/normalize-quota-keys.js` (dry-run → conferir
+  diff → `--apply` → dry-run de novo para confirmar 0 a normalizar).
+- Itens atualizados: `BUGS.md` (BUG-008 → Corrigido), `00-PLAN.md` (F2-04 → Parcial, Triagem
+  por severidade **vazia**, T-03 → 3/4, índice bug→track), `DASHBOARD.md` (T-03 3/4, triagem
+  Fase 1 vazia, entrada nova), este LOG.
+- **Triagem por severidade agora VAZIA** — nenhum Crítico e nenhum Alto aberto.
