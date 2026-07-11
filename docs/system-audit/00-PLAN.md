@@ -459,23 +459,39 @@ sem copy hardcoded fora do que o guia permitir).
   gratuito/cupom-100%) **removida**; a ativação grátis já vive no fluxo de membro
   `/hub/checkout` (`CheckoutFlow`). O contrato retroativo (BUG-022) foi **expandido pela
   Gestora** para um redesenho do subsistema de contratos (ver `CONTRACTS-DESIGN.md`).
-- Execução: **Parcial** — BUG-002 corrigido (PR #48: trava de preço server-side +
-  remoção da rota órfã). O "universo de contratos" (retroativo robusto, painel,
-  visualização de documento, IP jurídico) segue em fases CT-0→CT-5 do
-  `CONTRACTS-DESIGN.md`, cada uma gated.
+- Execução: **Em andamento (avançado)** — BUG-002 corrigido (PR #48: trava de preço
+  server-side + remoção da rota órfã). O subsistema de contratos (`CONTRACTS-DESIGN.md`)
+  avançou de **CT-0 a CT-3b.2**: geração de PDF corrigida (CT-0, PR #49), entidade de
+  contrato + IP real (CT-1, PR #50), avulso robusto por token único (CT-2, PR #51),
+  contrato visível antes de assinar via fonte única (CT-3a, PR #55), rename avulso +
+  checkboxes configuráveis (CT-3b.1, PR #56), assinatura pós-checkout grátis+pago (CT-3b.2,
+  PR #57), padrão Gestão Funcional + herança de tema (PR #58), carimbo + código único no PDF
+  (PR #59), gate de liberação "pagamento aprovado E contrato assinado" + fluxo grátis direto
+  + avulso libera ao assinar (PR #60), status real na tela de sucesso (PR #61) e geo por IP
+  no carimbo (PR #62). **Pendente:** CT-3c (área `/hub/legal` + audiências empresas/parceiros),
+  CT-4 (painel reescrito + estado "pago, aguardando assinatura"), CT-5 (reforços jurídicos),
+  e a **validação funcional em produção** dos 3 fluxos (grátis/pago/avulso) — adiada pela
+  Gestora até limpar a base do usuário de teste (BUG-030 + muitos serviços já liberados de
+  testes). O gate legado (`BUG-055`) segue não reaproveitado (redesenho no CT-4).
 - Resultado: BUG-002 **[CONFIRMADO]** e corrigido — brecha de concessão gratuita de
-  produto pago fechada. Investigação do subsistema de contratos revelou fragmentação/
-  quebra estrutural: geração de PDF lê coleção errada (`BUG-051`), gate lê subcoleção
-  morta (`BUG-055`), documento não visualizável (`BUG-052`), painel básico com link
-  morto (`BUG-053`), IP placeholder (`BUG-054`). Consolidado em `CONTRACTS-DESIGN.md`.
-- Bug(s) vinculado(s): BUG-002 (Corrigido, PR #48), BUG-022 (retroativo → CT-2),
-  BUG-051/052/053/054/055 (subsistema de contratos, `CONTRACTS-DESIGN.md`)
+  produto pago fechada. A investigação do subsistema revelou fragmentação/quebra
+  estrutural, endereçada nas fases CT-*: geração de PDF na coleção errada (`BUG-051`,
+  corrigido), IP placeholder (`BUG-054`, corrigido — IP real + geo), documento não
+  visualizável (`BUG-052`, em progresso — cláusulas na tela + link do documento; viewer/
+  painel restam no CT-4), painel por pagamento e não assinatura (`BUG-053`, CT-4), gate lê
+  subcoleção morta (`BUG-055`, redesenho no CT-4). Defeitos de UX da CT-3b.2 (`BUG-056`)
+  corrigidos (PR #58). Consolidado em `CONTRACTS-DESIGN.md`.
+- Bug(s) vinculado(s): BUG-002 (Corrigido, PR #48), BUG-022 (Corrigido via CT-2, PR #51),
+  BUG-051 (Corrigido, CT-0/PR #49), BUG-054 (Corrigido — IP real CT-1/PR #50 + geo PR #62),
+  BUG-056 (Corrigido, PR #58), BUG-052 (Em Progresso — restante no CT-4), BUG-053 (Aberto —
+  CT-4), BUG-055 (Aberto — redesenho no CT-4)
 - Log: [2026-07-09] BUG-002 corrigido + investigação e design do subsistema de contratos;
   [2026-07-10] contratos CT-0..CT-2 (PRs #49/#50/#51), CT-3a (PR #55), CT-3b.1 (PR #56),
   **CT-3b.2 — assinatura pós-checkout grátis+pago (PR #57)**, correção UX/design + padrão
-  Gestão Funcional (PR #58, BUG-056), carimbo + código único no PDF (PR #59) e **gate de
+  Gestão Funcional (PR #58, BUG-056), carimbo + código único no PDF (PR #59), **gate de
   liberação — serviço só com pagamento aprovado E contrato assinado + fluxo grátis direto
-  + avulso libera ao assinar (PR #60)** — ver `LOG.md` e `CONTRACTS-DESIGN.md`
+  + avulso libera ao assinar (PR #60)**, status real na tela de sucesso (PR #61) e geo por
+  IP no carimbo (PR #62) — ver `LOG.md` e `CONTRACTS-DESIGN.md`
 
 ### [F1-03] Hub — dashboard e motor de jornada
 - Categoria(s) de qualidade: Adequação funcional / Usabilidade
