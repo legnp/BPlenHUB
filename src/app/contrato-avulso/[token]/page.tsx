@@ -24,6 +24,7 @@ import { getErrorMessage } from "@/lib/utils/errors";
 import { ContractTermsCheckboxes, allRequiredAccepted, type ContractTerm } from "@/components/contracts/ContractTermsCheckboxes";
 import { ContractDocumentView } from "@/components/contracts/ContractDocumentView";
 import { FunctionalPageHeader } from "@/components/layout/FunctionalPageHeader";
+import { formatBRL } from "@/lib/utils/format";
 
 type ResolvedProduct = { slug: string | null; title: string | null; serviceCode: string | null; price: number };
 type Screen = "loading" | "logged_out" | "blocked" | "summary" | "processing" | "success";
@@ -183,7 +184,7 @@ export default function AvulsoContractPage() {
           {screen === "summary" && product && (
             <motion.div key="summary" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.98 }} className="space-y-10 animate-fade-in">
               <FunctionalPageHeader
-                eyebrow="Formalização Avulsa"
+                eyebrow="Formalização de Serviço"
                 title="Contrato"
                 titleAccent="de Serviço"
                 backHref="/hub"
@@ -211,12 +212,12 @@ export default function AvulsoContractPage() {
 
                     <div className="pt-6 border-t border-[var(--border-primary)]/40 space-y-3">
                       <div className="flex justify-between text-sm font-bold text-[var(--text-muted)]">
-                        <span>Investimento Registrado</span>
-                        <span>R$ {product.price.toLocaleString("pt-BR")}</span>
+                        <span>Investimento</span>
+                        <span>R$ {formatBRL(product.price)}</span>
                       </div>
                       <div className="flex justify-between text-xl font-black pt-2 text-[var(--accent-start)]">
                         <span>Total Formalizado</span>
-                        <span>R$ {product.price.toLocaleString("pt-BR")}</span>
+                        <span>R$ {formatBRL(product.price)}</span>
                       </div>
                     </div>
                   </div>
@@ -240,7 +241,7 @@ export default function AvulsoContractPage() {
                     </div>
                     <div className="p-6 rounded-2xl bg-[var(--accent-soft)] border border-[var(--accent-start)]/15 space-y-2">
                       <p className="text-[9px] text-[var(--text-muted)] font-bold leading-relaxed">
-                        Ao confirmar, um PDF oficial do contrato será gerado com carimbo de tempo e IP em nossos servidores e armazenado em seu Google Drive.
+                        Ao confirmar, um PDF oficial do contrato será gerado com carimbo de tempo e IP em nossos servidores e disponibilizado na sua conta BPlen HUB.
                       </p>
                     </div>
                     {error ? <p className="text-[11px] text-red-500 font-bold">{error}</p> : null}
@@ -269,7 +270,7 @@ export default function AvulsoContractPage() {
               </div>
               <div className="space-y-3">
                 <h2 className="text-3xl font-black tracking-tight uppercase italic text-[var(--text-primary)]">Gerando <span className="opacity-40">Documento</span></h2>
-                <p className="text-[var(--text-muted)] text-[10px] font-black uppercase tracking-[0.4em] animate-pulse">Registrando log de auditoria (IP + timestamp)...</p>
+                <p className="text-[var(--text-muted)] text-[10px] font-black uppercase tracking-[0.4em] animate-pulse">Registrando contrato...</p>
               </div>
             </motion.div>
           )}
@@ -283,7 +284,7 @@ export default function AvulsoContractPage() {
                 <div className="space-y-4">
                   <h2 className="text-4xl font-black tracking-tight text-[var(--text-primary)]">Documento <span className="text-emerald-500">Assinado.</span></h2>
                   <p className="text-lg text-[var(--text-muted)] font-medium leading-relaxed">
-                    Sua formalização foi registrada com IP e carimbo de tempo. O PDF já está disponível na sua pasta BPlen no Google Drive.
+                    Seu contrato já está registrado. O PDF já está disponível na sua conta da BPlen HUB.
                   </p>
                 </div>
                 <div className="flex flex-col gap-4">

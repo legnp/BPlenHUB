@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { AlertCircle, X, Send, ImagePlus, Trash2, Loader2, CheckCircle2 } from "lucide-react";
 import { submitSupportTicket } from "@/actions/support-ticket";
 import { usePathname } from "next/navigation";
+import { SUPPORT_WHATSAPP_URL } from "@/config/support";
 
 /**
  * FloatingHubActions — Botões Flutuantes do HUB (Bottom Right) 🆘📱
@@ -15,7 +16,7 @@ import { usePathname } from "next/navigation";
  * Fica fixo na tela durante todo o Hub, permanecendo no lugar ao scrollar.
  */
 
-const WHATSAPP_URL = "https://wa.me/5511945152088?text=Ol%C3%A1!%20Preciso%20de%20suporte%20do%20BPlen%20HUB.";
+const WHATSAPP_URL = SUPPORT_WHATSAPP_URL;
 const MAX_IMAGE_SIZE_MB = 1;
 const MAX_IMAGE_SIZE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024;
 

@@ -9,6 +9,7 @@ import { redirect } from "next/navigation";
 import { getMemberContractsPanelAction, type ContractCard } from "@/actions/member-contracts";
 import { FunctionalPageHeader, type StatusTone } from "@/components/layout/FunctionalPageHeader";
 import { ContractDocButton } from "@/components/contracts/ContractDocButton";
+import { formatBRL } from "@/lib/utils/format";
 
 export const metadata: Metadata = {
   title: "Meus Contratos",
@@ -69,11 +70,11 @@ export default async function ContratosPage() {
   return (
     <div className="max-w-[1440px] mx-auto pt-[10px] px-6 pb-16 md:px-12 space-y-10 w-full animate-fade-in">
       <FunctionalPageHeader
-        eyebrow="Central de Acessos & Documentos"
+        eyebrow="Gestão de serviços e contratos"
         title="Meus"
         titleAccent="Contratos"
         backHref="/hub/membro"
-        backLabel="Painel Principal"
+        backLabel="Voltar"
         statusTag={headerTag}
       />
 
@@ -82,7 +83,7 @@ export default async function ContratosPage() {
           <AlertCircle size={44} className="mx-auto text-red-500 opacity-80" />
           <h3 className="text-lg font-black text-red-600 uppercase tracking-widest">Falha na Sincronização</h3>
           <p className="text-xs text-[var(--text-secondary)] max-w-md mx-auto leading-relaxed">
-            Houve um problema ao recuperar seus contratos. {error}
+            Houve um problema ao carregar seus contratos. {error}
           </p>
           <Link
             href="/hub/membro/contratos"
@@ -151,7 +152,7 @@ export default async function ContratosPage() {
                   <div>
                     <p className="text-[9px] uppercase font-bold tracking-[0.2em] text-[var(--text-muted)] mb-1">Valor</p>
                     <p className="text-xl font-black text-[var(--text-primary)]">
-                      {card.finalPrice !== null ? `R$ ${card.finalPrice.toFixed(2)}` : "—"}
+                      {card.finalPrice !== null ? `R$ ${formatBRL(card.finalPrice)}` : "—"}
                     </p>
                   </div>
                   {card.purchaseDate ? (

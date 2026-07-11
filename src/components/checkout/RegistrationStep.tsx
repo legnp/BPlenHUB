@@ -59,7 +59,7 @@ export function RegistrationStep({ onComplete }: RegistrationStepProps) {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-4">
         <Loader2 className="w-8 h-8 text-[var(--accent-start)] animate-spin" />
-        <p className="text-[10px] font-black uppercase tracking-widest text-gray-500">Preparando seus dados...</p>
+        <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Preparando seus dados...</p>
       </div>
     );
   }
@@ -70,20 +70,20 @@ export function RegistrationStep({ onComplete }: RegistrationStepProps) {
       animate={{ opacity: 1, y: 0 }}
       className="space-y-8"
     >
-      <div className="p-8 rounded-[2.5rem] bg-white/5 border border-white/10 flex items-center gap-6">
-        <div className="w-16 h-16 rounded-2xl bg-[#ff0080]/10 flex items-center justify-center text-[#ff0080]">
+      <div className="p-8 rounded-[2.5rem] bg-[var(--input-bg)] border border-[var(--border-primary)] flex items-center gap-6 shadow-sm">
+        <div className="w-16 h-16 rounded-2xl bg-[var(--accent-start)]/10 flex items-center justify-center text-[var(--accent-start)]">
            <UserCheck size={32} />
         </div>
         <div className="space-y-1">
-           <h3 className="text-xl font-black tracking-tight uppercase italic">Revisão de Dados</h3>
-           <p className="text-xs font-medium text-gray-500 leading-relaxed">
-             Confirme seus dados para emissão da <span className="text-white">Nota Fiscal</span> e <span className="text-white">Contrato</span>.
+           <h3 className="text-xl font-black tracking-tight text-[var(--text-primary)]">Revisão de Dados</h3>
+           <p className="text-xs font-medium text-[var(--text-muted)] leading-relaxed">
+             Confirme seus dados para emissão da <span className="text-[var(--text-primary)] font-bold">Nota Fiscal</span> e do <span className="text-[var(--text-primary)] font-bold">Contrato</span>.
            </p>
         </div>
       </div>
 
-      <div className="glass !bg-transparent !p-0 overflow-hidden border-white/5">
-        <FormsEngine 
+      <div className="glass !bg-transparent !p-0 overflow-hidden border-[var(--border-primary)]">
+        <FormsEngine
           config={dadosCadastraisForm}
           userUid={user?.uid || ""}
           initialResponses={initialData || undefined}
@@ -91,9 +91,9 @@ export function RegistrationStep({ onComplete }: RegistrationStepProps) {
         />
       </div>
 
-      <div className="flex items-center justify-center gap-3 text-[9px] font-black uppercase tracking-[0.2em] text-gray-600">
+      <div className="flex items-center justify-center gap-3 text-[9px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)]">
          <ShieldCheck size={14} />
-         Proteção de Dados Criptografada BPlen
+         Ambiente Seguro · Proteção de Dados BPlen
       </div>
     </motion.div>
   );

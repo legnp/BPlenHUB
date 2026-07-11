@@ -56,7 +56,7 @@ function NavCtas({ documentUrl }: { documentUrl?: string | null }) {
         href="/hub/membro?startTour=true"
         className="w-full sm:w-auto px-8 py-4 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-full text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all flex items-center justify-center gap-3"
       >
-        <Home size={16} /> Ir para o Dashboard
+        <Home size={16} /> Ir para BPlen HUB
       </Link>
       <Link
         href="/hub/journey?startTour=part2"
@@ -184,7 +184,7 @@ export function CheckoutContractSigning({
   return (
     <div className="space-y-10">
       <FunctionalPageHeader
-        eyebrow={isFree ? "Ativação Concluída" : "Checkout Concluído"}
+        eyebrow={isFree ? "Aquisição Concluída" : "Checkout Concluído"}
         title="Formalização"
         titleAccent="do Serviço"
         statusTag={statusTag}
@@ -199,9 +199,9 @@ export function CheckoutContractSigning({
               <Zap size={22} />
             </div>
             <div className="space-y-0.5">
-              <p className="text-sm font-black text-[var(--text-primary)]">Ativação gratuita registrada</p>
+              <p className="text-sm font-black text-[var(--text-primary)]">Aquisição gratuita registrada</p>
               <p className="text-xs text-[var(--text-muted)] font-medium">
-                O serviço será liberado na sua conta <b>após a assinatura</b> do contrato abaixo.
+                O serviço será liberado na BPlen HUB <b>após a assinatura</b> do contrato abaixo.
               </p>
             </div>
           </div>
@@ -215,7 +215,7 @@ export function CheckoutContractSigning({
             <div className="space-y-0.5">
               <p className="text-sm font-black text-[var(--text-primary)]">Pagamento confirmado</p>
               <p className="text-xs text-[var(--text-muted)] font-medium">
-                O serviço será liberado na sua conta <b>após a assinatura</b> do contrato abaixo.
+                O serviço será liberado na BPlen HUB <b>após a assinatura</b> do contrato abaixo.
               </p>
             </div>
           </div>
@@ -287,7 +287,7 @@ export function CheckoutContractSigning({
               <div className="p-4 rounded-2xl bg-[var(--accent-soft)] border border-[var(--accent-start)]/15 flex items-start gap-3">
                 <ShieldCheck size={16} className="text-[var(--accent-start)] shrink-0 mt-0.5" />
                 <p className="text-[9px] text-[var(--text-muted)] font-bold leading-relaxed">
-                  Ao confirmar, um PDF oficial do contrato será gerado com carimbo de tempo e IP em nossos servidores e armazenado na sua pasta BPlen no Google Drive.
+                  Ao confirmar, um PDF oficial do contrato será gerado com carimbo de tempo e IP em nossos servidores e disponibilizado na sua conta BPlen HUB.
                 </p>
               </div>
 
@@ -301,13 +301,6 @@ export function CheckoutContractSigning({
                 Assinar Contrato
                 <ArrowRight size={18} className="group-hover:translate-x-1 duration-300" />
               </button>
-
-              <p className="text-center text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
-                Prefere assinar depois?{" "}
-                <Link href="/hub/membro/contratos" className="text-[var(--accent-start)] hover:underline">
-                  Encontre este contrato em Meus Contratos.
-                </Link>
-              </p>
             </motion.div>
           )}
 
@@ -322,7 +315,7 @@ export function CheckoutContractSigning({
               </div>
               <div className="space-y-2">
                 <h3 className="text-xl font-black tracking-tight uppercase italic text-[var(--text-primary)]">Gerando <span className="opacity-40">Documento</span></h3>
-                <p className="text-[var(--text-muted)] text-[9px] font-black uppercase tracking-[0.4em] animate-pulse">Registrando log de auditoria (IP + timestamp)...</p>
+                <p className="text-[var(--text-muted)] text-[9px] font-black uppercase tracking-[0.4em] animate-pulse">Registrando contrato...</p>
               </div>
             </motion.div>
           )}
@@ -335,7 +328,7 @@ export function CheckoutContractSigning({
               <div className="space-y-2">
                 <h3 className="text-2xl font-black tracking-tight text-[var(--text-primary)]">Contrato <span className="text-emerald-500">Assinado.</span></h3>
                 <p className="text-sm text-[var(--text-muted)] font-medium leading-relaxed max-w-md mx-auto">
-                  Sua formalização foi registrada com IP e carimbo de tempo, e o serviço foi liberado na sua conta. O PDF já está disponível na sua pasta BPlen no Google Drive.
+                  Seu contrato já está registrado, e o serviço foi liberado. O PDF já está disponível na sua conta da BPlen HUB.
                 </p>
               </div>
               <NavCtas documentUrl={documentUrl} />

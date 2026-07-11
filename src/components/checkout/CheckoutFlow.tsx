@@ -4,10 +4,11 @@ import React, { useState } from "react";
 import { PaymentBrick } from "./PaymentBrick";
 import { createPreferenceAction } from "@/actions/mp-checkout";
 import { useAuthContext } from "@/context/AuthContext";
-import { ShoppingBag, ShieldCheck, Zap, Info, Loader2 } from "lucide-react";
+import { ShoppingBag, ShieldCheck, Info, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { RegistrationStep } from "./RegistrationStep";
 import { CouponInput } from "./CouponInput";
+import { formatBRL } from "@/lib/utils/format";
 
 interface CheckoutFlowProps {
   product: {
@@ -106,34 +107,36 @@ export function CheckoutFlow({ product }: CheckoutFlowProps) {
                  <ShoppingBag size={28} />
               </div>
               <div className="space-y-0.5">
-                 <h2 className="text-2xl font-black tracking-tight text-[var(--text-primary)] uppercase italic">Checkout</h2>
-                 <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Resumo da contratação</p>
+                 <h2 className="text-xl font-black tracking-tight text-[var(--text-primary)]">Resumo do Pedido</h2>
+                 <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Confira e finalize sua contratação</p>
               </div>
            </div>
 
            <div className="space-y-6 pt-6 border-t border-[var(--border-primary)] relative z-10">
-              <div className="flex justify-between items-start">
-                 <div className="space-y-1">
-                    <h3 className="font-bold text-[var(--text-primary)] text-lg">{product.title}</h3>
-                    <p className="text-xs text-[var(--text-muted)] leading-relaxed max-w-[250px]">{product.description}</p>
+              <div className="space-y-3">
+                 <div className="flex justify-between items-start gap-4">
+                    <h3 className="font-black text-[var(--text-primary)] text-lg leading-tight">{product.title}</h3>
+                    <span className="text-sm font-black text-[var(--accent-start)] whitespace-nowrap shrink-0">R$ {formatBRL(product.price)}</span>
                  </div>
-                 <div className="text-right">
-                    <span className="text-sm font-black text-accent-start">R$ {product.price.toFixed(2)}</span>
-                 </div>
+                 {product.description ? (
+                    <p className="text-xs text-[var(--text-secondary)] leading-relaxed whitespace-pre-line line-clamp-4">
+                       {product.description}
+                    </p>
+                 ) : null}
               </div>
 
               <div className="p-4 rounded-xl bg-[var(--input-bg)] border border-[var(--border-primary)] space-y-3">
                  <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
                     <span>Subtotal</span>
-                    <span>R$ {product.price.toFixed(2)}</span>
+                    <span>R$ {formatBRL(product.price)}</span>
                  </div>
                  <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-emerald-500">
                     <span>Desconto</span>
-                    <span>- R$ {discountAmount.toFixed(2)}</span>
+                    <span>- R$ {formatBRL(discountAmount)}</span>
                  </div>
                  <div className="pt-3 border-t border-[var(--border-primary)] flex justify-between items-center">
                     <span className="text-xs font-black uppercase text-[var(--text-primary)]">Total</span>
-                    <span className="text-xl font-black text-[var(--text-primary)] italic">R$ {finalPrice.toFixed(2)}</span>
+                    <span className="text-xl font-black text-[var(--text-primary)] italic">R$ {formatBRL(finalPrice)}</span>
                  </div>
               </div>
 
@@ -158,17 +161,13 @@ export function CheckoutFlow({ product }: CheckoutFlowProps) {
                  <ShieldCheck size={16} />
                  <span className="text-[9px] font-black uppercase tracking-widest">Pagamento 100% Seguro</span>
               </div>
-              <div className="flex items-center gap-3 text-[var(--accent-start)]">
-                 <Zap size={16} />
-                 <span className="text-[9px] font-black uppercase tracking-widest">Ativação Instantânea via Pix</span>
-              </div>
            </div>
         </div>
 
         <div className="p-6 rounded-2xl bg-[var(--accent-soft)] border border-[var(--accent-soft)] flex gap-4 items-start shadow-sm">
            <Info size={20} className="text-[var(--accent-start)] shrink-0" />
            <p className="text-[10px] text-[var(--text-secondary)] leading-relaxed font-semibold">
-              Sua nota fiscal e os detalhes da jornada serão enviados para o seu e-mail cadastrado após a confirmação do pagamento.
+              Sua Nota Fiscal será enviada para o seu e-mail cadastrado após a confirmação do pagamento.
            </p>
         </div>
       </div>
@@ -196,7 +195,7 @@ export function CheckoutFlow({ product }: CheckoutFlowProps) {
                        <Loader2 size={40} className="text-[var(--accent-start)] animate-spin" />
                        <div className="space-y-2">
                           <h4 className="text-sm font-bold text-[var(--text-primary)] uppercase tracking-widest">
-                             {step === "free_activation" ? "Ativando seu acesso" : "Iniciando Checkout Seguro"}
+                             {step === "free_activation" ? "Registrando sua contratação" : "Iniciando Checkout Seguro"}
                           </h4>
                           <p className="text-[10px] text-[var(--text-muted)] font-medium">
                              {step === "free_activation" ? "Preparando a formalização do contrato..." : "Conectando com Mercado Pago..."}
