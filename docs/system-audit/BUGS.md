@@ -1559,6 +1559,20 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Decisão de execução: correção alinhada ao CT-4 (mesma entidade de contrato).
 - Commit/PR: PR #65
 
+### BUG-058 Painel de contratos não carrega — "Invalid time value" ao formatar data
+- Severidade: Alto (a página inteira quebra)
+- Área/fase onde foi achado: F1-02 / contratos (2026-07-11) — reportado pela Gestora (log Vercel)
+- Arquivo(s) afetado(s): `src/actions/member-contracts.ts`, `src/app/hub/membro/contratos/page.tsx`
+- Cenário de falha: **[CONFIRMADO em produção]** `/hub/membro/contratos` retornava
+  `RangeError: Invalid time value` no `.map` dos cards e não renderizava. Causa: um contrato
+  **sem pedido associado** (ex.: avulso pendente) caía no fallback `contract.createdAt`, que
+  vem do Firestore como **Timestamp cru** (não serializado); `new Date(timestamp)` → Invalid
+  Date → `date-fns` lança, derrubando o render de todos os cards.
+- Status: **Corrigido** — PR #68. `member-contracts.ts` serializa `contract.createdAt` via
+  `toIso`; o painel ganha `fmtDate` seguro (retorna null em data inválida, nunca lança).
+- Decisão de execução: bugfix isolado (correção da raiz + blindagem do render).
+- Commit/PR: PR #68
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em
