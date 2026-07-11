@@ -34,6 +34,18 @@ export interface ContractSignature {
   verificationCode?: string;
   /** Hash curto SHA-256 (ids + signedAt) para integridade/unicidade do carimbo. */
   verificationHash?: string;
+  /**
+   * Geolocalização aproximada do signatário na assinatura, derivada do IP pelos headers
+   * de edge da Vercel (país/região/cidade/lat-long). Aproximada e não invasiva (sem GPS
+   * nem consentimento adicional) — validade jurídica complementar (item f).
+   */
+  geo?: {
+    country?: string;
+    region?: string;
+    city?: string;
+    latitude?: string;
+    longitude?: string;
+  };
 }
 
 export interface Contract {
