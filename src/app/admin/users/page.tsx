@@ -39,7 +39,7 @@ import { Product } from "@/types/products";
 import { getMemberQuotasAction, updateMemberQuotasAction } from "@/actions/quotas";
 import { getErrorMessage } from "@/lib/utils/errors";
 import type { UserAssessment } from "@/actions/admin-assessments";
-import type { LegalAudit } from "@/actions/legal";
+import type { AdminContractRow } from "@/actions/admin/contract-invoice";
 
 /**
  * BPlen HUB — Gestão de Usuários e Governança
@@ -68,7 +68,7 @@ export default function UsersManagementPage() {
   const [activeTab, setActiveTab] = useState<"services" | "assessments" | "contracts">("services");
   const [userAssessments, setUserAssessments] = useState<UserAssessment[]>([]);
   const [loadingAssessments, setLoadingAssessments] = useState(false);
-  const [userContracts, setUserContracts] = useState<LegalAudit[]>([]);
+  const [userContracts, setUserContracts] = useState<AdminContractRow[]>([]);
   const [loadingContracts, setLoadingContracts] = useState(false);
   const [editingQuotas, setEditingQuotas] = useState<Record<string, number>>({});
   const [isLoadingQuotas, setIsLoadingQuotas] = useState(false);
@@ -150,10 +150,11 @@ export default function UsersManagementPage() {
   useEffect(() => {
     if (selectedUser && activeTab === "contracts") {
        const load = async () => {
-          const { getUserLegalAudits } = await import("@/actions/legal");
+          const { getUserContractsAdminAction } = await import("@/actions/admin/contract-invoice");
           setLoadingContracts(true);
-          const results = await getUserLegalAudits(selectedUser.uid || selectedUser.matricula);
-          if (results.success) setUserContracts(results.audits);
+          // Chave CORRETA: matrícula (os contratos vivem em User/{matricula}/Contracts).
+          const results = await getUserContractsAdminAction(selectedUser.matricula || selectedUser.uid || "");
+          if (results.success) setUserContracts(results.contracts || []);
           setLoadingContracts(false);
        };
        load();
@@ -914,7 +915,7 @@ export default function UsersManagementPage() {
                        <div className="space-y-4">
                         <div className="flex items-center justify-between mb-4">
                           <h4 className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--accent-start)] flex items-center gap-3">
-                            <FileText size={16} /> Contratos Assinados
+                            <FileText size={16} /> Contratos
                           </h4>
                         </div>
                         {loadingContracts ? (
@@ -929,10 +930,23 @@ export default function UsersManagementPage() {
                                 <div className="w-10 h-10 rounded-lg bg-[var(--accent-start)]/10 flex items-center justify-center">
                                   <FileText className="w-5 h-5 text-[var(--accent-start)]" />
                                 </div>
-                                <div>
-                                  <p className="font-medium text-[var(--text-primary)]">ID do Produto: {contract.productId}</p>
-                                  <p className="text-xs text-[var(--text-muted)]">Aceito em: {new Date(contract.timestamp).toLocaleString("pt-BR")}</p>
-                                  <p className="text-[10px] text-[var(--text-muted)] opacity-70">Hash: {contract.documentHash?.substring(0, 16)}...</p>
+                                <div className="space-y-1">
+                                  <p className="font-medium text-[var(--text-primary)]">{contract.productTitle || contract.serviceCode || contract.contractId}</p>
+                                  <span className={`inline-block px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${
+                                    contract.status === "assinado" ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" :
+                                    contract.status === "cancelado" ? "bg-red-500/10 text-red-600 border-red-500/20" :
+                                    "bg-amber-500/10 text-amber-600 border-amber-500/20"
+                                  }`}>
+                                    {contract.status === "assinado" ? "Assinado" : contract.status === "cancelado" ? "Cancelado" : contract.status === "em_retificacao" ? "Em retificação" : "Aguardando assinatura"}
+                                  </span>
+                                  <p className="text-xs text-[var(--text-muted)]">
+                                    {contract.signedAt ? `Assinado em: ${new Date(contract.signedAt).toLocaleString("pt-BR")}` : "Ainda não assinado"}
+                                  </p>
+                                  {contract.invoiceUrl ? (
+                                    <a href={contract.invoiceUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] font-bold text-[var(--accent-start)] hover:underline">
+                                      Nota fiscal anexada
+                                    </a>
+                                  ) : null}
                                 </div>
                               </div>
                               <div className="flex items-center gap-2">
@@ -954,23 +968,25 @@ export default function UsersManagementPage() {
                                       const reader = new FileReader();
                                       reader.onload = async () => {
                                         const { attachContractInvoiceAction } = await import("@/actions/admin/contract-invoice");
-                                        const res = await attachContractInvoiceAction(matricula, contract.productId, reader.result as string, file.name, file.type);
+                                        const res = await attachContractInvoiceAction(matricula, contract.contractId, reader.result as string, file.name, file.type);
                                         alert(res.success ? "Nota fiscal anexada com sucesso." : "Falha ao anexar: " + (res.error || "erro desconhecido"));
                                       };
                                       reader.readAsDataURL(file);
                                     }}
                                   />
                                 </label>
-                                <a href={contract.documentUrl} target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-[var(--bg-tertiary)] hover:bg-[var(--accent-start)]/20 text-[var(--text-primary)] transition-colors" title="Ver documento do contrato">
-                                  <Link2 className="w-4 h-4" />
-                                </a>
+                                {contract.documentUrl ? (
+                                  <a href={contract.documentUrl} target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-[var(--bg-tertiary)] hover:bg-[var(--accent-start)]/20 text-[var(--text-primary)] transition-colors" title="Ver documento do contrato">
+                                    <Link2 className="w-4 h-4" />
+                                  </a>
+                                ) : null}
                               </div>
                             </div>
                           ))
                         ) : (
                           <div className="p-8 text-center text-[var(--text-muted)] border border-dashed border-[var(--border-primary)] rounded-xl">
                             <FileText className="w-8 h-8 mx-auto mb-3 opacity-20" />
-                            <p>Nenhum contrato assinado por este usuário.</p>
+                            <p>Nenhum contrato para este usuário ainda.</p>
                           </div>
                         )}
 
