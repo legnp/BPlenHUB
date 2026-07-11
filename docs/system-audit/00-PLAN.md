@@ -533,16 +533,20 @@ sem copy hardcoded fora do que o guia permitir).
   sob o cadeado de selo de `/hub/membro`. Requisito novo da Gestora: incluir um
   **link para a Visão Geral no menu sanduíche do header do hub**. Empacotamento em
   **2 PRs** (copy | design).
-- Execução: **Em andamento.** As 4 páginas: `contratos` já compliant (server guard +
-  `FunctionalPageHeader` + copy limpa, herança CT-4). **PR1 (copy) mergeado (PR #73,
-  BUG-062):** acentos PT-BR restaurados em `visao_geral` e `gestao_carreira`. **PR2
-  (design) pendente:** migrar os headers de `visao_geral`/`gestao_agenda`/`gestao_carreira`
-  para o `FunctionalPageHeader` (padrão Gestão Funcional, também F2-05); padronizar o
-  modal de detalhe da `visao_geral` no `GlassModal`; e o link no menu sanduíche.
-- Resultado: PR1 (copy) feito. Auditoria de guard: `contratos`/`gestao_agenda`/
-  `gestao_carreira` sob `/hub/membro` (cadeado Fase D); `visao_geral` só login (intencional).
-- Bug(s) vinculado(s): BUG-062 (Corrigido, PR #73 — copy)
-- Log: [2026-07-11] revisão das 4 páginas + PR1 copy (BUG-062, PR #73); PR2 design pendente
+- Execução: **Código completo** — pendente só a validação visual da Gestora em produção
+  (BUG-030). As 4 páginas: `contratos` já compliant (herança CT-4). **PR1 (copy, PR #73,
+  BUG-062):** acentos PT-BR restaurados em `visao_geral`/`gestao_carreira`. **PR2 (design,
+  PR #74, BUG-063/064):** headers de `visao_geral`/`gestao_agenda`/`gestao_carreira` migrados
+  para o `FunctionalPageHeader` (Gestão Funcional / F2-05; na carreira o "X% concluído" foi p/
+  a status-tag e as métricas seguem abaixo); modal de detalhe da `visao_geral` padronizado no
+  `GlassModal`; link "Visão Geral" adicionado ao menu sanduíche do `HubHeader`.
+- Resultado: as 4 páginas com header canônico, copy com acentos, modais no padrão, guards
+  auditados (`visao_geral` só login por decisão da Gestora; as outras 3 sob o cadeado Fase D).
+  Resta a conferência visual/responsivo/fluxos em produção.
+- Bug(s) vinculado(s): BUG-062 (Corrigido, PR #73 — copy), BUG-063 (Corrigido, PR #74 — headers),
+  BUG-064 (Corrigido, PR #74 — modal)
+- Log: [2026-07-11] revisão das 4 páginas + PR1 copy (PR #73) + PR2 design (PR #74) — código
+  completo, aguarda validação em produção — ver `LOG.md`
 
 ### [F1-05] Hub — checkout de membro, networking, perfil, entrega de serviço
 - Categoria(s) de qualidade: Adequação funcional / Segurança

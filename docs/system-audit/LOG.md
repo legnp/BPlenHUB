@@ -3087,3 +3087,12 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   no `GlassModal`, e adicionar o link no menu sanduíche.
 - Itens atualizados: `BUGS.md` (+BUG-062), `00-PLAN.md` (F1-04 em andamento), `DASHBOARD.md`
   (F1-04 + entrada nova), este LOG.
+- **PR2 (design) — BUG-063/064, PR #74 mergeado (`a9e96d8`, squash):** headers de `visao_geral`,
+  `gestao_agenda` e `gestao_carreira` migrados para o `FunctionalPageHeader` (padrão Gestão
+  Funcional / F2-05) — na `gestao_carreira` o "X% concluído" foi para a status-tag (decisão da
+  Gestora) e as métricas seguem como faixa abaixo; modal de detalhe da `visao_geral` (feito à
+  mão, overlay fixo) convertido para o `GlassModal`; link "Visão Geral" adicionado ao menu
+  sanduíche do `HubHeader` (→ `/hub/visao_geral`, pedido da Gestora). `contratos` não mudou (já
+  era compliant). Validado: eslint 0 erros, test 52/52, type-check, build exit 0.
+- **F1-04 com código completo** (PRs #73 copy + #74 design). Pendente só a validação visual da
+  Gestora em produção (render/responsivo/temas/fluxos das 4 páginas) — BUG-030.
