@@ -1705,6 +1705,21 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   test + type-check + build. Conferência visual em produção (BUG-030).
 - Commit/PR: PR #74
 
+### BUG-065 Responsividade geral das telas logadas precisa de varredura dedicada
+
+- Severidade: Baixo (UX/responsivo) — **adiado (futuro)**
+- Área/fase onde foi achado: F1-04 / validação da Gestora (2026-07-11)
+- Arquivo(s) afetado(s): transversal (telas logadas do hub)
+- Cenário de falha: na validação da F1-04 a Gestora observou que "há algumas coisas que não
+  estão muito boas" no responsivo (mobile/tablet) de telas logadas — nada bloqueante, mas
+  precisa de uma **passada dedicada de responsividade** com ajustes pontuais por tela.
+- Status: **Aberto (adiado)** — registrado como pendência transversal a ser feita numa varredura
+  própria de responsividade (candidata a track não-funcional / Fase 1 final), não bug de uma
+  tela só. Telas logadas só validam em produção (BUG-030).
+- Decisão de execução: fora do escopo dos PRs atuais (pedido explícito da Gestora de deixar
+  "para o futuro"); quando priorizado, vira um esforço próprio página-a-página.
+- Commit/PR: —
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em

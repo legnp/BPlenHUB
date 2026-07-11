@@ -3096,3 +3096,12 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   era compliant). Validado: eslint 0 erros, test 52/52, type-check, build exit 0.
 - **F1-04 com código completo** (PRs #73 copy + #74 design). Pendente só a validação visual da
   Gestora em produção (render/responsivo/temas/fluxos das 4 páginas) — BUG-030.
+- **Validação da Gestora (2026-07-11):** os 5 pontos da F1-04 **aprovados**. Feedback:
+  (a) observação de responsividade geral para o futuro → registrado como **BUG-065** (adiado);
+  (b) 3 pedidos de padronização — back-buttons uniformes "Voltar", copy da agenda, e títulos de
+  aba globais "BPlen | [página]". **PR #75 mergeado (`263feb5`):** back-buttons normalizados
+  para "Voltar" (visao_geral/gestao_carreira/gestao_agenda/checkout) + copy da agenda (kicker
+  "Gestão e revisão da sua agenda BPlen", título "Gestão de Meus Compromissos"). O pedido de
+  **títulos de aba globais** (hub usa `template "BPlen HUB | %s"` e páginas client sem título
+  próprio → default) fica para um PR próprio (mexe no layout compartilhado do hub + ~11 layouts
+  de rota) — plano apresentado, aguardando confirmação da lista de títulos.
