@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import { useAuthContext } from "@/context/AuthContext";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
+import { CalendarDays } from "lucide-react";
 import { getProgramacaoForMemberAction } from "@/actions/calendar";
 import { ProgramacaoEntry } from "@/types/calendar";
 import AgendaManagementView from "@/components/shared/AgendaManagementView";
+import { FunctionalPageHeader } from "@/components/layout/FunctionalPageHeader";
 
 /**
  * Gestão de Agenda do Membro — BPlen HUB 🧬
@@ -38,18 +38,15 @@ export default function GestaoAgendaPage() {
     <div className="flex flex-col min-h-screen animate-fade-in">
       <div className="max-w-[1400px] mx-auto pt-[10px] px-6 pb-6 md:pt-[10px] md:px-12 md:pb-12 space-y-12 flex-1 w-full">
         
-        {/* Header de Navegação */}
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-           <div className="space-y-4">
-              <Link 
-                href="/hub/membro"
-                className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors group"
-              >
-                  <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-                  Voltar ao Dashboard
-              </Link>
-           </div>
-        </header>
+        {/* Header de Navegação — padrão canônico Gestão Funcional (F2-05) */}
+        <FunctionalPageHeader
+          eyebrow="Compromissos e programação"
+          title="Minha"
+          titleAccent="Agenda"
+          backHref="/hub/membro"
+          backLabel="Voltar ao Dashboard"
+          icon={<CalendarDays size={24} />}
+        />
 
         {/* ─── Shared View (Mascara) ─── */}
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">

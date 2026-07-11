@@ -1674,6 +1674,37 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   visual em produção (BUG-030).
 - Commit/PR: PR #73
 
+### BUG-063 Headers das telas de Gestão Funcional (F1-04) fora do padrão canônico
+
+- Severidade: Baixo (UX/design — consistência)
+- Área/fase onde foi achado: F1-04 / F2-05 (2026-07-11)
+- Arquivo(s) afetado(s): `src/app/hub/visao_geral/page.tsx`, `src/app/hub/membro/gestao_agenda/page.tsx`,
+  `src/app/hub/membro/gestao_carreira/page.tsx`
+- Cenário de falha: as 3 páginas usavam headers custom (back-link + título ad-hoc), enquanto o
+  padrão Gestão Funcional (F2-05) tem um header canônico (`FunctionalPageHeader`: back + título
+  cor-dupla + status-tag) já aplicado em contrato/checkout/`contratos`.
+- Status: **Corrigido** — PR #74. As 3 migradas para `FunctionalPageHeader`. Na `gestao_carreira`
+  o "X% concluído" da jornada foi para a **tag de status** (decisão da Gestora) e as métricas
+  (objetivos/backlog/atas) seguem como faixa abaixo do header. Fecha parte do F2-05 (categorização
+  Gestão Funcional) para estas 3 páginas.
+- Decisão de execução: plano+aprovação da Gestora (sistema de design). Validado por eslint 0
+  erros + test 52/52 + type-check + build. Conferência visual em produção (BUG-030).
+- Commit/PR: PR #74
+
+### BUG-064 Modal de detalhe da Visão Geral fora do padrão global de modais
+
+- Severidade: Baixo (UX/design)
+- Área/fase onde foi achado: F1-04 (2026-07-11)
+- Arquivo(s) afetado(s): `src/app/hub/visao_geral/page.tsx`
+- Cenário de falha: o modal de ata/feedback era feito à mão (`fixed inset-0 bg-black/60`), com
+  overlay fixo que destoava dos demais modais (que usam o overlay adaptativo ao tema
+  `--modal-backdrop` desde o PR #47) — mesma classe do BUG-061.
+- Status: **Corrigido** — PR #74. Convertido para o `GlassModal` canônico (overlay/tema/z
+  coerentes, portal/ESC próprios). Conteúdo (status, feedback, documento, ações) preservado.
+- Decisão de execução: plano+aprovação da Gestora (sistema de design). Validado por eslint +
+  test + type-check + build. Conferência visual em produção (BUG-030).
+- Commit/PR: PR #74
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em
