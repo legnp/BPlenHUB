@@ -128,14 +128,18 @@ Ordenado por **risco decrescente de "quebrado hoje"** e dependência.
   Motor/tela de assinatura reutilizável (checkboxes obrigatórios/opcionais configuráveis;
   audiências pessoas/empresas/parceiros). O documento com validade jurídica (IP/timestamp)
   é gerado **após** a assinatura. Fecha `BUG-052`.
-- **CT-4 — Painel de contratos reescrito (item d).** 1 card por serviço/pacote com
-  status de assinatura, resumo, timestamp, botões (serviço, documento, assinar,
-  termos), atalho de assinatura para pendentes, e **anexo de nota fiscal** (upload via
-  admin + consulta/download pelo cliente). Corrige o link morto `/hub/membro/dashboard`.
-  Fecha `BUG-053`. **Pendência do gate de liberação (CT-3b.2):** com a regra "serviço
-  liberado só com pagamento aprovado E contrato assinado", surge o estado **"pago,
-  aguardando assinatura"** (`order.serviceReleased === false` com pagamento aprovado) —
-  o painel deve destacar esses casos com atalho para assinar.
+- **CT-4 — Painel de contratos reescrito (item d). ✅ FEITO (PRs #63/#64).** `/hub/membro/
+  contratos` reescrito no padrão Gestão Funcional: **1 card por serviço**, unindo `User_Orders`
+  com `User/{matricula}/Contracts` (checkout pendente = pedido aprovado sem contrato assinado;
+  avulso pendente = contrato pendente sem pedido). Status **real de assinatura** (Aguardando
+  Pagamento / **Aguardando Assinatura** / Assinado·Serviço Liberado / Cancelado), carimbo
+  resumido (data/geo/código), **documento visualizável no HUB** via proxy `/api/docs` (fecha
+  `BUG-052`), CTA por estado ("Assinar" reabre a tela de sucesso via `orderId`), rota morta
+  `/hub/membro/dashboard` → `/hub/membro` corrigida (fecha `BUG-053`), e **nota fiscal**:
+  exibição no painel do cliente (PR #63) + **upload pelo admin** em `admin/users`
+  (`attachContractInvoiceAction`, PR #64). Nova action `getMemberContractsPanelAction`
+  (só leitura, trava de dono) — não altera o gate de liberação (CT-3b.2). Avulso pendente
+  assina pelo link único (sem botão direto, para não furar o token).
 - **CT-5 — Reforços jurídicos adicionais (item f, sob demanda).** Ajustes técnicos que
   a Gestora indicará (além do IP): ex. carimbo de tempo confiável, versionamento de
   cláusulas, trilha de auditoria consultável.
@@ -203,6 +207,11 @@ A Gestora expandiu o escopo das telas de assinatura para um **motor reutilizáve
   difere: token vs orderId — evita desestabilizar o avulso validado em produção).
 
 ## Registro de revisões
+- 2026-07-10 — **CT-4 painel reescrito + nota fiscal (PRs #63/#64)**: `/hub/membro/contratos`
+  reescrito (padrão Gestão Funcional, 1 card por serviço, status real de assinatura, carimbo,
+  documento in-app via `/api/docs`, CTA por estado, rota morta corrigida). Nova action
+  `getMemberContractsPanelAction` (une pedidos+contratos). Nota fiscal: exibição no painel +
+  upload pelo admin (`attachContractInvoiceAction`). Fecha `BUG-052` e `BUG-053`.
 - 2026-07-10 — **CT-3b.2 gate de liberação + carimbo (PRs #59/#60)**: (#59) o PDF passa a
   ser **estampado** com data/hora, IP, **código único de verificação**
   (`BPLEN-{serviceCode}-{orderId}-{paymentRef}` + hash) e hash de integridade, amarrando

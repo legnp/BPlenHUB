@@ -2888,3 +2888,23 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   gravado na signature do Contract e no Legal_Audits (`ContractSignature.geo`). Não invasivo
   (aproximado por IP, sem GPS/consentimento). Validado: eslint/test 52-52/tsc/build.
   Conferência do carimbo em produção (BUG-030).
+
+## [2026-07-10] Chat de execução — CT-4: painel de contratos reescrito + nota fiscal (PRs #63/#64)
+
+- Gestora aprovou o CT-4 (reescrita completa do painel no padrão Gestão Funcional). Duas
+  decisões: **1 card por serviço** e **incluir o upload de nota fiscal pelo admin** já agora.
+  Entregue em 2 PRs.
+- **PR #63 (painel do cliente):** `/hub/membro/contratos` reescrito. Nova action
+  `getMemberContractsPanelAction` (requireMatricula + trava de dono) que **une pedidos +
+  contratos por serviço** (checkout pendente = pedido aprovado sem contrato; avulso pendente
+  = contrato sem pedido). Status real (Aguardando Pagamento/Assinatura, Assinado·Liberado,
+  Cancelado), carimbo resumido (data/geo/código), **documento in-app** via proxy `/api/docs`
+  (novo `ContractDocButton` cliente), CTA por estado ("Assinar" reabre a tela de sucesso via
+  orderId), rota morta `/hub/membro/dashboard` → `/hub/membro`. Fecha **BUG-052** e **BUG-053**.
+- **PR #64 (upload nota fiscal admin):** `attachContractInvoiceAction` (requireAdmin) —
+  resolve o contractId, sobe o arquivo (base64→Drive, pasta "3.Notas Fiscais") e grava
+  `invoice` no Contract. UI em `admin/users` (aba Contratos): botão de anexar por contrato.
+- Validado: eslint dos arquivos novos limpo (warnings do `admin/users` são legado
+  pré-existente), test 52/52, tsc, build. Telas logadas → validação em produção (BUG-030).
+- **CT-4 completo.** Restam no subsistema: CT-3c (área /hub/legal + audiências), CT-5
+  (reforços jurídicos sob demanda) e a validação em produção dos fluxos (adiada).

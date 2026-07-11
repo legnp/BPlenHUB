@@ -1455,14 +1455,13 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   e mandam "veja o PDF no seu Google Drive", mas **não exibem o texto do documento nem
   um link/botão direto** para visualizar/baixar. O `documentUrl` (Drive webViewLink)
   gravado em `Legal_Audits` não é surfado ao membro.
-- Status: Em Progresso — CT-3a (PR #55, avulso) e **CT-3b.2 (PR #57, checkout)** já exibem
-  as cláusulas na tela antes de assinar e um link direto ao documento após assinar (grátis
-  e pago, em `/hub/checkout/success`). Resta o **painel** `/hub/membro/contratos` surfar o
-  documento por contrato (CT-4) e, se a Gestora quiser, um viewer in-app embutido (PDF embed)
-  em vez do link ao Drive.
-- Decisão de execução: display de documento; baixo risco funcional. Superfícies de assinatura
-  (avulso + checkout) cobertas; painel fica no CT-4.
-- Commit/PR: PR #55 (avulso), PR #57 (checkout)
+- Status: **Corrigido** — CT-3a (PR #55, avulso) e CT-3b.2 (PR #57, checkout) exibem as
+  cláusulas na tela antes de assinar; e o **painel** `/hub/membro/contratos` (CT-4, PR #63)
+  passa a **visualizar o documento dentro do HUB** via o proxy seguro `/api/docs` (novo
+  `ContractDocButton`), em vez de "veja no Drive". Documento acessível no HUB em todas as
+  superfícies de contrato.
+- Decisão de execução: display de documento; baixo risco funcional.
+- Commit/PR: PR #55 (avulso), PR #57 (checkout), PR #63 (painel/viewer in-app)
 
 ### BUG-053 Painel de contratos mostra status de pagamento, não de assinatura; sem documento/nota fiscal; link morto
 
@@ -1474,9 +1473,13 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   **assinatura** (pendente/retificação/assinado), sem link do documento, sem nota
   fiscal. O botão de aprovado aponta para `/hub/membro/dashboard` (**rota inexistente**
   — mesmo defeito do BUG-046); o ramo "Ver Fatura" é morto (cursor-not-allowed).
-- Status: Aberto — fase **CT-4** do `CONTRACTS-DESIGN.md` (painel reescrito).
-- Decisão de execução: Precisa plano+aprovação (área de contratos). Aguarda a fase.
-- Commit/PR: —
+- Status: **Corrigido** — CT-4 (PR #63). Painel reescrito no padrão Gestão Funcional com
+  **status real de assinatura**, documento visualizável no HUB, carimbo resumido, CTA por
+  estado ("Assinar" reabre a tela de sucesso), nota fiscal, e a **rota morta** corrigida
+  (`/hub/membro/dashboard` → `/hub/membro`). Nova action `getMemberContractsPanelAction`.
+- Decisão de execução: área de contratos (gated) — plano + aprovação da Gestora (escopo:
+  1 card por serviço + upload de nota fiscal no admin). Validação em produção (BUG-030).
+- Commit/PR: PR #63 (painel) + PR #64 (upload nota fiscal admin)
 
 ### BUG-054 IP do cliente na assinatura é placeholder hardcoded (validade jurídica)
 

@@ -12,7 +12,14 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-10 (chat de execução — **CT-3b.2 geolocalização por IP no
+> **Última atualização:** 2026-07-10 (chat de execução — **CT-4 painel de contratos reescrito +
+> nota fiscal (PRs #63/#64)**: `/hub/membro/contratos` reescrito no padrão Gestão Funcional —
+> 1 card por serviço (une pedidos+contratos), **status real de assinatura**, carimbo resumido,
+> **documento visualizável no HUB** via `/api/docs`, CTA por estado, rota morta corrigida.
+> Nota fiscal: exibição no painel + **upload pelo admin**. Fecha **BUG-052** e **BUG-053**.
+> CT-4 completo; restam CT-3c, CT-5 e a validação em produção.
+>
+> _(entrada anterior)_ 2026-07-10 (chat de execução — **CT-3b.2 geolocalização por IP no
 > carimbo (PR #62)**: o carimbo do contrato ganha "Local aproximado (por IP)" + coordenadas,
 > via headers de edge da Vercel (sem serviço externo, não invasivo); `geo` gravado na
 > assinatura/Legal_Audits. IP já era real.
@@ -268,7 +275,7 @@ divergência apontada na conferência). Parser validado por diff — regressão 
 | Item | Página(s) | Camada A (segurança) | Camada B (validação UX) | Estado geral |
 |---|---|---|---|---|
 | **F1-01** | Públicas de marketing (home, /servicos, /profissionais, /conteudo, /agendar, legais) | n/a | ✓ base + **19/19 ajustes** aplicados (PR-A #42, PR-B #43, PR-C #44, PR-C2 #45) | **Cluster de ajustes COMPLETO** (copy, footer/header, design, /agendar). BUG-048/049/050 corrigidos. Base validada por leitura+preview; reconferência final ao vivo de baixo risco |
-| **F1-02** | Checkout + subsistema de contratos | ✓ (BUG-005/006 via T-02) | ◐ **avançado** — CT-0..CT-3b.2 (PRs #48..#62) | Rota órfã removida (BUG-002); subsistema de contratos reconstruído: entidade+IP+geo, avulso robusto, assinatura pós-checkout grátis+pago, padrão Gestão Funcional, carimbo/código único, **gate liberação (pagamento aprovado E contrato assinado)**, status real na sucesso. **Pendente:** CT-3c (/hub/legal), CT-4 (painel + "aguardando assinatura"), CT-5; validação em produção adiada (base do usuário de teste) |
+| **F1-02** | Checkout + subsistema de contratos | ✓ (BUG-005/006 via T-02) | ◐ **quase completo** — CT-0..CT-4 (PRs #48..#64) | Rota órfã removida (BUG-002); subsistema reconstruído: entidade+IP+geo, avulso robusto, assinatura pós-checkout grátis+pago, padrão Gestão Funcional, carimbo/código único, **gate liberação (pagamento aprovado E contrato assinado)**, status real, **painel reescrito + documento in-app + nota fiscal (CT-4)**. Fechados BUG-051/052/053/054/056. **Pendente:** CT-3c (/hub/legal + audiências), CT-5, decisão BUG-055 (gate legado), e validação em produção (adiada) |
 | **F1-03** | Hub dashboard + motor de jornada | ✓ | ◐ **motor reescrito (B2)**; modal offboarding **desbloqueado** (D) | Motor de jornada agora por dado (`resolverAcesso`); trava de sequência corrigida. **Validação visual pendente** (agora possível — antes travada pelo BUG-035) |
 | **F1-04** | Hub: carreira, agenda, contratos, visão geral | ✓ (via T-02 + cadeado D) | ○ não iniciada | Agora sob o cadeado `/hub/membro` (Fase D) |
 | **F1-05** | Checkout membro, networking, perfil, entrega | ✓ (BUG-005/006) | ○ | Checkout reposicionado p/ `/hub/checkout` (Fase C); **BUG-033** (privacidade networking) a resolver; BUG-016 |
