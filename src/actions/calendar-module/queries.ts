@@ -308,10 +308,11 @@ export async function getUserOneToOneQuotaAction(matricula: string): Promise<num
          return Number(data.mentoCoachSessionsLimit);
        }
        
-       // 2. Fallback: Leitura da chave legada dentro do mapa "quotas"
-       // Estrutura esperada: data.quotas["1-TO-1"].total
-       if (data?.quotas && data.quotas["1-TO-1"] && data.quotas["1-TO-1"].total !== undefined) {
-         return Number(data.quotas["1-TO-1"].total);
+       // 2. Fallback: Leitura da chave dentro do mapa "quotas". Chave canonica
+       // = "1-to-1" (BUG-008); tolera a legada "1-TO-1" durante a transicao.
+       const oneToOne = data?.quotas && (data.quotas["1-to-1"] || data.quotas["1-TO-1"]);
+       if (oneToOne && oneToOne.total !== undefined) {
+         return Number(oneToOne.total);
        }
        
        // Caso nenhum dos dois exista, retorna null
