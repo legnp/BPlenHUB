@@ -69,9 +69,11 @@ export async function getAdminUsersList(adminToken?: string): Promise<{ success:
           const matricula = docSnap.ref.parent.parent?.id;
           if (matricula) {
              const data = docSnap.data();
-             const limit = data.mentoCoachSessionsLimit !== undefined 
-               ? data.mentoCoachSessionsLimit 
-               : (data.quotas && data.quotas["1-TO-1"] ? data.quotas["1-TO-1"].total : 10);
+             // Chave canonica = "1-to-1" (BUG-008); tolera a legada "1-TO-1".
+             const oneToOne = data.quotas && (data.quotas["1-to-1"] || data.quotas["1-TO-1"]);
+             const limit = data.mentoCoachSessionsLimit !== undefined
+               ? data.mentoCoachSessionsLimit
+               : (oneToOne ? oneToOne.total : 10);
              quotasMap.set(matricula, limit);
           }
        }

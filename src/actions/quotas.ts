@@ -4,6 +4,7 @@ import { getAdminDb } from "@/lib/firebase-admin";
 import { MemberQuotaWallet, MemberQuota } from "@/types/entitlements";
 import { getErrorMessage } from "@/lib/utils/errors";
 import { safeSerialize } from "@/lib/utils/firestore";
+import { normalizeQuotaKey, foldQuotaMap } from "@/lib/quota-keys";
 import { getProductBySlug } from "./products"; // Se precisarmos buscar cotas do produto
 
 const QUOTAS_COLLECTION = "Member_Quotas";
@@ -38,11 +39,9 @@ export async function getMemberQuotasAction(uid: string): Promise<MemberQuotaWal
     if (!doc.exists) return null;
     const wallet = safeSerialize<MemberQuotaWallet>(doc.data());
 
-    // Normalização: mentoria_1to1 -> 1-to-1 (mesma regra aplicada em consumeQuotaAction)
-    if (wallet.quotas?.["mentoria_1to1"] && !wallet.quotas["1-to-1"]) {
-      wallet.quotas["1-to-1"] = wallet.quotas["mentoria_1to1"];
-      delete wallet.quotas["mentoria_1to1"];
-    }
+    // Normalização canônica de chaves (BUG-008): dobra 1-TO-1/mentoria_1to1 ->
+    // 1-to-1 e mescla duplicatas de case, para todo leitor ver a mesma chave.
+    wallet.quotas = foldQuotaMap(wallet.quotas);
 
     return wallet;
   } catch (error) {
@@ -66,17 +65,17 @@ export async function updateMemberQuotasAction(uid: string, newQuotas: Record<st
     await db.runTransaction(async (transaction) => {
       const doc = await transaction.get(walletRef);
       const now = new Date().toISOString();
-      let currentQuotas: Record<string, MemberQuota> = {};
 
-      if (doc.exists) {
-        currentQuotas = (doc.data() as MemberQuotaWallet).quotas;
-      }
+      // Normaliza + mescla as chaves ja existentes antes de somar (auto-cura o
+      // drift de case a cada escrita — BUG-008). Chave canonica = minuscula do
+      // catalogo; nao forcar mais UPPERCASE.
+      const currentQuotas: Record<string, MemberQuota> = doc.exists
+        ? foldQuotaMap((doc.data() as MemberQuotaWallet).quotas)
+        : {};
 
       // Merge de Cotas
       for (const [type, amount] of Object.entries(newQuotas)) {
-        // Normalização de chave 1-to-1 e uppercase para consistência
-        const normalizedType = type === "mentoria_1to1" ? "1-TO-1" : type.toUpperCase();
-        
+        const normalizedType = normalizeQuotaKey(type);
         const current = currentQuotas[normalizedType] || { total: 0, used: 0, lastUpdated: now };
         currentQuotas[normalizedType] = {
           total: current.total + amount,
@@ -85,11 +84,14 @@ export async function updateMemberQuotasAction(uid: string, newQuotas: Record<st
         };
       }
 
-      transaction.set(walletRef, {
-        uid,
-        quotas: currentQuotas,
-        updatedAt: now
-      }, { merge: true });
+      // Substitui o campo `quotas` inteiro (remove chaves-lixo de case antigas —
+      // set(merge:true) NUNCA apaga chave de map, ver L16). update() falha se o
+      // doc nao existir, entao usa set completo no primeiro deposito.
+      if (doc.exists) {
+        transaction.update(walletRef, { uid, quotas: currentQuotas, updatedAt: now });
+      } else {
+        transaction.set(walletRef, { uid, quotas: currentQuotas, updatedAt: now });
+      }
     });
 
     return { success: true };
@@ -116,17 +118,10 @@ export async function consumeQuotaAction(uid: string, eventTypeId: string) {
       if (!doc.exists) throw new Error("Membro não possui carteira de cotas.");
 
       const wallet = doc.data() as MemberQuotaWallet;
-      const quotas = wallet.quotas || {};
-      
-      // Normalização: mentoria_1to1 -> 1-to-1
-      let targetKey = eventTypeId;
-      if (targetKey === "mentoria_1to1") targetKey = "1-to-1";
-      
-      if (quotas["mentoria_1to1"] && !quotas["1-to-1"]) {
-         quotas["1-to-1"] = quotas["mentoria_1to1"];
-         delete quotas["mentoria_1to1"];
-      }
+      // Normaliza + mescla as chaves (BUG-008) antes de localizar a cota-alvo.
+      const quotas = foldQuotaMap(wallet.quotas);
 
+      const targetKey = normalizeQuotaKey(eventTypeId);
       const quota = quotas[targetKey];
 
       if (!quota || quota.used >= quota.total) {
