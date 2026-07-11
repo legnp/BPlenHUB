@@ -43,6 +43,7 @@ import { getUserBookingsAction, getUserOneToOneQuotaAction } from "@/actions/cal
 import { UserBooking } from "@/types/calendar";
 import { CareerTask, CareerTaskStatus, CareerObjective, CareerGoal } from "@/types/career";
 import { getErrorMessage } from "@/lib/utils/errors";
+import { FunctionalPageHeader } from "@/components/layout/FunctionalPageHeader";
 
 function extractGoogleDriveFileId(url: string): string | null {
   if (!url) return null;
@@ -432,31 +433,19 @@ export default function GestaoCarreiraPage() {
     <div className="flex flex-col min-h-screen text-left">
       <div className="max-w-[1440px] mx-auto pt-[10px] px-6 pb-12 md:px-12 space-y-10 w-full animate-fade-in">
         
-        {/* HEADER & NAVIGATION */}
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-[var(--border-primary)]/40 pb-6">
-          <div className="space-y-4">
-            <Link 
-              href="/hub/membro"
-              className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors group"
-            >
-              <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
-              Painel Principal
-            </Link>
-            <div className="space-y-1">
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--accent-start)]">Plataforma de Desenvolvimento</span>
-              <h1 className="text-2xl font-black text-[var(--text-primary)] tracking-tight">Gestão e Desenvolvimento da sua Carreira</h1>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="px-4 py-2 bg-gradient-to-r from-[var(--accent-start)]/10 to-[var(--accent-end)]/10 border border-[var(--accent-start)]/20 rounded-full flex items-center gap-2">
-              <Activity size={12} className="text-[var(--accent-start)]" />
-              <span className="text-[9px] font-black uppercase tracking-widest text-[var(--text-primary)]">
-                Jornada: {progress?.overallProgress || 0}% Concluído
-              </span>
-            </div>
-          </div>
-        </header>
+        {/* HEADER & NAVIGATION — padrão canônico Gestão Funcional (F2-05) */}
+        <FunctionalPageHeader
+          eyebrow="Plataforma de Desenvolvimento"
+          title="Gestão e Desenvolvimento"
+          titleAccent="da sua Carreira"
+          backHref="/hub/membro"
+          backLabel="Painel Principal"
+          statusTag={{
+            label: `Jornada ${progress?.overallProgress || 0}% concluída`,
+            tone: "accent",
+            icon: <Activity size={12} />,
+          }}
+        />
 
         {/* METRICS & OVERALL STATUS */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">

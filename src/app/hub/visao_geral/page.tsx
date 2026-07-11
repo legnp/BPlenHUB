@@ -23,11 +23,12 @@ import {
   Search, 
   Briefcase, 
   Activity,
-  AlertCircle,
-  ArrowLeft
+  AlertCircle
 } from "lucide-react";
 import AtmosphericLoading from "@/components/shared/AtmosphericLoading";
 import { cn } from "@/lib/utils";
+import { FunctionalPageHeader } from "@/components/layout/FunctionalPageHeader";
+import GlassModal from "@/components/ui/GlassModal";
 
 function extractGoogleDriveFileId(url: string): string | null {
   if (!url) return null;
@@ -438,35 +439,15 @@ export default function VisaoGeralPage() {
   return (
     <div className="max-w-7xl mx-auto px-6 py-10 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       
-      {/* Header de Navegação */}
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-        <div className="space-y-4">
-          <Link 
-            href="/hub"
-            className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors group"
-          >
-            <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-            Voltar para o HUB
-          </Link>
-        </div>
-      </header>
-
-      {/* Header Central de Atividades */}
-      <div className="glass p-10 relative overflow-hidden flex flex-col md:flex-row items-center md:items-start justify-between gap-6 border-[var(--glass-border)] rounded-[3rem]">
-        <div className="relative z-10 flex gap-6 items-center">
-          <div className="w-16 h-16 rounded-3xl bg-[var(--accent-start)]/10 text-[var(--accent-start)] flex items-center justify-center flex-shrink-0 shadow-inner border border-[var(--accent-start)]/20">
-            <Activity size={32} />
-          </div>
-          <div>
-            <h1 className="text-3xl lg:text-4xl font-black text-[var(--text-primary)] tracking-tight uppercase italic drop-shadow-md">
-              Visão Geral de Atividades
-            </h1>
-            <p className="text-xs font-bold text-[var(--text-muted)] mt-1 uppercase tracking-[0.2em]">
-              Central de Acompanhamento e Progresso de Carreira
-            </p>
-          </div>
-        </div>
-      </div>
+      {/* Header — padrão canônico Gestão Funcional (F2-05) */}
+      <FunctionalPageHeader
+        eyebrow="Central de Acompanhamento e Progresso de Carreira"
+        title="Visão Geral"
+        titleAccent="de Atividades"
+        backHref="/hub"
+        backLabel="Voltar para o HUB"
+        icon={<Activity size={24} />}
+      />
 
       {/* Barra de Filtros e Busca */}
       <div className="glass p-5 border-[var(--glass-border)] rounded-[2rem] flex flex-col md:flex-row items-center gap-4">
@@ -597,10 +578,10 @@ export default function VisaoGeralPage() {
 
       </div>
 
-      {/* Modal Lateral de Detalhes (Ata/Feedback/Notas) */}
-      {activeDetailItem && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-overlay p-4 animate-fade-in">
-          <div className="glass max-w-lg w-full p-8 border-[var(--glass-border)] rounded-[3rem] relative space-y-6 text-left animate-in zoom-in duration-300">
+      {/* Modal de Detalhes (Ata/Feedback/Notas) — padronizado no GlassModal (overlay/tema/z canônicos) */}
+      <GlassModal isOpen={!!activeDetailItem} onClose={() => setActiveDetailItem(null)} maxWidth="max-w-lg">
+        {activeDetailItem && (
+          <div className="text-left space-y-6">
             <div className="flex items-start justify-between border-b border-[var(--border-primary)] pb-4">
               <div>
                 <span className="text-[9px] font-black uppercase tracking-widest text-[var(--accent-start)] block mb-1">
@@ -608,9 +589,9 @@ export default function VisaoGeralPage() {
                 </span>
                 <h3 className="text-lg font-bold text-[var(--text-primary)] leading-tight">{activeDetailItem.title}</h3>
               </div>
-              <button 
+              <button
                 onClick={() => setActiveDetailItem(null)}
-                className="text-[var(--text-muted)] hover:text-[var(--text-primary)] p-1 text-xs font-black tracking-widest"
+                className="text-[var(--text-muted)] hover:text-[var(--text-primary)] p-1 text-xs font-black tracking-widest shrink-0"
               >
                 FECHAR
               </button>
@@ -675,8 +656,8 @@ export default function VisaoGeralPage() {
               </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </GlassModal>
 
     </div>
   );

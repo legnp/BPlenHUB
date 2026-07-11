@@ -14,7 +14,8 @@ import {
   Users,
   Home,
   ChevronDown,
-  ScrollText
+  ScrollText,
+  LayoutDashboard
 } from "lucide-react";
 import { useTheme, BPlenTheme } from "@/context/ThemeContext";
 import { useAuthContext } from "@/context/AuthContext";
@@ -176,6 +177,7 @@ export function HubHeader() {
                           {[
                             { href: "/hub", icon: Home, label: BPLEN_NOMENCLATURE.navigation.home, active: pathname === "/hub" },
                             { href: "/hub/membro", icon: ShieldCheck, label: BPLEN_NOMENCLATURE.navigation.member_area, active: pathname === "/hub/membro" },
+                            { href: "/hub/visao_geral", icon: LayoutDashboard, label: "Visão Geral", active: pathname.startsWith("/hub/visao_geral") },
                             { href: "/hub/membro/contratos", icon: ScrollText, label: "Meus Contratos", active: pathname.startsWith("/hub/membro/contratos") },
                             { href: "/hub/profile_settings", icon: UserCog, label: BPLEN_NOMENCLATURE.navigation.profile, active: pathname.startsWith("/hub/profile_settings") },
                             { href: "/hub/networking", icon: Users, label: BPLEN_NOMENCLATURE.navigation.networking, active: pathname.startsWith("/hub/networking") },
