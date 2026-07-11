@@ -65,8 +65,8 @@ export interface Contract {
   documentHash: string | null;
   /** Preenchido apenas quando `status === "assinado"`. */
   signature: ContractSignature | null;
-  /** Nota fiscal anexada (admin/automação — item d; preenchido em fase futura). */
-  invoice?: { url: string; uploadedAt: string } | null;
+  /** Nota fiscal anexada (upload pelo admin — item d / CT-4). */
+  invoice?: { url: string; uploadedAt?: string; uploadedByAdmin?: boolean } | null;
   /** Timestamps serializados na leitura (gravados via serverTimestamp — F0-02). */
   createdAt?: string;
   updatedAt?: string;
