@@ -506,26 +506,21 @@ sem copy hardcoded fora do que o guia permitir).
   comportam conforme Mapa 3
 - Modo de validação: Automatizado (código) + Requer execução humana (conferência visual em produção)
 - Decisão: —
-- Execução: **Em andamento** — validação da Gestora em produção (2026-07-11): dashboard
-  da jornada, nav, Sequence Lock e Upsell Gate **aprovados** (itens 1-4); modal de
-  offboarding **aprovado**. Achados de UI corrigidos (PR #72): **BUG-059** (onboarding
-  bloqueado usava layout de upsell com foto → passou ao gate reutilizável no padrão do
-  offboarding), **BUG-060** (upsell exibia nomes técnicos dos checkpoints → removidos),
-  **BUG-061** (modal de detalhe do serviço fora do padrão global → convertido ao
-  `GlassModal` + conteúdo em grid de 2 colunas descrição|workflow). Restam: reconferência
-  visual em produção dos 3 ajustes do PR #72 (BUG-030).
-- Resultado: motor de jornada por dado (`resolverAcesso`, B2) + trava de sequência
-  validados pela Gestora; modais da nav padronizados. Conferência final dos ajustes em produção.
-- Bug(s) vinculado(s): BUG-015, BUG-059 (Corrigido, PR #72), BUG-060 (Corrigido, PR #72),
-  BUG-061 (Corrigido, PR #72)
-- Pendências de validação acumuladas: (a) `SequenceLockModal`/`UpsellServiceModal`
-  (F0-01 lote A, via `JourneyNav`/`SubStepRail`) recoloridos para vars de tema —
-  conferência visual nos temas claros pendente em produção (BUG-030); (b)
-  offboarding/onboarding no `GlassModal` (agora via `JourneyGateModal` reutilizável) —
-  conferência **desbloqueada** (BUG-035 corrigido) e offboarding **aprovado** pela
-  Gestora; reconferir o onboarding após o PR #72.
-- Log: [2026-07-11] validação da Gestora (itens 1-4 aprovados) + ajustes de modais
-  BUG-059/060/061 (PR #72) — ver `LOG.md`
+- Execução: **Concluída — validada em produção pela Gestora (2026-07-11).** Dashboard da
+  jornada, nav, Sequence Lock e Upsell Gate **aprovados** (itens 1-4); modal de offboarding
+  **aprovado**. Achados de UI corrigidos (PR #72) e **os 3 reconferidos e aprovados** pela
+  Gestora: **BUG-059** (onboarding bloqueado usava layout de upsell com foto → passou ao gate
+  reutilizável no padrão do offboarding), **BUG-060** (upsell exibia nomes técnicos dos
+  checkpoints → removidos), **BUG-061** (modal de detalhe do serviço fora do padrão global →
+  convertido ao `GlassModal` + conteúdo em grid de 2 colunas descrição|workflow).
+- Resultado: motor de jornada por dado (`resolverAcesso`, B2) + trava de sequência + modais da
+  nav (upsell/onboarding/offboarding/detalhe) **validados e aprovados** em produção. F1-03
+  fechada. (BUG-015 — `/hub/step-journey` órfã/duplicada — segue à parte no F2-01, destino do
+  `step-journey`, não bloqueia esta página.)
+- Bug(s) vinculado(s): BUG-015 (Aberto — tratado no F2-01), BUG-059 (Corrigido, PR #72),
+  BUG-060 (Corrigido, PR #72), BUG-061 (Corrigido, PR #72)
+- Log: [2026-07-11] validação da Gestora (itens 1-4 + os 3 ajustes aprovados); modais
+  BUG-059/060/061 (PR #72) — **F1-03 fechada** — ver `LOG.md`
 
 ### [F1-04] Hub — carreira, agenda do membro, contratos, visão geral
 - Categoria(s) de qualidade: Adequação funcional

@@ -3062,3 +3062,6 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   ajustes em produção pela Gestora (BUG-030).
 - Itens atualizados: `BUGS.md` (+BUG-059/060/061), `00-PLAN.md` (F1-03 em andamento, itens 1-4
   aprovados), `DASHBOARD.md` (F1-03 + entrada nova; F1-02 explicitado), este LOG.
+- **Fechamento (mesma data):** a Gestora reconferiu em produção e **aprovou os 3 ajustes**
+  (BUG-059/060/061). **F1-03 (dashboard + motor de jornada) fechada.** `00-PLAN.md` e
+  `DASHBOARD.md` atualizados (F1-03 → Concluída/validada). Próxima frente logada: F1-04.
