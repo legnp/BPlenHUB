@@ -2,7 +2,7 @@
 
 import React from "react";
 import GlassModal from "@/components/ui/GlassModal";
-import { X, ChevronRight, CheckCircle2, Sparkles } from "lucide-react";
+import { X, ChevronRight, Sparkles } from "lucide-react";
 import { Product } from "@/types/products";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -92,20 +92,6 @@ export function UpsellServiceModal({ isOpen, onClose, product, loading }: Upsell
                   : product.sheet.description}
               </p>
             </div>
-
-            {/* Beneficios */}
-            <ul className="space-y-3.5">
-              {product.capabilities.surveys.slice(0, 2).map((sId, index) => (
-                <li key={index} className="flex items-start gap-3 group">
-                  <div className="mt-0.5 w-5 h-5 rounded-lg bg-[var(--accent-start)]/5 flex items-center justify-center text-[var(--accent-start)] shrink-0">
-                    <CheckCircle2 size={12} />
-                  </div>
-                  <span className="text-[11px] font-bold uppercase tracking-tight text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors">
-                    {sId.split('_').join(' ')}
-                  </span>
-                </li>
-              ))}
-            </ul>
 
             {/* CTA */}
             <Link

@@ -1608,6 +1608,54 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Decisão de execução: bugfix isolado (correção da raiz + blindagem do render).
 - Commit/PR: PR #68
 
+### BUG-059 Modal de onboarding bloqueado usava layout de upsell (com foto), não sendo serviço comprável
+
+- Severidade: Baixo (UX/design)
+- Área/fase onde foi achado: F1-03 / nav da jornada (2026-07-11) — reportado pela Gestora na validação
+- Arquivo(s) afetado(s): `src/components/journey/JourneyNav.tsx`
+- Cenário de falha: ao clicar na etapa `onboarding` bloqueada (não-membro), a nav abria o
+  `UpsellServiceModal` (com foto de capa, como um serviço comprável). Onboarding não é
+  comprável — é composição da jornada de membro — então o modal de upsell é enganoso.
+- Status: **Corrigido** — PR #72. `handleStageClick` roteia `onboarding` bloqueado para um
+  gate reutilizável (`JourneyGateModal`, extraído do antigo `NonMemberOffboardingModal`), com
+  o **mesmo design do offboarding** (ícone + título + CTA, sem foto nem checkpoints). Título
+  "Sua Jornada de Membro ainda não começou."; corpo "No Onboarding é onde a sua carreira
+  profissional ganha potência! ... torne-se um Membro BPlen.".
+- Decisão de execução: plano+aprovação da Gestora (sistema de design). Validado por eslint +
+  test 52/52 + type-check + build. Conferência visual em produção (BUG-030).
+- Commit/PR: PR #72
+
+### BUG-060 Modal de upsell exibia nomes técnicos dos checkpoints (IDs de survey)
+
+- Severidade: Baixo (UX/copy)
+- Área/fase onde foi achado: F1-03 / nav da jornada (2026-07-11) — reportado pela Gestora
+- Arquivo(s) afetado(s): `src/components/journey/UpsellServiceModal.tsx`
+- Cenário de falha: o modal listava "benefícios" mapeando `product.capabilities.surveys`
+  (IDs técnicos de survey, ex.: "welcome survey"), expondo nomenclatura interna ao usuário.
+- Status: **Corrigido** — PR #72. Bloco de benefícios removido; o modal fica capa +
+  descrição + CTA. `CheckCircle2` (import morto após a remoção) removido.
+- Decisão de execução: plano+aprovação da Gestora. Validado por eslint + test + type-check + build.
+- Commit/PR: PR #72
+
+### BUG-061 Modal de detalhe do serviço fora do padrão global de modais + conteúdo em 2 caixas roláveis
+
+- Severidade: Baixo (UX/design)
+- Área/fase onde foi achado: F1-03 / nav da jornada (2026-07-11) — reportado pela Gestora
+- Arquivo(s) afetado(s): `src/components/journey/JourneyNav.tsx`
+- Cenário de falha: o modal de detalhe (botão "v" abaixo do ícone da etapa) era feito à mão
+  (portal próprio) com overlay `branco 40%` fixo — destoando dos demais modais, que já usam o
+  overlay adaptativo ao tema (`--modal-backdrop`, PR #47). Além disso o conteúdo ficava em
+  duas caixas de texto empilhadas com barra de rolagem, dando sensação "travada".
+- Status: **Corrigido** — PR #72. Convertido para o `GlassModal` canônico (overlay/tema/z
+  coerentes). Conteúdo redesenhado em **grid de 2 colunas**: esquerda = descrição do serviço,
+  direita = workflow de entrega (passos numerados), rolagem só onde necessário com o
+  `custom-scrollbar` do padrão. **Fonte de conteúdo inalterada e única:** `stage.description`
+  = `product.sheet.description` e `stage.workflow` = `product.workflow` (montados em
+  `journey.ts`), o mesmo consumido no upsell e nas páginas de serviço/contrato.
+- Decisão de execução: plano+aprovação da Gestora (sistema de design). Validado por eslint +
+  test 52/52 + type-check + build. Conferência visual em produção (BUG-030).
+- Commit/PR: PR #72
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em
