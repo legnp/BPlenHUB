@@ -188,6 +188,28 @@ export async function generateContractPdf(
       hdrs.get("x-real-ip") ||
       "desconhecido";
     const userAgent = hdrs.get("user-agent") || "desconhecido";
+
+    // Geolocalização aproximada por IP (headers de edge da Vercel; cidade/região vêm
+    // URL-encoded). Não invasiva (sem GPS/consentimento) — reforço jurídico do carimbo.
+    const decodeHeader = (v: string | null): string => {
+      if (!v) return "";
+      try {
+        return decodeURIComponent(v);
+      } catch {
+        return v;
+      }
+    };
+    const geo = {
+      country: hdrs.get("x-vercel-ip-country") || "",
+      region: decodeHeader(hdrs.get("x-vercel-ip-country-region")),
+      city: decodeHeader(hdrs.get("x-vercel-ip-city")),
+      latitude: hdrs.get("x-vercel-ip-latitude") || "",
+      longitude: hdrs.get("x-vercel-ip-longitude") || "",
+    };
+    const cityRegion = [geo.city, geo.region].filter(Boolean).join("/");
+    const locationStr = [cityRegion, geo.country].filter(Boolean).join(", ") || "não identificado";
+    const coordsStr = geo.latitude && geo.longitude ? `${geo.latitude}, ${geo.longitude}` : "";
+
     const now = new Date();
     const signedAtIso = now.toISOString();
 
@@ -210,7 +232,7 @@ export async function generateContractPdf(
     // Build PDF Buffer (com o carimbo de assinatura estampado)
     const buffer = await createContractBuffer(
       { product, dados, matricula, orderAmount, orderMethod },
-      { dateTimeStr, ip, verificationCode, verificationHash }
+      { dateTimeStr, ip, verificationCode, verificationHash, location: locationStr, coords: coordsStr }
     );
 
     // Generate Hash (integridade do arquivo final)
@@ -261,7 +283,8 @@ export async function generateContractPdf(
       documentUrl: result.webViewLink,
       documentHash: hash,
       verificationCode,
-      verificationHash
+      verificationHash,
+      geo
     });
 
     // Entidade de contrato (CT-1) — `User/{matricula}/Contracts/{contractId}`.
@@ -283,7 +306,7 @@ export async function generateContractPdf(
         paymentId: paymentId || null,
         documentUrl: result.webViewLink,
         documentHash: hash,
-        signature: { signedAt: signedAtIso, ip, userAgent, verificationCode, verificationHash },
+        signature: { signedAt: signedAtIso, ip, userAgent, verificationCode, verificationHash, geo },
         updatedAt: FieldValue.serverTimestamp(),
         ...(contractExists ? {} : { createdAt: FieldValue.serverTimestamp() })
       },
@@ -303,6 +326,10 @@ interface ContractStamp {
   ip: string;
   verificationCode: string;
   verificationHash: string;
+  /** Local aproximado por IP (cidade/região, país). */
+  location?: string;
+  /** Coordenadas aproximadas por IP (lat, long). */
+  coords?: string;
 }
 
 function createContractBuffer(data: ContractContentData, stamp?: ContractStamp): Promise<Buffer> {
@@ -350,6 +377,8 @@ function createContractBuffer(data: ContractContentData, stamp?: ContractStamp):
         doc.font("Helvetica").fontSize(10).fillColor(textColor);
         doc.text(`Data e hora do aceite: ${stamp.dateTimeStr} (horário de Brasília)`);
         doc.text(`IP do signatário: ${stamp.ip}`);
+        if (stamp.location) doc.text(`Local aproximado (por IP): ${stamp.location}`);
+        if (stamp.coords) doc.text(`Coordenadas aproximadas: ${stamp.coords}`);
         doc.text(`Código de verificação: ${stamp.verificationCode}`);
         doc.text(`Hash de integridade: ${stamp.verificationHash}`);
         doc.moveDown(0.4);
