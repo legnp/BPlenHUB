@@ -7,8 +7,7 @@ import * as LucideIcons from "lucide-react";
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
+import { useState } from "react";
 import { UpsellServiceModal } from "./UpsellServiceModal";
 import { getProductBySlug } from "@/actions/products";
 import { StageTelemetry } from "@/hooks/useJourney";
@@ -110,14 +109,10 @@ export function JourneyNav({ stages, currentStepId, stepStatusMap, getStageTelem
   // Sequence Lock State 🔒
   const [sequenceLockModalOpen, setSequenceLockModalOpen] = useState(false);
   const [prevStageTitle, setPrevStageTitle] = useState("");
-  const [mounted, setMounted] = useState(false);
 
-  // Offboarding Non-Member State 🔒
+  // Gate para Não-Membros (mesmo padrão visual p/ Onboarding e Offboarding) 🔒
   const [offboardingLockedModalOpen, setOffboardingLockedModalOpen] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const [onboardingLockedModalOpen, setOnboardingLockedModalOpen] = useState(false);
 
   const currentStepIndex = stages.findIndex(s => s.id === currentStepId);
 
@@ -126,6 +121,13 @@ export function JourneyNav({ stages, currentStepId, stepStatusMap, getStageTelem
     // 0. Exceção do Offboarding para Não-Membros
     if (!hasAccess && stage.id.toLowerCase() === 'offboarding') {
       setOffboardingLockedModalOpen(true);
+      return;
+    }
+
+    // 0.5 Exceção do Onboarding para Não-Membros — mesmo padrão visual do
+    // Offboarding (não é serviço comprável, é composição da jornada; sem foto/upsell).
+    if (!hasAccess && stage.id.toLowerCase() === 'onboarding') {
+      setOnboardingLockedModalOpen(true);
       return;
     }
 
@@ -378,125 +380,116 @@ export function JourneyNav({ stages, currentStepId, stepStatusMap, getStageTelem
         </div>
       </div>
 
-      {/* Modal de Detalhes Estratégicos */}
-      {mounted && createPortal(
-        <AnimatePresence>
-           {detailModalOpen && (
-            <div className="fixed inset-0 z-overlay flex items-start justify-center p-4 overflow-y-auto custom-scrollbar">
-               {/* Backdrop */}
-               <motion.div 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  onClick={() => setDetailModalOpen(null)}
-                  className="absolute inset-0 bg-white/40 backdrop-blur-[8px] cursor-pointer" 
-               />
-               
-               {/* Modal Content */}
-               <motion.div 
-                  initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                  className="relative bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-[3rem] p-10 max-w-lg w-full my-auto shadow-[0_32px_64px_rgba(0,0,0,0.5)] z-10"
-               >
-                  <button 
-                     onClick={() => setDetailModalOpen(null)}
-                     className="absolute top-8 right-8 w-8 h-8 rounded-full bg-[var(--input-bg)] flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--accent-soft)] transition-colors"
-                  >
-                     <LucideIcons.X size={16} />
-                   </button>
-                  
-                  {(() => {
-                     const stage = stages.find(s => s.id === detailModalOpen);
-                     if (!stage) return null;
-                     
-                     const theme = STAGE_THEMES[stage.id] || { color: "#EC4899", icon: LucideIcons.Compass };
-                     const Icon = theme.icon;
+      {/* Modal de Detalhes do Serviço — padronizado no GlassModal (overlay/tema/z canônicos) */}
+      <GlassModal
+        isOpen={!!detailModalOpen}
+        onClose={() => setDetailModalOpen(null)}
+        maxWidth="max-w-3xl"
+      >
+        {(() => {
+          const stage = stages.find(s => s.id === detailModalOpen);
+          if (!stage) return null;
 
-                     return (
-                        <div className="space-y-8">
-                           <div className="flex items-center gap-4">
-                              <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg" style={{ backgroundColor: `${theme.color}20`, color: theme.color }}>
-                                 <Icon size={24} />
-                              </div>
-                              <div>
-                                 <h3 className="text-xl font-black tracking-tight text-[var(--text-primary)]">{stage.title}</h3>
-                                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)] mt-1">
-                                    {stage.kicker || "Visão Estratégica"}
-                                 </p>
-                              </div>
-                           </div>
-                           
-                           <div className="p-6 bg-[var(--input-bg)]/50 border border-[var(--border-primary)] rounded-[2rem] max-h-[220px] overflow-y-auto custom-scrollbar">
-                              <BPlenRichTextRenderer 
-                                 text={stage.description || "Faz parte do desenvolvimento contínuo da sua carreira na metodologia BPlen."}
-                                 variant="small"
-                                 themeAdaptive={true}
-                              />
-                           </div>
-                           
-                           {((stage.workflow && stage.workflow.length > 0) || (stage.substeps && stage.substeps.length > 0)) && (
-                              <div className="pt-2 space-y-4">
-                                 <h4 className="text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)] flex items-center gap-2">
-                                    <LucideIcons.MapPin size={12} className="text-[var(--accent-start)]" />
-                                    Checkpoints
-                                 </h4>
-                                 
-                                 {stage.workflow && stage.workflow.length > 0 ? (
-                                    <div className="space-y-3 max-h-[240px] overflow-y-auto custom-scrollbar pr-1">
-                                       {stage.workflow.map((step, idx) => (
-                                          <div 
-                                             key={step.id || idx} 
-                                             className="flex gap-4 p-4 rounded-2xl bg-[var(--input-bg)]/40 border border-[var(--border-primary)] hover:border-[var(--accent-start)]/20 transition-all group"
-                                          >
-                                             <div 
-                                                className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-black transition-all"
-                                                style={{ 
-                                                   backgroundColor: `${theme.color}15`, 
-                                                   color: theme.color,
-                                                   border: `1px solid ${theme.color}30`
-                                                }}
-                                             >
-                                                {idx + 1}
-                                             </div>
-                                             <div className="space-y-1 flex-1">
-                                                <h5 className="text-[10px] font-black uppercase tracking-wider text-[var(--text-primary)]">
-                                                   {step.title}
-                                                </h5>
-                                                {step.description && (
-                                                   <BPlenRichTextRenderer 
-                                                      text={step.description} 
-                                                      variant="small" 
-                                                      themeAdaptive={true} 
-                                                   />
-                                                )}
-                                             </div>
-                                          </div>
-                                       ))}
-                                    </div>
-                                 ) : (
-                                    <ul className="space-y-3">
-                                       {stage.substeps.map(ss => (
-                                          <li key={ss.id} className="flex items-center gap-3 text-xs text-[var(--text-muted)] group hover:text-[var(--text-primary)] transition-colors">
-                                             <div className="w-6 h-6 rounded-lg bg-[var(--input-bg)] border border-[var(--border-primary)] flex items-center justify-center text-[9px] font-black">
-                                                <LucideIcons.CheckCircle2 size={10} className="text-[var(--text-muted)] group-hover:text-[var(--accent-start)] transition-colors" />
-                                             </div>
-                                             <span className="font-medium text-[11px] uppercase tracking-widest">{ss.title}</span>
-                                          </li>
-                                       ))}
-                                    </ul>
-                                 )}
-                              </div>
-                           )}
-                        </div>
-                     );
-                  })()}
-               </motion.div>
+          const theme = STAGE_THEMES[stage.id] || { color: "#EC4899", icon: LucideIcons.Compass, gradient: "" };
+          const Icon = theme.icon;
+          const workflow = stage.workflow && stage.workflow.length > 0 ? stage.workflow : null;
+          const hasDelivery = !!workflow || (stage.substeps && stage.substeps.length > 0);
+
+          return (
+            <div className="relative">
+              {/* Fechar */}
+              <button
+                onClick={() => setDetailModalOpen(null)}
+                className="absolute -top-2 -right-2 w-10 h-10 rounded-full bg-[var(--input-bg)] border border-[var(--border-primary)] flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-all z-20"
+                aria-label="Fechar"
+              >
+                <LucideIcons.X size={18} />
+              </button>
+
+              {/* Cabeçalho */}
+              <div className="flex items-center gap-4 mb-8 pr-10">
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${theme.color}20`, color: theme.color }}>
+                  <Icon size={24} />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black tracking-tight text-[var(--text-primary)] leading-tight">{stage.title}</h3>
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)] mt-1">
+                    {stage.kicker || "Visão Estratégica"}
+                  </p>
+                </div>
+              </div>
+
+              {/* Grid de 2 colunas: descrição do serviço | workflow de entrega */}
+              <div className={cn("grid gap-6", hasDelivery ? "md:grid-cols-2" : "grid-cols-1")}>
+                {/* Esquerda: descrição do serviço (fonte única = product.sheet.description) */}
+                <div className="flex flex-col gap-3">
+                  <h4 className="text-[10px] font-black uppercase tracking-[0.25em] text-[var(--accent-start)] flex items-center gap-2">
+                    <LucideIcons.Sparkles size={12} />
+                    Sobre o serviço
+                  </h4>
+                  <div className="p-6 bg-[var(--input-bg)]/50 border border-[var(--border-primary)] rounded-[2rem] max-h-[340px] overflow-y-auto custom-scrollbar">
+                    <BPlenRichTextRenderer
+                      text={stage.description || "Faz parte do desenvolvimento contínuo da sua carreira na metodologia BPlen."}
+                      variant="small"
+                      themeAdaptive={true}
+                    />
+                  </div>
+                </div>
+
+                {/* Direita: workflow de entrega (fonte única = product.workflow) */}
+                {hasDelivery && (
+                  <div className="flex flex-col gap-3">
+                    <h4 className="text-[10px] font-black uppercase tracking-[0.25em] text-[var(--text-primary)] flex items-center gap-2">
+                      <LucideIcons.MapPin size={12} className="text-[var(--accent-start)]" />
+                      Workflow de entrega
+                    </h4>
+                    <div className="flex flex-col gap-3 max-h-[340px] overflow-y-auto custom-scrollbar pr-1">
+                      {workflow ? (
+                        workflow.map((step, idx) => (
+                          <div
+                            key={step.id || idx}
+                            className="flex gap-4 p-4 rounded-2xl bg-[var(--input-bg)]/40 border border-[var(--border-primary)] hover:border-[var(--accent-start)]/20 transition-all"
+                          >
+                            <div
+                              className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-black"
+                              style={{ backgroundColor: `${theme.color}15`, color: theme.color, border: `1px solid ${theme.color}30` }}
+                            >
+                              {idx + 1}
+                            </div>
+                            <div className="space-y-1 flex-1">
+                              <h5 className="text-[10px] font-black uppercase tracking-wider text-[var(--text-primary)]">{step.title}</h5>
+                              {step.description && (
+                                <BPlenRichTextRenderer text={step.description} variant="small" themeAdaptive={true} />
+                              )}
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        stage.substeps.map((ss, idx) => (
+                          <div
+                            key={ss.id}
+                            className="flex gap-4 p-4 rounded-2xl bg-[var(--input-bg)]/40 border border-[var(--border-primary)]"
+                          >
+                            <div
+                              className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-black"
+                              style={{ backgroundColor: `${theme.color}15`, color: theme.color, border: `1px solid ${theme.color}30` }}
+                            >
+                              {idx + 1}
+                            </div>
+                            <div className="flex items-center flex-1">
+                              <span className="text-[10px] font-black uppercase tracking-wider text-[var(--text-primary)]">{ss.title}</span>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-           )}
-        </AnimatePresence>,
-        document.body
-      )}
+          );
+        })()}
+      </GlassModal>
 
       {/* Modal de Upsell Contextual ✨🧬 */}
       <UpsellServiceModal 
@@ -513,16 +506,50 @@ export function JourneyNav({ stages, currentStepId, stepStatusMap, getStageTelem
         prevStageTitle={prevStageTitle}
       />
 
-      {/* Modal de Offboarding para Não-Membros */}
-      <NonMemberOffboardingModal
+      {/* Gate para Não-Membros — mesmo padrão visual (sem foto/upsell) p/ Offboarding e Onboarding */}
+      <JourneyGateModal
         isOpen={offboardingLockedModalOpen}
         onClose={() => setOffboardingLockedModalOpen(false)}
-      />
+        title="Sua Jornada de Membro ainda não começou."
+        ctaLabel="Conheça nossos serviços!"
+        ctaHref="/servicos/pessoas"
+      >
+        <p className="text-sm text-[var(--text-secondary)] font-medium leading-relaxed">
+          O <strong className="text-[var(--text-primary)]">Offboarding</strong> é a etapa master onde nossos membros consolidam aprendizados, mensuram evolução real e preparam a decolagem para os próximos grandes desafios de suas carreiras.
+        </p>
+        <p className="text-sm text-[var(--text-secondary)] font-medium leading-relaxed">
+          Essa área segue reservada para quem iniciou a Jornada BPlen.
+        </p>
+      </JourneyGateModal>
+
+      <JourneyGateModal
+        isOpen={onboardingLockedModalOpen}
+        onClose={() => setOnboardingLockedModalOpen(false)}
+        title="Sua Jornada de Membro ainda não começou."
+        ctaLabel="Conheça nossos serviços!"
+        ctaHref="/servicos/pessoas"
+      >
+        <p className="text-sm text-[var(--text-secondary)] font-medium leading-relaxed">
+          No <strong className="text-[var(--text-primary)]">Onboarding</strong> é onde a sua carreira profissional ganha potência! Para acessar e liberar todo o ecossistema HUB, torne-se um Membro BPlen.
+        </p>
+      </JourneyGateModal>
     </div>
   );
 }
 
-function NonMemberOffboardingModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
+/**
+ * Gate reutilizavel para etapas nao-comprais da jornada (Onboarding/Offboarding):
+ * icone + titulo + corpo + CTA, sem foto de capa nem checkpoints. Padronizado no
+ * GlassModal (overlay/tema/z canonicos).
+ */
+function JourneyGateModal({ isOpen, onClose, title, children, ctaLabel, ctaHref }: {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  children: React.ReactNode;
+  ctaLabel: string;
+  ctaHref: string;
+}) {
   return (
     <GlassModal isOpen={isOpen} onClose={onClose} maxWidth="max-w-md">
       <div className="relative flex flex-col items-center text-center">
@@ -539,23 +566,18 @@ function NonMemberOffboardingModal({ isOpen, onClose }: { isOpen: boolean, onClo
         </div>
 
         <h3 className="text-2xl font-black text-[var(--text-primary)] tracking-tight mb-4">
-          Sua Jornada de Membro ainda não começou.
+          {title}
         </h3>
 
         <div className="space-y-4 mb-8">
-          <p className="text-sm text-[var(--text-secondary)] font-medium leading-relaxed">
-            O <strong className="text-[var(--text-primary)]">Offboarding</strong> é a etapa master onde nossos membros consolidam aprendizados, mensuram evolução real e preparam a decolagem para os próximos grandes desafios de suas carreiras.
-          </p>
-          <p className="text-sm text-[var(--text-secondary)] font-medium leading-relaxed">
-            Essa área segue reservada para quem iniciou a Jornada BPlen.
-          </p>
+          {children}
         </div>
 
         <Link
-          href="/servicos/pessoas"
+          href={ctaHref}
           className="w-full py-4 rounded-xl bg-[var(--accent-start)] text-white font-black text-xs uppercase tracking-widest hover:scale-[1.02] shadow-[0_0_20px_rgba(255,0,128,0.3)] transition-all flex items-center justify-center gap-2 group/btn"
         >
-          Conheça nossos serviços!
+          {ctaLabel}
           <LucideIcons.ChevronRight size={16} className="group-hover/btn:translate-x-1 duration-300" />
         </Link>
       </div>
