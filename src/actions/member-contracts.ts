@@ -178,7 +178,10 @@ export async function getMemberContractsPanelAction(
         origin: contract?.origin ?? order?.gateway ?? null,
         paymentStatus: order?.status ?? null,
         finalPrice: order?.finalPrice ?? null,
-        purchaseDate: toIso(order?.createdAt) ?? contract?.createdAt ?? null,
+        // Serializa o timestamp do contrato também (fallback quando não há pedido — ex.:
+        // avulso pendente). Sem o toIso, um Timestamp cru do Firestore vira "Invalid Date"
+        // e o date-fns lança RangeError, derrubando o render de todos os cards.
+        purchaseDate: toIso(order?.createdAt) ?? toIso(contract?.createdAt) ?? null,
         serviceReleased: !!order?.serviceReleased || signed,
         contractStatus: contract?.status ?? null,
         signedAt: contract?.signature?.signedAt ?? null,

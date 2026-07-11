@@ -18,6 +18,14 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
+/** Formata uma data ISO com segurança — retorna null se for inválida (nunca lança). */
+function fmtDate(iso: string | null, pattern: string): string | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return null;
+  return format(d, pattern, { locale: ptBR });
+}
+
 /** Badge de status REAL (assinatura + pagamento), padrão Gestão Funcional (theme vars). */
 function CardBadge({ state }: { state: ContractCard["cardState"] }) {
   const map: Record<ContractCard["cardState"], { label: string; cls: string; icon: React.ReactNode }> = {
@@ -129,12 +137,14 @@ export default async function ContratosPage() {
                 </div>
 
                 {/* Carimbo resumido (quando assinado) */}
-                {card.cardState === "assinado" && card.signedAt ? (
+                {card.cardState === "assinado" ? (
                   <div className="rounded-2xl bg-[var(--bg-primary)]/40 border border-[var(--border-primary)]/50 p-4 space-y-1.5">
                     <p className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)]">Carimbo da Assinatura</p>
-                    <p className="text-[11px] font-bold text-[var(--text-primary)]">
-                      {format(new Date(card.signedAt), "dd MMM yyyy 'às' HH:mm", { locale: ptBR })}
-                    </p>
+                    {fmtDate(card.signedAt, "dd MMM yyyy 'às' HH:mm") ? (
+                      <p className="text-[11px] font-bold text-[var(--text-primary)]">
+                        {fmtDate(card.signedAt, "dd MMM yyyy 'às' HH:mm")}
+                      </p>
+                    ) : null}
                     {card.geoLocation ? (
                       <p className="text-[10px] text-[var(--text-muted)] font-medium flex items-center gap-1">
                         <MapPin size={11} /> {card.geoLocation}
@@ -155,11 +165,11 @@ export default async function ContratosPage() {
                       {card.finalPrice !== null ? `R$ ${formatBRL(card.finalPrice)}` : "—"}
                     </p>
                   </div>
-                  {card.purchaseDate ? (
+                  {fmtDate(card.purchaseDate, "dd MMM yyyy") ? (
                     <div className="text-right">
                       <p className="text-[9px] uppercase font-bold tracking-[0.2em] text-[var(--text-muted)] mb-1">Data</p>
                       <p className="text-xs font-bold text-[var(--text-secondary)]">
-                        {format(new Date(card.purchaseDate), "dd MMM yyyy", { locale: ptBR })}
+                        {fmtDate(card.purchaseDate, "dd MMM yyyy")}
                       </p>
                     </div>
                   ) : null}
