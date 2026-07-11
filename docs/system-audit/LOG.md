@@ -2877,4 +2877,14 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
 - Validado: eslint (limpo), test 52/52, tsc, build. Tela logada — produção (BUG-030).
 - Confirmações à Gestora: o **IP no PDF é real** (`x-forwarded-for`/`x-real-ip`); geo do
   usuário é viável via headers de edge da Vercel (país/cidade/região/lat-long) sem serviço
-  externo — a avaliar como adição futura ao carimbo.
+  externo.
+
+## [2026-07-10] Chat de execução — CT-3b.2: geolocalização por IP no carimbo (PR #62)
+
+- Gestora aprovou adicionar o geo. PR #62: `generateContractPdf` lê os headers de edge da
+  Vercel (`x-vercel-ip-country`/`-country-region`/`-city`/`-latitude`/`-longitude`; cidade/
+  região vêm URL-encoded), monta `geo` + string legível ("Cidade/Região, País") e coords.
+  O carimbo do PDF ganha "Local aproximado (por IP)" e "Coordenadas aproximadas"; `geo`
+  gravado na signature do Contract e no Legal_Audits (`ContractSignature.geo`). Não invasivo
+  (aproximado por IP, sem GPS/consentimento). Validado: eslint/test 52-52/tsc/build.
+  Conferência do carimbo em produção (BUG-030).

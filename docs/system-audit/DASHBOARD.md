@@ -12,7 +12,12 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-10 (chat de execução — **CT-3b.2 status real na tela de
+> **Última atualização:** 2026-07-10 (chat de execução — **CT-3b.2 geolocalização por IP no
+> carimbo (PR #62)**: o carimbo do contrato ganha "Local aproximado (por IP)" + coordenadas,
+> via headers de edge da Vercel (sem serviço externo, não invasivo); `geo` gravado na
+> assinatura/Legal_Audits. IP já era real.
+>
+> _(entrada anterior)_ 2026-07-10 (chat de execução — **CT-3b.2 status real na tela de
 > sucesso (PR #61)**: corrigida a tag "Serviço Liberado" + "já disponível" que apareciam
 > **hardcoded** antes da assinatura, contradizendo o gate — agora o status é dinâmico
 > (Aguardando Pagamento -> Aguardando Assinatura -> Serviço Liberado) e a faixa do grátis
