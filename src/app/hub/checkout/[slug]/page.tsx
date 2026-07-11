@@ -72,7 +72,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ slug:
         title="Checkout"
         titleAccent="do Serviço"
         backHref={`/hub/servicos/${slug}`}
-        backLabel="Voltar para detalhes"
+        backLabel="Voltar"
         statusTag={{ label: "Ambiente Seguro BPlen", tone: "success", icon: <ShieldCheck size={12} /> }}
       />
 

@@ -439,7 +439,7 @@ export default function GestaoCarreiraPage() {
           title="Gestão e Desenvolvimento"
           titleAccent="da sua Carreira"
           backHref="/hub/membro"
-          backLabel="Painel Principal"
+          backLabel="Voltar"
           statusTag={{
             label: `Jornada ${progress?.overallProgress || 0}% concluída`,
             tone: "accent",
