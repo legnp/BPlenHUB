@@ -445,7 +445,7 @@ export default function VisaoGeralPage() {
         title="Visão Geral"
         titleAccent="de Atividades"
         backHref="/hub"
-        backLabel="Voltar para o HUB"
+        backLabel="Voltar"
         icon={<Activity size={24} />}
       />
 

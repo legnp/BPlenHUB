@@ -40,11 +40,11 @@ export default function GestaoAgendaPage() {
         
         {/* Header de Navegação — padrão canônico Gestão Funcional (F2-05) */}
         <FunctionalPageHeader
-          eyebrow="Compromissos e programação"
-          title="Minha"
-          titleAccent="Agenda"
+          eyebrow="Gestão e revisão da sua agenda BPlen"
+          title="Gestão de Meus"
+          titleAccent="Compromissos"
           backHref="/hub/membro"
-          backLabel="Voltar ao Dashboard"
+          backLabel="Voltar"
           icon={<CalendarDays size={24} />}
         />
 
