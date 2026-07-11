@@ -2932,3 +2932,25 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
 - Validado: eslint (arquivos tocados) limpo, test 52/52, tsc, build. Fecha **BUG-055**.
 - **F1-02 sem bloqueadores de código.** Restam: validação em produção dos fluxos (adiada) e,
   fora do caminho crítico, CT-3c (área /hub/legal + audiências) e CT-5 (reforços jurídicos).
+
+## [2026-07-11] Chat de execução — Acabamento de UX de checkout/contratos (PR #67)
+
+- Gestora revisou os textos das telas de checkout/contrato (o chat devolveu o inventário
+  completo de copy por tela/estado) e pediu ajustes de copy + preços + design.
+- **Copy:** erro do checkout com suporte no WhatsApp; C12 (só Nota Fiscal por e-mail);
+  removido "Ativação Instantânea via Pix"; sucesso/avulso realinhados a "BPlen HUB" e "conta
+  BPlen HUB"; loadings "Registrando sua contratação"/"Registrando contrato..."; removido
+  "Prefere assinar depois?"; painel "Gestão de serviços e contratos" + back "Voltar".
+- **C21 (dúvida da Gestora):** verificado que a app **não** criptografa os dados a nível de
+  campo (só criptografia em repouso do Firestore + HTTPS + controle de acesso); a frase
+  "Proteção de Dados Criptografada" exagerava → trocada por "Ambiente Seguro · Proteção de
+  Dados BPlen".
+- **Preços:** novo helper `formatBRL` (pt-BR "x.xxx,xx") aplicado a todos os valores (antes
+  `toFixed(2)` estilo dólar).
+- **Design (b):** página de checkout normalizada ao padrão Gestão Funcional (F2-05) —
+  `FunctionalPageHeader` + theme vars no `RegistrationStep`. **(c)** info do serviço no
+  checkout formatada como preview curto (whitespace + line-clamp) em vez de texto corrido.
+- **Infra:** `SUPPORT_WHATSAPP_URL` centralizado em `src/config/support.ts` (reusado pelo
+  `FloatingHubActions`).
+- Validado: eslint (arquivos tocados) limpo, test 52/52, tsc, build. Telas logadas →
+  validação em produção (BUG-030).

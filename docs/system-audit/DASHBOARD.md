@@ -12,7 +12,14 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-10 (chat de execução — **BUG-055 aposentado + auditoria de
+> **Última atualização:** 2026-07-11 (chat de execução — **Acabamento de UX de checkout/
+> contratos (PR #67)**: ajustes de copy revisados pela Gestora, preços em BRL "x.xxx,xx"
+> (novo `formatBRL`), checkout normalizado ao padrão Gestão Funcional (F2-05), info do
+> serviço formatada, suporte no WhatsApp nos erros, e correção da alegação "dados
+> criptografados" (a app não criptografa a nível de campo — só at-rest/HTTPS/acesso).
+> `SUPPORT_WHATSAPP_URL` centralizado.
+>
+> _(entrada anterior)_ 2026-07-10 (chat de execução — **BUG-055 aposentado + auditoria de
 > acesso por-serviço (PR #66)**: o requisito (Gestora) é travar o **acesso ao serviço**, não o
 > HUB — e essa trava **já existe** e ficou consistente com o gate de liberação (PR #60): o
 > entitlement só é concedido após pago+assinado, e as superfícies de entrega (`/hub/servicos/
