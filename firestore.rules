@@ -78,8 +78,19 @@ service cloud.firestore {
     }
 
     // 🆘 [Suporte] Tickets de Bug Report / Chamados
+    // Os tickets agora vivem em subcoleções PRIVADAS por usuário (BUG-001):
+    //  - com matrícula: `User/{matricula}/Support_Tickets` (coberto pela regra catch-all
+    //    `{allSubcollections=**}` do bloco User — dono lê os próprios, escrita via Admin SDK);
+    //  - sem matrícula: `_SupportTickets/{uid}/tickets` (regra abaixo).
+    // A coleção raiz `Support_Tickets` é LEGADA (migrada) e permanece bloqueada.
     match /Support_Tickets/{ticketId} {
-      allow read, write: if false; // Escrita exclusiva via Admin SDK (Server Action)
+      allow read, write: if false;
+    }
+
+    // 🆘 [Suporte] Fallback privado por uid (usuário logado sem matrícula).
+    match /_SupportTickets/{uid}/{document=**} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false; // Escrita exclusiva via Admin SDK (Server Action)
     }
 
     // ⚙️ [Fallback] Bloqueio preventivo para novas coleções não documentadas

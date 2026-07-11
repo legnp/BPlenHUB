@@ -88,7 +88,15 @@ export async function submitSupportTicket(rawInput: SubmitTicketInput) {
       ticketData.imageBase64 = imageBase64;
     }
 
-    const ticketRef = await getAdminDb().collection("Support_Tickets").add(ticketData);
+    // Governança de PII (BUG-001, CLAUDE.md regra 4): o ticket vai para a subcoleção
+    // PRIVADA do usuário — `User/{matricula}/Support_Tickets` (dono lê os próprios; escrita
+    // só via Admin SDK). Sem matrícula (logado, ainda sem matrícula), cai numa gaveta
+    // privada por uid `_SupportTickets/{uid}/tickets`. Antes ia para a raiz `Support_Tickets`,
+    // misturando PII de todos os usuários.
+    const ticketsCol = matricula
+      ? getAdminDb().collection("User").doc(matricula).collection("Support_Tickets")
+      : getAdminDb().collection("_SupportTickets").doc(session.uid).collection("tickets");
+    const ticketRef = await ticketsCol.add(ticketData);
 
     console.log(`🆘 [Suporte] Ticket criado: ${ticketRef.id} | ${userName} (${session.email})`);
 
