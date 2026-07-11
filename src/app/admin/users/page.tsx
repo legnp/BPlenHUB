@@ -24,6 +24,7 @@ import {
   FileText,
   Copy,
   KeyRound,
+  ReceiptText,
   type LucideIcon
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -934,9 +935,36 @@ export default function UsersManagementPage() {
                                   <p className="text-[10px] text-[var(--text-muted)] opacity-70">Hash: {contract.documentHash?.substring(0, 16)}...</p>
                                 </div>
                               </div>
-                              <a href={contract.documentUrl} target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-[var(--bg-tertiary)] hover:bg-[var(--accent-start)]/20 text-[var(--text-primary)] transition-colors">
-                                <Link2 className="w-4 h-4" />
-                              </a>
+                              <div className="flex items-center gap-2">
+                                <label
+                                  className="p-2 rounded-lg bg-[var(--bg-tertiary)] hover:bg-[var(--accent-start)]/20 text-[var(--text-primary)] transition-colors cursor-pointer"
+                                  title="Anexar nota fiscal (PDF/imagem)"
+                                >
+                                  <ReceiptText className="w-4 h-4" />
+                                  <input
+                                    type="file"
+                                    accept="application/pdf,image/*"
+                                    className="hidden"
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0];
+                                      e.target.value = "";
+                                      if (!file) return;
+                                      const matricula = selectedUser.matricula || selectedUser.uid;
+                                      if (!matricula) { alert("Usuário sem matrícula."); return; }
+                                      const reader = new FileReader();
+                                      reader.onload = async () => {
+                                        const { attachContractInvoiceAction } = await import("@/actions/admin/contract-invoice");
+                                        const res = await attachContractInvoiceAction(matricula, contract.productId, reader.result as string, file.name, file.type);
+                                        alert(res.success ? "Nota fiscal anexada com sucesso." : "Falha ao anexar: " + (res.error || "erro desconhecido"));
+                                      };
+                                      reader.readAsDataURL(file);
+                                    }}
+                                  />
+                                </label>
+                                <a href={contract.documentUrl} target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-[var(--bg-tertiary)] hover:bg-[var(--accent-start)]/20 text-[var(--text-primary)] transition-colors" title="Ver documento do contrato">
+                                  <Link2 className="w-4 h-4" />
+                                </a>
+                              </div>
                             </div>
                           ))
                         ) : (
