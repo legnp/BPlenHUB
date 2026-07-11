@@ -7,25 +7,92 @@ import { ensureFolder, uploadFileToDrive } from "@/lib/drive-utils";
 import { serverEnv } from "@/env";
 import { Readable } from "stream";
 import { FieldValue } from "firebase-admin/firestore";
-import { PRODUCTS_COLLECTION, USER_COLLECTION } from "@/config/collections";
-import { Product } from "@/types/products";
+import { USER_COLLECTION } from "@/config/collections";
+import { Contract } from "@/types/contracts";
 import { getErrorMessage } from "@/lib/utils/errors";
 
 /**
- * Upload da NOTA FISCAL de um contrato pelo admin (CT-4, item d — ver
- * docs/system-audit/CONTRACTS-DESIGN.md). Anexa o arquivo à entidade de contrato
- * (`User/{matricula}/Contracts/{contractId}.invoice`); o painel do membro passa a
+ * Gestão da NOTA FISCAL e listagem de contratos pelo admin (CT-4, item d — ver
+ * docs/system-audit/CONTRACTS-DESIGN.md). Lê a entidade de contrato
+ * (`User/{matricula}/Contracts`) e anexa a nota fiscal; o painel do membro passa a
  * exibir/baixar. `requireAdmin` — área admin/identidade.
  */
 
-/** Id determinístico do contrato por serviço (mesmo do generateContractPdf/CT-1). */
-function contractIdFor(serviceCode: string | null | undefined, slug: string | null | undefined, id: string): string {
-  return String(serviceCode || slug || id).replace(/[^a-zA-Z0-9._-]/g, "_");
+/** Linha serializável de contrato para a tela de admin. */
+export interface AdminContractRow {
+  contractId: string;
+  productTitle: string | null;
+  serviceCode: string | null;
+  productSlug: string | null;
+  status: string;
+  origin: string | null;
+  documentUrl: string | null;
+  documentHash: string | null;
+  signedAt: string | null;
+  verificationCode: string | null;
+  invoiceUrl: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
+}
+
+/** ISO seguro de um timestamp Firestore (Timestamp | string | null). */
+function toIso(v: unknown): string | null {
+  if (!v) return null;
+  if (typeof v === "string") return v;
+  if (typeof v === "object" && v !== null && "toDate" in v && typeof (v as { toDate: unknown }).toDate === "function") {
+    try {
+      return (v as { toDate: () => Date }).toDate().toISOString();
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+/**
+ * ADMIN — lista os contratos do usuário pela ENTIDADE `Contracts` (chaveada por matrícula),
+ * com TODOS os status (pendente/retificação/assinado/cancelado). Substitui a leitura antiga
+ * de `Legal_Audits` pela chave errada (uid), que fazia o painel aparecer vazio.
+ */
+export async function getUserContractsAdminAction(
+  matricula: string
+): Promise<{ success: boolean; contracts?: AdminContractRow[]; error?: string }> {
+  try {
+    await requireAdmin();
+    if (!matricula) return { success: false, error: "Matrícula ausente." };
+    const db = getAdminDb();
+    const snap = await db.collection(USER_COLLECTION).doc(matricula).collection("Contracts").get();
+    const contracts: AdminContractRow[] = snap.docs.map((d) => {
+      const c = d.data() as Contract;
+      return {
+        contractId: c.contractId || d.id,
+        productTitle: c.productTitle ?? null,
+        serviceCode: c.serviceCode ?? null,
+        productSlug: c.productSlug ?? null,
+        status: c.status ?? "pendente_assinatura",
+        origin: c.origin ?? null,
+        documentUrl: c.documentUrl ?? null,
+        documentHash: c.documentHash ?? null,
+        signedAt: c.signature?.signedAt ?? null,
+        verificationCode: c.signature?.verificationCode ?? null,
+        invoiceUrl: c.invoice?.url ?? null,
+        createdAt: toIso(c.createdAt),
+        updatedAt: toIso(c.updatedAt),
+      };
+    });
+    // Pendentes primeiro, depois assinados; dentro, mais recentes primeiro.
+    const rank: Record<string, number> = { pendente_assinatura: 0, em_retificacao: 1, assinado: 2, cancelado: 3 };
+    contracts.sort((a, b) => (rank[a.status] ?? 9) - (rank[b.status] ?? 9) || String(b.updatedAt).localeCompare(String(a.updatedAt)));
+    return { success: true, contracts };
+  } catch (error: unknown) {
+    console.error("[Admin Contracts] Erro:", error);
+    return { success: false, error: getErrorMessage(error, "Falha ao carregar os contratos do usuário.") };
+  }
 }
 
 export async function attachContractInvoiceAction(
   matricula: string,
-  productId: string,
+  contractId: string,
   base64File: string,
   fileName: string,
   mimeType: string = "application/pdf"
@@ -33,15 +100,6 @@ export async function attachContractInvoiceAction(
   try {
     await requireAdmin();
     const db = getAdminDb();
-
-    // Resolve o produto (por id, com fallback por slug) para chegar ao contractId.
-    let productDoc = await db.collection(PRODUCTS_COLLECTION).doc(productId).get();
-    if (!productDoc.exists) {
-      const bySlug = await db.collection(PRODUCTS_COLLECTION).where("slug", "==", productId).limit(1).get();
-      if (!bySlug.empty) productDoc = bySlug.docs[0];
-    }
-    const product = productDoc.exists ? (productDoc.data() as Product) : null;
-    const contractId = contractIdFor(product?.serviceCode, product?.slug ?? null, productId);
 
     const contractRef = db.collection(USER_COLLECTION).doc(matricula).collection("Contracts").doc(contractId);
     const contractSnap = await contractRef.get();
