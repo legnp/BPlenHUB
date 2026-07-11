@@ -12,7 +12,15 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-10 (chat de execução — **CT-4 painel de contratos reescrito +
+> **Última atualização:** 2026-07-10 (chat de execução — **BUG-055 aposentado + auditoria de
+> acesso por-serviço (PR #66)**: o requisito (Gestora) é travar o **acesso ao serviço**, não o
+> HUB — e essa trava **já existe** e ficou consistente com o gate de liberação (PR #60): o
+> entitlement só é concedido após pago+assinado, e as superfícies de entrega (`/hub/servicos/
+> [slug]`, `/hub/journey/[stepId]`) bloqueiam sem entitlement. Auditoria: sem porta dos fundos.
+> O portão morto (`ContractGateModal`/`getPendingContracts`, inerte e abordagem errada) foi
+> removido. **F1-02 sem bloqueadores de código** — resta validação em produção + CT-3c/CT-5.
+>
+> _(entrada anterior)_ 2026-07-10 (chat de execução — **CT-4 painel de contratos reescrito +
 > nota fiscal (PRs #63/#64)**: `/hub/membro/contratos` reescrito no padrão Gestão Funcional —
 > 1 card por serviço (une pedidos+contratos), **status real de assinatura**, carimbo resumido,
 > **documento visualizável no HUB** via `/api/docs`, CTA por estado, rota morta corrigida.
@@ -275,7 +283,7 @@ divergência apontada na conferência). Parser validado por diff — regressão 
 | Item | Página(s) | Camada A (segurança) | Camada B (validação UX) | Estado geral |
 |---|---|---|---|---|
 | **F1-01** | Públicas de marketing (home, /servicos, /profissionais, /conteudo, /agendar, legais) | n/a | ✓ base + **19/19 ajustes** aplicados (PR-A #42, PR-B #43, PR-C #44, PR-C2 #45) | **Cluster de ajustes COMPLETO** (copy, footer/header, design, /agendar). BUG-048/049/050 corrigidos. Base validada por leitura+preview; reconferência final ao vivo de baixo risco |
-| **F1-02** | Checkout + subsistema de contratos | ✓ (BUG-005/006 via T-02) | ◐ **quase completo** — CT-0..CT-4 (PRs #48..#64) | Rota órfã removida (BUG-002); subsistema reconstruído: entidade+IP+geo, avulso robusto, assinatura pós-checkout grátis+pago, padrão Gestão Funcional, carimbo/código único, **gate liberação (pagamento aprovado E contrato assinado)**, status real, **painel reescrito + documento in-app + nota fiscal (CT-4)**. Fechados BUG-051/052/053/054/056. **Pendente:** CT-3c (/hub/legal + audiências), CT-5, decisão BUG-055 (gate legado), e validação em produção (adiada) |
+| **F1-02** | Checkout + subsistema de contratos | ✓ (BUG-005/006 via T-02) | ◐ **código completo** — CT-0..CT-4 (PRs #48..#66) | Rota órfã removida (BUG-002); subsistema reconstruído: entidade+IP+geo, avulso robusto, assinatura pós-checkout grátis+pago, padrão Gestão Funcional, carimbo/código único, **gate liberação (pagamento aprovado E contrato assinado)**, status real, painel reescrito + documento in-app + nota fiscal (CT-4), **portão morto aposentado + trava de acesso por-serviço auditada (BUG-055)**. Fechados BUG-051/052/053/054/055/056/057. **Pendente:** só validação em produção (adiada) + CT-3c/CT-5 (fora do caminho crítico) |
 | **F1-03** | Hub dashboard + motor de jornada | ✓ | ◐ **motor reescrito (B2)**; modal offboarding **desbloqueado** (D) | Motor de jornada agora por dado (`resolverAcesso`); trava de sequência corrigida. **Validação visual pendente** (agora possível — antes travada pelo BUG-035) |
 | **F1-04** | Hub: carreira, agenda, contratos, visão geral | ✓ (via T-02 + cadeado D) | ○ não iniciada | Agora sob o cadeado `/hub/membro` (Fase D) |
 | **F1-05** | Checkout membro, networking, perfil, entrega | ✓ (BUG-005/006) | ○ | Checkout reposicionado p/ `/hub/checkout` (Fase C); **BUG-033** (privacidade networking) a resolver; BUG-016 |

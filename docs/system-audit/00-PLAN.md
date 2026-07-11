@@ -470,11 +470,12 @@ sem copy hardcoded fora do que o guia permitir).
   + avulso libera ao assinar (PR #60), status real na tela de sucesso (PR #61), geo por IP
   no carimbo (PR #62) e **CT-4 — painel `/hub/membro/contratos` reescrito (1 card por serviço,
   status real de assinatura, documento in-app via `/api/docs`, rota morta corrigida) + nota
-  fiscal (exibição + upload admin), PRs #63/#64**. **Pendente:** CT-3c (área `/hub/legal` +
-  audiências empresas/parceiros), CT-5 (reforços jurídicos), **decisão do `BUG-055`** (gate
-  legado — redesenhar em F2-02 ou aposentar), e a **validação funcional em produção** dos 3
-  fluxos (grátis/pago/avulso) — adiada pela Gestora até limpar a base do usuário de teste
-  (BUG-030 + muitos serviços já liberados de testes).
+  fiscal (exibição + upload admin), PRs #63/#64**, e **BUG-055 aposentado — portão de HUB
+  morto removido + trava de acesso por-serviço auditada (pago+assinado via entitlement),
+  PR #66**. **Sem bloqueadores de código.** Pendente só: **validação funcional em produção**
+  dos 3 fluxos (grátis/pago/avulso) — adiada pela Gestora até limpar a base do usuário de
+  teste (BUG-030) — e, fora do caminho crítico, CT-3c (área `/hub/legal` + audiências
+  empresas/parceiros) e CT-5 (reforços jurídicos sob demanda).
 - Resultado: BUG-002 **[CONFIRMADO]** e corrigido — brecha de concessão gratuita de
   produto pago fechada. A investigação do subsistema revelou fragmentação/quebra
   estrutural, endereçada nas fases CT-*: geração de PDF na coleção errada (`BUG-051`,
@@ -486,8 +487,9 @@ sem copy hardcoded fora do que o guia permitir).
 - Bug(s) vinculado(s): BUG-002 (Corrigido, PR #48), BUG-022 (Corrigido via CT-2, PR #51),
   BUG-051 (Corrigido, CT-0/PR #49), BUG-054 (Corrigido — IP real CT-1/PR #50 + geo PR #62),
   BUG-056 (Corrigido, PR #58), BUG-052 (Corrigido — documento in-app, CT-4/PR #63),
-  BUG-053 (Corrigido — painel reescrito, CT-4/PR #63), BUG-055 (Aberto — gate legado,
-  decisão pendente: redesenhar em F2-02 ou aposentar)
+  BUG-053 (Corrigido — painel reescrito, CT-4/PR #63), BUG-055 (Corrigido — portão morto
+  aposentado + trava de acesso por-serviço auditada, PR #66), BUG-057 (Corrigido — admin
+  lista contratos pela matrícula, PR #65)
 - Log: [2026-07-09] BUG-002 corrigido + investigação e design do subsistema de contratos;
   [2026-07-10] contratos CT-0..CT-2 (PRs #49/#50/#51), CT-3a (PR #55), CT-3b.1 (PR #56),
   **CT-3b.2 — assinatura pós-checkout grátis+pago (PR #57)**, correção UX/design + padrão

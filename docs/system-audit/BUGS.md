@@ -1509,8 +1509,18 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   `User/{uid}/Orders` (subcoleção legada, **sem escritor conhecido** — as orders reais
   estão em `User_Orders` raiz). Resultado: a lista de pendências é sempre vazia e o
   `ContractGateModal` provavelmente **nunca** apresenta contratos pendentes de fato.
-- Status: Aberto — fase **CT-0** do `CONTRACTS-DESIGN.md` (reconciliação de loja).
-- Decisão de execução: Precisa plano+aprovação (área de contratos). Aguarda a fase.
+- Status: **Corrigido (aposentado)** — PR #66. Decisão da Gestora: o requisito é travar o
+  **acesso ao serviço** (não o HUB inteiro), e essa trava **por-serviço já existe** e ficou
+  consistente com o gate de liberação (PR #60) — o entitlement (`services[serviceCode]` +
+  quotas) só é concedido após pago E assinado, e as superfícies de entrega bloqueiam sem
+  entitlement (`/hub/servicos/[slug]` via `getServiceDeliveryDataAction`: `if (!isAdmin &&
+  !serviceEntitlement) throw`; `/hub/journey/[stepId]` via `getStageTelemetry.hasAccess` →
+  redirect). Auditoria: nenhuma porta dos fundos nas superfícies de entrega. O portão morto
+  (`ContractGateModal` + `getPendingContracts`) foi **removido** (era inerte e a abordagem
+  errada). O membro navega o HUB, mas só abre o serviço quando pago+assinado.
+- Decisão de execução: aposentar o gate morto + auditar cobertura (feito). Validação em
+  produção (BUG-030).
+- Commit/PR: PR #66
 - Commit/PR: —
 
 ### BUG-056 Assinatura pós-checkout (CT-3b.2): grátis divergia do pago, CTAs antes da assinatura, sem herança de tema

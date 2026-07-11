@@ -2914,3 +2914,21 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   status; admin/users carrega pela matrícula, com badge de status + documento + nota fiscal.
   (Nota de higiene: o commit foi feito por engano na main local e movido para branch própria
   antes do push — main remota nunca recebeu commit direto; PR #65.)
+
+## [2026-07-10] Chat de execução — BUG-055: aposenta o portão de contrato morto (PR #66)
+
+- Gestora esclareceu o requisito: **não** travar o HUB inteiro; travar o **acesso ao
+  serviço** específico (ex.: análise comportamental) até estar **pago E assinado**; o membro
+  pode navegar o HUB à vontade. Aprovou os 2 passos: aposentar o portão morto + auditar cobertura.
+- **Auditoria (resultado):** a trava por-serviço **já existe** e ficou consistente com o gate
+  de liberação (PR #60) — o entitlement (`services[serviceCode]` + quotas) só é concedido após
+  pago+assinado, e as duas superfícies de entrega bloqueiam sem entitlement: `/hub/servicos/
+  [slug]` (`getServiceDeliveryDataAction`: `if (!isAdmin && !serviceEntitlement) throw`) e
+  `/hub/journey/[stepId]` (`getStageTelemetry.hasAccess` → redirect). **Nenhuma porta dos
+  fundos** encontrada. Requisito já garantido por construção.
+- **Remoção (PR #66):** `ContractGateModal` (montado no `HubShell`) removido + componente
+  apagado; `getPendingContracts` + `getUserLegalAudits` (órfão pós-PR #65) + interfaces mortas
+  (`LegalAudit`, `LegacyOrderDoc`) removidos de `legal.ts`. `generateContractPdf` preservado.
+- Validado: eslint (arquivos tocados) limpo, test 52/52, tsc, build. Fecha **BUG-055**.
+- **F1-02 sem bloqueadores de código.** Restam: validação em produção dos fluxos (adiada) e,
+  fora do caminho crítico, CT-3c (área /hub/legal + audiências) e CT-5 (reforços jurídicos).
