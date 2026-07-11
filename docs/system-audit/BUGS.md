@@ -1656,6 +1656,24 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   test 52/52 + type-check + build. Conferência visual em produção (BUG-030).
 - Commit/PR: PR #72
 
+### BUG-062 Copy com acentos PT-BR removidos nas telas de Visão Geral e Gestão de Carreira (F1-04)
+
+- Severidade: Baixo (UX/copy)
+- Área/fase onde foi achado: F1-04 / validação por página (2026-07-11)
+- Arquivo(s) afetado(s): `src/app/hub/visao_geral/page.tsx`, `src/app/hub/membro/gestao_carreira/page.tsx`
+- Cenário de falha: dezenas de strings visíveis estavam sem acento ("Visao Geral", "Proximas",
+  "Concluido", "Servico", "Reuniao", "Gestao", "Historico", "Progressao", "Disponivel", "Titulo",
+  "Descricao", "Voce"...), violando a regra de copy PT-BR (L11/F0-06 — "Zero Emoji" não é "zero
+  acento"; acento é copy correto em strings visíveis).
+- Status: **Corrigido** — PR #73. Restaurados os acentos de todas as strings visíveis
+  identificadas (~14 em `visao_geral`, ~18 em `gestao_carreira`). Comentários de código e
+  identificadores permanecem ASCII (apropriado por L11). `contratos` já estava limpa; `agenda`
+  tem a copy no componente compartilhado `AgendaManagementView` (fora do escopo deste PR de copy).
+- Decisão de execução: ajuste de copy puro (texto visível), sem mudança de layout — Bloco 1
+  (copy) da F1-04. Validado por eslint 0 erros + test 52/52 + type-check + build. Conferência
+  visual em produção (BUG-030).
+- Commit/PR: PR #73
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em

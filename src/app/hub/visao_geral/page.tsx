@@ -248,7 +248,7 @@ export default function VisaoGeralPage() {
           if (matchedAta) {
             documentUrl = matchedAta.fileUrl;
             hasFeedback = true;
-            feedbackText = matchedAta.contentSummary || "Sessao realizada com sucesso.";
+            feedbackText = matchedAta.contentSummary || "Sessão realizada com sucesso.";
           }
         }
 
@@ -358,7 +358,7 @@ export default function VisaoGeralPage() {
         list.push({
           id: obj.id || `obj-${obj.title}`,
           title: `Meta: ${obj.title}`,
-          stageName: "Objetivos Estrategicos",
+          stageName: "Objetivos Estratégicos",
           stageId: "gestao-e-desenvolvimento",
           type: "objective",
           refId: obj.id || "",
@@ -459,7 +459,7 @@ export default function VisaoGeralPage() {
           </div>
           <div>
             <h1 className="text-3xl lg:text-4xl font-black text-[var(--text-primary)] tracking-tight uppercase italic drop-shadow-md">
-              Visao Geral de Atividades
+              Visão Geral de Atividades
             </h1>
             <p className="text-xs font-bold text-[var(--text-muted)] mt-1 uppercase tracking-[0.2em]">
               Central de Acompanhamento e Progresso de Carreira
@@ -474,7 +474,7 @@ export default function VisaoGeralPage() {
           <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
           <input
             type="text"
-            placeholder="Buscar por titulo de atividade, estagio ou feedback recebido..."
+            placeholder="Buscar por título de atividade, estágio ou feedback recebido..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-12 pr-4 py-3 bg-[var(--input-bg)] border border-[var(--input-border)] text-sm rounded-xl focus:border-[var(--accent-start)]/50 focus:outline-none transition-all text-[var(--text-primary)] font-medium"
@@ -489,7 +489,7 @@ export default function VisaoGeralPage() {
         <div className="glass p-6 border-[var(--glass-border)] rounded-[2.5rem] flex flex-col min-h-[500px]">
           <div className="flex items-center justify-between border-b border-[var(--border-primary)] pb-4 mb-4">
             <h3 className="text-xs font-black uppercase tracking-widest text-[var(--text-primary)] flex items-center gap-2">
-              <Clock size={14} className="text-yellow-500" /> Proximas
+              <Clock size={14} className="text-yellow-500" /> Próximas
             </h3>
             <div className="flex items-center gap-2">
               <select
@@ -497,7 +497,7 @@ export default function VisaoGeralPage() {
                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSortPendentes(e.target.value as "service" | "title-asc" | "title-desc")}
                 className="bg-[var(--input-bg)] border border-[var(--border-primary)] text-[9px] font-bold text-[var(--text-muted)] rounded-lg px-2 py-1 outline-none cursor-pointer focus:border-[var(--accent-start)]/30"
               >
-                <option value="service">Servico</option>
+                <option value="service">Serviço</option>
                 <option value="title-asc">A-Z</option>
                 <option value="title-desc">Z-A</option>
               </select>
@@ -533,7 +533,7 @@ export default function VisaoGeralPage() {
                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSortEmAndamento(e.target.value as "service" | "title-asc" | "title-desc")}
                 className="bg-[var(--input-bg)] border border-[var(--border-primary)] text-[9px] font-bold text-[var(--text-muted)] rounded-lg px-2 py-1 outline-none cursor-pointer focus:border-[var(--accent-start)]/30"
               >
-                <option value="service">Servico</option>
+                <option value="service">Serviço</option>
                 <option value="title-asc">A-Z</option>
                 <option value="title-desc">Z-A</option>
               </select>
@@ -547,7 +547,7 @@ export default function VisaoGeralPage() {
             {emAndamentoSorted.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center py-20 text-center opacity-40">
                 <Clock size={32} className="text-[var(--text-muted)] mb-2" />
-                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Foco concluido no momento</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Foco concluído no momento</p>
               </div>
             ) : (
               emAndamentoSorted.map(act => (
@@ -561,7 +561,7 @@ export default function VisaoGeralPage() {
         <div className="glass p-6 border-[var(--glass-border)] rounded-[2.5rem] flex flex-col min-h-[500px]">
           <div className="flex items-center justify-between border-b border-[var(--border-primary)] pb-4 mb-4">
             <h3 className="text-xs font-black uppercase tracking-widest text-[var(--text-primary)] flex items-center gap-2">
-              <CheckCircle2 size={14} className="text-green-500" /> Concluidas
+              <CheckCircle2 size={14} className="text-green-500" /> Concluídas
             </h3>
             <div className="flex items-center gap-2">
               <select
@@ -569,7 +569,7 @@ export default function VisaoGeralPage() {
                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSortConcluidas(e.target.value as "service" | "title-asc" | "title-desc" | "date-desc" | "date-asc")}
                 className="bg-[var(--input-bg)] border border-[var(--border-primary)] text-[9px] font-bold text-[var(--text-muted)] rounded-lg px-2 py-1 outline-none cursor-pointer focus:border-[var(--accent-start)]/30"
               >
-                <option value="service">Servico</option>
+                <option value="service">Serviço</option>
                 <option value="date-desc">Recentes</option>
                 <option value="date-asc">Antigas</option>
                 <option value="title-asc">A-Z</option>
@@ -585,7 +585,7 @@ export default function VisaoGeralPage() {
             {concluidasSorted.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center py-20 text-center opacity-40">
                 <AlertCircle size={32} className="text-[var(--text-muted)] mb-2" />
-                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Nenhuma atividade concluida</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Nenhuma atividade concluída</p>
               </div>
             ) : (
               concluidasSorted.map(act => (
@@ -622,7 +622,7 @@ export default function VisaoGeralPage() {
                   Status
                 </span>
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-[var(--input-bg)] border border-[var(--border-primary)] text-[var(--text-primary)]">
-                  {activeDetailItem.status === "completed" ? "Concluido" : activeDetailItem.status === "in_progress" ? "Em Andamento" : "Pendente"}
+                  {activeDetailItem.status === "completed" ? "Concluído" : activeDetailItem.status === "in_progress" ? "Em Andamento" : "Pendente"}
                 </span>
               </div>
 
@@ -640,7 +640,7 @@ export default function VisaoGeralPage() {
               {activeDetailItem.documentUrl && (
                 <div>
                   <span className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)] block mb-2">
-                    Documento Disponivel
+                    Documento Disponível
                   </span>
                   <Link 
                     href={activeDetailItem.documentUrl}
@@ -718,7 +718,7 @@ function ActivityRow({
       ctaEnabled = false;
     } else if (activity.type === "meeting") {
       if (activity.bookingStatus === "not_booked") {
-        ctaLabel = "Agendar Reuniao";
+        ctaLabel = "Agendar Reunião";
         ctaClass = "bg-[var(--accent-start)] hover:opacity-90 text-white shadow-lg shadow-accent-start/20 animate-pulse";
       } else if (activity.bookingStatus === "booked_future") {
         ctaLabel = "Aguardando Data do Evento";
@@ -762,7 +762,7 @@ function ActivityRow({
                 <>
                   <span className="text-[8px] text-[var(--text-muted)] opacity-40">•</span>
                   <span className="text-[8px] font-mono text-[var(--text-muted)] font-bold">
-                    Concluido em {formattedDate}
+                    Concluído em {formattedDate}
                   </span>
                 </>
               )}
@@ -777,7 +777,7 @@ function ActivityRow({
         <div>
           {isCompleted ? (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-500/10 text-green-500 text-[8px] font-black uppercase tracking-widest border border-green-500/20">
-              Concluido
+              Concluído
             </span>
           ) : isInProgress ? (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-500 text-[8px] font-black uppercase tracking-widest border border-blue-500/20">

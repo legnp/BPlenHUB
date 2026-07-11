@@ -409,7 +409,7 @@ export default function GestaoCarreiraPage() {
         <div className="space-y-2">
           <h2 className="text-lg font-black text-[var(--text-primary)]">Módulo Bloqueado</h2>
           <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-            A Gestao de Carreira ainda nao esta ativa para sua conta. Entre em contato com seu consultor BPlen para liberar o acesso.
+            A Gestão de Carreira ainda não está ativa para sua conta. Entre em contato com seu consultor BPlen para liberar o acesso.
           </p>
         </div>
         <Link 
@@ -444,7 +444,7 @@ export default function GestaoCarreiraPage() {
             </Link>
             <div className="space-y-1">
               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--accent-start)]">Plataforma de Desenvolvimento</span>
-              <h1 className="text-2xl font-black text-[var(--text-primary)] tracking-tight">Gestao e Desenvolvimento da sua Carreira</h1>
+              <h1 className="text-2xl font-black text-[var(--text-primary)] tracking-tight">Gestão e Desenvolvimento da sua Carreira</h1>
             </div>
           </div>
 
@@ -452,7 +452,7 @@ export default function GestaoCarreiraPage() {
             <div className="px-4 py-2 bg-gradient-to-r from-[var(--accent-start)]/10 to-[var(--accent-end)]/10 border border-[var(--accent-start)]/20 rounded-full flex items-center gap-2">
               <Activity size={12} className="text-[var(--accent-start)]" />
               <span className="text-[9px] font-black uppercase tracking-widest text-[var(--text-primary)]">
-                Jornada: {progress?.overallProgress || 0}% Concluido
+                Jornada: {progress?.overallProgress || 0}% Concluído
               </span>
             </div>
           </div>
@@ -465,7 +465,7 @@ export default function GestaoCarreiraPage() {
               <Target size={20} />
             </div>
             <div>
-              <span className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)]">Objetivos Estrategicos</span>
+              <span className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)]">Objetivos Estratégicos</span>
               <p className="text-xl font-black text-[var(--text-primary)] mt-1">
                 {completedObjectives}/{activeObjectives.length}
               </p>
@@ -489,7 +489,7 @@ export default function GestaoCarreiraPage() {
               <Clock size={20} />
             </div>
             <div>
-              <span className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)]">Atas de Reunioes</span>
+              <span className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)]">Atas de Reuniões</span>
               <p className="text-xl font-black text-[var(--text-primary)] mt-1">
                 {careerData?.atas?.length || 0}
               </p>
@@ -519,8 +519,8 @@ export default function GestaoCarreiraPage() {
                 <Award size={18} />
               </div>
               <div>
-                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-primary)]">Progressao Jornada de Membro BPlen</h3>
-                <p className="text-[8px] font-bold text-[var(--text-muted)] uppercase tracking-wider mt-0.5">Acompanhe suas paradas, checkpoints e evolucoes</p>
+                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-primary)]">Progressão Jornada de Membro BPlen</h3>
+                <p className="text-[8px] font-bold text-[var(--text-muted)] uppercase tracking-wider mt-0.5">Acompanhe suas paradas, checkpoints e evoluções</p>
               </div>
             </div>
 
@@ -578,7 +578,7 @@ export default function GestaoCarreiraPage() {
                 <BookOpen size={18} />
               </div>
               <div>
-                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-primary)]">Progressao de 1 to 1</h3>
+                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-primary)]">Progressão de 1 to 1</h3>
                 <p className="text-[8px] font-bold text-[var(--text-muted)] uppercase tracking-wider mt-0.5">Controle de saldo de mentorias e acompanhamentos executivos</p>
               </div>
             </div>
@@ -664,7 +664,7 @@ export default function GestaoCarreiraPage() {
                 </div>
                 <div>
                   <h4 className="text-xs font-black text-[var(--text-primary)]">Feedbacks Recebidos</h4>
-                  <p className="text-[8px] font-bold text-[var(--text-muted)] uppercase tracking-wider mt-0.5">Historico de feedbacks, avaliacoes qualitativas e orientacoes do seu mentor</p>
+                  <p className="text-[8px] font-bold text-[var(--text-muted)] uppercase tracking-wider mt-0.5">Histórico de feedbacks, avaliações qualitativas e orientações do seu mentor</p>
                 </div>
               </div>
               <ChevronDown size={18} className={`text-[var(--text-muted)] transition-transform duration-300 ${activeAccordion === "feedbacks" ? "rotate-180" : ""}`} />
@@ -716,8 +716,8 @@ export default function GestaoCarreiraPage() {
                   <Calendar size={16} />
                 </div>
                 <div>
-                  <h4 className="text-xs font-black text-[var(--text-primary)]">Historico de Atas de Reunioes</h4>
-                  <p className="text-[8px] font-bold text-[var(--text-muted)] uppercase tracking-wider mt-0.5">Acompanhe as pautas, deliberacoes e atas de mentorias estruturadas</p>
+                  <h4 className="text-xs font-black text-[var(--text-primary)]">Histórico de Atas de Reuniões</h4>
+                  <p className="text-[8px] font-bold text-[var(--text-muted)] uppercase tracking-wider mt-0.5">Acompanhe as pautas, deliberações e atas de mentorias estruturadas</p>
                 </div>
               </div>
               <ChevronDown size={18} className={`text-[var(--text-muted)] transition-transform duration-300 ${activeAccordion === "atas" ? "rotate-180" : ""}`} />
@@ -759,7 +759,7 @@ export default function GestaoCarreiraPage() {
                       </div>
                     ) : (
                       <div className="py-12 text-center text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-50 flex items-center justify-center gap-2">
-                        <HelpCircle size={14} /> Nenhuma ata de reuniao registrada nesta conta
+                        <HelpCircle size={14} /> Nenhuma ata de reunião registrada nesta conta
                       </div>
                     )}
                   </div>
@@ -779,8 +779,8 @@ export default function GestaoCarreiraPage() {
                   <FileText size={16} />
                 </div>
                 <div>
-                  <h4 className="text-xs font-black text-[var(--text-primary)]">Historico de Documentos da Jornada</h4>
-                  <p className="text-[8px] font-bold text-[var(--text-muted)] uppercase tracking-wider mt-0.5">Acesso rapido aos PDFs, relatorios e materiais compartilhados via Google Drive</p>
+                  <h4 className="text-xs font-black text-[var(--text-primary)]">Histórico de Documentos da Jornada</h4>
+                  <p className="text-[8px] font-bold text-[var(--text-muted)] uppercase tracking-wider mt-0.5">Acesso rápido aos PDFs, relatórios e materiais compartilhados via Google Drive</p>
                 </div>
               </div>
               <ChevronDown size={18} className={`text-[var(--text-muted)] transition-transform duration-300 ${activeAccordion === "docs" ? "rotate-180" : ""}`} />
@@ -946,7 +946,7 @@ export default function GestaoCarreiraPage() {
                                     <div key={comment.id} className="text-xs space-y-0.5 border-b border-[var(--border-primary)]/10 pb-2 last:border-0 last:pb-0 text-left">
                                       <div className="flex justify-between items-center">
                                         <span className={`text-[8px] font-black uppercase tracking-widest ${comment.author === "admin" ? "text-[var(--accent-start)]" : "text-blue-400"}`}>
-                                          {comment.author === "admin" ? "Consultor BPlen" : "Voce"}
+                                          {comment.author === "admin" ? "Consultor BPlen" : "Você"}
                                         </span>
                                         <span className="text-[8px] text-[var(--text-muted)] font-mono">
                                           {comment.createdAt ? new Date(comment.createdAt).toLocaleDateString("pt-BR") + " " + new Date(comment.createdAt).toLocaleTimeString("pt-BR", {hour: "2-digit", minute:"2-digit"}) : "—"}
@@ -962,7 +962,7 @@ export default function GestaoCarreiraPage() {
                               <div className="flex gap-2">
                                 <input
                                   type="text"
-                                  placeholder="Adicionar observacao..."
+                                  placeholder="Adicionar observação..."
                                   value={commentInputs[task.id] || ""}
                                   onChange={(e) => setCommentInputs(prev => ({ ...prev, [task.id]: e.target.value }))}
                                   onKeyDown={(e) => {
@@ -1027,7 +1027,7 @@ export default function GestaoCarreiraPage() {
                   className="p-5 bg-[var(--bg-primary)]/60 border border-[var(--border-primary)] rounded-2xl space-y-4 overflow-hidden text-left"
                 >
                   <div className="space-y-1">
-                    <label className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)]">Titulo do Objetivo</label>
+                    <label className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)]">Título do Objetivo</label>
                     <input
                       type="text"
                       required
@@ -1039,7 +1039,7 @@ export default function GestaoCarreiraPage() {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)]">Resumo / Descricao</label>
+                    <label className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)]">Resumo / Descrição</label>
                     <input
                       type="text"
                       placeholder="Ex: Mapear novas habilidades executivas ate o fim do ano"
