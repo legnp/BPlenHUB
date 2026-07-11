@@ -504,21 +504,28 @@ sem copy hardcoded fora do que o guia permitir).
 - Categoria(s) de qualidade: Adequação funcional / Usabilidade
 - Critério de aceite: ver critério comum + Sequence Lock e Upsell Gate se
   comportam conforme Mapa 3
-- Modo de validação: PENDENTE
+- Modo de validação: Automatizado (código) + Requer execução humana (conferência visual em produção)
 - Decisão: —
-- Execução: Não iniciada
-- Resultado: —
-- Bug(s) vinculado(s): BUG-015
+- Execução: **Em andamento** — validação da Gestora em produção (2026-07-11): dashboard
+  da jornada, nav, Sequence Lock e Upsell Gate **aprovados** (itens 1-4); modal de
+  offboarding **aprovado**. Achados de UI corrigidos (PR #72): **BUG-059** (onboarding
+  bloqueado usava layout de upsell com foto → passou ao gate reutilizável no padrão do
+  offboarding), **BUG-060** (upsell exibia nomes técnicos dos checkpoints → removidos),
+  **BUG-061** (modal de detalhe do serviço fora do padrão global → convertido ao
+  `GlassModal` + conteúdo em grid de 2 colunas descrição|workflow). Restam: reconferência
+  visual em produção dos 3 ajustes do PR #72 (BUG-030).
+- Resultado: motor de jornada por dado (`resolverAcesso`, B2) + trava de sequência
+  validados pela Gestora; modais da nav padronizados. Conferência final dos ajustes em produção.
+- Bug(s) vinculado(s): BUG-015, BUG-059 (Corrigido, PR #72), BUG-060 (Corrigido, PR #72),
+  BUG-061 (Corrigido, PR #72)
 - Pendências de validação acumuladas: (a) `SequenceLockModal`/`UpsellServiceModal`
-  (F0-01 lote A, via `JourneyNav`/`SubStepRail` em `hub/membro/journey/*` e
-  `hub/step-journey`) recoloridos para vars de tema — conferência visual nos
-  temas claros pendente em produção (BUG-030: telas logadas não autenticam no
-  preview, então isso não foi validável nas sessões de execução); (b)
-  `NonMemberOffboardingModal` (F0-01 lote B, inline em `JourneyNav`) convertido
-  ao `GlassModal` — conferência visual **DESBLOQUEADA em 2026-07-08** (BUG-035
-  corrigido na Fase D/PR #37): revogar o selo via admin agora surte efeito, então
-  dá para criar o estado "não-membro" e disparar o modal em produção.
-- Log: —
+  (F0-01 lote A, via `JourneyNav`/`SubStepRail`) recoloridos para vars de tema —
+  conferência visual nos temas claros pendente em produção (BUG-030); (b)
+  offboarding/onboarding no `GlassModal` (agora via `JourneyGateModal` reutilizável) —
+  conferência **desbloqueada** (BUG-035 corrigido) e offboarding **aprovado** pela
+  Gestora; reconferir o onboarding após o PR #72.
+- Log: [2026-07-11] validação da Gestora (itens 1-4 aprovados) + ajustes de modais
+  BUG-059/060/061 (PR #72) — ver `LOG.md`
 
 ### [F1-04] Hub — carreira, agenda do membro, contratos, visão geral
 - Categoria(s) de qualidade: Adequação funcional

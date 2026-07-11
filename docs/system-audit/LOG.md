@@ -3032,3 +3032,33 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   Concluída 2/2, índice bug→track), `DASHBOARD.md` (T-06 100%, triagem Fase 1, entrada nova),
   este LOG. Validação em produção dos 3 fluxos de contrato (grátis/pago/avulso) permanece
   adiada pela Gestora (futuro).
+
+## [2026-07-11] Chat de execução — F1-03 validada + padronização dos modais da nav da jornada (PR #72)
+
+- Chat/sessão: chat de execução (Opus 4.8). A Gestora perguntou o que era "código pronto"
+  (F1-02) e "motor pronto" (F1-03) e o que faltava para fechar cada um. Explicado: são itens
+  com código mergeado mas pendentes da **validação visual em produção** (telas logadas não
+  autenticam no preview, BUG-030). F1-02: docs deixaram explícito que o pendente é só a
+  validação manual da Gestora, programada para após limpar a base do usuário de teste.
+- **Validação da F1-03 pela Gestora (produção):** dashboard da jornada, nav, Sequence Lock e
+  Upsell Gate **aprovados** (itens 1-4); modal de offboarding **aprovado**. Reportou 3 achados
+  de UI (área de design — plano apresentado e **aprovado** antes de codar):
+  - **BUG-059:** onboarding bloqueado abria o `UpsellServiceModal` (com foto, como serviço
+    comprável). Onboarding não é comprável. Roteado para `JourneyGateModal` (gate reutilizável
+    extraído do `NonMemberOffboardingModal`) com o mesmo design do offboarding: ícone + título
+    + CTA, sem foto nem checkpoints.
+  - **BUG-060:** `UpsellServiceModal` listava `product.capabilities.surveys` (IDs técnicos de
+    survey). Bloco removido; fica capa + descrição + CTA.
+  - **BUG-061:** modal de detalhe do serviço (botão "v") era feito à mão (portal próprio,
+    overlay branco fixo), destoando dos demais. Convertido ao `GlassModal` canônico
+    (overlay/tema/z coerentes) + conteúdo redesenhado em grid de 2 colunas (descrição |
+    workflow de entrega), rolagem só onde necessário. Fonte de conteúdo única inalterada
+    (`stage.description` = `product.sheet.description`; `stage.workflow` = `product.workflow`,
+    montados em `journey.ts`) — mesmo conteúdo do upsell e das páginas de serviço/contrato.
+  - Limpeza de passagem: removidos `mounted`/`createPortal` (o `GlassModal` já portaliza) e o
+    import morto `CheckCircle2`.
+- Entrega: branch `fix/f1-03-journey-nav-modals` → **PR #72 mergeado** (`1e7816c`, squash).
+  Validado: eslint 0 erros, test 52/52, type-check, build exit 0. Conferência visual dos 3
+  ajustes em produção pela Gestora (BUG-030).
+- Itens atualizados: `BUGS.md` (+BUG-059/060/061), `00-PLAN.md` (F1-03 em andamento, itens 1-4
+  aprovados), `DASHBOARD.md` (F1-03 + entrada nova; F1-02 explicitado), este LOG.
