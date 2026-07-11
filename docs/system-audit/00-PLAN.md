@@ -472,9 +472,10 @@ sem copy hardcoded fora do que o guia permitir).
   status real de assinatura, documento in-app via `/api/docs`, rota morta corrigida) + nota
   fiscal (exibição + upload admin), PRs #63/#64**, e **BUG-055 aposentado — portão de HUB
   morto removido + trava de acesso por-serviço auditada (pago+assinado via entitlement),
-  PR #66**. **Sem bloqueadores de código.** Pendente só: **validação funcional em produção**
-  dos 3 fluxos (grátis/pago/avulso) — adiada pela Gestora até limpar a base do usuário de
-  teste (BUG-030) — e, fora do caminho crítico, CT-3c (área `/hub/legal` + audiências
+  PR #66**. **Sem bloqueadores de código.** Pendente = **apenas a validação MANUAL da Gestora
+  em produção** dos 3 fluxos (grátis/pago/avulso), **programada para APÓS a limpeza da base do
+  usuário de teste** (BUG-030 impede validar telas logadas no preview; nenhum bloqueador de
+  código) — e, fora do caminho crítico, CT-3c (área `/hub/legal` + audiências
   empresas/parceiros) e CT-5 (reforços jurídicos sob demanda).
 - Resultado: BUG-002 **[CONFIRMADO]** e corrigido — brecha de concessão gratuita de
   produto pago fechada. A investigação do subsistema revelou fragmentação/quebra
