@@ -862,11 +862,12 @@ O mapeamento das jornadas abaixo é entregável desta fase (não pré-existente)
 - Modo de validação: PENDENTE (parte técnica executável via análise de código;
   parte jurídica é escopo reduzido/fora de escopo)
 - Decisão: —
-- Execução: Em andamento — **1/2 mergeados (50%)** (ver `DASHBOARD.md`) —
-  estava registrado como "Não iniciado", defasado; reconciliado nesta sessão
-- Resultado: ✓ BUG-023 corrigido (PR #3). ○ BUG-001 aberto — requer
-  plano+aprovação (dado sensível/PII).
-- Bug(s) vinculado(s): BUG-001, BUG-023
+- Execução: **Concluída — 2/2 (100%)** (ver `DASHBOARD.md`). Track fechado.
+- Resultado: ✓ BUG-023 corrigido (PR #3). ✓ BUG-001 corrigido (PR #70 — tickets
+  em subcoleção privada; rules publicadas e coleção raiz de teste apagada pela
+  Gestora em 2026-07-11, fix 100% ativo). Certificação jurídica formal segue fora
+  de escopo (Riscos Aceitos), como previsto.
+- Bug(s) vinculado(s): BUG-001 (Corrigido, PR #70), BUG-023 (Corrigido, PR #3)
 - Log: —
 
 ---
@@ -880,7 +881,7 @@ estavam sem nenhum vínculo e foram linkados agora.
 
 | Bug | Severidade | Status (`BUGS.md`) | Item(s)/Track(s) |
 |---|---|---|---|
-| BUG-001 | Alto | Aberto | T-06 |
+| BUG-001 | Alto | Corrigido (PR #70) | T-06 — tickets em subcoleção privada (rules+base OK) |
 | BUG-002 | Médio | Corrigido (PR #48) | F1-02 — trava de preço + rota órfã removida |
 | BUG-003 | Crítico | Corrigido (PR #3) | F1-06, T-02 |
 | BUG-004 | ~~Alto~~ Baixo | Corrigido (PR #17) | T-02 |

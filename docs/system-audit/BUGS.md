@@ -53,7 +53,10 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   **Nota:** o acesso de cliente à raiz já era bloqueado (`if false`) — não era vazamento
   ativo, mas violação de governança de PII (agora corrigida).
 - Decisão de execução: plano+aprovação da Gestora (área PII + firestore.rules). Pós-merge:
-  deploy das rules (`firebase deploy --only firestore:rules`) + `node scripts/migrate-support-tickets.js --apply`.
+  deploy das rules (`firebase deploy --only firestore:rules`) + tratar a coleção raiz antiga.
+- **Passos manuais CONCLUÍDOS (Gestora, 2026-07-11):** `firestore.rules` publicado no Console
+  e a coleção raiz `Support_Tickets` de teste apagada. Fix 100% ativo em produção — **BUG-001
+  totalmente fechado** (código + rules + higiene da base).
 - Commit/PR: PR #70
 
 ### BUG-002 Checkout público não valida que o produto é gratuito/100%-cupom antes de conceder acesso

@@ -3020,3 +3020,15 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   por severidade **vazia**, T-03 → 3/4, índice bug→track), `DASHBOARD.md` (T-03 3/4, triagem
   Fase 1 vazia, entrada nova), este LOG.
 - **Triagem por severidade agora VAZIA** — nenhum Crítico e nenhum Alto aberto.
+
+## [2026-07-11] Gestora — passos manuais do BUG-001 concluídos; T-06 fechado
+
+- A Gestora concluiu os 2 passos manuais pós-merge do BUG-001 (PR #70): `firestore.rules`
+  publicado no Console + coleção raiz de teste `Support_Tickets` apagada. Fix 100% ativo
+  em produção (código + rules + higiene da base).
+- Com isso o **T-06 (Compliance técnico) fecha em 2/2 (100%)** — BUG-023 (PR #3) + BUG-001
+  (PR #70). Certificação jurídica formal segue fora de escopo (Riscos Aceitos), como previsto.
+- Itens atualizados: `BUGS.md` (BUG-001 — passos manuais concluídos), `00-PLAN.md` (T-06 →
+  Concluída 2/2, índice bug→track), `DASHBOARD.md` (T-06 100%, triagem Fase 1, entrada nova),
+  este LOG. Validação em produção dos 3 fluxos de contrato (grátis/pago/avulso) permanece
+  adiada pela Gestora (futuro).

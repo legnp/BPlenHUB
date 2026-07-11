@@ -12,7 +12,12 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-11 (chat de execução — **BUG-008 corrigido — chave de
+> **Última atualização:** 2026-07-11 (chat de execução — **BUG-001 fechado 100% + T-06
+> completo**: a Gestora concluiu os passos manuais do BUG-001 — `firestore.rules` publicado
+> no Console e a coleção raiz de teste `Support_Tickets` apagada. Com isso o **T-06
+> (Compliance técnico) fecha em 2/2 (100%)**. Nenhum bug de compliance aberto.
+>
+> _(entrada anterior)_ 2026-07-11 (chat de execução — **BUG-008 corrigido — chave de
 > cota 1-to-1 unificada (PR #71)**: o gravador `updateMemberQuotasAction` forçava UPPERCASE
 > (`1-TO-1`) enquanto o catálogo e o modal de agendamento usam `1-to-1` — saldo aparecia
 > nulo e a mesma cota duplicava em dois cases. Chave canônica = minúsculo; novo
@@ -232,10 +237,10 @@ mergeados na `main` sobre o total do track.
 - ✅ **BUG-020 fechado** — 7 lotes: booking (PR #8, 2 IDORs), CRUD admin (PR #9), analytics admin (PR #10), queries do calendário (PR #11, 2 IDORs), journey (PR #12, 2 IDORs), upload/portfólio (PR #13, 1 IDOR + BUG-021), auth-permissions (PR #14, 1 IDOR + BUG-032). Padrão canônico do track consolidado: `requireAuth()`/`requireAdmin()` + dono-ou-admin, sessão pelo cookie assinado.
 - ✅ **Track completo:** todos os 12 bugs vinculados corrigidos e mergeados. Nenhum aceite formal/adiamento foi necessário.
 
-### T-06 — Compliance técnico · **1 / 2 (50%)**  `█████░░░░░`
+### T-06 — Compliance técnico · **2 / 2 (100%)** ✅ FECHADO  `██████████`
 
-- ✓ Mergeados: BUG-023
-- ○ Abertos: BUG-001 (`Support_Tickets` com PII em coleção raiz)
+- ✓ Mergeados: BUG-023 (rotas debug removidas, PR #3), BUG-001 (`Support_Tickets` PII em
+  subcoleção privada, PR #70 — rules publicadas + coleção raiz apagada pela Gestora, 2026-07-11)
 
 ### T-03 — Integridade de dados · **3 / 4 (75%)**  `████████░░`
 
@@ -314,8 +319,8 @@ começou** — ela depende de produção (BUG-030) e é o grosso do trabalho res
 Fase 1. Só a F1-01 (pública) está de fato validada ponta-a-ponta.
 
 **Triagem por severidade (Fase 1):** **vazia** — nenhum Crítico e nenhum Alto aberto.
-Os últimos Altos foram fechados: BUG-035 (PR #37), BUG-010 (PR #69), BUG-001 (PR #70,
-com 2 passos manuais da Gestora em andamento) e BUG-008 (PR #71).
+Os últimos Altos foram fechados: BUG-035 (PR #37), BUG-010 (PR #69), BUG-001 (PR #70 —
+passos manuais concluídos pela Gestora em 2026-07-11) e BUG-008 (PR #71).
 
 ---
 
