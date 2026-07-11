@@ -526,12 +526,23 @@ sem copy hardcoded fora do que o guia permitir).
 - Categoria(s) de qualidade: Adequação funcional
 - Critério de aceite: ver critério comum (estas 4 páginas já têm mapeamento
   detalhado no Mapa 2 — validação pode começar direto)
-- Modo de validação: PENDENTE
-- Decisão: —
-- Execução: Não iniciada
-- Resultado: —
-- Bug(s) vinculado(s): —
-- Log: —
+- Modo de validação: Automatizado (código: copy/guard/modal/header) + Requer execução humana (validação visual em produção)
+- Decisão: **Guard da `visao_geral` mantido (só login), por decisão da Gestora
+  (2026-07-11):** a página serve a **todos os clientes** (membro ou não), com a
+  lógica de exibir tarefas conforme o serviço ativo — por isso fica em `/hub`, não
+  sob o cadeado de selo de `/hub/membro`. Requisito novo da Gestora: incluir um
+  **link para a Visão Geral no menu sanduíche do header do hub**. Empacotamento em
+  **2 PRs** (copy | design).
+- Execução: **Em andamento.** As 4 páginas: `contratos` já compliant (server guard +
+  `FunctionalPageHeader` + copy limpa, herança CT-4). **PR1 (copy) mergeado (PR #73,
+  BUG-062):** acentos PT-BR restaurados em `visao_geral` e `gestao_carreira`. **PR2
+  (design) pendente:** migrar os headers de `visao_geral`/`gestao_agenda`/`gestao_carreira`
+  para o `FunctionalPageHeader` (padrão Gestão Funcional, também F2-05); padronizar o
+  modal de detalhe da `visao_geral` no `GlassModal`; e o link no menu sanduíche.
+- Resultado: PR1 (copy) feito. Auditoria de guard: `contratos`/`gestao_agenda`/
+  `gestao_carreira` sob `/hub/membro` (cadeado Fase D); `visao_geral` só login (intencional).
+- Bug(s) vinculado(s): BUG-062 (Corrigido, PR #73 — copy)
+- Log: [2026-07-11] revisão das 4 páginas + PR1 copy (BUG-062, PR #73); PR2 design pendente
 
 ### [F1-05] Hub — checkout de membro, networking, perfil, entrega de serviço
 - Categoria(s) de qualidade: Adequação funcional / Segurança

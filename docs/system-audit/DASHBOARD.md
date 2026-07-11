@@ -12,7 +12,15 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-11 (chat de execução — **F1-03 FECHADA**: a Gestora
+> **Última atualização:** 2026-07-11 (chat de execução — **F1-04 iniciada — PR1 copy (PR #73)**:
+> revisão das 4 páginas (carreira, agenda, contratos, visão geral). `contratos` já compliant
+> (CT-4). PR1 restaurou os acentos PT-BR de `visao_geral` e `gestao_carreira` (BUG-062, L11/F0-06).
+> Decisão da Gestora: `visao_geral` fica em `/hub` (só login — serve a todos os clientes, com
+> lógica por serviço ativo) + incluir link p/ ela no menu sanduíche. Falta o **PR2 (design)**:
+> header canônico (`FunctionalPageHeader`) nas 3 páginas, modal da `visao_geral` no `GlassModal`,
+> e o link no menu.
+>
+> _(entrada anterior)_ 2026-07-11 (chat de execução — **F1-03 FECHADA**: a Gestora
 > reconferiu e **aprovou os 3 ajustes** do PR #72 (BUG-059/060/061). Com o motor de jornada,
 > Sequence Lock/Upsell Gate e todos os modais da nav validados, a **F1-03 (dashboard + motor de
 > jornada) está concluída**. Próxima frente logada: F1-04 (carreira, agenda, contratos, visão geral).
@@ -321,7 +329,7 @@ divergência apontada na conferência). Parser validado por diff — regressão 
 | **F1-01** | Públicas de marketing (home, /servicos, /profissionais, /conteudo, /agendar, legais) | n/a | ✓ base + **19/19 ajustes** aplicados (PR-A #42, PR-B #43, PR-C #44, PR-C2 #45) | **Cluster de ajustes COMPLETO** (copy, footer/header, design, /agendar). BUG-048/049/050 corrigidos. Base validada por leitura+preview; reconferência final ao vivo de baixo risco |
 | **F1-02** | Checkout + subsistema de contratos | ✓ (BUG-005/006 via T-02) | ◐ **código completo** — CT-0..CT-4 (PRs #48..#66) | Rota órfã removida (BUG-002); subsistema reconstruído: entidade+IP+geo, avulso robusto, assinatura pós-checkout grátis+pago, padrão Gestão Funcional, carimbo/código único, **gate liberação (pagamento aprovado E contrato assinado)**, status real, painel reescrito + documento in-app + nota fiscal (CT-4), **portão morto aposentado + trava de acesso por-serviço auditada (BUG-055)**. Fechados BUG-051/052/053/054/055/056/057. **Pendente = apenas a validação MANUAL da Gestora em produção** dos 3 fluxos (grátis/pago/avulso), **programada para APÓS a limpeza da base do usuário de teste** (não há bloqueador de código); + CT-3c/CT-5 (fora do caminho crítico) |
 | **F1-03** | Hub dashboard + motor de jornada | ✓ | ✓ **validada e aprovada em produção** (PR #72) | **F1-03 fechada.** Motor por dado (`resolverAcesso`), Sequence Lock/Upsell Gate e todos os modais da nav **aprovados pela Gestora** (2026-07-11). Ajustes de UI (os 3 reconferidos): onboarding no padrão offboarding (BUG-059), upsell sem nomes técnicos (BUG-060), modal de detalhe no `GlassModal` + grid 2 colunas (BUG-061) |
-| **F1-04** | Hub: carreira, agenda, contratos, visão geral | ✓ (via T-02 + cadeado D) | ○ não iniciada | Agora sob o cadeado `/hub/membro` (Fase D) |
+| **F1-04** | Hub: carreira, agenda, contratos, visão geral | ✓ (T-02 + cadeado D; `visao_geral` só login, intencional) | ◐ **PR1 copy feito (PR #73)**; PR2 design pendente | `contratos` já compliant (CT-4). PR1: acentos PT-BR em `visao_geral`/`gestao_carreira` (BUG-062). PR2: header canônico nas 3, modal da `visao_geral` no `GlassModal`, link no menu sanduíche. Depois: validação visual em produção |
 | **F1-05** | Checkout membro, networking, perfil, entrega | ✓ (BUG-005/006) | ○ | Checkout reposicionado p/ `/hub/checkout` (Fase C); **BUG-033** (privacidade networking) a resolver; BUG-016 |
 | **F1-06** | 19 páginas de admin | ✓ (BUG-003/007/023/024 + **BUG-035 RESOLVIDO**) | ○ não iniciada | O **bloqueador crítico (BUG-035) foi resolvido** via reestruturação A0→D. Botão A3 add em `admin/users`. Validação UI das 19 páginas não começou. BUG-047 (exibir atributos) |
 

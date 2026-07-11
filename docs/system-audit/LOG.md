@@ -3065,3 +3065,25 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
 - **Fechamento (mesma data):** a Gestora reconferiu em produção e **aprovou os 3 ajustes**
   (BUG-059/060/061). **F1-03 (dashboard + motor de jornada) fechada.** `00-PLAN.md` e
   `DASHBOARD.md` atualizados (F1-03 → Concluída/validada). Próxima frente logada: F1-04.
+
+## [2026-07-11] Chat de execução — F1-04 iniciada: revisão das 4 páginas + PR1 copy (PR #73)
+
+- Revisão por leitura das 4 páginas da F1-04: `gestao_carreira`, `gestao_agenda`, `contratos`,
+  `visao_geral`. Diagnóstico: `contratos` já compliant (server guard + `FunctionalPageHeader` +
+  copy limpa, herança do CT-4). Achados nas outras: copy com acentos removidos (`visao_geral`
+  ~28 hits, `gestao_carreira` ~10), headers custom (não `FunctionalPageHeader`) em 3 páginas, e
+  o modal de detalhe da `visao_geral` feito à mão (overlay `preto/60`, não padronizado).
+- Decisões da Gestora: (1) `visao_geral` fica em `/hub` (só login) — serve a **todos os
+  clientes**, membro ou não, com lógica de exibir tarefas conforme o serviço ativo; **não** vai
+  para trás do cadeado de selo; (2) incluir link para a Visão Geral no **menu sanduíche do
+  header do hub**; (3) empacotar em **2 PRs** (copy | design).
+- **PR1 (copy) — BUG-062, PR #73 mergeado (`1ae0c58`, squash):** restaurados os acentos PT-BR de
+  todas as strings visíveis identificadas em `visao_geral` (~14) e `gestao_carreira` (~18).
+  Comentários e identificadores de código permanecem ASCII (apropriado, L11). `agenda` tem a
+  copy no componente compartilhado `AgendaManagementView` (fora do escopo do PR de copy).
+  Validado: eslint 0 erros, test 52/52, type-check, build exit 0.
+- **PR2 (design) pendente:** migrar headers de `visao_geral`/`gestao_agenda`/`gestao_carreira`
+  para o `FunctionalPageHeader` (Gestão Funcional / F2-05), padronizar o modal da `visao_geral`
+  no `GlassModal`, e adicionar o link no menu sanduíche.
+- Itens atualizados: `BUGS.md` (+BUG-062), `00-PLAN.md` (F1-04 em andamento), `DASHBOARD.md`
+  (F1-04 + entrada nova), este LOG.
