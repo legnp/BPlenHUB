@@ -45,10 +45,16 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   **imagem em base64 embutida** (print de tela, que pode conter dado sensível
   visível na UI). Viola diretamente a regra do `CLAUDE.md` de dados sensíveis
   ficarem em subcoleções privadas.
-- Status: Aberto
-- Decisão de execução: Precisa plano+aprovação (fluxo toca dado sensível/PII;
-  regra explícita do `CLAUDE.md`)
-- Commit/PR: —
+- Status: **Corrigido** — PR #70. Os tickets passam a ser gravados na subcoleção **privada**
+  do usuário (`User/{matricula}/Support_Tickets`; sem matrícula → `_SupportTickets/{uid}/
+  tickets`), não mais na raiz. `firestore.rules` atualizado (fallback `_SupportTickets`; a
+  subcoleção por matrícula já é coberta pela regra catch-all do bloco User). Script
+  `scripts/migrate-support-tickets.js` move os antigos (sem backup — todos de teste).
+  **Nota:** o acesso de cliente à raiz já era bloqueado (`if false`) — não era vazamento
+  ativo, mas violação de governança de PII (agora corrigida).
+- Decisão de execução: plano+aprovação da Gestora (área PII + firestore.rules). Pós-merge:
+  deploy das rules (`firebase deploy --only firestore:rules`) + `node scripts/migrate-support-tickets.js --apply`.
+- Commit/PR: PR #70
 
 ### BUG-002 Checkout público não valida que o produto é gratuito/100%-cupom antes de conceder acesso
 

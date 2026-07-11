@@ -232,7 +232,6 @@ ativa furando a ordem das fases.
 | Bug | Severidade | Onde se conecta | Por que ainda não fechou |
 |---|---|---|---|
 | BUG-008 | Alto | F2-04, T-03 | Requer plano+aprovação (toca fluxo financeiro/cotas) |
-| BUG-001 | Alto | T-06 | Requer plano+aprovação (dado sensível/PII, regra explícita do `CLAUDE.md`) |
 
 Nenhum `Crítico` aberto no momento. Os dois Críticos registrados no processo
 (`BUG-003` recover sem auth, PR #3; `BUG-032` escalação de privilégio no login,

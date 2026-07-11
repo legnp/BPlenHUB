@@ -2968,3 +2968,18 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   de imports órfãos de passagem. Fecha BUG-010.
 - Restam na triagem Alto: **BUG-008** (cotas 1-to-1, gated) e **BUG-001** (PII Support_Tickets,
   gated) — ambos exigem plano+aprovação antes de codar.
+
+## [2026-07-11] Chat de execução — BUG-001: tickets de suporte em subcoleção privada (PR #70)
+
+- Triagem Alto, gated (PII + firestore.rules). Investigação: os tickets iam para a raiz
+  `Support_Tickets` com PII (uid/email/matrícula/nome/descrição + print base64). As rules já
+  bloqueavam cliente (`if false`) e não há leitor no app — não era vazamento ativo, mas
+  violação de governança do `CLAUDE.md` (dado sensível deve ficar em subcoleção por matrícula).
+- Plano aprovado pela Gestora; decisão: migrar sem backup (todos os tickets são de teste).
+- Mudanças (PR #70): `support-ticket.ts` grava em `User/{matricula}/Support_Tickets` (dono lê
+  via catch-all; escrita Admin SDK) ou `_SupportTickets/{uid}/tickets` (sem matrícula);
+  `firestore.rules` com a regra do fallback + raiz marcada legada; script
+  `migrate-support-tickets.js` (dry-run/--apply, sem backup).
+- Validado: eslint (action) limpo, test 52/52, tsc, build. Fecha **BUG-001**.
+- **Pós-merge (Gestora):** `firebase deploy --only firestore:rules` + rodar o script `--apply`.
+- **Triagem Alto agora só tem BUG-008** (cotas 1-to-1, gated).
