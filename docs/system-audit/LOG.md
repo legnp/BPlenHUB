@@ -3136,3 +3136,10 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   Funcional vs. Autênticas) antes de padronizá-los.
 - Itens atualizados: `BUGS.md` (BUG-033/016 → Corrigido), `00-PLAN.md` (F1-05 em andamento,
   índice bug→track), `DASHBOARD.md` (F1-05 + entrada nova), este LOG.
+- **Headers Gestão Funcional (mesma data) — PR #78 mergeado (`d62eca7`):** a Gestora definiu que
+  `profile_settings` e `networking` seguem o conceito **Gestão Funcional** (F2-05). Ambos os
+  headers custom migrados para o `FunctionalPageHeader` (em networking as abas passaram para a
+  linha abaixo do header). Validado: eslint 0 problemas, type-check, build exit 0. Com isso a
+  **F1-05 fica com o código completo** — pendente só a validação visual da Gestora em produção
+  (checkout + `CouponTermsModal`, networking, perfil, entrega). F2-05 avança: 8 páginas de Gestão
+  Funcional já no header canônico.

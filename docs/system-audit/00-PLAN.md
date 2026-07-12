@@ -559,14 +559,15 @@ sem copy hardcoded fora do que o guia permitir).
   contatos/CV/portfólio visíveis; + remoção do filtro de estágio que lia `User_JourneyMap`
   morto) e **BUG-016** (entrega lê o `used` real da carteira de cotas, não mais 0). Back-buttons
   de `profile_settings` e da tela de erro da entrega normalizados para "Voltar". Segurança das
-  actions já vinha do T-02 (BUG-005/006). Copy das 4 páginas conferida — limpa. **Pendente:**
-  validação visual em produção + decisão de F2-05 sobre header de `profile_settings`/`networking`
-  (Gestão Funcional vs. Autênticas) antes de padronizar esses 2 headers.
+  actions já vinha do T-02 (BUG-005/006). Copy das 4 páginas conferida — limpa. **PR #78:**
+  headers de `profile_settings` e `networking` migrados para o `FunctionalPageHeader` (a Gestora
+  definiu que seguem o padrão **Gestão Funcional** — F2-05). **Código completo — pendente só a
+  validação visual da Gestora em produção.**
 - Resultado: privacidade de networking fechada (valores ocultos não trafegam mais), cota de
-  entrega correta, filtro morto removido. Resta conferência de fluxos/responsivo/temas em produção
-  (checkout membro + `CouponTermsModal`, networking, perfil, entrega).
+  entrega correta, filtro morto removido, headers no padrão canônico. Resta conferência de
+  fluxos/responsivo/temas em produção (checkout membro + `CouponTermsModal`, networking, perfil, entrega).
 - Bug(s) vinculado(s): BUG-005 (Corrigido, PR #19), BUG-006 (Corrigido, PR #18),
-  BUG-016 (Corrigido, PR #77), BUG-033 (Corrigido, PR #77)
+  BUG-016 (Corrigido, PR #77), BUG-033 (Corrigido, PR #77); + headers Gestão Funcional (PR #78, F2-05)
 - Pendência de validação acumulada: `CouponTermsModal` (F0-01 lote A, via
   `CouponInput`/`CheckoutFlow` em `/hub/checkout/[slug]`) recolorido para vars de tema —
   conferência visual nos temas claros pendente em produção (BUG-030).
@@ -672,12 +673,16 @@ sem copy hardcoded fora do que o guia permitir).
   (`src/components/layout/FunctionalPageHeader.tsx`, PR #58) e aplicado às telas de
   contrato (avulso + checkout) e checkout. Categorização formal das demais páginas e
   aplicação do padrão a elas: pendente.
-- Execução: **Parcial** — PR #58 (contrato + checkout). Páginas públicas já normalizadas
-  mas ainda não categorizadas formalmente; demais páginas de Gestão Funcional
-  (`gestao_agenda`, `profile_settings`, `visao_geral`, `contratos`) pendentes.
-- Resultado: —
-- Bug(s) vinculado(s): BUG-056 (defeitos de UX/tema da CT-3b.2 — Corrigido, PR #58)
-- Log: [2026-07-10] conceitos definidos + padrão Gestão Funcional aplicado a contrato/checkout (PR #58)
+- Execução: **Avançada** — o padrão Gestão Funcional (`FunctionalPageHeader`) já está aplicado a:
+  contrato + checkout (PR #58), `contratos` (CT-4), `visao_geral`/`gestao_agenda`/`gestao_carreira`
+  (PR #74) e `profile_settings`/`networking` (PR #78 — categorizados como Gestão Funcional pela
+  Gestora). Restam de Gestão Funcional só as telas de **contrato/checkout** já cobertas; a
+  categorização formal dos conceitos **a/b/d** (Fullscreen/Journey/Autênticas) das demais páginas
+  logadas segue pendente.
+- Resultado: 8 páginas de Gestão Funcional já no header canônico. Conferência visual em produção.
+- Bug(s) vinculado(s): BUG-056 (Corrigido, PR #58); BUG-063 (Corrigido, PR #74); + PR #78 (perfil/networking)
+- Log: [2026-07-10] conceitos definidos + contrato/checkout (PR #58); [2026-07-11] visao_geral/
+  gestao_agenda/gestao_carreira (PR #74) + profile_settings/networking (PR #78)
 
 ---
 

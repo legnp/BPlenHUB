@@ -12,7 +12,13 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-11 (chat de execução — **F1-05 iniciada — gated resolvidos
+> **Última atualização:** 2026-07-11 (chat de execução — **F1-05 código completo — headers
+> Gestão Funcional (PR #78)**: a Gestora definiu que `profile_settings` e `networking` seguem o
+> conceito Gestão Funcional; seus headers foram migrados para o `FunctionalPageHeader` (F2-05).
+> Com os gated do PR #77 (BUG-033 privacidade + BUG-016 cota) e este, a **F1-05 fica com o código
+> completo** — pendente só a validação visual da Gestora em produção.
+>
+> _(entrada anterior)_ 2026-07-11 (chat de execução — **F1-05 iniciada — gated resolvidos
 > (PR #77)**: revisão de código das 4 páginas (checkout membro, networking, perfil, entrega).
 > **BUG-033** (privacidade do networking: o servidor só envia contatos/CV/portfólio quando o
 > dono marcou como visível — antes os valores ocultos trafegavam; + removido o filtro por
@@ -345,7 +351,7 @@ divergência apontada na conferência). Parser validado por diff — regressão 
 | **F1-02** | Checkout + subsistema de contratos | ✓ (BUG-005/006 via T-02) | ◐ **código completo** — CT-0..CT-4 (PRs #48..#66) | Rota órfã removida (BUG-002); subsistema reconstruído: entidade+IP+geo, avulso robusto, assinatura pós-checkout grátis+pago, padrão Gestão Funcional, carimbo/código único, **gate liberação (pagamento aprovado E contrato assinado)**, status real, painel reescrito + documento in-app + nota fiscal (CT-4), **portão morto aposentado + trava de acesso por-serviço auditada (BUG-055)**. Fechados BUG-051/052/053/054/055/056/057. **Pendente = apenas a validação MANUAL da Gestora em produção** dos 3 fluxos (grátis/pago/avulso), **programada para APÓS a limpeza da base do usuário de teste** (não há bloqueador de código); + CT-3c/CT-5 (fora do caminho crítico) |
 | **F1-03** | Hub dashboard + motor de jornada | ✓ | ✓ **validada e aprovada em produção** (PR #72) | **F1-03 fechada.** Motor por dado (`resolverAcesso`), Sequence Lock/Upsell Gate e todos os modais da nav **aprovados pela Gestora** (2026-07-11). Ajustes de UI (os 3 reconferidos): onboarding no padrão offboarding (BUG-059), upsell sem nomes técnicos (BUG-060), modal de detalhe no `GlassModal` + grid 2 colunas (BUG-061) |
 | **F1-04** | Hub: carreira, agenda, contratos, visão geral | ✓ (T-02 + cadeado D; `visao_geral` só login, intencional) | ◐ **código completo** (PRs #73/#74) | `contratos` já compliant (CT-4). PR1: acentos PT-BR (BUG-062). PR2: header canônico nas 3 (F2-05), modal da `visao_geral` no `GlassModal` (BUG-063/064), link "Visão Geral" no menu do hub. **Pendente: só validação visual da Gestora em produção** (BUG-030) |
-| **F1-05** | Checkout membro, networking, perfil, entrega | ✓ (BUG-005/006) | ◐ **gated resolvidos (PR #77)** | Revisão das 4 páginas feita. **BUG-033** (privacidade networking — valores ocultos não trafegam + filtro de estágio morto removido) e **BUG-016** (cota `used` real na entrega) corrigidos. Back-buttons → "Voltar". Pendente: validação em produção + F2-05 dos headers de perfil/networking + `CouponTermsModal` |
+| **F1-05** | Checkout membro, networking, perfil, entrega | ✓ (BUG-005/006) | ◐ **código completo** (PRs #77/#78) | Revisão das 4 páginas feita. **BUG-033** (privacidade networking + filtro de estágio morto removido) e **BUG-016** (cota `used` real na entrega) corrigidos (PR #77). Headers de perfil/networking → Gestão Funcional (PR #78, F2-05). Back-buttons → "Voltar". **Pendente: só validação em produção** (+ `CouponTermsModal`) |
 | **F1-06** | 19 páginas de admin | ✓ (BUG-003/007/023/024 + **BUG-035 RESOLVIDO**) | ○ não iniciada | O **bloqueador crítico (BUG-035) foi resolvido** via reestruturação A0→D. Botão A3 add em `admin/users`. Validação UI das 19 páginas não começou. BUG-047 (exibir atributos) |
 
 **Resumo honesto:** a Fase 1 avançou muito **na camada de segurança e no motor**
