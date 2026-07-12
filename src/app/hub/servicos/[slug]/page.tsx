@@ -32,7 +32,7 @@ export default async function ServiceDeliveryPage({ params }: { params: Promise<
             href="/hub/membro" 
             className="px-8 py-4 bg-white text-black rounded-[2rem] text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all flex items-center gap-3"
          >
-            <ArrowLeft size={16} /> Voltar para Meus Serviços
+            <ArrowLeft size={16} /> Voltar
          </Link>
       </div>
     );

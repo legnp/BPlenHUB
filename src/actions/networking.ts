@@ -22,7 +22,6 @@ export interface NetworkingMember {
   photoUrl: string;
   pitch: string;
   hashtags: string[];
-  journeyStageId: string;
   isProfessional: boolean;
   contacts: Record<string, NetworkingContactItem | undefined>;
   cvVisible: boolean;
@@ -39,7 +38,6 @@ export type NetworkingTab = "membros" | "profissionais" | "parceiros";
 export async function getNetworkingDataAction(
   tab: NetworkingTab,
   query?: string,
-  stageFilter?: string,
   serviceFilter?: string
 ) {
   try {
@@ -87,12 +85,25 @@ export async function getNetworkingDataAction(
       .map(doc => {
         const d = doc.data();
         const netProfile = d.profile?.networking || {};
-        
+
         // Apenas usuários com visibilidade habilitada
         if (!netProfile.networking_visibility) return null;
-        
+
         // Filtro de profissionais
         if (tab === "profissionais" && !netProfile.isBPlenProfessional) return null;
+
+        // Privacidade (BUG-033): só exporta ao client o VALOR de contatos/CV/portfólio
+        // quando o dono marcou como visível. Antes o payload trazia os valores ocultos
+        // e o filtro era só no client (vazamento). As flags seguem para a UI.
+        const cvVisible = netProfile.cv_networking_visibility || false;
+        const portfolioVisible = netProfile.portfolio_networking_visibility || false;
+        const rawContacts = (netProfile.contacts || {}) as Record<string, NetworkingContactItem | undefined>;
+        const safeContacts: Record<string, NetworkingContactItem> = {};
+        for (const [key, item] of Object.entries(rawContacts)) {
+          if (item?.visible && item.value) {
+            safeContacts[key] = { value: item.value, visible: true };
+          }
+        }
 
         return {
           id: doc.id,
@@ -100,22 +111,17 @@ export async function getNetworkingDataAction(
           photoUrl: d.photoUrl || d.profile?.photoUrl || "",
           pitch: netProfile.sales_pitch || "",
           hashtags: netProfile.hashtags || [],
-          journeyStageId: d.User_JourneyMap?.current_stage || "onboarding",
           isProfessional: netProfile.isBPlenProfessional || false,
-          contacts: netProfile.contacts || {},
-          cvVisible: netProfile.cv_networking_visibility || false,
-          portfolioVisible: netProfile.portfolio_networking_visibility || false,
-          cvUrl: d.profile?.address?.cv_url || "",
-          portfolioUrl: d.profile?.address?.portfolio_url || ""
+          contacts: safeContacts,
+          cvVisible,
+          portfolioVisible,
+          cvUrl: cvVisible ? (d.profile?.address?.cv_url || "") : "",
+          portfolioUrl: portfolioVisible ? (d.profile?.address?.portfolio_url || "") : ""
         } as NetworkingMember;
       })
       .filter(Boolean) as NetworkingMember[];
 
-    // Filtros de Busca e Estágio
-    if (stageFilter && stageFilter !== "Todos") {
-      users = users.filter(u => u.journeyStageId === stageFilter);
-    }
-
+    // Filtro de busca (o filtro por estágio foi removido — lia campo morto, BUG-033)
     if (query) {
       const q = query.toLowerCase();
       users = users.filter(u => 
