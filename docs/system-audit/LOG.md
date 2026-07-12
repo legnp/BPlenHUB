@@ -3102,6 +3102,12 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   aba globais "BPlen | [página]". **PR #75 mergeado (`263feb5`):** back-buttons normalizados
   para "Voltar" (visao_geral/gestao_carreira/gestao_agenda/checkout) + copy da agenda (kicker
   "Gestão e revisão da sua agenda BPlen", título "Gestão de Meus Compromissos"). O pedido de
-  **títulos de aba globais** (hub usa `template "BPlen HUB | %s"` e páginas client sem título
-  próprio → default) fica para um PR próprio (mexe no layout compartilhado do hub + ~11 layouts
-  de rota) — plano apresentado, aguardando confirmação da lista de títulos.
+  **títulos de aba globais** (hub usava `template "BPlen HUB | %s"` e páginas client sem título
+  próprio → default) foi entregue no **PR #76 mergeado (`0500acf`)**: `hub/layout` template
+  →"BPlen | %s" (default "Início"); `hub/membro/layout` título de seção "Área do Membro"
+  (metadata aditivo, sem tocar o cadeado Fase D); layouts de rota (server) por página
+  (visao_geral/gestao_agenda/gestao_carreira/profile_settings/networking/step-journey/checkout);
+  **títulos dinâmicos** com o nome do item em `servicos/[slug]` e `checkout/[slug]`
+  (`generateMetadata` + `getProductBySlug`) e a jornada (layout client) via `document.title` com
+  o nome da etapa (+ back "Voltar"). Stubs de redirect da Fase C não recebem título. Validado:
+  eslint 0 erros, type-check, build exit 0. Conferência visual em produção (BUG-030).
