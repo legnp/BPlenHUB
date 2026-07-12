@@ -1,7 +1,12 @@
 import React from "react";
 import { redirect } from "next/navigation";
+import { Metadata } from "next";
 import { verifySignedSession } from "@/actions/auth-session";
 import { resolveUserPermissions } from "@/lib/user-permissions";
+
+export const metadata: Metadata = {
+  title: "Área do Membro",
+};
 
 /**
  * MEMBRO LAYOUT — O cadeado do clube (Fase D — ACCESS-MODEL-DESIGN.md secao 1) 🛡️
