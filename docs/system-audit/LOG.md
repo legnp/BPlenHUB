@@ -3111,3 +3111,28 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   (`generateMetadata` + `getProductBySlug`) e a jornada (layout client) via `document.title` com
   o nome da etapa (+ back "Voltar"). Stubs de redirect da Fase C não recebem título. Validado:
   eslint 0 erros, type-check, build exit 0. Conferência visual em produção (BUG-030).
+
+## [2026-07-11] Chat de execução — F1-05 iniciada: revisão + gated (BUG-033/016, PR #77)
+
+- Passada de código das 4 páginas da F1-05 (checkout membro, networking, perfil, entrega).
+  Segurança das actions já vinha do T-02 (BUG-005/006). Copy conferida — limpa.
+- **BUG-033 (networking) — [CONFIRMADO] por leitura:** (a) `getNetworkingDataAction` enviava
+  `contacts` inteiro + `cvUrl`/`portfolioUrl` ao client independente das flags `visible`; o
+  `NetworkingCard` só escondia na UI → **valores ocultos trafegavam** no payload (vazamento a
+  outros membros logados). (b) `journeyStageId` lia `d.User_JourneyMap?.current_stage`
+  (campo/coleção mortos desde o BUG-018) → todos "onboarding", filtro quebrado.
+- **BUG-016 (entrega) — [CONFIRMADO]:** `getServiceDeliveryDataAction` usava `used: 0` hardcoded.
+- Decisões da Gestora (gated aprovado): (1) **remover** o filtro de estágio do networking (lia
+  campo morto; reintroduzível pela fonte v3 no futuro); (2) proceder com a correção de
+  privacidade e a cota real.
+- **PR #77 mergeado (`d816b83`, squash):** privacidade do networking (servidor só exporta
+  contatos/CV/portfólio quando `visible`), remoção do filtro de estágio (action + page +
+  `NetworkingFilters` — filtro contextual agora só p/ Parceiros), e `used` real na entrega
+  (soma da carteira `User_Permissions/quotas` com normalização de chave do BUG-008). Back-buttons
+  de `profile_settings` e da tela de erro da entrega → "Voltar". Validado: eslint 0 erros, test
+  52/52, type-check, build exit 0.
+- **Pendente na F1-05:** validação visual em produção (checkout + `CouponTermsModal`, networking,
+  perfil, entrega) + decisão de F2-05 sobre os headers de `profile_settings`/`networking` (Gestão
+  Funcional vs. Autênticas) antes de padronizá-los.
+- Itens atualizados: `BUGS.md` (BUG-033/016 → Corrigido), `00-PLAN.md` (F1-05 em andamento,
+  índice bug→track), `DASHBOARD.md` (F1-05 + entrada nova), este LOG.

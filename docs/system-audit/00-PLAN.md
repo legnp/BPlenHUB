@@ -551,22 +551,26 @@ sem copy hardcoded fora do que o guia permitir).
 ### [F1-05] Hub — checkout de membro, networking, perfil, entrega de serviço
 - Categoria(s) de qualidade: Adequação funcional / Segurança
 - Critério de aceite: ver critério comum
-- Modo de validação: PENDENTE
-- Decisão: —
-- Execução: Não iniciada
-- Resultado: —
+- Modo de validação: Automatizado (código) + Requer execução humana (validação visual em produção)
+- Decisão: **Filtro de estágio do networking removido** (Gestora, 2026-07-11) — lia campo morto;
+  reintroduzível pela fonte v3 se desejado no futuro.
+- Execução: **Em andamento (avançado).** Revisão de código das 4 páginas feita.
+  **PR #77 (gated) mergeado:** **BUG-033** (privacidade do networking — servidor só envia
+  contatos/CV/portfólio visíveis; + remoção do filtro de estágio que lia `User_JourneyMap`
+  morto) e **BUG-016** (entrega lê o `used` real da carteira de cotas, não mais 0). Back-buttons
+  de `profile_settings` e da tela de erro da entrega normalizados para "Voltar". Segurança das
+  actions já vinha do T-02 (BUG-005/006). Copy das 4 páginas conferida — limpa. **Pendente:**
+  validação visual em produção + decisão de F2-05 sobre header de `profile_settings`/`networking`
+  (Gestão Funcional vs. Autênticas) antes de padronizar esses 2 headers.
+- Resultado: privacidade de networking fechada (valores ocultos não trafegam mais), cota de
+  entrega correta, filtro morto removido. Resta conferência de fluxos/responsivo/temas em produção
+  (checkout membro + `CouponTermsModal`, networking, perfil, entrega).
 - Bug(s) vinculado(s): BUG-005 (Corrigido, PR #19), BUG-006 (Corrigido, PR #18),
-  BUG-016, BUG-033 (**[HIPÓTESE]**, networking — *corrigido nesta reconciliação:
-  já constava no índice bug→track vinculado a F1-05, mas estava ausente deste
-  campo*)
+  BUG-016 (Corrigido, PR #77), BUG-033 (Corrigido, PR #77)
 - Pendência de validação acumulada: `CouponTermsModal` (F0-01 lote A, via
-  `CouponInput`/`CheckoutFlow` em `/hub/membro/checkout/[slug]`) recolorido
-  para vars de tema — conferência visual nos temas claros pendente em produção
-  (BUG-030). A validação da página `/hub/networking` deve resolver o `BUG-033`
-  (contatos/URLs marcados não-visíveis pelo dono possivelmente trafegando ao
-  client, e leitura obsoleta de `User_JourneyMap.current_stage` — campo e
-  coleção que não existem mais desde o fechamento do `BUG-018`).
-- Log: —
+  `CouponInput`/`CheckoutFlow` em `/hub/checkout/[slug]`) recolorido para vars de tema —
+  conferência visual nos temas claros pendente em produção (BUG-030).
+- Log: [2026-07-11] revisão das 4 páginas + PR #77 (BUG-033/016) — ver `LOG.md`
 
 ### [F1-06] Validar as 19 páginas de admin
 - Categoria(s) de qualidade: Adequação funcional / Segurança
@@ -914,7 +918,7 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-013 | Médio | Aberto | F2-04 |
 | BUG-014 | Baixo | Corrigido (PR #26) | F1-01 — import morto removido |
 | BUG-015 | Baixo | Aberto | F1-03, F2-01 |
-| BUG-016 | Médio | Aberto | F1-05 |
+| BUG-016 | Médio | Corrigido (PR #77) | F1-05 — cota `used` real na entrega |
 | BUG-017 | Médio | Aberto | T-01 |
 | BUG-018 | Baixo | Corrigido (PRs #1/#22/#23/#24/#25) | F0-04, T-03 — consolidação de jornada concluída |
 | BUG-019 | Alto | Corrigido (PR #4) | T-02 |
@@ -931,7 +935,7 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-030 | Baixo | Aceito | Riscos Aceitos (item 5, abaixo) |
 | BUG-031 | Baixo | Aberto | fora do escopo original — melhoria de usabilidade, ainda sem track (candidato a T-05 ou item novo de Fase 2 quando priorizado) |
 | BUG-032 | Crítico | Corrigido (PR #14) | T-02 — escalação de privilégio (novo, achado no lote 7) |
-| BUG-033 | Médio | Aberto — **[HIPÓTESE]** | F1-05 — achado colateral do BUG-006, a verificar na Fase 1 |
+| BUG-033 | Médio | Corrigido (PR #77) | F1-05 — privacidade networking + filtro de estágio morto removido |
 | BUG-034 | Baixo | Aberto (futuro) | F0-01 — 2º componente-base p/ modais grandes app-shell (opção iii) |
 | BUG-035 | Alto | **Corrigido (PR #37 — Fase D)** | F1-06 — resolvido pela reestruturação do modelo de acesso (A0→D, `ACCESS-MODEL-DESIGN.md`): cadeado server-side em `hub/membro/layout.tsx`, bypass `isAdmin \|\|` removido. Desbloqueia a validação do offboarding modal (F1-03) |
 | BUG-036 | Médio | Corrigido (PR #26) | F1-01 — erro de hidratação no `ComparisonTable` (whitespace em `<colgroup>`), verificado ao vivo |
