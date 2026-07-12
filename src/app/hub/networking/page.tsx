@@ -23,7 +23,6 @@ import { PartnerData } from "@/actions/admin/partners";
 export default function NetworkingPage() {
   const [activeTab, setActiveTab] = useState<NetworkingTab>("membros");
   const [search, setSearch] = useState("");
-  const [stageFilter, setStageFilter] = useState("Todos");
   const [serviceFilter, setServiceFilter] = useState("Todos");
   const [data, setData] = useState<(NetworkingMember | PartnerData)[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -39,19 +38,19 @@ export default function NetworkingPage() {
   useEffect(() => {
     async function load() {
       setIsLoading(true);
-      const res = await getNetworkingDataAction(activeTab, search, stageFilter, serviceFilter);
+      const res = await getNetworkingDataAction(activeTab, search, serviceFilter);
       if (res.success) {
         setData(res.data || []);
       }
       setIsLoading(false);
     }
-    
+
     const delayDebounceFn = setTimeout(() => {
       load();
     }, 400); // Debounce de 400ms para performance soberana
 
     return () => clearTimeout(delayDebounceFn);
-  }, [activeTab, search, stageFilter, serviceFilter]);
+  }, [activeTab, search, serviceFilter]);
 
   // Ramos de Atuação Únicos (Derivados dos Dados de Parceiros)
   const availableServices = useMemo(() => {
@@ -102,12 +101,10 @@ export default function NetworkingPage() {
 
         {/* 🔍 Centro de Filtros */}
         <div className="bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-[3.5rem] p-8 glass space-y-6">
-           <NetworkingFilters 
+           <NetworkingFilters
               tab={activeTab}
               search={search}
               setSearch={setSearch}
-              stageFilter={stageFilter}
-              setStageFilter={setStageFilter}
               serviceFilter={serviceFilter}
               setServiceFilter={setServiceFilter}
               availableServices={availableServices}

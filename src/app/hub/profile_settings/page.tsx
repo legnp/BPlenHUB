@@ -33,7 +33,7 @@ export default function ProfileSettingsPage() {
             className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[var(--accent-start)] hover:opacity-70 transition-all"
           >
             <ArrowLeft size={14} />
-            Voltar ao Dashboard
+            Voltar
           </Link>
           <div className="flex items-center gap-4">
             <div className="p-4 bg-[var(--accent-soft)] rounded-3xl text-[var(--accent-start)]">

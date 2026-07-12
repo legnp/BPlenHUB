@@ -379,9 +379,13 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Arquivo(s) afetado(s): `src/actions/delivery.ts`
 - Cenário de falha: valor de cota usada aparece fixo em `0` na função de
   entrega de serviço — pode exibir saldo incorreto ao membro.
-- Status: Aberto
-- Decisão de execução: Precisa plano+aprovação (toca dado de cotas)
-- Commit/PR: —
+- Status: **Corrigido** — 2026-07-11 (PR #77, F1-05). `getServiceDeliveryDataAction`
+  passa a ler o `used` REAL da carteira do membro (`User/{matricula}/User_Permissions/
+  quotas`), somando o `used` das chaves concedidas pelo produto — com normalização de
+  chave (`foldQuotaMap`/`normalizeQuotaKey`, BUG-008). `total` segue de `grantedQuotas`.
+- Decisão de execução: plano+aprovação da Gestora (cotas). Validado por eslint 0 erros,
+  test 52/52, type-check, build exit 0. Conferência visual em produção (BUG-030).
+- Commit/PR: PR #77
 
 ### BUG-017 Full collection scans sem paginação em `admin-fs.ts`
 
@@ -956,12 +960,21 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   Logo o filtro de estágio cai **sempre** em "onboarding". Fix: desnormalizar o
   estágio do v3 (`User_Journey`) num campo do doc User (o networking é query em massa
   e não lê subcoleção) e apontar o read para ele.
-- Status: Aberto — **[HIPÓTESE]**, verificar na Fase 1 (F1-05). Se confirmado, o
-  fix provável é filtrar server-side no `getNetworkingDataAction` (não enviar
-  `value`/URL quando `visible === false`), preservando as flags para o próprio dono.
-- Decisão de execução: A investigar na fase correspondente; se confirmado e a
-  correção tocar o shape de dados de networking, avaliar impacto antes.
-- Commit/PR: —
+- **[CONFIRMADO por leitura, 2026-07-11 / F1-05]:** ambos os pontos confirmados —
+  `getNetworkingDataAction` enviava `contacts` inteiro + `cvUrl`/`portfolioUrl` ao client
+  independente das flags (o `NetworkingCard` só escondia na UI → valores ocultos no payload);
+  e o `journeyStageId` lia `d.User_JourneyMap?.current_stage` (campo/coleção mortos, BUG-018)
+  → todos "onboarding", filtro de estágio quebrado.
+- Status: **Corrigido** — 2026-07-11 (PR #77, F1-05). (a) **Privacidade:** o servidor só
+  exporta o `value` de contatos e as URLs de CV/portfólio quando a flag `visible`/
+  `cv_networking_visibility`/`portfolio_networking_visibility` for true (as flags seguem para a
+  UI); valores ocultos não trafegam mais. (b) **Estágio:** o filtro por estágio foi **removido**
+  (decisão da Gestora) — `journeyStageId` + a leitura morta de `User_JourneyMap` saíram da
+  action, do `page.tsx` e do `NetworkingFilters` (o filtro contextual agora só aparece para
+  Parceiros). Reintroduzível no futuro pela fonte v3 correta se desejado.
+- Decisão de execução: plano+aprovação da Gestora (privacidade/PII + shape de dados). Validado
+  por eslint 0 erros, test 52/52, type-check, build exit 0. Conferência visual em produção (BUG-030).
+- Commit/PR: PR #77
 
 ### BUG-034 Falta base canônica para modais grandes "app-shell" (header/footer fixos + corpo rolável)
 

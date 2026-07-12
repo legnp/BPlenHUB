@@ -5,6 +5,7 @@ import { requireAuth } from "@/lib/auth-guards";
 import { Product } from "@/types/products";
 import { PRODUCTS_COLLECTION } from "@/config/collections";
 import { getErrorMessage } from "@/lib/utils/errors";
+import { foldQuotaMap, normalizeQuotaKey } from "@/lib/quota-keys";
 
 /**
  * BPlen HUB — Delivery Engine (Server Actions) 🏁📡
@@ -74,10 +75,17 @@ export async function getServiceDeliveryDataAction(slug: string, idToken?: strin
        });
     }
 
-    // 📊 5. Consumo de Cotas
+    // 📊 5. Consumo de Cotas — lê o `used` REAL da carteira do membro (BUG-016).
+    // Antes era hardcoded em 0. As chaves são normalizadas (BUG-008) antes de somar.
+    const granted = product.grantedQuotas || {};
+    const walletSnap = await db.doc(`User/${matricula}/User_Permissions/quotas`).get();
+    const walletQuotas = foldQuotaMap(walletSnap.exists ? walletSnap.data()?.quotas : {});
     const quotas = {
-       total: Object.values(product.grantedQuotas).reduce((acc, val) => acc + val, 0),
-       used: 0 
+       total: Object.values(granted).reduce((acc, val) => acc + val, 0),
+       used: Object.keys(granted).reduce(
+         (acc, key) => acc + (walletQuotas[normalizeQuotaKey(key)]?.used || 0),
+         0
+       )
     };
 
     return {
