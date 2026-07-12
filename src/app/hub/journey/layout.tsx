@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import { JourneyNav } from "@/components/journey/JourneyNav";
 import { useAuthContext } from "@/context/AuthContext";
 import { useJourney } from "@/hooks/useJourney";
@@ -22,6 +22,13 @@ export default function JourneyLayout({ children }: { children: React.ReactNode 
 // Progress tracker
   const { stages, progress, loading: journeyLoading, getStepStatus, getStageTelemetry } = useJourney(user?.uid || "guest");
 
+  // Título da aba com o nome da etapa em exibição. A jornada tem um layout client
+  // (não pode exportar metadata), então o título é ajustado no cliente — "BPlen | <etapa>".
+  const currentStageTitle = stages.find((s) => s.id === currentStepId)?.title;
+  useEffect(() => {
+    document.title = `BPlen | ${currentStageTitle || "Jornada"}`;
+  }, [currentStageTitle]);
+
   if (authLoading || journeyLoading) {
     return <AtmosphericLoading />;
   }
@@ -40,7 +47,7 @@ export default function JourneyLayout({ children }: { children: React.ReactNode 
               className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors group mb-5"
            >
               <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-              Voltar ao Dashboard
+              Voltar
            </Link>
 
           <JourneyNav 

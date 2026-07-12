@@ -6,8 +6,8 @@ import { verifySignedSession, clearSessionCookie } from "@/actions/auth-session"
 
 export const metadata: Metadata = {
   title: {
-    default: "Home",
-    template: "BPlen HUB | %s",
+    default: "Início",
+    template: "BPlen | %s",
   },
 };
 
