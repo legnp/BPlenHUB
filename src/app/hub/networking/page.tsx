@@ -15,6 +15,7 @@ import { NetworkingCard } from "@/components/hub/NetworkingCard";
 import { NetworkingFilters } from "@/components/hub/NetworkingFilters";
 import { getNetworkingDataAction, NetworkingMember, NetworkingTab } from "@/actions/networking";
 import { PartnerData } from "@/actions/admin/partners";
+import { FunctionalPageHeader } from "@/components/layout/FunctionalPageHeader";
 
 /**
  * BPlen HUB — Networking Space 🌐🚀✨
@@ -63,16 +64,18 @@ export default function NetworkingPage() {
       
       {/* 🔮 Hero Section & Tabs */}
       <div className="space-y-10 px-4">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-           <div className="space-y-2">
-              <div className="flex items-center gap-3 text-[var(--accent-start)]">
-                 <Network size={20} />
-                  <span className="text-[10px] font-black uppercase tracking-[0.3em]">Conexões Soberanas</span>
-              </div>
-              <h1 className="text-3xl font-black tracking-tighter text-[var(--text-primary)]">Ecossistema BPlen</h1>
-           </div>
-           
-           {/* Navigation Tabs */}
+        {/* Header — padrão canônico Gestão Funcional (F2-05) */}
+        <FunctionalPageHeader
+          eyebrow="Conexões Soberanas"
+          title="Ecossistema"
+          titleAccent="BPlen"
+          backHref="/hub"
+          backLabel="Voltar"
+          icon={<Network size={24} />}
+        />
+
+        {/* Navigation Tabs */}
+        <div className="flex justify-center md:justify-start">
            <div className="flex p-2 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-[2.5rem] glass">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
@@ -86,8 +89,8 @@ export default function NetworkingPage() {
                     }}
                     className={cn(
                       "flex items-center gap-3 px-6 py-3 rounded-3xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 whitespace-nowrap",
-                      isActive 
-                        ? "bg-[var(--accent-start)] text-white shadow-xl scale-105" 
+                      isActive
+                        ? "bg-[var(--accent-start)] text-white shadow-xl scale-105"
                         : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
                     )}
                   >

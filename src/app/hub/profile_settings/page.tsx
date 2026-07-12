@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import { UserCog, ArrowLeft, Briefcase, Database } from "lucide-react";
-import Link from "next/link";
+import { UserCog, Briefcase, Database } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { FunctionalPageHeader } from "@/components/layout/FunctionalPageHeader";
 
 import { ProfileIdentityTab } from "@/components/hub/ProfileIdentityTab";
 import { ProfileProfessionalTab } from "@/components/hub/ProfileProfessionalTab";
@@ -25,31 +25,15 @@ export default function ProfileSettingsPage() {
   return (
     <div className="p-6 md:p-10 space-y-10 animate-fade-in max-w-7xl mx-auto">
       
-      {/* Header da Página */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div className="space-y-4">
-          <Link 
-            href="/hub/membro"
-            className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[var(--accent-start)] hover:opacity-70 transition-all"
-          >
-            <ArrowLeft size={14} />
-            Voltar
-          </Link>
-          <div className="flex items-center gap-4">
-            <div className="p-4 bg-[var(--accent-soft)] rounded-3xl text-[var(--accent-start)]">
-              <UserCog size={32} />
-            </div>
-            <div className="space-y-1">
-              <h1 className="text-3xl font-black tracking-tighter text-[var(--text-primary)]">
-                Perfil & Configurações
-              </h1>
-              <p className="text-[12px] font-medium text-[var(--text-muted)] opacity-70 uppercase tracking-[0.1em]">
-                Gerencie sua identidade e visibilidade no ecossistema BPlen
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Header — padrão canônico Gestão Funcional (F2-05) */}
+      <FunctionalPageHeader
+        eyebrow="Sua identidade e visibilidade no ecossistema BPlen"
+        title="Perfil &"
+        titleAccent="Configurações"
+        backHref="/hub/membro"
+        backLabel="Voltar"
+        icon={<UserCog size={24} />}
+      />
 
       {/* 🧭 Navegação por Abas Horizontal */}
       <div className="flex items-center gap-1 p-1 bg-[var(--input-bg)]/20 border border-[var(--border-primary)]/50 rounded-2xl w-fit overflow-x-auto no-scrollbar">
