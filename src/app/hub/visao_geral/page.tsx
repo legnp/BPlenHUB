@@ -437,7 +437,7 @@ export default function VisaoGeralPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-10 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="max-w-[1440px] mx-auto pt-[10px] px-6 md:px-12 pb-16 space-y-10 w-full animate-in fade-in slide-in-from-bottom-4 duration-700">
       
       {/* Header — padrão canônico Gestão Funcional (F2-05) */}
       <FunctionalPageHeader

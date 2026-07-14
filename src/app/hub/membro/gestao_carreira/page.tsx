@@ -431,7 +431,7 @@ export default function GestaoCarreiraPage() {
 
   return (
     <div className="flex flex-col min-h-screen text-left">
-      <div className="max-w-[1440px] mx-auto pt-[10px] px-6 pb-12 md:px-12 space-y-10 w-full animate-fade-in">
+      <div className="max-w-[1440px] mx-auto pt-[10px] px-6 md:px-12 pb-16 space-y-10 w-full animate-fade-in">
         
         {/* HEADER & NAVIGATION — padrão canônico Gestão Funcional (F2-05) */}
         <FunctionalPageHeader
