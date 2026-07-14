@@ -38,6 +38,7 @@ export function FunctionalPageHeader({
   backHref,
   backLabel = "Voltar",
   statusTag,
+  action,
   icon,
 }: {
   eyebrow?: string;
@@ -48,6 +49,11 @@ export function FunctionalPageHeader({
   backHref?: string;
   backLabel?: string;
   statusTag?: { label: string; tone?: StatusTone; icon?: React.ReactNode };
+  /**
+   * Slot de ação à direita da linha do título (mesma posição do statusTag) —
+   * ex.: botão "Agendar 1 to 1" na Gestão de Agenda. Coexiste com o statusTag.
+   */
+  action?: React.ReactNode;
   icon?: React.ReactNode;
 }) {
   return (
@@ -78,14 +84,19 @@ export function FunctionalPageHeader({
         </div>
       </div>
 
-      {statusTag ? (
-        <div
-          className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border text-[9px] font-black uppercase tracking-widest ${
-            TONE_CLASSES[statusTag.tone ?? "accent"]
-          }`}
-        >
-          {statusTag.icon}
-          {statusTag.label}
+      {statusTag || action ? (
+        <div className="flex items-center gap-3 shrink-0">
+          {statusTag ? (
+            <div
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border text-[9px] font-black uppercase tracking-widest ${
+                TONE_CLASSES[statusTag.tone ?? "accent"]
+              }`}
+            >
+              {statusTag.icon}
+              {statusTag.label}
+            </div>
+          ) : null}
+          {action}
         </div>
       ) : null}
     </header>
