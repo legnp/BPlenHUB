@@ -3183,6 +3183,31 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   Validado: eslint 0 problemas, type-check, build exit 0. Próximos redesigns: Agenda → Networking
   → Gestão de Carreira (cada um com proposta p/ aprovação; item 8.2 + 9 vão no de Carreira).
 
+## [2026-07-12] HANDOFF — continuação em outro chat (contexto quase cheio)
+
+- Estado: `main` == `origin/main` no commit `79722e1`. Lote de feedback F1-04/F1-05 da Gestora
+  em execução por PACOTES. **Concluídos:** Pacote 1 (segurança+bugs, PR #80 — BUG-066 e-mail Master
+  confidencial + BUG-067/068/069 networking), Pacote 2 (regras globais, PR #81 — infra invisível +
+  identidade confidencial + loading padronizado, CLAUDE.md regras 6/7/8), Pacote 3 (refino cards de
+  Contratos, PR #82).
+- **PRÓXIMO (JÁ APROVADO pela Gestora, pode implementar): Pacote 4 — redesign da Gestão de Agenda.**
+  Arquivos: `AgendaManagementView.tsx` (compartilhado com admin — não quebrar), `FunctionalPageHeader.tsx`,
+  `gestao_agenda/page.tsx`. Fazer: (1) remover header interno duplicado; (2) mover botão "Agendar 1 to 1"
+  para a direita do título da página (adicionar slot `action?: ReactNode` ao FunctionalPageHeader, como o
+  statusTag); (3) achatar o box-in-box da lista; (4) modo `embedded` no AgendaManagementView p/ o admin
+  seguir idêntico (modal 1-to-1 controlado pelo pai quando embedded).
+- **Depois:** Pacote 6 (Networking: abas ao lado da busca; aviso de rodapé discreto; copy 6.1-6.4) e
+  Pacote 5 (Gestão de Carreira — o maior: seções discretas, cards compactos, checkpoints recolhíveis,
+  histórico de 1-to-1, 3 containers de histórico lado a lado, larguras iguais backlog/metas, copy 5.1-5.8
+  incl. "Plataforma de Desenvolvimento"→"Gestão de Jornada"; **item 8.2** aprovado = feedback exibe o
+  Orientador do evento, não o alias — setar author = orientador/mentor na geração do feedback em
+  `career-module.ts`; **item 9** aprovado = capturar `completedAt` de OBJETIVOS quando status vira
+  "Alcançado"). Copy específica por página vai junto com o redesign de cada uma.
+- Diretriz de design: convergência global, elegância, minimalismo, denso mas não esmagado, menos scroll;
+  tom aspiracional-pragmático (sem "soberano/soberania"). Cada redesign: proposta → aprovação da Gestora →
+  implementa+mergeia → ela valida em produção (BUG-030). Regras operacionais da máquina inalteradas
+  (branch+PR via API REST, gh ausente, squash, `--no-verify` caso a caso p/ lint legado pré-existente).
+
 ## [2026-07-11] Double-check de alinhamento (Gestora)
 
 - **Double-check de alinhamento (Gestora) — PR #79 mergeado (`1e0260c`):** a Gestora notou que o
