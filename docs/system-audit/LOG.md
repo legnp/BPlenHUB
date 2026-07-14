@@ -3143,3 +3143,11 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   **F1-05 fica com o código completo** — pendente só a validação visual da Gestora em produção
   (checkout + `CouponTermsModal`, networking, perfil, entrega). F2-05 avança: 8 páginas de Gestão
   Funcional já no header canônico.
+- **Double-check de alinhamento (Gestora) — PR #79 mergeado (`1e0260c`):** a Gestora notou que o
+  título/botão voltar apareciam em posições diferentes entre as páginas Gestão Funcional. Verificado:
+  o `FunctionalPageHeader` é único; a divergência estava nos **wrappers de página** (max-width 1440
+  vs 1400 vs 1280/7xl; topo `pt-[10px]` vs `py-10` vs `p-6/p-10`; lateral `px-6 md:px-12` vs `px-4`).
+  Todas normalizadas para o container de referência `max-w-[1440px] mx-auto pt-[10px] px-6 md:px-12
+  pb-16 space-y-10 w-full` (visao_geral, profile_settings, networking, gestao_agenda, gestao_carreira);
+  container canônico documentado no `FunctionalPageHeader` p/ evitar drift. Validado: eslint 0 erros,
+  type-check, build exit 0.
