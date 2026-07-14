@@ -3143,6 +3143,31 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   **F1-05 fica com o código completo** — pendente só a validação visual da Gestora em produção
   (checkout + `CouponTermsModal`, networking, perfil, entrega). F2-05 avança: 8 páginas de Gestão
   Funcional já no header canônico.
+## [2026-07-12] Chat de execução — Feedback F1-04/F1-05: Pacote 1 (segurança + bugs, PR #80)
+
+- A Gestora enviou um lote grande de ajustes para F1-04/F1-05 (majoritariamente design + alguns
+  funcionais + regras globais). Combinado: executar em **pacotes**, bugs+segurança primeiro,
+  depois regras globais/copy, depois redesign página a página (cada um com proposta p/ aprovação).
+- **Pacote 1 — PR #80 mergeado (`8873157`, squash):**
+  - **BUG-066 (Alto, PII):** e-mail Master `legnp@bplen.com` vazava em "Feedback Recebido".
+    Fonte corrigida (`addCareerFeedbackAction` não usa mais `session.email`) + defesa de exibição
+    para dados legados (`lib/identity-mask.maskInternalContact` → alias público, aplicada no
+    feedback da Gestão de Carreira e da Visão Geral) + **fonte única** `config/identity.ts`
+    (e-mails Master + alias; `auth-permissions.ts` importa de lá).
+  - **BUG-067:** contatos do networking não apareciam (perfil salva `isPublic`, networking lia
+    `visible`) — corrigido + telefone no card.
+  - **BUG-068:** crash `.slice` ao trocar de aba (parceiro renderizado como membro no debounce) —
+    limpa `data` na troca + guard no card.
+  - **BUG-069:** ícone morto removido do card.
+  - Validado: eslint 0 erros, test 52/52, type-check, build exit 0.
+- **Regra global a formalizar (Pacote 2):** nunca expor infra ao cliente ("Drive"/"Google Drive"/
+  "Firebase"/"Firestore"/"Vercel") — tudo é "no BPlen HUB"; + telas de carregamento padronizadas
+  ("Carregando {página}"). Triagem por severidade permanece **vazia** (BUG-066 nasceu e fechou no
+  mesmo PR).
+- Itens atualizados: `BUGS.md` (+BUG-066..069), este LOG.
+
+## [2026-07-11] Double-check de alinhamento (Gestora)
+
 - **Double-check de alinhamento (Gestora) — PR #79 mergeado (`1e0260c`):** a Gestora notou que o
   título/botão voltar apareciam em posições diferentes entre as páginas Gestão Funcional. Verificado:
   o `FunctionalPageHeader` é único; a divergência estava nos **wrappers de página** (max-width 1440
