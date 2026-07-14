@@ -3218,3 +3218,32 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   pb-16 space-y-10 w-full` (visao_geral, profile_settings, networking, gestao_agenda, gestao_carreira);
   container canônico documentado no `FunctionalPageHeader` p/ evitar drift. Validado: eslint 0 erros,
   type-check, build exit 0.
+
+## [2026-07-14] Chat de execução — Pacote 4: redesign da Gestão de Agenda (PR #83)
+
+- Chat/sessão: chat de execução (Opus 4.8). Retomada do lote de feedback F1-04/F1-05 (por
+  PACOTES). Pacote 4 (redesign da `/hub/membro/gestao_agenda`) **já vinha aprovado** pela
+  Gestora no handoff — implementado direto.
+- **PR #83 mergeado (`8708e2e`, squash):** 3 arquivos (`FunctionalPageHeader.tsx`,
+  `AgendaManagementView.tsx` — compartilhado com o admin —, `gestao_agenda/page.tsx`).
+  1. **Header interno duplicado removido:** o bloco "Meus Agendamentos" repetia o título da
+     página; no modo embutido esse cabeçalho some.
+  2. **Botão "Agendar 1 to 1" no header da página:** movido para a direita da linha do título
+     via **novo slot reutilizável `action?: React.ReactNode`** no `FunctionalPageHeader`
+     canônico (mesma posição do `statusTag`; os dois coexistem num flex à direita).
+  3. **Box-in-box achatado:** no modo embutido, o wrapper da lista perde borda/bg/rounded/p-8.
+  4. **Novo modo `embedded` no `AgendaManagementView`:** quando embutido (só a `gestao_agenda`
+     passa), omite header/botão internos, achata o wrapper e o estado de abertura do modal
+     1-to-1 passa a ser **controlado pelo pai** (`isOneToOneModalOpen`/`onOneToOneModalOpenChange`).
+     **O admin (`/admin/gestao-agenda`) NÃO passa a prop — permanece idêntico** (calendário +
+     header interno + botão interno intactos, estado do modal interno).
+  - Limpeza de passagem: 3 imports mortos removidos do `AgendaManagementView`
+    (`getProgramacaoSummaryAction`, `getEventNpsDetailsAction`, `EventLifecycleStatus`).
+- Validado: eslint dos arquivos tocados 0 erros, test 52/52, type-check limpo, build exit 0
+  (pre-commit do husky passou sem `--no-verify`). Telas logadas não autenticam no preview
+  (BUG-030) → validação visual em produção pela Gestora.
+- **Próximos pacotes** (cada um com proposta → aprovação → implementação): Pacote 6 (Networking)
+  e Pacote 5 (Gestão de Carreira, o maior — inclui item 8.2 orientador no feedback + item 9
+  `completedAt` de objetivos). Copy específica por página vai junto com o redesign de cada uma.
+- Itens atualizados: `00-PLAN.md` (F1-04 — nota do Pacote 4), `DASHBOARD.md` (entrada nova),
+  este LOG. Sem novos bugs (pacote de design).

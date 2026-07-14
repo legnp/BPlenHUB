@@ -547,6 +547,13 @@ sem copy hardcoded fora do que o guia permitir).
   BUG-064 (Corrigido, PR #74 — modal)
 - Log: [2026-07-11] revisão das 4 páginas + PR1 copy (PR #73) + PR2 design (PR #74) — código
   completo, aguarda validação em produção — ver `LOG.md`
+  [2026-07-12/14] **Lote de feedback da Gestora por PACOTES** (design + funcionais + regras
+  globais): Pacote 1 (segurança+bugs, PR #80 — BUG-066..069), Pacote 2 (regras globais
+  CLAUDE.md 6/7/8, PR #81), Pacote 3 (refino cards de Contratos, PR #82), **Pacote 4 —
+  redesign da Gestão de Agenda (PR #83)**: header sem título duplicado, botão "Agendar 1 to 1"
+  no header da página via novo slot `action` do `FunctionalPageHeader`, box-in-box achatado, e
+  modo `embedded` no `AgendaManagementView` que mantém o admin idêntico. Próximos: Pacote 6
+  (Networking), Pacote 5 (Gestão de Carreira, com item 8.2 + item 9). Ver `LOG.md`.
 
 ### [F1-05] Hub — checkout de membro, networking, perfil, entrega de serviço
 - Categoria(s) de qualidade: Adequação funcional / Segurança
