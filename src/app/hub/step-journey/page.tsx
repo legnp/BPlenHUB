@@ -29,7 +29,7 @@ export default function StepJourneyPage() {
   const currentStep = stages.find(s => s.id === currentStepId) || stages[0];
   
   if (loading || !currentStep) {
-    return <AtmosphericLoading />;
+    return <AtmosphericLoading label="Carregando Jornada..." />;
   }
 
   // Renderização segura do ícone
@@ -103,7 +103,7 @@ export default function StepJourneyPage() {
 
             <div className="space-y-6">
               <div className="p-6 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-primary)]/50 border-l-4 border-l-[var(--accent-primary)]">
-                <p className="text-sm font-bold text-[var(--text-primary)] mb-2 italic">"{currentStep.title}"</p>
+                <p className="text-sm font-bold text-[var(--text-primary)] mb-2 italic">&ldquo;{currentStep.title}&rdquo;</p>
                 <p className="text-[var(--text-secondary)] text-sm leading-relaxed">
                   {currentStep.description}
                 </p>
@@ -148,7 +148,7 @@ export default function StepJourneyPage() {
                   Performance
                 </h3>
                 <p className="text-[10px] text-[var(--text-secondary)] leading-relaxed opacity-80">
-                  Progresso monitorado via Firestore. Complete as atividades para avançar na jornada oficial.
+                  Progresso monitorado no BPlen HUB. Complete as atividades para avançar na jornada oficial.
                 </p>
              </div>
           </div>

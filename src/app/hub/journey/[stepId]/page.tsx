@@ -83,7 +83,7 @@ export default function StepJourneyPage() {
   }, []);
 
   if (loading || (!stepConfig && stages.length === 0)) {
-    return <AtmosphericLoading />;
+    return <AtmosphericLoading label="Carregando Jornada..." />;
   }
 
   if (!stepConfig && stages.length > 0) {
@@ -134,7 +134,7 @@ export default function StepJourneyPage() {
     );
   }
 
-  if (!currentSubStep) return <AtmosphericLoading />;
+  if (!currentSubStep) return <AtmosphericLoading label="Carregando Jornada..." />;
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-7xl mx-auto pt-5 pb-8 px-4">

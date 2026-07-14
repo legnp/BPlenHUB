@@ -125,7 +125,7 @@ export default function NetworkingPage() {
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-32 space-y-4 animate-pulse">
              <Loader2 size={40} className="text-[var(--accent-start)] animate-spin" />
-             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)]">Mapeando conexões estratégicas...</p>
+             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)]">Carregando Networking...</p>
           </div>
         ) : data.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">

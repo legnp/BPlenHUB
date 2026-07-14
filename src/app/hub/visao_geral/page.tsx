@@ -434,7 +434,7 @@ export default function VisaoGeralPage() {
   );
 
   if (journeyLoading || loadingCareer) {
-    return <AtmosphericLoading />;
+    return <AtmosphericLoading label="Carregando Visão Geral..." />;
   }
 
   return (

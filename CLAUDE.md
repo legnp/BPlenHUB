@@ -18,6 +18,18 @@ Mercado Pago + Google Workspace (Drive/Sheets) + Resend + Zustand + Tailwind v4.
    de service account — ver `.gitignore`.
 5. **Build limpo obrigatório antes de considerar algo pronto**: `npm run check`
    (lint + test + type-check + build) precisa passar.
+6. **Infra invisível ao cliente**: nunca expor nomes de infraestrutura na interface
+   voltada ao cliente ("Drive", "Google Drive", "Firebase", "Firestore", "Vercel",
+   etc.). Para o usuário, tudo vive "no BPlen HUB" — vale para textos, botões e
+   mensagens. Item de checagem de homologação: procurar por essas palavras nas telas
+   do hub antes de fechar uma fase. Páginas de admin/interno são exceção.
+7. **Identidade interna confidencial**: e-mails do Master/equipe interna (ver
+   `src/config/identity.ts`) nunca podem aparecer na UI — usar o alias público. A
+   máscara de exibição (`src/lib/identity-mask.ts`) é a última linha de defesa para
+   dados legados; a fonte não deve gravar esses e-mails em campos exibíveis.
+8. **Telas de carregamento padronizadas**: usar o componente único
+   `AtmosphericLoading` com o texto "Carregando {nome da página}" — sem variações
+   ("Sincronizando...", "Mapeando...").
 
 ## Estrutura de pastas
 - `src/components/ui/` — componentes atômicos puros
