@@ -45,6 +45,7 @@ import { CareerTask, CareerTaskStatus, CareerObjective, CareerGoal } from "@/typ
 import { getErrorMessage } from "@/lib/utils/errors";
 import { FunctionalPageHeader } from "@/components/layout/FunctionalPageHeader";
 import { maskInternalContact } from "@/lib/identity-mask";
+import AtmosphericLoading from "@/components/shared/AtmosphericLoading";
 
 function extractGoogleDriveFileId(url: string): string | null {
   if (!url) return null;
@@ -393,11 +394,8 @@ export default function GestaoCarreiraPage() {
   // Render Gate / Loading States
   if (loadingCareer || journeyLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen text-center space-y-4">
-        <Loader2 size={36} className="animate-spin text-[var(--accent-start)]" />
-        <p className="text-[10px] font-black uppercase tracking-[0.25em] text-[var(--text-muted)]">
-          Carregando Hub de Carreira...
-        </p>
+      <div className="flex flex-col min-h-screen">
+        <AtmosphericLoading label="Carregando Gestão de Carreira..." />
       </div>
     );
   }
@@ -742,7 +740,7 @@ export default function GestaoCarreiraPage() {
                               onClick={(e) => handleDownloadFile(e, ata.fileUrl)}
                               className="p-3 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-xl text-[9px] font-bold uppercase tracking-wider hover:bg-[var(--accent-start)] hover:text-white hover:border-transparent transition-all flex items-center gap-2 cursor-pointer"
                             >
-                              <ExternalLink size={12} /> Ver Ata no Drive
+                              <ExternalLink size={12} /> Ver Ata
                             </button>
                           </div>
                         ))}
@@ -770,7 +768,7 @@ export default function GestaoCarreiraPage() {
                 </div>
                 <div>
                   <h4 className="text-xs font-black text-[var(--text-primary)]">Histórico de Documentos da Jornada</h4>
-                  <p className="text-[8px] font-bold text-[var(--text-muted)] uppercase tracking-wider mt-0.5">Acesso rápido aos PDFs, relatórios e materiais compartilhados via Google Drive</p>
+                  <p className="text-[8px] font-bold text-[var(--text-muted)] uppercase tracking-wider mt-0.5">Histórico dos materiais, relatórios e documentos recebidos durante a sua jornada</p>
                 </div>
               </div>
               <ChevronDown size={18} className={`text-[var(--text-muted)] transition-transform duration-300 ${activeAccordion === "docs" ? "rotate-180" : ""}`} />

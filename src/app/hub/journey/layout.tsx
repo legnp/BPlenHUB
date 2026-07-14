@@ -30,7 +30,7 @@ export default function JourneyLayout({ children }: { children: React.ReactNode 
   }, [currentStageTitle]);
 
   if (authLoading || journeyLoading) {
-    return <AtmosphericLoading />;
+    return <AtmosphericLoading label="Carregando Jornada..." />;
   }
 
   // Pre-calculate status map for Navigator
