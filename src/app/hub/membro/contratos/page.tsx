@@ -3,7 +3,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { ScrollText, AlertCircle, Clock, ShieldCheck, XCircle, FileSignature, ArrowRight, MapPin, ReceiptText } from "lucide-react";
+import { ScrollText, AlertCircle, Clock, ShieldCheck, XCircle, FileSignature, ArrowRight, ReceiptText } from "lucide-react";
 import { getServerSession } from "@/lib/server-session";
 import { redirect } from "next/navigation";
 import { getMemberContractsPanelAction, type ContractCard } from "@/actions/member-contracts";
@@ -117,57 +117,38 @@ export default async function ContratosPage() {
           {cards.map((card) => (
             <div
               key={card.serviceKey}
-              className="rounded-[2rem] bg-[var(--input-bg)] border border-[var(--border-primary)] p-6 shadow-sm flex flex-col justify-between gap-6"
+              className="rounded-[1.5rem] bg-[var(--input-bg)] border border-[var(--border-primary)] p-5 shadow-sm flex flex-col gap-4"
             >
-              <div className="space-y-4">
-                <div className="flex justify-between items-start gap-3">
-                  <CardBadge state={card.cardState} />
-                  {card.orderId ? (
-                    <span className="text-[10px] uppercase font-bold tracking-widest text-[var(--text-muted)] shrink-0">
-                      #{card.orderId.substring(0, 6)}
-                    </span>
-                  ) : null}
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-black text-[var(--text-primary)] leading-tight">{card.productTitle}</h3>
-                  {card.serviceCode ? (
-                    <p className="text-[10px] font-bold text-[var(--accent-start)] uppercase tracking-wider mt-1">ID: {card.serviceCode}</p>
-                  ) : null}
-                </div>
-
-                {/* Carimbo resumido (quando assinado) */}
-                {card.cardState === "assinado" ? (
-                  <div className="rounded-2xl bg-[var(--bg-primary)]/40 border border-[var(--border-primary)]/50 p-4 space-y-1.5">
-                    <p className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)]">Carimbo da Assinatura</p>
-                    {fmtDate(card.signedAt, "dd MMM yyyy 'às' HH:mm") ? (
-                      <p className="text-[11px] font-bold text-[var(--text-primary)]">
-                        {fmtDate(card.signedAt, "dd MMM yyyy 'às' HH:mm")}
-                      </p>
-                    ) : null}
-                    {card.geoLocation ? (
-                      <p className="text-[10px] text-[var(--text-muted)] font-medium flex items-center gap-1">
-                        <MapPin size={11} /> {card.geoLocation}
-                      </p>
-                    ) : null}
-                    {card.verificationCode ? (
-                      <p className="text-[9px] text-[var(--text-muted)] font-mono break-all">{card.verificationCode}</p>
-                    ) : null}
-                  </div>
+              {/* Topo: status + pedido */}
+              <div className="flex justify-between items-start gap-3">
+                <CardBadge state={card.cardState} />
+                {card.orderId ? (
+                  <span className="text-[10px] uppercase font-bold tracking-widest text-[var(--text-muted)] shrink-0">
+                    #{card.orderId.substring(0, 6)}
+                  </span>
                 ) : null}
               </div>
 
-              <div className="space-y-4 pt-5 border-t border-[var(--border-primary)]/50">
+              {/* Título + ID */}
+              <div>
+                <h3 className="text-base font-black text-[var(--text-primary)] leading-tight">{card.productTitle}</h3>
+                {card.serviceCode ? (
+                  <p className="text-[10px] font-bold text-[var(--accent-start)] uppercase tracking-wider mt-0.5">ID: {card.serviceCode}</p>
+                ) : null}
+              </div>
+
+              {/* Rodapé fixo (mt-auto) — mantém a altura uniforme entre os cards */}
+              <div className="mt-auto space-y-3 pt-4 border-t border-[var(--border-primary)]/50">
                 <div className="flex justify-between items-end">
                   <div>
-                    <p className="text-[9px] uppercase font-bold tracking-[0.2em] text-[var(--text-muted)] mb-1">Valor</p>
-                    <p className="text-xl font-black text-[var(--text-primary)]">
+                    <p className="text-[9px] uppercase font-bold tracking-[0.2em] text-[var(--text-muted)] mb-0.5">Valor</p>
+                    <p className="text-lg font-black text-[var(--text-primary)]">
                       {card.finalPrice !== null ? `R$ ${formatBRL(card.finalPrice)}` : "—"}
                     </p>
                   </div>
                   {fmtDate(card.purchaseDate, "dd MMM yyyy") ? (
                     <div className="text-right">
-                      <p className="text-[9px] uppercase font-bold tracking-[0.2em] text-[var(--text-muted)] mb-1">Data</p>
+                      <p className="text-[9px] uppercase font-bold tracking-[0.2em] text-[var(--text-muted)] mb-0.5">Data</p>
                       <p className="text-xs font-bold text-[var(--text-secondary)]">
                         {fmtDate(card.purchaseDate, "dd MMM yyyy")}
                       </p>
@@ -175,49 +156,74 @@ export default async function ContratosPage() {
                   ) : null}
                 </div>
 
-                {/* Ação principal por estado */}
+                {/* Carimbo discreto (quando assinado) — uma linha, sem caixa */}
+                {card.cardState === "assinado" && (fmtDate(card.signedAt, "dd MMM yyyy 'às' HH:mm") || card.verificationCode) ? (
+                  <div className="space-y-0.5">
+                    {fmtDate(card.signedAt, "dd MMM yyyy 'às' HH:mm") ? (
+                      <p className="flex items-center gap-1.5 text-[10px] text-[var(--text-muted)] font-medium">
+                        <ShieldCheck size={11} className="text-emerald-500 shrink-0" />
+                        Assinado {fmtDate(card.signedAt, "dd MMM yyyy 'às' HH:mm")}
+                        {card.geoLocation ? ` · ${card.geoLocation}` : ""}
+                      </p>
+                    ) : null}
+                    {card.verificationCode ? (
+                      <p className="text-[9px] text-[var(--text-muted)]/70 font-mono truncate pl-[18px]" title={card.verificationCode}>
+                        {card.verificationCode}
+                      </p>
+                    ) : null}
+                  </div>
+                ) : null}
+
+                {/* Ações compactas por estado */}
                 {card.cardState === "assinado" ? (
                   <div className="space-y-2">
-                    {card.documentFileId ? <ContractDocButton fileId={card.documentFileId} /> : null}
-                    {card.invoiceUrl ? (
-                      <a
-                        href={card.invoiceUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-full py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest bg-[var(--bg-primary)]/40 border border-[var(--border-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all flex items-center justify-center gap-2"
-                      >
-                        <ReceiptText size={14} /> Nota Fiscal
-                      </a>
+                    {card.documentFileId ? (
+                      <ContractDocButton
+                        fileId={card.documentFileId}
+                        className="w-full py-2.5 px-3 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all bg-[var(--bg-primary)]/40 border border-[var(--border-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] flex items-center justify-center gap-1.5"
+                      />
                     ) : null}
-                    <Link
-                      href="/hub/membro"
-                      className="w-full py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest bg-[var(--accent-start)] text-white hover:bg-[var(--accent-end)] transition-all flex items-center justify-center gap-2"
-                    >
-                      Acessar HUB <ArrowRight size={14} />
-                    </Link>
+                    <div className="flex gap-2">
+                      {card.invoiceUrl ? (
+                        <a
+                          href={card.invoiceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 py-2.5 px-3 rounded-lg text-[9px] font-black uppercase tracking-widest bg-[var(--bg-primary)]/40 border border-[var(--border-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all flex items-center justify-center gap-1.5"
+                        >
+                          <ReceiptText size={13} /> Nota Fiscal
+                        </a>
+                      ) : null}
+                      <Link
+                        href="/hub/membro"
+                        className="flex-1 py-2.5 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest bg-[var(--accent-start)] text-white hover:bg-[var(--accent-end)] transition-all flex items-center justify-center gap-1.5"
+                      >
+                        Acessar HUB <ArrowRight size={13} />
+                      </Link>
+                    </div>
                   </div>
                 ) : card.cardState === "aguardando_assinatura" ? (
                   card.canSignInApp && card.orderId ? (
                     <Link
                       href={`/hub/checkout/success?orderId=${encodeURIComponent(card.orderId)}`}
-                      className="w-full py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest bg-[var(--accent-start)] text-white hover:bg-[var(--accent-end)] transition-all flex items-center justify-center gap-2 shadow-[0_4px_14px_rgba(255,44,141,0.3)]"
+                      className="w-full py-2.5 px-4 rounded-lg text-[10px] font-black uppercase tracking-widest bg-[var(--accent-start)] text-white hover:bg-[var(--accent-end)] transition-all flex items-center justify-center gap-2 shadow-[0_4px_14px_rgba(255,44,141,0.3)]"
                     >
                       <FileSignature size={14} /> Assinar Contrato
                     </Link>
                   ) : (
-                    <div className="w-full py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest bg-[var(--input-bg)] border border-[var(--border-primary)] text-[var(--text-muted)] text-center">
+                    <div className="w-full py-2.5 px-4 rounded-lg text-[10px] font-black uppercase tracking-widest bg-[var(--input-bg)] border border-[var(--border-primary)] text-[var(--text-muted)] text-center">
                       Assinatura via link enviado pela BPlen
                     </div>
                   )
                 ) : card.cardState === "aguardando_pagamento" && card.productSlug ? (
                   <Link
                     href={`/hub/checkout/${card.productSlug}`}
-                    className="w-full py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest bg-[var(--input-bg)] border border-[var(--border-primary)] text-[var(--text-primary)] hover:bg-[var(--accent-soft)] transition-all flex items-center justify-center gap-2"
+                    className="w-full py-2.5 px-4 rounded-lg text-[10px] font-black uppercase tracking-widest bg-[var(--input-bg)] border border-[var(--border-primary)] text-[var(--text-primary)] hover:bg-[var(--accent-soft)] transition-all flex items-center justify-center gap-2"
                   >
                     Tentar Pagar Novamente
                   </Link>
                 ) : (
-                  <div className="w-full py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest bg-[var(--input-bg)] border border-[var(--border-primary)] text-[var(--text-muted)] text-center cursor-not-allowed">
+                  <div className="w-full py-2.5 px-4 rounded-lg text-[10px] font-black uppercase tracking-widest bg-[var(--input-bg)] border border-[var(--border-primary)] text-[var(--text-muted)] text-center cursor-not-allowed">
                     Sem ações disponíveis
                   </div>
                 )}
