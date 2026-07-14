@@ -3176,6 +3176,12 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   vai com o redesign; item 8.2 (orientador no feedback) fica no pacote da Gestão de Carreira.
   Commit com `--no-verify` justificado (3 erros de lint pré-existentes — setState-in-effect em
   linhas não tocadas de step-journey/journey; test 52/52, type-check, build exit 0).
+- **Pacote 3 — refino dos cards de Contratos — PR #82 mergeado (`02cf8f3`, squash):** carimbo
+  deixa de ser card-dentro-do-card e vira linha discreta abaixo do valor (código de verificação
+  truncado com `title` no hover, sem `break-all`); botões compactos ([Nota Fiscal | Acessar HUB]
+  numa linha em vez de 3 empilhados); rodapé fixo (`mt-auto`) → altura uniforme entre cards.
+  Validado: eslint 0 problemas, type-check, build exit 0. Próximos redesigns: Agenda → Networking
+  → Gestão de Carreira (cada um com proposta p/ aprovação; item 8.2 + 9 vão no de Carreira).
 
 ## [2026-07-11] Double-check de alinhamento (Gestora)
 
