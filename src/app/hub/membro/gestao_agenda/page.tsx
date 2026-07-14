@@ -36,7 +36,7 @@ export default function GestaoAgendaPage() {
 
   return (
     <div className="flex flex-col min-h-screen animate-fade-in">
-      <div className="max-w-[1400px] mx-auto pt-[10px] px-6 pb-6 md:pt-[10px] md:px-12 md:pb-12 space-y-12 flex-1 w-full">
+      <div className="max-w-[1440px] mx-auto pt-[10px] px-6 md:px-12 pb-16 space-y-10 flex-1 w-full">
         
         {/* Header de Navegação — padrão canônico Gestão Funcional (F2-05) */}
         <FunctionalPageHeader

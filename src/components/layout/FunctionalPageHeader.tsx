@@ -13,6 +13,11 @@ import { ArrowLeft } from "lucide-react";
  *
  * Uso: contratos (avulso + checkout) e checkout. Reutilizável pelas demais páginas
  * de Gestão Funcional numa passada futura (item global de categorização de páginas).
+ *
+ * CONTAINER CANÔNICO da página Gestão Funcional (para o título/voltar ficarem SEMPRE
+ * na mesma posição vertical e com o mesmo recuo lateral em todas as telas — F2-05):
+ *   <div className="max-w-[1440px] mx-auto pt-[10px] px-6 md:px-12 pb-16 space-y-10 w-full">
+ * Não usar `max-w-7xl`, `py-10` nem `p-6/p-10` no wrapper — divergem do padrão.
  */
 
 export type StatusTone = "accent" | "success" | "warning" | "neutral";

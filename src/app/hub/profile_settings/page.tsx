@@ -23,7 +23,7 @@ export default function ProfileSettingsPage() {
   ];
 
   return (
-    <div className="p-6 md:p-10 space-y-10 animate-fade-in max-w-7xl mx-auto">
+    <div className="max-w-[1440px] mx-auto pt-[10px] px-6 md:px-12 pb-16 space-y-10 w-full animate-fade-in">
       
       {/* Header — padrão canônico Gestão Funcional (F2-05) */}
       <FunctionalPageHeader

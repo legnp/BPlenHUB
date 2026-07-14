@@ -60,10 +60,10 @@ export default function NetworkingPage() {
   }, [data, activeTab]);
 
   return (
-    <div className="max-w-7xl mx-auto space-y-12 pb-24 animate-in fade-in duration-1000">
+    <div className="max-w-[1440px] mx-auto pt-[10px] px-6 md:px-12 pb-16 space-y-10 w-full animate-in fade-in duration-1000">
       
       {/* 🔮 Hero Section & Tabs */}
-      <div className="space-y-10 px-4">
+      <div className="space-y-10">
         {/* Header — padrão canônico Gestão Funcional (F2-05) */}
         <FunctionalPageHeader
           eyebrow="Conexões Soberanas"
@@ -116,7 +116,7 @@ export default function NetworkingPage() {
       </div>
 
       {/* 🚀 Grid de Resultados */}
-      <div className="px-4">
+      <div>
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-32 space-y-4 animate-pulse">
              <Loader2 size={40} className="text-[var(--accent-start)] animate-spin" />
@@ -149,7 +149,7 @@ export default function NetworkingPage() {
       </div>
 
       {/* 💡 Banner Informativo */}
-      <div className="px-4">
+      <div>
          <div className="p-10 bg-gradient-to-br from-[var(--accent-start)]/20 to-transparent border border-[var(--accent-start)]/20 rounded-[4rem] glass flex flex-col md:flex-row items-center gap-10">
             <div className="p-6 bg-[var(--accent-start)] rounded-[2.5rem] text-white shadow-2xl shadow-[var(--accent-start)]/20">
                <Info size={40} />
