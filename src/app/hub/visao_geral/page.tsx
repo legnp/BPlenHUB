@@ -29,6 +29,7 @@ import AtmosphericLoading from "@/components/shared/AtmosphericLoading";
 import { cn } from "@/lib/utils";
 import { FunctionalPageHeader } from "@/components/layout/FunctionalPageHeader";
 import GlassModal from "@/components/ui/GlassModal";
+import { maskInternalContact } from "@/lib/identity-mask";
 
 function extractGoogleDriveFileId(url: string): string | null {
   if (!url) return null;
@@ -613,7 +614,7 @@ export default function VisaoGeralPage() {
                     Feedback / Notas do Consultor
                   </span>
                   <div className="p-4 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-2xl text-xs font-medium leading-relaxed text-[var(--text-secondary)] whitespace-pre-line">
-                    {activeDetailItem.feedbackText}
+                    {maskInternalContact(activeDetailItem.feedbackText)}
                   </div>
                 </div>
               )}

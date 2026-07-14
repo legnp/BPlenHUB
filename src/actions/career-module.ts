@@ -694,7 +694,7 @@ export async function addCareerFeedbackAction(
     const newFeedback: Omit<CareerFeedback, "id"> = {
       title: title.trim(),
       content: content.trim(),
-      author: author || session.email || "Consultor BPlen",
+      author: author || "Consultor BPlen", // nunca session.email (pode ser Master — confidencial, BUG)
       createdAt: now
     };
 

@@ -1,17 +1,16 @@
 "use client";
 
 import React from "react";
-import { 
-  Instagram, 
-  Linkedin, 
-  Globe, 
-  MessageCircle, 
-  FileText, 
+import {
+  Instagram,
+  Linkedin,
+  Globe,
+  MessageCircle,
+  FileText,
   Briefcase,
   Star,
-  ExternalLink
+  Phone
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { NetworkingMember } from "@/actions/networking";
 import { PartnerData } from "@/actions/admin/partners";
 
@@ -32,7 +31,7 @@ export function NetworkingCard({ type, data }: Props) {
   const name = isMember ? member.name : partner.name;
   const photo = isMember ? member.photoUrl : partner.photoUrl;
   const pitch = isMember ? member.pitch : partner.description;
-  const tags = isMember ? member.hashtags : partner.keywords || [];
+  const tags = (isMember ? member.hashtags : partner.keywords) || [];
   const serviceType = isMember ? null : partner.serviceType;
 
   return (
@@ -77,7 +76,7 @@ export function NetworkingCard({ type, data }: Props) {
 
         {/* 💬 Sales Pitch */}
         <p className="text-[11px] text-[var(--text-secondary)] line-clamp-2 italic leading-relaxed h-[36px]">
-          "{pitch || "Transformando potencial em performance no ecossistema BPlen."}"
+          &ldquo;{pitch || "Transformando potencial em performance no ecossistema BPlen."}&rdquo;
         </p>
 
         {/* #️⃣ Hashtags */}
@@ -95,6 +94,13 @@ export function NetworkingCard({ type, data }: Props) {
            {isMember && member.contacts?.whatsapp?.visible && (
              <a href={`https://wa.me/${member.contacts.whatsapp.value}`} target="_blank" className="p-3 bg-emerald-500/10 text-emerald-500 rounded-2xl hover:bg-emerald-500 hover:text-white transition-all">
                 <MessageCircle size={14} />
+             </a>
+           )}
+
+           {/* Telefone */}
+           {isMember && member.contacts?.phone?.visible && (
+             <a href={`tel:${member.contacts.phone.value}`} className="p-3 bg-[var(--social-bg)] text-[var(--text-secondary)] rounded-2xl hover:bg-[var(--accent-soft)] transition-all">
+                <Phone size={14} />
              </a>
            )}
 
@@ -116,10 +122,6 @@ export function NetworkingCard({ type, data }: Props) {
                 <Globe size={14} />
              </a>
            )}
-
-           <button className="p-3 bg-[var(--input-bg)] text-[var(--text-muted)] rounded-2xl hover:bg-[var(--accent-soft)] hover:text-[var(--accent-start)] transition-all ml-auto">
-              <ExternalLink size={12} />
-           </button>
         </div>
 
       </div>

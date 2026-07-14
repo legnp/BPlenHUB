@@ -44,6 +44,7 @@ import { UserBooking } from "@/types/calendar";
 import { CareerTask, CareerTaskStatus, CareerObjective, CareerGoal } from "@/types/career";
 import { getErrorMessage } from "@/lib/utils/errors";
 import { FunctionalPageHeader } from "@/components/layout/FunctionalPageHeader";
+import { maskInternalContact } from "@/lib/identity-mask";
 
 function extractGoogleDriveFileId(url: string): string | null {
   if (!url) return null;
@@ -673,12 +674,12 @@ export default function GestaoCarreiraPage() {
                         {careerData.feedbacks.map((fb) => (
                           <div key={fb.id} className="p-6 bg-[var(--bg-primary)] border border-[var(--border-primary)]/60 rounded-3xl space-y-4 text-left shadow-inner">
                             <div className="flex items-center justify-between">
-                              <span className="text-[9px] font-black uppercase tracking-widest text-[var(--accent-start)]">{fb.author}</span>
+                              <span className="text-[9px] font-black uppercase tracking-widest text-[var(--accent-start)]">{maskInternalContact(fb.author)}</span>
                               <span className="text-[8px] font-bold text-[var(--text-muted)] font-mono">{fb.createdAt ? new Date(fb.createdAt).toLocaleDateString("pt-BR") : "—"}</span>
                             </div>
                             <div className="space-y-1">
                               <h5 className="text-xs font-black text-[var(--text-primary)]">{fb.title}</h5>
-                              <p className="text-xs text-[var(--text-muted)] leading-relaxed whitespace-pre-line font-medium">{fb.content}</p>
+                              <p className="text-xs text-[var(--text-muted)] leading-relaxed whitespace-pre-line font-medium">{maskInternalContact(fb.content)}</p>
                             </div>
                           </div>
                         ))}

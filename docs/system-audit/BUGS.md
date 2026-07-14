@@ -1733,6 +1733,70 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   "para o futuro"); quando priorizado, vira um esforço próprio página-a-página.
 - Commit/PR: —
 
+### BUG-066 E-mail Master (`legnp@bplen.com`) vazando na interface do cliente
+
+- Severidade: **Alto** (confidencialidade / regra crítica do `CLAUDE.md` — o e-mail do Master nunca pode aparecer na UI)
+- Área/fase onde foi achado: F1-04 / Gestão de Carreira (2026-07-12) — reportado pela Gestora
+- Arquivo(s) afetado(s): `src/actions/career-module.ts` (fonte), `src/app/hub/membro/gestao_carreira/page.tsx` + `src/app/hub/visao_geral/page.tsx` (exibição)
+- Cenário de falha: **[CONFIRMADO]** um feedback exibido em "Feedback Recebido" mostrava
+  `legnp@bplen.com`. Fonte: `addCareerFeedbackAction` gravava `author: author || session.email
+  || "Consultor BPlen"` — quando o Master criava o feedback sem `author`, o e-mail confidencial
+  ia para o campo `author`, renderizado no card.
+- Status: **Corrigido** — 2026-07-12 (PR #80). (1) **Fonte:** `addCareerFeedbackAction` nunca
+  usa `session.email` (fallback → "Consultor BPlen"). (2) **Defesa de exibição (dados legados):**
+  novo `src/lib/identity-mask.ts:maskInternalContact()` troca qualquer e-mail Master por um alias
+  público ("Consultoria BPlen"), aplicado no autor/conteúdo do feedback (Gestão de Carreira +
+  Visão Geral). (3) **Fonte única:** `src/config/identity.ts` centraliza os e-mails Master +
+  alias; `auth-permissions.ts` passou a importar de lá (mesma lista para o guard e a máscara,
+  sem divergir). Pendente (dado): ligar o feedback ao "Orientador" do evento exige o vínculo no
+  modelo — por ora o autor mascarado usa o alias.
+- Decisão de execução: plano+aprovação da Gestora (segurança/PII). Validado por eslint 0 erros,
+  test 52/52, type-check, build exit 0.
+- Commit/PR: PR #80
+
+### BUG-067 Networking: contatos marcados como visíveis não aparecem (`isPublic` vs `visible`)
+
+- Severidade: Médio (funcional)
+- Área/fase onde foi achado: F1-05 / networking (2026-07-12) — reportado pela Gestora
+- Arquivo(s) afetado(s): `src/actions/networking.ts`, `src/components/hub/NetworkingCard.tsx`
+- Cenário de falha: **[CONFIRMADO]** o perfil salva cada contato como `{ value, isPublic }`
+  (`profile-professional.ts`), mas o `getNetworkingDataAction` filtrava por `item.visible` (campo
+  inexistente) → nenhum contato aparecia, mesmo marcado como público. Além disso o card só
+  renderizava whatsapp/instagram/linkedin (não "telefone").
+- Status: **Corrigido** — 2026-07-12 (PR #80). A action passa a ler `isPublic` (tolera `visible`
+  legado) e exporta `{value, visible:true}` só dos públicos (preserva a privacidade do BUG-033);
+  o card ganhou renderização de **telefone** (`tel:`). Renderização completa de todos os tipos de
+  contato fica para o redesign do networking (pacote de design).
+- Decisão de execução: bugfix funcional. Validado por eslint + test + type-check + build.
+- Commit/PR: PR #80
+
+### BUG-068 Networking: crash ao trocar de aba (Parceiros → Profissionais/Networking)
+
+- Severidade: Médio (a seção quebra)
+- Área/fase onde foi achado: F1-05 / networking (2026-07-12) — reportado pela Gestora (print DevTools)
+- Arquivo(s) afetado(s): `src/app/hub/networking/page.tsx`, `src/components/hub/NetworkingCard.tsx`
+- Cenário de falha: **[CONFIRMADO]** `TypeError: Cannot read properties of undefined (reading
+  'slice')`. Ao trocar de aba, o `type` do card virava "member" imediatamente, mas o estado `data`
+  ainda tinha objetos de **parceiro** (o load tem debounce de 400ms) → parceiro renderizado como
+  membro → `member.hashtags` undefined → `tags.slice()` quebrava.
+- Status: **Corrigido** — 2026-07-12 (PR #80). Na troca de aba o `data` é limpo (`setData([])` +
+  `setIsLoading(true)`) para não renderizar shape divergente; e o card ganhou guard de precedência
+  (`(isMember ? member.hashtags : partner.keywords) || []`).
+- Decisão de execução: bugfix. Validado por eslint + test + type-check + build.
+- Commit/PR: PR #80
+
+### BUG-069 Networking: ícone de ação morto no card
+
+- Severidade: Baixo (UX)
+- Área/fase onde foi achado: F1-05 / networking (2026-07-12) — reportado pela Gestora
+- Arquivo(s) afetado(s): `src/components/hub/NetworkingCard.tsx`
+- Cenário de falha: um botão (ícone `ExternalLink`, quadradinho com seta) no rodapé do card não
+  tinha `onClick` — clicar não fazia nada.
+- Status: **Corrigido** — 2026-07-12 (PR #80). Botão removido (mantém o card limpo, decisão da
+  Gestora "remover"). Import `ExternalLink` removido.
+- Decisão de execução: bugfix/UX. Validado por eslint + test + type-check + build.
+- Commit/PR: PR #80
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em

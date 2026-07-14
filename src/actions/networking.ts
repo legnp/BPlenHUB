@@ -97,10 +97,14 @@ export async function getNetworkingDataAction(
         // e o filtro era só no client (vazamento). As flags seguem para a UI.
         const cvVisible = netProfile.cv_networking_visibility || false;
         const portfolioVisible = netProfile.portfolio_networking_visibility || false;
-        const rawContacts = (netProfile.contacts || {}) as Record<string, NetworkingContactItem | undefined>;
+        // O perfil salva cada contato como { value, isPublic }; o networking expõe
+        // { value, visible }. Antes o filtro lia `visible` (campo inexistente) e os
+        // contatos nunca apareciam (BUG-033/7.1). Lê `isPublic` (tolera `visible` legado).
+        const rawContacts = (netProfile.contacts || {}) as Record<string, { value?: string; isPublic?: boolean; visible?: boolean } | undefined>;
         const safeContacts: Record<string, NetworkingContactItem> = {};
         for (const [key, item] of Object.entries(rawContacts)) {
-          if (item?.visible && item.value) {
+          const isPublic = item?.isPublic ?? item?.visible ?? false;
+          if (isPublic && item?.value) {
             safeContacts[key] = { value: item.value, visible: true };
           }
         }
