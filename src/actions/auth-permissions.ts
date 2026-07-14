@@ -5,22 +5,16 @@ import * as admin from "firebase-admin";
 import { UserRole, UserServices } from "@/types/users";
 import { verifySignedSession } from "@/actions/auth-session";
 import { resolveUserPermissions } from "@/lib/user-permissions";
+import { MASTER_EMAILS } from "@/config/identity";
 
 /**
  * BPlen HUB — Auth Permissions Action (Segurança 🛡️)
  * Verifica permissões e garante automação de "Admin" para conta Master.
  * Transição para Firebase Admin SDK (Node.js) para governança soberana.
+ *
+ * Allowlist de e-mails Master (auto-grant) vem da fonte única `@/config/identity`
+ * (mesma lista usada pela máscara de exibição, para não divergir).
  */
-
-// ──────────────────────────────
-// Governança: Allowlist de Administradores Master (Soberania 🛡️)
-// Apenas estes e-mails recebem auto-grant se o banco estiver vazio ou para recuperação.
-// ──────────────────────────────
-const MASTER_EMAILS = [
-  "lisandra.lencina@bplen.com", 
-  "it@bplen.com", 
-  "legnp@bplen.com"
-];
 
 export async function syncUserPermissionsOnLogin(uid: string, email: string | null) {
   try {

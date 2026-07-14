@@ -84,6 +84,11 @@ export default function NetworkingPage() {
                   <button
                     key={tab.id}
                     onClick={() => {
+                        if (tab.id === activeTab) return;
+                        // Limpa os dados da aba anterior para não renderizar um shape
+                        // diferente (parceiro x membro) enquanto o novo load ocorre (fix crash 7.2).
+                        setData([]);
+                        setIsLoading(true);
                         setActiveTab(tab.id as NetworkingTab);
                         setSearch("");
                     }}
