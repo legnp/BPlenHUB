@@ -110,10 +110,10 @@ function serializeData<T>(data: T): T {
 
 /**
  * Prefill bidirecional da survey de check-in (item 2.6).
- * Lê os campos do `results/check_in` que se sobrepõem ao Perfil Profissional
- * (`profile_settings`) para pré-preencher a survey quando o usuário editou esses
- * dados primeiro no perfil. Guardado por sessão (dono) e com whitelist de campos
- * — não trafega Timestamps nem outras respostas do check-in ao client.
+ * Lê os campos da survey de check-in (`Surveys/check_in`, campo `data`) que se
+ * sobrepõem ao Perfil Profissional para pré-preencher a survey quando o usuário
+ * editou esses dados primeiro no perfil. Guardado por sessão (dono) e com
+ * whitelist de campos — não trafega Timestamps nem outras respostas ao client.
  */
 export async function getOwnCheckinPrefillAction(
   idToken?: string
@@ -124,10 +124,10 @@ export async function getOwnCheckinPrefillAction(
     if (!matricula) return { success: false, data: null };
 
     const db = getAdminDb();
-    const snap = await db.doc(`User/${matricula}/results/check_in`).get();
+    const snap = await db.doc(`User/${matricula}/Surveys/check_in`).get();
     if (!snap.exists) return { success: true, data: null };
 
-    const d = snap.data() || {};
+    const d = (snap.data()?.data || {}) as Record<string, unknown>;
     const KEYS = [
       "regime_choice", "beneficios_pacote", "cv_upload", "portfolio_upload",
       "linkedin_url", "instagram_url", "web_url", "portfolio_url",
