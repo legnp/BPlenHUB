@@ -44,6 +44,7 @@ import { CvLisContactButton } from "./SurveyFields/CvLisContactButton";
 import { CvBusinessCardGenerator, BusinessCardData } from "./SurveyFields/CvBusinessCardGenerator";
 import { resolveUserIdentity, getUserMetadata } from "@/actions/survey-effects";
 import { getPreviousSurveysDataAction } from "@/actions/submit-survey";
+import { getOwnCheckinPrefillAction } from "@/actions/get-user-results";
 import Calendar, { CalendarEvent } from "@/components/ui/Calendar";
 import { getProgramacaoForMemberAction } from "@/actions/calendar";
 
@@ -149,6 +150,12 @@ interface SurveyEngineProps {
   returnToCheckoutSlug?: string;
   userNickname?: string | null;
   initialUserMetadata?: Record<string, unknown>;
+  /**
+   * Respostas para pré-preencher campos cujo id casa (item 2.6 — prefill
+   * bidirecional com o Perfil Profissional). Só semeia chaves ainda vazias:
+   * respostas em andamento / rascunho do usuário sempre têm prioridade.
+   */
+  initialAnswers?: Record<string, SurveyValue>;
 }
 
 /**
@@ -232,7 +239,7 @@ function shuffleOptions(options: string[] | { label: string; value: string; subO
  * Focado em UX narrativa, progressão guiada e algoritmos de decisão.
  * Agora suporta NAVEGAÇÃO CONDICIONAL (Grafos).
  */
-export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onStepChange, returnToCheckoutSlug, userNickname, initialUserMetadata }: SurveyEngineProps) {
+export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onStepChange, returnToCheckoutSlug, userNickname, initialUserMetadata, initialAnswers }: SurveyEngineProps) {
   const [currentStepIndex, setCurrentStepIndex] = useState<number>(() => {
     if (typeof window !== "undefined" && (config.saveProgressively || config.id === "survey_plano_fase4") && userUid) {
       const saved = localStorage.getItem(`survey_draft_${config.id}_${userUid}`);
@@ -258,6 +265,34 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
 
   const [emailErrors, setEmailErrors] = useState<Record<string, string | null>>({});
   const [showPhoneWarning, setShowPhoneWarning] = useState(false);
+  // Prefill vindo do banco (self-fetch para a survey de check-in — item 2.6).
+  const [dbPrefill, setDbPrefill] = useState<Record<string, SurveyValue> | null>(null);
+
+  // Busca os campos já preenchidos no Perfil Profissional para pré-preencher a
+  // survey de check-in (bidirecional). Só para o check-in; demais surveys ficam
+  // inalteradas.
+  useEffect(() => {
+    if (config.id !== "check_in") return;
+    let active = true;
+    getOwnCheckinPrefillAction()
+      .then((res) => {
+        if (active && res.success && res.data) {
+          setDbPrefill(res.data as Record<string, SurveyValue>);
+        }
+      })
+      .catch(() => {});
+    return () => { active = false; };
+  }, [config.id]);
+
+  // Prefill (item 2.6): semeia respostas vindas do prop externo ou do self-fetch.
+  // O spread garante que qualquer resposta já existente (rascunho/edição do
+  // usuário) prevaleça sobre o prefill.
+  useEffect(() => {
+    const seed = initialAnswers || dbPrefill;
+    if (seed && Object.keys(seed).length > 0) {
+      setResponses(prev => ({ ...seed, ...prev }));
+    }
+  }, [initialAnswers, dbPrefill]);
 
   const updatePhone = (fieldId: string, part: "ddi" | "ddd" | "number", value: string) => {
     setResponses(prev => {
