@@ -1,12 +1,23 @@
 "use client";
 
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Upload, FileText, Check, AlertCircle, Loader2 } from "lucide-react";
+import { motion } from "framer-motion";
+import { Upload, Check, AlertCircle, Loader2, Eye } from "lucide-react";
 
 import { uploadToUserDrive } from "@/actions/upload-to-drive";
 import { getAuth } from "firebase/auth";
 import { getErrorMessage } from "@/lib/utils/errors";
+
+/** Extrai o fileId de uma URL do Google Drive (para o proxy /api/docs). */
+function extractDriveFileId(url: string): string | null {
+  if (!url) return null;
+  return (
+    url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/)?.[1] ||
+    url.match(/[?&]id=([a-zA-Z0-9_-]+)/)?.[1] ||
+    url.match(/\/d\/([a-zA-Z0-9_-]+)/)?.[1] ||
+    null
+  );
+}
 
 interface FileFieldProps {
   id: string;
@@ -71,6 +82,24 @@ export function FileField({ id, label, type = "CV", matricula, value, onChange, 
     }
   };
 
+  // Abre o documento já enviado no navegador (via proxy autenticado), para o
+  // usuário conferir qual arquivo está anexado — antes só havia a confirmação.
+  const handleView = async () => {
+    if (!value?.url) return;
+    const fileId = extractDriveFileId(value.url);
+    const currentUser = getAuth().currentUser;
+    if (fileId && currentUser) {
+      try {
+        const token = await currentUser.getIdToken();
+        window.open(`/api/docs/${fileId}?token=${token}`, "_blank");
+        return;
+      } catch {
+        // cai no fallback abaixo
+      }
+    }
+    window.open(value.url, "_blank");
+  };
+
   return (
     <div className="space-y-3">
       <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-50 px-1">
@@ -124,6 +153,16 @@ export function FileField({ id, label, type = "CV", matricula, value, onChange, 
           </div>
         </div>
       </div>
+
+      {value?.url && (
+        <button
+          type="button"
+          onClick={handleView}
+          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-xl text-[9px] font-black uppercase tracking-widest text-[var(--text-secondary)] hover:text-[var(--accent-start)] hover:border-[var(--accent-start)]/30 transition-all"
+        >
+          <Eye size={12} /> Ver documento anexado
+        </button>
+      )}
 
       {error && (
         <motion.p 
