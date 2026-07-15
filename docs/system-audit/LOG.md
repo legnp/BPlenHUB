@@ -3280,3 +3280,42 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   não o alias — `career-module.ts`) e **item 9** (`completedAt` de objetivos ao virar "Alcançado").
 - Itens atualizados: `00-PLAN.md` (F1-05 — nota do Pacote 6), `DASHBOARD.md` (entrada nova),
   este LOG. Sem novos bugs (pacote de design).
+
+## [2026-07-14] Chat de execução — Pacote 5: redesign da Gestão de Carreira (PRs #85/#86)
+
+- Plano do Pacote 5 (o maior) apresentado e aprovado pela Gestora (inventário de copy 5.1–5.8
+  aprovado; migração/re-sync dos feedbacks aprovada; split em 2 PRs aprovado; ajuste: histórico
+  de sessões 1-to-1 à DIREITA do indicador, com a Jornada mais estreita e o 1-to-1 mais largo).
+  Entregue em 2 PRs.
+- **PR #85 — Pacote 5A (design + copy), `4a25f26`:** `gestao_carreira/page.tsx` reestruturada em
+  **4 seções discretas** (rótulo + linha, via novo helper `SectionLabel`):
+  - **Resultados:** 4 cards de métrica compactos.
+  - **Progressão Geral:** container da Jornada mais **estreito** (col-6→5) com **checkpoints
+    recolhíveis** linha-a-linha (botão expandir por fase); container de **1 to 1** mais **largo**
+    (col-6→7) com o indicador à esquerda e a nova lista **"Histórico de sessões" à direita**
+    (data · hora · prévia do motivo + menu que abre motivo completo / ata / tarefa / feedback —
+    usa `mentoringBookings` já carregado, sem nova chamada).
+  - **Progressão da Carreira:** Backlog e Metas com **larguras iguais** (7/5→6/6).
+  - **Histórico da Jornada:** os 3 antigos accordions (Feedbacks/Atas/Docs) saíram do meio e
+    foram para o **fim**, agora **3 lado a lado** (4/4/4), cards compactos sem accordion.
+  - Cards compactos (`rounded-[3.5rem] p-8`→`rounded-[2rem] p-6`). Copy: eyebrow "Plataforma de
+    Desenvolvimento"→"Gestão de Jornada" (5.7) + subtítulos simplificados + acento "estratégico".
+    Limpeza: imports de ícones mortos + estado de accordion removidos.
+- **PR #86 — Pacote 5B (funcionais 8.2 + 9), `77e3a15`:**
+  - **Item 8.2:** o feedback auto-gerado (resgate retroativo em `career-module.ts`) passa a gravar
+    `author = eventData.mentor` (o "Orientador:" do evento, parseado em `sync.ts`), fallback ao
+    alias quando vazio. **Migração** LOCAL nova `scripts/migrate-feedback-authors.js` (dry-run +
+    backup) reescreve o author dos feedbacks `booking-*` já criados (author "Consultor BPlen") das
+    contas já sincronizadas — conservadora (só com orientador conhecido; ignora feedbacks manuais).
+  - **Item 9:** novo campo `completedAt` em `CareerObjective`; `updateCareerGoalProgressAction`
+    grava quando o status **entra** em "Alcançado" e limpa (`FieldValue.delete()`) ao sair;
+    `saveCareerObjectiveAction` carimba se já criado como "Alcançado"; `getCareerPlanningDataAction`
+    lê o campo; UI mostra "Concluído em: DD/MM/AAAA" (com update otimista espelhado).
+- Validado (ambos): eslint dos arquivos tocados 0 erros, test 52/52, type-check, build exit 0.
+  Telas logadas não autenticam no preview (BUG-030) → validação em produção pela Gestora.
+- **Pós-merge (Gestora):** rodar `node scripts/migrate-feedback-authors.js` (dry-run → conferir →
+  `--apply`) + validação visual/funcional em produção.
+- **Todos os pacotes do lote de feedback F1-04/F1-05 concluídos** (1–6). Restante da Fase 1 é a
+  validação visual em produção das telas logadas (BUG-030) e a F1-06 (páginas admin).
+- Itens atualizados: `00-PLAN.md` (F1-04 — nota do Pacote 5), `DASHBOARD.md` (entrada nova),
+  este LOG. Sem novos bugs.

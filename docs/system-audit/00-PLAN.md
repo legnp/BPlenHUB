@@ -552,8 +552,12 @@ sem copy hardcoded fora do que o guia permitir).
   CLAUDE.md 6/7/8, PR #81), Pacote 3 (refino cards de Contratos, PR #82), **Pacote 4 —
   redesign da Gestão de Agenda (PR #83)**: header sem título duplicado, botão "Agendar 1 to 1"
   no header da página via novo slot `action` do `FunctionalPageHeader`, box-in-box achatado, e
-  modo `embedded` no `AgendaManagementView` que mantém o admin idêntico. Próximos: Pacote 6
-  (Networking), Pacote 5 (Gestão de Carreira, com item 8.2 + item 9). Ver `LOG.md`.
+  modo `embedded` no `AgendaManagementView` que mantém o admin idêntico. **Pacote 5 — redesign da
+  Gestão de Carreira (PRs #85/#86)**: 5A design (4 seções discretas, checkpoints recolhíveis,
+  histórico de 1-to-1 à direita do indicador, Backlog/Metas com larguras iguais, 3 históricos
+  lado a lado ao final, copy 5.7); 5B funcionais — **item 8.2** (feedback com o Orientador do
+  evento + migração `migrate-feedback-authors.js`) e **item 9** (`completedAt` dos objetivos).
+  **Lote de feedback F1-04/F1-05 concluído (pacotes 1–6).** Ver `LOG.md`.
 
 ### [F1-05] Hub — checkout de membro, networking, perfil, entrega de serviço
 - Categoria(s) de qualidade: Adequação funcional / Segurança
