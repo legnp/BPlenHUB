@@ -69,9 +69,11 @@ export async function getProfessionalProfileAction(idToken?: string) {
 
     const db = getAdminDb();
     
-    // 1. Buscar Dados da Survey Check-in
-    const surveySnap = await db.doc(`User/${matricula}/results/check_in`).get();
-    const surveyData = surveySnap.exists ? surveySnap.data() : {};
+    // 1. Buscar Dados da Survey Check-in (fonte real: Surveys/check_in, campo `data`).
+    // Antes lia `results/check_in` (doc órfão, nunca escrito pela survey) — o que
+    // quebrava o fluxo bidirecional. Agora lê o mesmo doc que a survey grava.
+    const surveySnap = await db.doc(`User/${matricula}/Surveys/check_in`).get();
+    const surveyData = surveySnap.exists ? (surveySnap.data()?.data || {}) : {};
 
     // 2. Buscar Dados de Networking/Profile
     const networkingSnap = await db.doc(`User/${matricula}/profile/networking`).get();
@@ -166,19 +168,24 @@ export async function updateProfessionalProfileAction(data: ProfessionalProfileD
       updatedAt: admin.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
 
-    // 2. Sincronizar campos na Survey Check-in (Soberania de Dados 🛡️)
-    const surveyRef = db.doc(`User/${matricula}/results/check_in`);
+    // 2. Sincronizar campos na Survey Check-in (Soberania de Dados 🛡️).
+    // Grava no MESMO doc/estrutura da survey (`Surveys/check_in`, campo `data`),
+    // com merge — NUNCA seta `status`, para não marcar o onboarding como concluído
+    // indevidamente (checkSurveyCompletedAction exige status === "completed").
+    const surveyRef = db.doc(`User/${matricula}/Surveys/check_in`);
     batch.set(surveyRef, {
-      regime_choice: data.regime_choice,
-      beneficios_pacote: data.beneficios_pacote, // Salva no formato rico Record<string, BenefitData>
-      cv_upload: data.cv_upload || null,
-      portfolio_upload: data.portfolio_upload || null,
-      linkedin_url: data.linkedin_url,
-      instagram_url: data.instagram_url,
-      web_url: data.web_url,
-      portfolio_url: data.portfolio_url,
-      comentarios_carreira: data.comentarios_carreira,
-      banco_talentos: data.participation_talent_bank ? "Sim, quero fazer parte" : "Não, obrigado",
+      data: {
+        regime_choice: data.regime_choice,
+        beneficios_pacote: data.beneficios_pacote, // Formato rico Record<string, BenefitData>
+        cv_upload: data.cv_upload || null,
+        portfolio_upload: data.portfolio_upload || null,
+        linkedin_url: data.linkedin_url,
+        instagram_url: data.instagram_url,
+        web_url: data.web_url,
+        portfolio_url: data.portfolio_url,
+        comentarios_carreira: data.comentarios_carreira,
+        banco_talentos: data.participation_talent_bank ? "Sim, quero fazer parte" : "Não, obrigado",
+      },
       syncWithProfileAt: admin.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
 
@@ -238,8 +245,8 @@ export async function updateTalentBankParticipationAction(value: boolean, idToke
       updatedAt: admin.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
 
-    batch.set(db.doc(`User/${matricula}/results/check_in`), {
-      banco_talentos: value ? "Sim, quero fazer parte" : "Não, obrigado",
+    batch.set(db.doc(`User/${matricula}/Surveys/check_in`), {
+      data: { banco_talentos: value ? "Sim, quero fazer parte" : "Não, obrigado" },
       syncWithProfileAt: admin.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
 
