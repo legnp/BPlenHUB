@@ -145,5 +145,5 @@ export async function updateRegistrationDataAction(data: RegistrationData, idTok
 }
 
 function nicknameToName(nickname: string) {
-  return nickname || "Membro BPlen";
+  return nickname || "Não definido";
 }

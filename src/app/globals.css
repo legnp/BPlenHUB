@@ -349,3 +349,13 @@ body.glass-modal-open {
 .animate-float-pulse {
   animation: bounce-slow 3s ease-in-out infinite, pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
+
+/* Esconde a barra de rolagem mantendo a rolagem funcional (usado em trilhos de
+   abas/carrosseis que rolam no mobile mas nao devem exibir a barra nativa). */
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE/Edge legado */
+  scrollbar-width: none;    /* Firefox */
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;            /* Chrome/Safari/WebKit */
+}
