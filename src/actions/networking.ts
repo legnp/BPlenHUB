@@ -111,7 +111,9 @@ export async function getNetworkingDataAction(
 
         return {
           id: doc.id,
-          name: d.profile?.fullName || d.Authentication_Name || d.User_Nickname || d.nickname || "Membro BPlen",
+          // "Nome para exibição" definido pelo membro tem prioridade; senão cai no
+          // nome completo / nome de autenticação / apelido (item 2.9).
+          name: netProfile.display_name || d.profile?.fullName || d.Authentication_Name || d.User_Nickname || d.nickname || "Membro BPlen",
           photoUrl: d.photoUrl || d.profile?.photoUrl || "",
           pitch: netProfile.sales_pitch || "",
           hashtags: netProfile.hashtags || [],
