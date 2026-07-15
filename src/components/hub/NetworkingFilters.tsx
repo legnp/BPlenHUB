@@ -13,7 +13,7 @@ interface Props {
 }
 
 /**
- * BPlen HUB — NetworkingFilters 🛰️🔍
+ * BPlen HUB — NetworkingFilters (busca + filtro de ramos nos Parceiros)
  */
 export function NetworkingFilters({
   tab,
@@ -26,9 +26,9 @@ export function NetworkingFilters({
   const isPartnerTab = tab === "parceiros";
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 items-center px-4">
-      
-      {/* 🔍 Busca Instantânea */}
+    <div className="flex flex-col lg:flex-row gap-4 items-center w-full">
+
+      {/* Busca instantanea */}
       <div className="relative flex-1 w-full">
          <div className="absolute left-6 top-1/2 -translate-y-1/2 text-[var(--text-muted)]">
             <Search size={18} />
@@ -42,7 +42,7 @@ export function NetworkingFilters({
          />
       </div>
 
-      {/* 🧭 Filtro Contextual — só Parceiros (filtro de estágio removido, BUG-033) */}
+      {/* Filtro contextual — so Parceiros (filtro de estagio removido, BUG-033) */}
       {isPartnerTab && (
         <div className="flex items-center gap-4 w-full lg:w-auto">
            <div className="p-4 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-2xl text-[var(--text-muted)] glass">
