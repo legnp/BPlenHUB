@@ -3247,3 +3247,36 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   `completedAt` de objetivos). Copy específica por página vai junto com o redesign de cada uma.
 - Itens atualizados: `00-PLAN.md` (F1-04 — nota do Pacote 4), `DASHBOARD.md` (entrada nova),
   este LOG. Sem novos bugs (pacote de design).
+
+## [2026-07-14] Chat de execução — Pacote 4 validado + Pacote 6: redesign do Networking (PR #84)
+
+- **Pacote 4 validado em produção pela Gestora:** o redesign da Gestão de Agenda (PR #83) foi
+  aprovado ("está perfeito"). F1-04 segue com o Pacote 4 fechado.
+- **Pacote 6 (Networking) — proposta apresentada e aprovada** (rótulos das abas na **opção A**);
+  implementado direto. **PR #84 mergeado (`70c8da2`, squash):** 2 arquivos
+  (`hub/networking/page.tsx`, `components/hub/NetworkingFilters.tsx`).
+  1. **Abas ao lado da barra de busca:** a linha de abas isolada e a caixa de filtros gigante
+     (`rounded-[3.5rem] p-8`) foram fundidas numa **única barra de controle** (abas compactas à
+     esquerda, busca à direita `flex-1`, seletor de Ramos nos Parceiros ao lado). Menos
+     box-in-box, menos scroll; responsivo (empilha em telas estreitas).
+  2. **Aviso de rodapé discreto:** o banner `p-10 rounded-[4rem]` com ícone de 40px virou uma
+     **tira fina** (ícone pequeno + uma linha, `rounded-2xl`, tom muted).
+  3. **Copy:** eyebrow "Conexões Soberanas"→"Conexões de Valor" (6.1); título "Ecossistema
+     BPlen"→"Networking BPlen" (6.2); aviso "Soberania & Visibilidade"→"Autonomia de
+     Visibilidade" + texto reescrito discreto sem "soberania" (6.3/6.4); **abas (opção A)**
+     "Membros / Profissionais / Parceiros" (sem "BPlen" repetido, evita colisão com o título).
+  - Limpezas de passagem: resíduos de tom "soberano/performance soberana" em comentários,
+    loading "Carregando Networking..."→"Carregando Networking" (regra 8), e emojis dos
+    comentários dos 2 arquivos tocados (regra 2 Zero Emoji).
+- **Não** mexeu nos cards (`NetworkingCard`) nem nas actions — o funcional do Pacote 1 intacto.
+  Sem mudança de dados/segurança.
+- Validado: eslint dos arquivos tocados 0 erros, test 52/52, type-check limpo, build exit 0
+  (pre-commit passou sem `--no-verify`). Telas logadas não autenticam no preview (BUG-030) →
+  validação visual em produção pela Gestora.
+- **Próximo: Pacote 5 — Gestão de Carreira** (o maior; proposta antes de implementar): seções
+  discretas, cards compactos, checkpoints recolhíveis, histórico de 1-to-1, 3 containers de
+  histórico lado a lado, larguras iguais backlog/metas, copy 5.1–5.8 (incl. "Plataforma de
+  Desenvolvimento"→"Gestão de Jornada"); **item 8.2** (feedback exibe o Orientador do evento,
+  não o alias — `career-module.ts`) e **item 9** (`completedAt` de objetivos ao virar "Alcançado").
+- Itens atualizados: `00-PLAN.md` (F1-05 — nota do Pacote 6), `DASHBOARD.md` (entrada nova),
+  este LOG. Sem novos bugs (pacote de design).

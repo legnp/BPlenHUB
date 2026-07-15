@@ -579,6 +579,11 @@ sem copy hardcoded fora do que o guia permitir).
   `CouponInput`/`CheckoutFlow` em `/hub/checkout/[slug]`) recolorido para vars de tema —
   conferência visual nos temas claros pendente em produção (BUG-030).
 - Log: [2026-07-11] revisão das 4 páginas + PR #77 (BUG-033/016) — ver `LOG.md`
+  [2026-07-12/14] **Lote de feedback da Gestora por PACOTES:** Pacote 1 (segurança+bugs do
+  networking, PR #80 — BUG-067/068/069), **Pacote 6 — redesign do Networking (PR #84)**: abas ao
+  lado da barra de busca (funde abas + caixa de filtros numa barra única), aviso de rodapé
+  discreto, copy 6.1–6.4 e abas "Membros/Profissionais/Parceiros" (opção A). Próximo: Pacote 5
+  (Gestão de Carreira, com item 8.2 + item 9). Ver `LOG.md`.
 
 ### [F1-06] Validar as 19 páginas de admin
 - Categoria(s) de qualidade: Adequação funcional / Segurança
