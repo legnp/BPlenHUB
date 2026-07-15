@@ -1,6 +1,7 @@
 "use server";
 
 import { getAdminDb } from "@/lib/firebase-admin";
+import { requireAuth } from "@/lib/auth-guards";
 
 interface ScoreEntry {
   percentage: number;
@@ -105,6 +106,42 @@ function serializeData<T>(data: T): T {
   }));
 
   return serialized;
+}
+
+/**
+ * Prefill bidirecional da survey de check-in (item 2.6).
+ * Lê os campos do `results/check_in` que se sobrepõem ao Perfil Profissional
+ * (`profile_settings`) para pré-preencher a survey quando o usuário editou esses
+ * dados primeiro no perfil. Guardado por sessão (dono) e com whitelist de campos
+ * — não trafega Timestamps nem outras respostas do check-in ao client.
+ */
+export async function getOwnCheckinPrefillAction(
+  idToken?: string
+): Promise<{ success: boolean; data: Record<string, unknown> | null }> {
+  try {
+    const session = await requireAuth(idToken);
+    const matricula = await resolveMatricula(session.uid, session.email || "");
+    if (!matricula) return { success: false, data: null };
+
+    const db = getAdminDb();
+    const snap = await db.doc(`User/${matricula}/results/check_in`).get();
+    if (!snap.exists) return { success: true, data: null };
+
+    const d = snap.data() || {};
+    const KEYS = [
+      "regime_choice", "beneficios_pacote", "cv_upload", "portfolio_upload",
+      "linkedin_url", "instagram_url", "web_url", "portfolio_url",
+      "comentarios_carreira", "banco_talentos"
+    ];
+    const picked: Record<string, unknown> = {};
+    for (const k of KEYS) {
+      if (d[k] !== undefined && d[k] !== null) picked[k] = d[k];
+    }
+    return { success: true, data: serializeData(picked) };
+  } catch (error) {
+    console.error("❌ [getOwnCheckinPrefill] Erro:", error);
+    return { success: false, data: null };
+  }
 }
 
 /**
