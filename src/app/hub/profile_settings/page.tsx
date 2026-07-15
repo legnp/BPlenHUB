@@ -27,7 +27,7 @@ export default function ProfileSettingsPage() {
       
       {/* Header — padrão canônico Gestão Funcional (F2-05) */}
       <FunctionalPageHeader
-        eyebrow="Sua identidade e visibilidade no ecossistema BPlen"
+        eyebrow="Sua identidade profissional na BPlen"
         title="Perfil &"
         titleAccent="Configurações"
         backHref="/hub/membro"

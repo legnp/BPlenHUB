@@ -182,7 +182,7 @@ export function ProfileRegistrationTab() {
                <InputGlass value={data.email} readOnly className="bg-[var(--bg-primary)]/40 border-[var(--border-primary)]" />
             </div>
             <div className="space-y-2 opacity-80">
-               <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]"><Lock size={10} /> Nome de Usuário</label>
+               <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]"><Lock size={10} /> Apelido</label>
                <InputGlass value={data.user_name} readOnly className="bg-[var(--bg-primary)]/40 border-[var(--border-primary)]" />
             </div>
          </div>
