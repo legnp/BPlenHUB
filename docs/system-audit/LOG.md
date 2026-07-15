@@ -3319,3 +3319,28 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   validação visual em produção das telas logadas (BUG-030) e a F1-06 (páginas admin).
 - Itens atualizados: `00-PLAN.md` (F1-04 — nota do Pacote 5), `DASHBOARD.md` (entrada nova),
   este LOG. Sem novos bugs.
+
+## [2026-07-14] Chat de execução — Pacote 5 validado + redesign do menu sanduíche do hub (PR #87)
+
+- **Pacote 5 validado e aprovado em produção pela Gestora.** A Gestão de Carreira (design 5A +
+  funcionais 5B) está aprovada. Lote de feedback F1-04/F1-05 (pacotes 1–6) 100% validado.
+- **Redesign do menu sanduíche do hub — PR #87 mergeado (`4e299d7`, squash)** (pedido ad-hoc da
+  Gestora, com spec detalhada; decisão do 1-to-1 = opção A, aprovada). Componente:
+  `src/components/hub/HubHeader.tsx` (dropdown do avatar, compartilhado hub+admin) + copy em
+  `src/config/nomenclature.ts`.
+  1. Título do menu "Área de Membro" → **"BPlen HUB"** (o link "Área de Membro" segue na seção
+     Geral).
+  2. Bloco de identidade: entre o nome e o @nickname passa a exibir o **nº da matrícula BPlen**
+     de forma discreta (mono, muted).
+  3. Sem mudar as dimensões do container (`w-64`): fontes/espaçamentos internos reduzidos; ícones
+     sociais em **uma linha** (`grid-cols-4`); botão **"Sair" como último item** (após as redes);
+     **links em seções** com rótulo — **Geral** {Início, Área de Membro, Visão Geral}, **Jornada
+     de Membro** {Gestão de Agenda, Gestão de Carreira, Agendar 1 to 1}, **Networking BPlen**,
+     **Gestão da Conta** {Perfil & Configurações, Meus Contratos}.
+  4. "Conexão Digital" → **"Social Media"** (`nomenclature.social_label`).
+  - **"Agendar 1 to 1"** (opção A) abre o `OneToOneBookingModal` sobre a tela atual — o header
+    carrega a programação sob demanda no 1º clique. Links internos usam paths relativos do Next.
+    Limpeza: animação `revealedIndex` inerte removida.
+- Validado: eslint dos arquivos tocados 0 problemas, test 52/52, type-check, build exit 0.
+  Telas logadas não autenticam no preview (BUG-030) → validação visual em produção pela Gestora.
+- Itens atualizados: `DASHBOARD.md` (entrada nova), este LOG. Sem novos bugs.

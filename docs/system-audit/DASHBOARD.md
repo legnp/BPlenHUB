@@ -12,7 +12,15 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-14 (chat de execução — **Pacote 5: redesign da Gestão de
+> **Última atualização:** 2026-07-14 (chat de execução — **Pacote 5 validado + redesign do menu
+> sanduíche do hub (PR #87)**: **Pacote 5 aprovado em produção** (Gestão de Carreira, design +
+> funcionais) — lote de feedback F1-04/F1-05 (pacotes 1–6) 100% validado. **Menu sanduíche**
+> (`HubHeader`) reorganizado em seções (Geral / Jornada de Membro / Networking / Gestão da Conta),
+> título "Área de Membro"→"BPlen HUB", matrícula discreta entre nome e nickname, ícones sociais
+> em uma linha, "Sair" como último item, "Agendar 1 to 1" abre o modal (opção A), "Conexão
+> Digital"→"Social Media". Validação visual em produção (BUG-030).
+>
+> _(entrada anterior)_ 2026-07-14 (chat de execução — **Pacote 5: redesign da Gestão de
 > Carreira (PRs #85/#86)** — fecha o lote de feedback F1-04/F1-05 (pacotes 1–6). **5A (design,
 > PR #85):** 4 seções discretas (Resultados / Progressão Geral / Progressão da Carreira /
 > Histórico da Jornada); Jornada mais estreita com **checkpoints recolhíveis**; 1-to-1 mais
