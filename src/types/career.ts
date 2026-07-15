@@ -75,4 +75,5 @@ export interface CareerObjective {
   targetDate?: string; // YYYY-MM-DD
   goals: CareerGoal[];
   createdAt: string; // ISO String
+  completedAt?: string; // ISO String — gravado quando o status entra em "Alcançado" (item 9)
 }
