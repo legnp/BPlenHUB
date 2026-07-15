@@ -3,18 +3,15 @@
 import React, { useState, useEffect } from "react";
 import { useAuthContext } from "@/context/AuthContext";
 import { useJourney } from "@/hooks/useJourney";
-import { 
-  ArrowLeft, 
-  Briefcase, 
-  Calendar, 
-  Upload, 
-  MessageSquare, 
-  CheckSquare, 
-  Plus, 
-  Trash2, 
-  ChevronDown, 
-  ChevronUp, 
-  Loader2, 
+import {
+  ArrowLeft,
+  Calendar,
+  MessageSquare,
+  CheckSquare,
+  Plus,
+  Trash2,
+  ChevronDown,
+  Loader2,
   ExternalLink, 
   Lock, 
   Award, 
@@ -22,10 +19,11 @@ import {
   Check, 
   BookOpen, 
   Sparkles, 
-  Clock, 
+  Clock,
   Target,
   FileText,
-  HelpCircle
+  HelpCircle,
+  MoreHorizontal
 } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -61,8 +59,23 @@ function extractGoogleDriveFileId(url: string): string | null {
   // Pattern 3: /d/([a-zA-Z0-9_-]+)
   const dMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
   if (dMatch && dMatch[1]) return dMatch[1];
-  
+
   return null;
+}
+
+/**
+ * Rótulo de seção discreto (Pacote 5): rótulo em caixa alta + linha fina.
+ * Dá hierarquia às seções da página sem introduzir mais um card grande.
+ */
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-4">
+      <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)] shrink-0">
+        {children}
+      </span>
+      <div className="h-px flex-1 bg-[var(--border-primary)]/40" />
+    </div>
+  );
 }
 
 export default function GestaoCarreiraPage() {
@@ -74,7 +87,9 @@ export default function GestaoCarreiraPage() {
   // Career module states
   const [careerData, setCareerData] = useState<CareerPlanningData | null>(null);
   const [loadingCareer, setLoadingCareer] = useState<boolean>(true);
-  const [activeAccordion, setActiveAccordion] = useState<string | null>(null);
+  // Colapsáveis do redesign (Pacote 5): checkpoints por fase + detalhe por sessão 1-to-1
+  const [expandedStages, setExpandedStages] = useState<Record<string, boolean>>({});
+  const [expandedSessions, setExpandedSessions] = useState<Record<string, boolean>>({});
 
   // Mentoring states
   const [mentoringQuotaTotal, setMentoringQuotaTotal] = useState<number | null>(null);
@@ -135,11 +150,6 @@ export default function GestaoCarreiraPage() {
 
   // Handle access gate
   const hasAccess = careerData?.isCareerPlanningReleased === true;
-
-  // Toggle Accordions
-  const toggleAccordion = (section: string) => {
-    setActiveAccordion(prev => (prev === section ? null : section));
-  };
 
   // Handle secure Google Drive document downloading/viewing via proxy
   const handleDownloadFile = async (e: React.MouseEvent, fileUrl: string) => {
@@ -434,7 +444,7 @@ export default function GestaoCarreiraPage() {
         
         {/* HEADER & NAVIGATION — padrão canônico Gestão Funcional (F2-05) */}
         <FunctionalPageHeader
-          eyebrow="Plataforma de Desenvolvimento"
+          eyebrow="Gestão de Jornada"
           title="Gestão e Desenvolvimento"
           titleAccent="da sua Carreira"
           backHref="/hub/membro"
@@ -446,379 +456,297 @@ export default function GestaoCarreiraPage() {
           }}
         />
 
-        {/* METRICS & OVERALL STATUS */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="p-6 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-[2rem] flex items-center gap-4 shadow-sm">
-            <div className="p-3.5 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-2xl">
-              <Target size={20} />
-            </div>
-            <div>
-              <span className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)]">Objetivos Estratégicos</span>
-              <p className="text-xl font-black text-[var(--text-primary)] mt-1">
-                {completedObjectives}/{activeObjectives.length}
-              </p>
-            </div>
-          </div>
-
-          <div className="p-6 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-[2rem] flex items-center gap-4 shadow-sm">
-            <div className="p-3.5 bg-green-500/10 border border-green-500/20 text-green-400 rounded-2xl">
-              <CheckSquare size={20} />
-            </div>
-            <div>
-              <span className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)]">Backlog Checklist</span>
-              <p className="text-xl font-black text-[var(--text-primary)] mt-1">
-                {completedTasks}/{totalTasks}
-              </p>
-            </div>
-          </div>
-
-          <div className="p-6 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-[2rem] flex items-center gap-4 shadow-sm">
-            <div className="p-3.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-2xl">
-              <Clock size={20} />
-            </div>
-            <div>
-              <span className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)]">Atas de Reuniões</span>
-              <p className="text-xl font-black text-[var(--text-primary)] mt-1">
-                {careerData?.atas?.length || 0}
-              </p>
-            </div>
-          </div>
-
-          <div className="p-6 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-[2rem] flex items-center gap-4 shadow-sm">
-            <div className="p-3.5 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 rounded-2xl">
-              <FileText size={20} />
-            </div>
-            <div>
-              <span className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)]">Docs Compartilhados</span>
-              <p className="text-xl font-black text-[var(--text-primary)] mt-1">
-                {careerData?.sharedDocuments?.length || 0}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* DOUBLE COLUMN: JOURNEY PROGRESSION & MENTORING QUOTAS */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
-          {/* LEFT CONTAINER: JOURNEY CHECKPOINTS */}
-          <div className="lg:col-span-6 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-[3.5rem] p-8 space-y-6 shadow-sm">
-            <div className="flex items-center gap-3 text-left">
-              <div className="p-3 bg-[var(--accent-start)]/10 rounded-2xl border border-[var(--accent-start)]/20 text-[var(--accent-start)]">
-                <Award size={18} />
+        {/* ===== SEÇÃO: RESULTADOS ===== */}
+        <section className="space-y-5">
+          <SectionLabel>Resultados</SectionLabel>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="p-5 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-[1.75rem] flex items-center gap-3.5 shadow-sm">
+              <div className="p-3 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-2xl">
+                <Target size={18} />
               </div>
               <div>
-                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-primary)]">Progressão Jornada de Membro BPlen</h3>
-                <p className="text-[8px] font-bold text-[var(--text-muted)] uppercase tracking-wider mt-0.5">Acompanhe suas paradas, checkpoints e evoluções</p>
+                <span className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)]">Objetivos Estratégicos</span>
+                <p className="text-lg font-black text-[var(--text-primary)] mt-0.5">
+                  {completedObjectives}/{activeObjectives.length}
+                </p>
               </div>
             </div>
 
-            <div className="space-y-4 max-h-[380px] overflow-y-auto custom-scrollbar pr-2">
-              {stages.map((stage) => {
-                const stepProgress = progress?.steps[stage.id];
-                const totalSub = stage.substeps.length;
-                const completedSub = stepProgress?.completedSubSteps?.length || 0;
-                const percent = totalSub > 0 ? Math.round((completedSub / totalSub) * 100) : 0;
-
-                return (
-                  <div key={stage.id} className="p-4 bg-[var(--bg-primary)]/40 border border-[var(--border-primary)]/40 rounded-2xl space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex flex-col text-left">
-                        <span className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)]">Fase {stage.order}</span>
-                        <span className="text-[11px] font-black text-[var(--text-primary)] mt-0.5">{stage.title}</span>
-                      </div>
-                      <span className="text-[9px] font-mono font-black text-[var(--accent-start)]">{percent}%</span>
-                    </div>
-
-                    <div className="w-full bg-[var(--border-primary)]/40 h-1.5 rounded-full overflow-hidden">
-                      <div 
-                        className="bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] h-full transition-all duration-300"
-                        style={{ width: `${percent}%` }}
-                      />
-                    </div>
-
-                    <div className="flex flex-wrap gap-x-3 gap-y-1">
-                      {stage.substeps.map((sub) => {
-                        const isDone = stepProgress?.completedSubSteps?.includes(sub.id);
-                        return (
-                          <div key={sub.id} className="flex items-center gap-1.5">
-                            <div className={`w-3 h-3 rounded-full flex items-center justify-center border ${
-                              isDone 
-                                ? "bg-green-500/15 border-green-500 text-green-400" 
-                                : "border-[var(--border-primary)] text-[var(--text-muted)] opacity-40"
-                            }`}>
-                              {isDone && <Check size={8} />}
-                            </div>
-                            <span className="text-[8px] font-bold text-[var(--text-muted)] uppercase tracking-wider">{sub.title}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* RIGHT CONTAINER: MENTORING QUOTAS (1 to 1 PROGRESSION) */}
-          <div className="lg:col-span-6 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-[3.5rem] p-8 space-y-6 shadow-sm">
-            <div className="flex items-center gap-3 text-left">
-              <div className="p-3 bg-[var(--accent-start)]/10 rounded-2xl border border-[var(--accent-start)]/20 text-[var(--accent-start)]">
-                <BookOpen size={18} />
+            <div className="p-5 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-[1.75rem] flex items-center gap-3.5 shadow-sm">
+              <div className="p-3 bg-green-500/10 border border-green-500/20 text-green-400 rounded-2xl">
+                <CheckSquare size={18} />
               </div>
               <div>
-                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-primary)]">Progressão de 1 to 1</h3>
-                <p className="text-[8px] font-bold text-[var(--text-muted)] uppercase tracking-wider mt-0.5">Controle de saldo de mentorias e acompanhamentos executivos</p>
+                <span className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)]">Backlog Checklist</span>
+                <p className="text-lg font-black text-[var(--text-primary)] mt-0.5">
+                  {completedTasks}/{totalTasks}
+                </p>
               </div>
             </div>
 
-            {mentoringQuotaTotal !== null && mentoringQuotaTotal > 0 ? (
-              <div className="p-6 bg-[var(--bg-primary)]/40 border border-[var(--border-primary)]/40 rounded-2xl space-y-5 text-center">
-                <div className="relative w-36 h-36 mx-auto flex items-center justify-center">
-                  {/* Circle SVG bar */}
-                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                    <circle 
-                      cx="50" 
-                      cy="50" 
-                      r="40" 
-                      stroke="var(--border-primary)" 
-                      strokeWidth="6" 
-                      fill="transparent" 
-                      className="opacity-35"
-                    />
-                    <circle 
-                      cx="50" 
-                      cy="50" 
-                      r="40" 
-                      stroke="var(--accent-start)" 
-                      strokeWidth="6" 
-                      fill="transparent" 
-                      strokeDasharray="251.2"
-                      strokeDashoffset={251.2 - (251.2 * (mentoringUsed / mentoringQuotaTotal))}
-                      className="transition-all duration-500"
-                    />
-                  </svg>
-                  <div className="absolute flex flex-col items-center justify-center text-center">
-                    <span className="text-xl font-black text-[var(--text-primary)]">{mentoringUsed} / {mentoringQuotaTotal}</span>
-                    <span className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60 mt-0.5">Sessoes Consumidas</span>
-                  </div>
-                </div>
-
-                <div className="border-t border-[var(--border-primary)]/40 pt-4 flex justify-around text-left">
-                  <div>
-                    <span className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)]">Saldo Restante</span>
-                    <p className="text-sm font-bold text-[var(--text-primary)] mt-0.5">{mentoringQuotaTotal - mentoringUsed} sessoes</p>
-                  </div>
-                  <div className="border-l border-[var(--border-primary)]/40 pl-6">
-                    <span className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)]">Cota Total Contratada</span>
-                    <p className="text-sm font-bold text-[var(--text-primary)] mt-0.5">{mentoringQuotaTotal} sessoes</p>
-                  </div>
-                </div>
-
-                {/* Sublist: Event Status */}
-                <div className="border-t border-[var(--border-primary)]/40 pt-4 flex flex-col gap-2 text-left px-2">
-                   <div className="flex items-center justify-between">
-                     <span className="text-[9px] font-bold uppercase tracking-widest text-amber-500 flex items-center gap-1.5"><Clock size={12} /> Pendentes de Realização</span>
-                     <span className="text-[10px] font-black text-[var(--text-primary)]">{mentoringPending}</span>
-                   </div>
-                   <div className="flex items-center justify-between">
-                     <span className="text-[9px] font-bold uppercase tracking-widest text-red-400 flex items-center gap-1.5"><Trash2 size={12} /> Ausências / Remarcadas</span>
-                     <span className="text-[10px] font-black text-[var(--text-primary)]">{mentoringAbsent}</span>
-                   </div>
-                </div>
+            <div className="p-5 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-[1.75rem] flex items-center gap-3.5 shadow-sm">
+              <div className="p-3 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-2xl">
+                <Clock size={18} />
               </div>
-            ) : (
-              <div className="py-20 text-center space-y-2 border border-dashed border-[var(--border-primary)]/60 rounded-2xl">
-                <Sparkles size={24} className="text-[var(--text-muted)] opacity-30 mx-auto" />
-                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)] mt-2">Você ainda não tem cotas de 1 to 1</p>
-                <p className="text-[9px] text-[var(--text-muted)] mt-1">Sua cota contratada não foi identificada no sistema.</p>
+              <div>
+                <span className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)]">Atas de Reuniões</span>
+                <p className="text-lg font-black text-[var(--text-primary)] mt-0.5">
+                  {careerData?.atas?.length || 0}
+                </p>
               </div>
-            )}
+            </div>
+
+            <div className="p-5 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-[1.75rem] flex items-center gap-3.5 shadow-sm">
+              <div className="p-3 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 rounded-2xl">
+                <FileText size={18} />
+              </div>
+              <div>
+                <span className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)]">Docs Compartilhados</span>
+                <p className="text-lg font-black text-[var(--text-primary)] mt-0.5">
+                  {careerData?.sharedDocuments?.length || 0}
+                </p>
+              </div>
+            </div>
           </div>
+        </section>
 
-        </div>
+        {/* ===== SEÇÃO: PROGRESSÃO GERAL ===== */}
+        <section className="space-y-5">
+          <SectionLabel>Progressão Geral</SectionLabel>
 
-        {/* THE ACCORDIONS: FEEDBACKS, MEETINGS ATAS, SHARED DOCUMENTS */}
-        <div className="space-y-4">
-          
-          {/* Accordion 1: Feedbacks Recebidos */}
-          <div className="bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-[2.5rem] overflow-hidden shadow-sm">
-            <button
-              onClick={() => toggleAccordion("feedbacks")}
-              className="w-full px-8 py-5 flex items-center justify-between text-left transition-colors hover:bg-[var(--input-bg)]/25"
-            >
-              <div className="flex items-center gap-4">
-                <div className="p-2.5 bg-blue-500/10 rounded-2xl text-blue-400 border border-blue-500/20">
-                  <MessageSquare size={16} />
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+            {/* Progressão da Jornada — mais estreito, checkpoints recolhíveis */}
+            <div className="lg:col-span-5 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-[2rem] p-6 space-y-5 shadow-sm">
+              <div className="flex items-center gap-3 text-left">
+                <div className="p-2.5 bg-[var(--accent-start)]/10 rounded-2xl border border-[var(--accent-start)]/20 text-[var(--accent-start)]">
+                  <Award size={16} />
                 </div>
                 <div>
-                  <h4 className="text-xs font-black text-[var(--text-primary)]">Feedbacks Recebidos</h4>
-                  <p className="text-[8px] font-bold text-[var(--text-muted)] uppercase tracking-wider mt-0.5">Histórico de feedbacks, avaliações qualitativas e orientações do seu mentor</p>
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-primary)]">Progressão da Jornada</h3>
+                  <p className="text-[8px] font-bold text-[var(--text-muted)] uppercase tracking-wider mt-0.5">Suas fases e checkpoints</p>
                 </div>
               </div>
-              <ChevronDown size={18} className={`text-[var(--text-muted)] transition-transform duration-300 ${activeAccordion === "feedbacks" ? "rotate-180" : ""}`} />
-            </button>
 
-            <AnimatePresence>
-              {activeAccordion === "feedbacks" && (
-                <motion.div
-                  initial={{ height: 0 }}
-                  animate={{ height: "auto" }}
-                  exit={{ height: 0 }}
-                  className="overflow-hidden border-t border-[var(--border-primary)]/40"
-                >
-                  <div className="p-8 space-y-4 bg-[var(--bg-primary)]/10">
-                    {careerData?.feedbacks && careerData.feedbacks.length > 0 ? (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {careerData.feedbacks.map((fb) => (
-                          <div key={fb.id} className="p-6 bg-[var(--bg-primary)] border border-[var(--border-primary)]/60 rounded-3xl space-y-4 text-left shadow-inner">
-                            <div className="flex items-center justify-between">
-                              <span className="text-[9px] font-black uppercase tracking-widest text-[var(--accent-start)]">{maskInternalContact(fb.author)}</span>
-                              <span className="text-[8px] font-bold text-[var(--text-muted)] font-mono">{fb.createdAt ? new Date(fb.createdAt).toLocaleDateString("pt-BR") : "—"}</span>
-                            </div>
-                            <div className="space-y-1">
-                              <h5 className="text-xs font-black text-[var(--text-primary)]">{fb.title}</h5>
-                              <p className="text-xs text-[var(--text-muted)] leading-relaxed whitespace-pre-line font-medium">{maskInternalContact(fb.content)}</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="py-12 text-center text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-50 flex items-center justify-center gap-2">
-                        <HelpCircle size={14} /> Nenhum feedback registrado pela consultoria BPlen
-                      </div>
-                    )}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+              <div className="space-y-3 max-h-[420px] overflow-y-auto custom-scrollbar pr-2">
+                {stages.map((stage) => {
+                  const stepProgress = progress?.steps[stage.id];
+                  const totalSub = stage.substeps.length;
+                  const completedSub = stepProgress?.completedSubSteps?.length || 0;
+                  const percent = totalSub > 0 ? Math.round((completedSub / totalSub) * 100) : 0;
+                  const isOpen = !!expandedStages[stage.id];
 
-          {/* Accordion 2: Histórico de Atas de Reuniões */}
-          <div className="bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-[2.5rem] overflow-hidden shadow-sm">
-            <button
-              onClick={() => toggleAccordion("atas")}
-              className="w-full px-8 py-5 flex items-center justify-between text-left transition-colors hover:bg-[var(--input-bg)]/25"
-            >
-              <div className="flex items-center gap-4">
-                <div className="p-2.5 bg-amber-500/10 rounded-2xl text-amber-400 border border-amber-500/20">
-                  <Calendar size={16} />
+                  return (
+                    <div key={stage.id} className="p-4 bg-[var(--bg-primary)]/40 border border-[var(--border-primary)]/40 rounded-2xl space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex flex-col text-left">
+                          <span className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)]">Fase {stage.order}</span>
+                          <span className="text-[11px] font-black text-[var(--text-primary)] mt-0.5">{stage.title}</span>
+                        </div>
+                        <span className="text-[9px] font-mono font-black text-[var(--accent-start)]">{percent}%</span>
+                      </div>
+
+                      <div className="w-full bg-[var(--border-primary)]/40 h-1.5 rounded-full overflow-hidden">
+                        <div
+                          className="bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] h-full transition-all duration-300"
+                          style={{ width: `${percent}%` }}
+                        />
+                      </div>
+
+                      {totalSub > 0 && (
+                        <button
+                          onClick={() => setExpandedStages(prev => ({ ...prev, [stage.id]: !isOpen }))}
+                          className="w-full flex items-center justify-between text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
+                        >
+                          <span>{completedSub}/{totalSub} checkpoints</span>
+                          <ChevronDown size={12} className={`transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`} />
+                        </button>
+                      )}
+
+                      <AnimatePresence>
+                        {isOpen && totalSub > 0 && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="overflow-hidden space-y-1.5 pt-1"
+                          >
+                            {stage.substeps.map((sub) => {
+                              const isDone = stepProgress?.completedSubSteps?.includes(sub.id);
+                              return (
+                                <div key={sub.id} className="flex items-center gap-2">
+                                  <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center border shrink-0 ${
+                                    isDone
+                                      ? "bg-green-500/15 border-green-500 text-green-400"
+                                      : "border-[var(--border-primary)] text-[var(--text-muted)] opacity-40"
+                                  }`}>
+                                    {isDone && <Check size={8} />}
+                                  </div>
+                                  <span className={`text-[9px] font-bold uppercase tracking-wider ${isDone ? "text-[var(--text-primary)]" : "text-[var(--text-muted)]"}`}>{sub.title}</span>
+                                </div>
+                              );
+                            })}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Progressão de 1 to 1 — mais largo: indicador à esquerda, histórico à direita */}
+            <div className="lg:col-span-7 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-[2rem] p-6 space-y-5 shadow-sm">
+              <div className="flex items-center gap-3 text-left">
+                <div className="p-2.5 bg-[var(--accent-start)]/10 rounded-2xl border border-[var(--accent-start)]/20 text-[var(--accent-start)]">
+                  <BookOpen size={16} />
                 </div>
                 <div>
-                  <h4 className="text-xs font-black text-[var(--text-primary)]">Histórico de Atas de Reuniões</h4>
-                  <p className="text-[8px] font-bold text-[var(--text-muted)] uppercase tracking-wider mt-0.5">Acompanhe as pautas, deliberações e atas de mentorias estruturadas</p>
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-primary)]">Progressão de 1 to 1</h3>
+                  <p className="text-[8px] font-bold text-[var(--text-muted)] uppercase tracking-wider mt-0.5">Saldo e histórico das suas sessões 1 to 1</p>
                 </div>
               </div>
-              <ChevronDown size={18} className={`text-[var(--text-muted)] transition-transform duration-300 ${activeAccordion === "atas" ? "rotate-180" : ""}`} />
-            </button>
 
-            <AnimatePresence>
-              {activeAccordion === "atas" && (
-                <motion.div
-                  initial={{ height: 0 }}
-                  animate={{ height: "auto" }}
-                  exit={{ height: 0 }}
-                  className="overflow-hidden border-t border-[var(--border-primary)]/40"
-                >
-                  <div className="p-8 space-y-4 bg-[var(--bg-primary)]/10">
-                    {careerData?.atas && careerData.atas.length > 0 ? (
-                      <div className="space-y-3">
-                        {careerData.atas.map((ata) => (
-                          <div key={ata.id} className="p-4 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-2xl flex items-center justify-between">
-                            <div className="space-y-1 text-left max-w-[70%]">
-                              <h5 className="text-xs font-black text-[var(--text-primary)]">{ata.title}</h5>
-                              <p className="text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-wider flex items-center gap-2">
-                                <span>Data: {ata.meetingDate ? new Date(ata.meetingDate + "T00:00:00").toLocaleDateString("pt-BR") : "—"}</span>
-                                {ata.contentSummary && (
-                                  <>
-                                    <span>•</span>
-                                    <span className="normal-case font-medium truncate">{ata.contentSummary}</span>
-                                  </>
+              {mentoringQuotaTotal !== null && mentoringQuotaTotal > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
+
+                  {/* Indicador principal (esquerda) */}
+                  <div className="p-5 bg-[var(--bg-primary)]/40 border border-[var(--border-primary)]/40 rounded-2xl space-y-4 text-center">
+                    <div className="relative w-32 h-32 mx-auto flex items-center justify-center">
+                      <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="40" stroke="var(--border-primary)" strokeWidth="6" fill="transparent" className="opacity-35" />
+                        <circle cx="50" cy="50" r="40" stroke="var(--accent-start)" strokeWidth="6" fill="transparent" strokeDasharray="251.2" strokeDashoffset={251.2 - (251.2 * (mentoringUsed / mentoringQuotaTotal))} className="transition-all duration-500" />
+                      </svg>
+                      <div className="absolute flex flex-col items-center justify-center text-center">
+                        <span className="text-lg font-black text-[var(--text-primary)]">{mentoringUsed} / {mentoringQuotaTotal}</span>
+                        <span className="text-[7px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60 mt-0.5">Sessões Consumidas</span>
+                      </div>
+                    </div>
+
+                    <div className="border-t border-[var(--border-primary)]/40 pt-3 grid grid-cols-2 gap-2 text-left">
+                      <div>
+                        <span className="text-[7px] font-black uppercase tracking-widest text-[var(--text-muted)]">Saldo Restante</span>
+                        <p className="text-xs font-bold text-[var(--text-primary)] mt-0.5">{mentoringQuotaTotal - mentoringUsed} sessões</p>
+                      </div>
+                      <div>
+                        <span className="text-[7px] font-black uppercase tracking-widest text-[var(--text-muted)]">Cota Total</span>
+                        <p className="text-xs font-bold text-[var(--text-primary)] mt-0.5">{mentoringQuotaTotal} sessões</p>
+                      </div>
+                    </div>
+
+                    <div className="border-t border-[var(--border-primary)]/40 pt-3 flex flex-col gap-2 text-left">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[8px] font-bold uppercase tracking-widest text-amber-500 flex items-center gap-1.5"><Clock size={11} /> Pendentes</span>
+                        <span className="text-[10px] font-black text-[var(--text-primary)]">{mentoringPending}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[8px] font-bold uppercase tracking-widest text-red-400 flex items-center gap-1.5"><Trash2 size={11} /> Faltas / Remarc.</span>
+                        <span className="text-[10px] font-black text-[var(--text-primary)]">{mentoringAbsent}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Histórico de sessões (direita, discreto) */}
+                  <div className="space-y-2.5">
+                    <span className="text-[8px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)] block">Histórico de sessões</span>
+                    {mentoringBookings.length > 0 ? (
+                      <div className="space-y-2 max-h-[280px] overflow-y-auto custom-scrollbar pr-1">
+                        {mentoringBookings.map((session) => {
+                          const start = session.eventDetail?.start;
+                          const dateStr = start ? new Date(start).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "2-digit" }) : "—";
+                          const timeStr = start ? new Date(start).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "";
+                          const motivo = session.oneToOneData?.expectations || session.oneToOneData?.type || "";
+                          const isSessionOpen = !!expandedSessions[session.id];
+                          const hasAta = !!session.meetingMinutesFile?.url;
+                          const hasTask = !!(session.participantTasks && session.participantTasks.trim());
+                          const hasFeedback = !!(session.participantFeedback && session.participantFeedback.trim());
+
+                          return (
+                            <div key={session.id} className="p-2.5 bg-[var(--bg-primary)]/40 border border-[var(--border-primary)]/40 rounded-xl space-y-2">
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="min-w-0 text-left">
+                                  <span className="text-[9px] font-black text-[var(--text-primary)] font-mono">{dateStr}{timeStr ? ` · ${timeStr}` : ""}</span>
+                                  <p className="text-[10px] text-[var(--text-muted)] leading-snug truncate">{motivo || "Sessão de mentoria"}</p>
+                                </div>
+                                <button
+                                  onClick={() => setExpandedSessions(prev => ({ ...prev, [session.id]: !isSessionOpen }))}
+                                  className="p-1 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors shrink-0"
+                                  title="Detalhes da sessão"
+                                >
+                                  <MoreHorizontal size={14} />
+                                </button>
+                              </div>
+
+                              <AnimatePresence>
+                                {isSessionOpen && (
+                                  <motion.div
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: "auto" }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    className="overflow-hidden space-y-2 border-t border-[var(--border-primary)]/40 pt-2 text-left"
+                                  >
+                                    <div className="space-y-0.5">
+                                      <span className="text-[7px] font-black uppercase tracking-widest text-[var(--accent-start)] flex items-center gap-1"><MessageSquare size={9} /> Motivo</span>
+                                      <p className="text-[10px] text-[var(--text-primary)] leading-relaxed whitespace-pre-line">{motivo || "—"}</p>
+                                    </div>
+                                    {hasFeedback && (
+                                      <div className="space-y-0.5">
+                                        <span className="text-[7px] font-black uppercase tracking-widest text-blue-400 flex items-center gap-1"><Award size={9} /> Feedback</span>
+                                        <p className="text-[10px] text-[var(--text-primary)] leading-relaxed whitespace-pre-line">{maskInternalContact(session.participantFeedback || "")}</p>
+                                      </div>
+                                    )}
+                                    {hasTask && (
+                                      <div className="space-y-0.5">
+                                        <span className="text-[7px] font-black uppercase tracking-widest text-green-400 flex items-center gap-1"><CheckSquare size={9} /> Tarefas</span>
+                                        <p className="text-[10px] text-[var(--text-primary)] leading-relaxed whitespace-pre-line">{session.participantTasks}</p>
+                                      </div>
+                                    )}
+                                    {hasAta && (
+                                      <button
+                                        onClick={(e) => handleDownloadFile(e, session.meetingMinutesFile!.url)}
+                                        className="inline-flex items-center gap-1.5 text-[8px] font-black uppercase tracking-widest text-[var(--accent-start)] hover:underline"
+                                      >
+                                        <ExternalLink size={10} /> Ver ata da reunião
+                                      </button>
+                                    )}
+                                    {!hasFeedback && !hasTask && !hasAta && (
+                                      <p className="text-[9px] text-[var(--text-muted)] italic">Sem ata, tarefa ou feedback registrados.</p>
+                                    )}
+                                  </motion.div>
                                 )}
-                              </p>
+                              </AnimatePresence>
                             </div>
-                            <button 
-                              onClick={(e) => handleDownloadFile(e, ata.fileUrl)}
-                              className="p-3 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-xl text-[9px] font-bold uppercase tracking-wider hover:bg-[var(--accent-start)] hover:text-white hover:border-transparent transition-all flex items-center gap-2 cursor-pointer"
-                            >
-                              <ExternalLink size={12} /> Ver Ata
-                            </button>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     ) : (
-                      <div className="py-12 text-center text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-50 flex items-center justify-center gap-2">
-                        <HelpCircle size={14} /> Nenhuma ata de reunião registrada nesta conta
+                      <div className="py-8 text-center border border-dashed border-[var(--border-primary)]/60 rounded-xl">
+                        <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-60">Nenhuma sessão registrada ainda</p>
                       </div>
                     )}
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
 
-          {/* Accordion 3: Histórico de Documentos da Jornada */}
-          <div className="bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-[2.5rem] overflow-hidden shadow-sm">
-            <button
-              onClick={() => toggleAccordion("docs")}
-              className="w-full px-8 py-5 flex items-center justify-between text-left transition-colors hover:bg-[var(--input-bg)]/25"
-            >
-              <div className="flex items-center gap-4">
-                <div className="p-2.5 bg-indigo-500/10 rounded-2xl text-indigo-400 border border-indigo-500/20">
-                  <FileText size={16} />
                 </div>
-                <div>
-                  <h4 className="text-xs font-black text-[var(--text-primary)]">Histórico de Documentos da Jornada</h4>
-                  <p className="text-[8px] font-bold text-[var(--text-muted)] uppercase tracking-wider mt-0.5">Histórico dos materiais, relatórios e documentos recebidos durante a sua jornada</p>
+              ) : (
+                <div className="py-16 text-center space-y-2 border border-dashed border-[var(--border-primary)]/60 rounded-2xl">
+                  <Sparkles size={24} className="text-[var(--text-muted)] opacity-30 mx-auto" />
+                  <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)] mt-2">Você ainda não tem cotas de 1 to 1</p>
+                  <p className="text-[9px] text-[var(--text-muted)] mt-1">Sua cota contratada não foi identificada no sistema.</p>
                 </div>
-              </div>
-              <ChevronDown size={18} className={`text-[var(--text-muted)] transition-transform duration-300 ${activeAccordion === "docs" ? "rotate-180" : ""}`} />
-            </button>
-
-            <AnimatePresence>
-              {activeAccordion === "docs" && (
-                <motion.div
-                  initial={{ height: 0 }}
-                  animate={{ height: "auto" }}
-                  exit={{ height: 0 }}
-                  className="overflow-hidden border-t border-[var(--border-primary)]/40"
-                >
-                  <div className="p-8 space-y-4 bg-[var(--bg-primary)]/10">
-                    {careerData?.sharedDocuments && careerData.sharedDocuments.length > 0 ? (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {careerData.sharedDocuments.map((doc) => (
-                          <div key={doc.id} className="p-4 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-2xl flex items-center justify-between">
-                            <div className="space-y-1 text-left max-w-[65%]">
-                              <span className="text-[8px] font-black uppercase tracking-widest text-[var(--accent-start)]">{doc.category}</span>
-                              <h5 className="text-xs font-black text-[var(--text-primary)] leading-tight">{doc.title}</h5>
-                              <p className="text-[8px] text-[var(--text-muted)] truncate font-mono">{doc.fileName}</p>
-                            </div>
-                            <button 
-                              onClick={(e) => handleDownloadFile(e, doc.fileUrl)}
-                              className="px-4 py-2.5 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-xl text-[8px] font-black uppercase tracking-wider hover:bg-[var(--accent-start)] hover:text-white hover:border-transparent transition-all flex items-center gap-1.5 cursor-pointer"
-                            >
-                              <ExternalLink size={10} /> Baixar PDF
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="py-12 text-center text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-50 flex items-center justify-center gap-2">
-                        <HelpCircle size={14} /> Nenhum documento de apoio anexado a sua conta
-                      </div>
-                    )}
-                  </div>
-                </motion.div>
               )}
-            </AnimatePresence>
+            </div>
+
           </div>
+        </section>
 
-        </div>
+        {/* ===== SEÇÃO: PROGRESSÃO DA CARREIRA ===== */}
+        <section className="space-y-5">
+          <SectionLabel>Progressão da Carreira</SectionLabel>
 
-        {/* BACKLOGLIST & METAS STRATEGICAS SECTION */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
           {/* LEFT: BACKLOGLIST DA SUA CARREIRA (Checklist container showing row by row) */}
-          <div className="lg:col-span-7 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-[3.5rem] p-8 space-y-6 shadow-sm">
+          <div className="lg:col-span-6 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-[2rem] p-6 space-y-6 shadow-sm">
             <div className="flex items-center justify-between border-b border-[var(--border-primary)]/40 pb-5">
               <div className="flex items-center gap-3 text-left">
                 <div className="p-3 bg-[var(--accent-start)]/10 rounded-2xl border border-[var(--accent-start)]/20 text-[var(--accent-start)]">
@@ -826,7 +754,7 @@ export default function GestaoCarreiraPage() {
                 </div>
                 <div>
                   <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-primary)]">Backloglist da sua Carreira</h3>
-                  <p className="text-[8px] font-bold text-[var(--text-muted)] uppercase tracking-wider mt-0.5">Gerenciamento vertical de tarefas da sua carreira</p>
+                  <p className="text-[8px] font-bold text-[var(--text-muted)] uppercase tracking-wider mt-0.5">Suas tarefas de carreira</p>
                 </div>
               </div>
             </div>
@@ -983,7 +911,7 @@ export default function GestaoCarreiraPage() {
           </div>
 
           {/* RIGHT: METAS E OBJETIVOS (Dynamic objectives with dynamic targets progression calculation) */}
-          <div className="lg:col-span-5 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-[3.5rem] p-8 space-y-6 shadow-sm text-left">
+          <div className="lg:col-span-6 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-[2rem] p-6 space-y-6 shadow-sm text-left">
             <div className="flex items-center justify-between border-b border-[var(--border-primary)]/40 pb-5">
               <div className="flex items-center gap-3 text-left">
                 <div className="p-3 bg-[var(--accent-start)]/10 rounded-2xl border border-[var(--accent-start)]/20 text-[var(--accent-start)]">
@@ -991,7 +919,7 @@ export default function GestaoCarreiraPage() {
                 </div>
                 <div>
                   <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-primary)]">Metas e Objetivos</h3>
-                  <p className="text-[8px] font-bold text-[var(--text-muted)] uppercase tracking-wider mt-0.5">Acompanhe e atualize suas metas estrategicas e objetivos</p>
+                  <p className="text-[8px] font-bold text-[var(--text-muted)] uppercase tracking-wider mt-0.5">Acompanhe e atualize suas metas e objetivos</p>
                 </div>
               </div>
 
@@ -1172,13 +1100,132 @@ export default function GestaoCarreiraPage() {
               ) : (
                 <div className="py-16 text-center space-y-2 border border-dashed border-[var(--border-primary)]/60 rounded-2xl">
                   <Target size={24} className="text-[var(--text-muted)] opacity-30 mx-auto" />
-                  <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60">Nenhum objetivo estrategico definido</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60">Nenhum objetivo estratégico definido</p>
                 </div>
               )}
             </div>
           </div>
 
         </div>
+        </section>
+
+        {/* ===== SEÇÃO: HISTÓRICO DA JORNADA ===== */}
+        <section className="space-y-5">
+          <SectionLabel>Histórico da Jornada</SectionLabel>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+
+            {/* Feedbacks Recebidos */}
+            <div className="bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-[2rem] p-6 space-y-4 shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-blue-500/10 rounded-2xl text-blue-400 border border-blue-500/20">
+                  <MessageSquare size={16} />
+                </div>
+                <div>
+                  <h4 className="text-xs font-black text-[var(--text-primary)]">Feedbacks Recebidos</h4>
+                  <p className="text-[8px] font-bold text-[var(--text-muted)] uppercase tracking-wider mt-0.5">Feedbacks e orientações do seu mentor</p>
+                </div>
+              </div>
+              {careerData?.feedbacks && careerData.feedbacks.length > 0 ? (
+                <div className="space-y-3 max-h-[340px] overflow-y-auto custom-scrollbar pr-1">
+                  {careerData.feedbacks.map((fb) => (
+                    <div key={fb.id} className="p-4 bg-[var(--bg-primary)] border border-[var(--border-primary)]/60 rounded-2xl space-y-2 text-left shadow-inner">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[9px] font-black uppercase tracking-widest text-[var(--accent-start)] truncate">{maskInternalContact(fb.author)}</span>
+                        <span className="text-[8px] font-bold text-[var(--text-muted)] font-mono shrink-0">{fb.createdAt ? new Date(fb.createdAt).toLocaleDateString("pt-BR") : "—"}</span>
+                      </div>
+                      <div className="space-y-1">
+                        <h5 className="text-xs font-black text-[var(--text-primary)]">{fb.title}</h5>
+                        <p className="text-[11px] text-[var(--text-muted)] leading-relaxed whitespace-pre-line font-medium">{maskInternalContact(fb.content)}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="py-10 text-center text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-50 flex flex-col items-center justify-center gap-2">
+                  <HelpCircle size={16} /> Nenhum feedback registrado
+                </div>
+              )}
+            </div>
+
+            {/* Histórico de Atas de Reuniões */}
+            <div className="bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-[2rem] p-6 space-y-4 shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-amber-500/10 rounded-2xl text-amber-400 border border-amber-500/20">
+                  <Calendar size={16} />
+                </div>
+                <div>
+                  <h4 className="text-xs font-black text-[var(--text-primary)]">Atas de Reuniões</h4>
+                  <p className="text-[8px] font-bold text-[var(--text-muted)] uppercase tracking-wider mt-0.5">Pautas e atas das suas mentorias</p>
+                </div>
+              </div>
+              {careerData?.atas && careerData.atas.length > 0 ? (
+                <div className="space-y-3 max-h-[340px] overflow-y-auto custom-scrollbar pr-1">
+                  {careerData.atas.map((ata) => (
+                    <div key={ata.id} className="p-3 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-xl space-y-2 text-left">
+                      <div className="space-y-1">
+                        <h5 className="text-xs font-black text-[var(--text-primary)] leading-tight">{ata.title}</h5>
+                        <p className="text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-wider">
+                          {ata.meetingDate ? new Date(ata.meetingDate + "T00:00:00").toLocaleDateString("pt-BR") : "—"}
+                        </p>
+                        {ata.contentSummary && (
+                          <p className="text-[10px] text-[var(--text-muted)] leading-relaxed line-clamp-2">{ata.contentSummary}</p>
+                        )}
+                      </div>
+                      <button
+                        onClick={(e) => handleDownloadFile(e, ata.fileUrl)}
+                        className="w-full px-3 py-2 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-lg text-[8px] font-black uppercase tracking-wider hover:bg-[var(--accent-start)] hover:text-white hover:border-transparent transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        <ExternalLink size={11} /> Ver Ata
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="py-10 text-center text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-50 flex flex-col items-center justify-center gap-2">
+                  <HelpCircle size={16} /> Nenhuma ata registrada
+                </div>
+              )}
+            </div>
+
+            {/* Histórico de Documentos da Jornada */}
+            <div className="bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-[2rem] p-6 space-y-4 shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-indigo-500/10 rounded-2xl text-indigo-400 border border-indigo-500/20">
+                  <FileText size={16} />
+                </div>
+                <div>
+                  <h4 className="text-xs font-black text-[var(--text-primary)]">Documentos da Jornada</h4>
+                  <p className="text-[8px] font-bold text-[var(--text-muted)] uppercase tracking-wider mt-0.5">Materiais e relatórios recebidos</p>
+                </div>
+              </div>
+              {careerData?.sharedDocuments && careerData.sharedDocuments.length > 0 ? (
+                <div className="space-y-3 max-h-[340px] overflow-y-auto custom-scrollbar pr-1">
+                  {careerData.sharedDocuments.map((doc) => (
+                    <div key={doc.id} className="p-3 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-xl space-y-2 text-left">
+                      <div className="space-y-1">
+                        <span className="text-[8px] font-black uppercase tracking-widest text-[var(--accent-start)]">{doc.category}</span>
+                        <h5 className="text-xs font-black text-[var(--text-primary)] leading-tight">{doc.title}</h5>
+                        <p className="text-[8px] text-[var(--text-muted)] truncate font-mono">{doc.fileName}</p>
+                      </div>
+                      <button
+                        onClick={(e) => handleDownloadFile(e, doc.fileUrl)}
+                        className="w-full px-3 py-2 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-lg text-[8px] font-black uppercase tracking-wider hover:bg-[var(--accent-start)] hover:text-white hover:border-transparent transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        <ExternalLink size={11} /> Baixar PDF
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="py-10 text-center text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-50 flex flex-col items-center justify-center gap-2">
+                  <HelpCircle size={16} /> Nenhum documento anexado
+                </div>
+              )}
+            </div>
+
+          </div>
+        </section>
 
       </div>
     </div>
