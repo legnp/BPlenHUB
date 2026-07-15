@@ -5,7 +5,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { 
+import {
   Palette,
   Check,
   LogOut,
@@ -15,7 +15,10 @@ import {
   Home,
   ChevronDown,
   ScrollText,
-  LayoutDashboard
+  LayoutDashboard,
+  CalendarDays,
+  Activity,
+  Plus
 } from "lucide-react";
 import { useTheme, BPlenTheme } from "@/context/ThemeContext";
 import { useAuthContext } from "@/context/AuthContext";
@@ -23,6 +26,9 @@ import { useRouter } from "next/navigation";
 import { BPlenLogo } from "@/components/shared/BPlenLogo";
 import { BPLEN_NOMENCLATURE } from "@/config/nomenclature";
 import { cn } from "@/lib/utils";
+import OneToOneBookingModal from "@/components/shared/OneToOneBookingModal";
+import { getProgramacaoForMemberAction } from "@/actions/calendar";
+import { ProgramacaoEntry } from "@/types/calendar";
 
 /**
  * HubHeader (Ecossistema Privado)
@@ -48,15 +54,33 @@ const THEMES: ThemeOption[] = [
 
 export function HubHeader() {
   const { theme, setTheme } = useTheme();
-  const { user, nickname, photoUrl, logout } = useAuthContext();
+  const { user, matricula, nickname, photoUrl, logout } = useAuthContext();
   const router = useRouter();
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
   const [isSocialMenuOpen, setIsSocialMenuOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [revealedIndex, setRevealedIndex] = useState<number | null>(null);
+  // Modal "Agendar 1 to 1" acionável de qualquer tela do hub — a programação
+  // é carregada sob demanda no primeiro clique (o modal filtra os eventos 1-to-1).
+  const [isOneToOneOpen, setIsOneToOneOpen] = useState(false);
+  const [oneToOneEvents, setOneToOneEvents] = useState<ProgramacaoEntry[]>([]);
+  const [oneToOneLoaded, setOneToOneLoaded] = useState(false);
   const themeMenuRef = useRef<HTMLDivElement>(null);
   const socialMenuRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
+
+  const handleOpenOneToOne = async () => {
+    setIsSocialMenuOpen(false);
+    setIsOneToOneOpen(true);
+    if (!oneToOneLoaded) {
+      try {
+        const data = await getProgramacaoForMemberAction();
+        setOneToOneEvents(data);
+        setOneToOneLoaded(true);
+      } catch (error) {
+        console.error("Erro ao carregar programacao para agendamento 1 to 1:", error);
+      }
+    }
+  };
 
   // Escuta de Eventos do Tour
   useEffect(() => {
@@ -64,7 +88,6 @@ export function HubHeader() {
       if (e.detail === 'open_social_menu') {
         setIsSocialMenuOpen(true);
         setIsThemeMenuOpen(false);
-        setRevealedIndex(null); // null mostra tudo imediatamente
       }
     };
     window.addEventListener('tour-action', handleTourAction as EventListener);
@@ -102,6 +125,47 @@ export function HubHeader() {
     { icon: <img src="/tiktok.png" alt="TikTok" className={`w-5 h-5 object-contain ${iconFilterClass}`} />, url: "https://www.tiktok.com/@lis.lencina", name: "TikTok" },
   ];
 
+  const isActive = (href: string) => {
+    if (href === "/hub" || href === "/hub/membro") return pathname === href;
+    return pathname.startsWith(href);
+  };
+
+  // Links do menu sanduiche agrupados em secoes (paths internos relativos).
+  const menuSections: {
+    label: string;
+    items: { icon: React.ElementType; label: string; href?: string; onClick?: () => void }[];
+  }[] = [
+    {
+      label: "Geral",
+      items: [
+        { href: "/hub", icon: Home, label: BPLEN_NOMENCLATURE.navigation.home },
+        { href: "/hub/membro", icon: ShieldCheck, label: BPLEN_NOMENCLATURE.navigation.member_area },
+        { href: "/hub/visao_geral", icon: LayoutDashboard, label: "Visão Geral" },
+      ],
+    },
+    {
+      label: "Jornada de Membro",
+      items: [
+        { href: "/hub/membro/gestao_agenda", icon: CalendarDays, label: "Gestão de Agenda" },
+        { href: "/hub/membro/gestao_carreira", icon: Activity, label: "Gestão de Carreira" },
+        { onClick: handleOpenOneToOne, icon: Plus, label: "Agendar 1 to 1" },
+      ],
+    },
+    {
+      label: BPLEN_NOMENCLATURE.navigation.networking,
+      items: [
+        { href: "/hub/networking", icon: Users, label: BPLEN_NOMENCLATURE.navigation.networking },
+      ],
+    },
+    {
+      label: "Gestão da Conta",
+      items: [
+        { href: "/hub/profile_settings", icon: UserCog, label: BPLEN_NOMENCLATURE.navigation.profile },
+        { href: "/hub/membro/contratos", icon: ScrollText, label: "Meus Contratos" },
+      ],
+    },
+  ];
+
   return (
     <>
       {/* 🚀 Logo BPlen Flutuante (Esquerda) — elemento fixed independente */}
@@ -124,7 +188,6 @@ export function HubHeader() {
                onClick={() => {
                   setIsSocialMenuOpen(!isSocialMenuOpen);
                   setIsThemeMenuOpen(false);
-                  setRevealedIndex(null); // Reseta revelação ao clique normal
                }}
                className={cn(
                   "w-22 h-22 rounded-full border-2 transition-all duration-500 overflow-hidden flex items-center justify-center group bg-black/10 backdrop-blur-md shadow-2xl",
@@ -155,82 +218,70 @@ export function HubHeader() {
                    exit={{ opacity: 0, x: -20, scale: 0.95 }}
                    className="absolute top-0 right-24 p-5 bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-[2.5rem] shadow-2xl w-64 backdrop-blur-[var(--glass-blur)] z-[200]"
                  >
-                    <div className="space-y-6">
-                       <p className="px-2 text-[8px] font-black text-gray-500 uppercase tracking-[0.2em]">{BPLEN_NOMENCLATURE.navigation.member_area}</p>
-                       
-                       <div className="px-2 space-y-1">
+                    <div className="space-y-3.5">
+                       <p className="px-2 text-[8px] font-black text-gray-500 uppercase tracking-[0.2em]">BPlen HUB</p>
+
+                       <div className="px-2 space-y-0.5">
                           <p className={cn(
-                            "text-[14px] font-black text-[var(--text-primary)] leading-tight uppercase truncate",
-                            !user?.displayName && "animate-pulse bg-white/5 rounded h-4 w-3/4"
+                            "text-[13px] font-black text-[var(--text-primary)] leading-tight uppercase truncate",
+                            !user?.displayName && "animate-pulse bg-white/5 rounded h-3.5 w-3/4"
                           )}>
                             {user?.displayName || "Membro BPlen"}
                           </p>
+                          {matricula && (
+                            <p className="text-[9px] font-bold text-[var(--text-muted)] font-mono tracking-wide">{matricula}</p>
+                          )}
                           <p className={cn(
-                            "text-[10px] font-bold text-[var(--accent-start)] italic",
+                            "text-[9px] font-bold text-[var(--accent-start)] italic",
                             !nickname && "animate-pulse bg-[var(--accent-start)]/10 rounded h-3 w-1/2 mt-1"
                           )}>
                             {nickname ? `@${nickname}` : "carregando..."}
                           </p>
                        </div>
 
-                       <div className="space-y-1">
-                          {[
-                            { href: "/hub", icon: Home, label: BPLEN_NOMENCLATURE.navigation.home, active: pathname === "/hub" },
-                            { href: "/hub/membro", icon: ShieldCheck, label: BPLEN_NOMENCLATURE.navigation.member_area, active: pathname === "/hub/membro" },
-                            { href: "/hub/visao_geral", icon: LayoutDashboard, label: "Visão Geral", active: pathname.startsWith("/hub/visao_geral") },
-                            { href: "/hub/membro/contratos", icon: ScrollText, label: "Meus Contratos", active: pathname.startsWith("/hub/membro/contratos") },
-                            { href: "/hub/profile_settings", icon: UserCog, label: BPLEN_NOMENCLATURE.navigation.profile, active: pathname.startsWith("/hub/profile_settings") },
-                            { href: "/hub/networking", icon: Users, label: BPLEN_NOMENCLATURE.navigation.networking, active: pathname.startsWith("/hub/networking") },
-                          ].map((item, index) => (
-                             <motion.div
-                               key={item.href}
-                               initial={revealedIndex !== null ? { opacity: 0, height: 0, overflow: 'hidden' } : { opacity: 1, height: 'auto' }}
-                               animate={{ 
-                                 opacity: revealedIndex === null || index <= revealedIndex ? 1 : 0,
-                                 height: revealedIndex === null || index <= revealedIndex ? 'auto' : 0
-                               }}
-                               transition={{ duration: 0.4 }}
-                             >
-                               <Link 
-                                  href={item.href}
-                                  onClick={() => setIsSocialMenuOpen(false)}
-                                  className={cn(
-                                    "w-full flex items-center gap-3 p-3.5 rounded-2xl transition-all group border",
-                                    item.active 
-                                      ? "bg-[var(--accent-start)]/10 border-[var(--accent-start)]/20 text-[var(--accent-start)]"
-                                      : "border-transparent text-[var(--text-secondary)] hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)]"
-                                  )}
-                               >
-                                  <item.icon size={18} />
-                                  <span className={cn("text-[10px] uppercase tracking-widest", item.active ? "font-black" : "font-bold")}>{item.label}</span>
-                               </Link>
-                             </motion.div>
+                       <div className="space-y-3">
+                          {menuSections.map((section) => (
+                             <div key={section.label} className="space-y-1">
+                                <p className="px-2 text-[7px] font-black text-gray-500 uppercase tracking-[0.2em]">{section.label}</p>
+                                {section.items.map((item) => {
+                                   const active = item.href ? isActive(item.href) : false;
+                                   const className = cn(
+                                      "w-full flex items-center gap-2.5 p-2.5 rounded-xl transition-all border text-left",
+                                      active
+                                        ? "bg-[var(--accent-start)]/10 border-[var(--accent-start)]/20 text-[var(--accent-start)]"
+                                        : "border-transparent text-[var(--text-secondary)] hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)]"
+                                   );
+                                   const Icon = item.icon;
+                                   const inner = (
+                                      <>
+                                         <Icon size={15} />
+                                         <span className={cn("text-[9px] uppercase tracking-widest", active ? "font-black" : "font-bold")}>{item.label}</span>
+                                      </>
+                                   );
+                                   return item.href ? (
+                                      <Link key={item.label} href={item.href} onClick={() => setIsSocialMenuOpen(false)} className={className}>
+                                         {inner}
+                                      </Link>
+                                   ) : (
+                                      <button key={item.label} onClick={item.onClick} className={className}>
+                                         {inner}
+                                      </button>
+                                   );
+                                })}
+                             </div>
                           ))}
-
-                          <button 
-                            onClick={async () => {
-                              setIsLoggingOut(true);
-                              await logout();
-                              router.push("/");
-                            }}
-                            className="w-full flex items-center gap-3 p-3.5 rounded-2xl text-red-500 hover:bg-red-500/10 transition-all border border-transparent hover:border-red-500/10"
-                          >
-                             <LogOut size={18} className={isLoggingOut ? "animate-pulse" : ""} />
-                             <span className="text-[10px] font-black uppercase tracking-widest">Sair</span>
-                          </button>
                        </div>
 
-                       <div className="h-px bg-white/5 mx-2" />
-
-                       <div className="space-y-4 px-2">
-                          <p className="text-[8px] font-black text-gray-500 uppercase tracking-[0.2em] text-center">{BPLEN_NOMENCLATURE.navigation.social_label}</p>
-                          <div className="grid grid-cols-2 gap-2">
+                       {/* Social Media — icones em uma unica linha */}
+                       <div className="space-y-2 px-2">
+                          <p className="text-[7px] font-black text-gray-500 uppercase tracking-[0.2em] text-center">{BPLEN_NOMENCLATURE.navigation.social_label}</p>
+                          <div className="grid grid-cols-4 gap-2">
                              {socialLinks.map((social, i) => (
                                <Link
                                  key={i}
                                  href={social.url}
                                  target="_blank"
-                                 className="p-4 bg-white/5 border border-white/5 rounded-2xl text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:border-[var(--accent-start)]/30 hover:bg-[var(--accent-soft)] transition-all flex items-center justify-center group"
+                                 className="p-2.5 bg-white/5 border border-white/5 rounded-xl text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:border-[var(--accent-start)]/30 hover:bg-[var(--accent-soft)] transition-all flex items-center justify-center group"
                                >
                                   <div className="scale-90 group-hover:scale-110 transition-transform">
                                      {social.icon}
@@ -239,6 +290,21 @@ export function HubHeader() {
                              ))}
                           </div>
                        </div>
+
+                       <div className="h-px bg-white/5 mx-2" />
+
+                       {/* Sair — ultimo item do container */}
+                       <button
+                         onClick={async () => {
+                           setIsLoggingOut(true);
+                           await logout();
+                           router.push("/");
+                         }}
+                         className="w-full flex items-center gap-2.5 p-2.5 rounded-xl text-red-500 hover:bg-red-500/10 transition-all border border-transparent hover:border-red-500/10"
+                       >
+                          <LogOut size={15} className={isLoggingOut ? "animate-pulse" : ""} />
+                          <span className="text-[9px] font-black uppercase tracking-widest">Sair</span>
+                       </button>
                     </div>
                  </motion.div>
                )}
@@ -311,6 +377,14 @@ export function HubHeader() {
       </div>
 
       </header>
+
+      {/* Modal "Agendar 1 to 1" acionavel de qualquer tela do hub (Opcao A) */}
+      <OneToOneBookingModal
+        isOpen={isOneToOneOpen}
+        onClose={() => setIsOneToOneOpen(false)}
+        allEvents={oneToOneEvents}
+        onSuccess={() => setOneToOneLoaded(false)}
+      />
     </>
   );
 }

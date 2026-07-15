@@ -8,7 +8,7 @@ export const BPLEN_NOMENCLATURE = {
     logout: "Sair",
     logging_out: "Saindo...",
     sync_status: "Sincronizado",
-    social_label: "Conexão Digital",
+    social_label: "Social Media",
   },
 
   // --- [PÁGINA: PRIMEIROS PASSOS] (Trilha de Boas-vindas) ---
