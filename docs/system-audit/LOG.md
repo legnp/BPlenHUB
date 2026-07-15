@@ -3320,6 +3320,41 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
 - Itens atualizados: `00-PLAN.md` (F1-04 — nota do Pacote 5), `DASHBOARD.md` (entrada nova),
   este LOG. Sem novos bugs.
 
+## [2026-07-15] Chat de execução — Ajustes gerais da página profile_settings (PRs #88–#91)
+
+- Pacote grande e conectado de ajustes da `/hub/profile_settings` (F1-05), tocando identidade,
+  design e o fluxo de dados da survey de check-in. Investigação prévia + diagnóstico das perguntas
+  da Gestora, depois plano aprovado em **4 PRs**.
+- **Diagnósticos entregues:**
+  - *"Nome de Usuário" = "Membro BPlen"*: o campo mapeia o `nickname` do doc User (via
+    `nicknameToName`), com fallback literal "Membro BPlen" quando vazio (BP-005 nunca teve nickname).
+    → renomeado para **"Apelido"** e fallback trocado por **"Não definido"**.
+  - *Fluxo survey ↔ profile (item 2.6)*: ambos usam `User/{matricula}/results/check_in` com chaves
+    idênticas. **survey → profile** já funcionava; **profile → survey** gravava de volta mas **não
+    refletia na UI** (o `SurveyEngine` não pré-carregava respostas) → corrigido no PR4.
+- **PR #88 (PR1 — copy + correções, `8611dcc`):** eyebrow → "Sua identidade profissional na BPlen";
+  utility CSS `.no-scrollbar` (era inerte → barra de rolagem aparecia no seletor de abas); "Apelido"
+  + "Não definido".
+- **PR #89 (PR2 — redesign da aba Perfil Profissional, `86d2c6a`):** card de privacidade minimalista
+  ("Soberania de Privacidade"→"Segurança da sua Privacidade" + fix do markdown `**`); 3 seções com
+  rótulo+linha (Networking / Histórico Profissional / Remuneração Total) na ordem pedida; toggle
+  **Banco de Talentos** movido para o header (auto-save via nova `updateTalentBankParticipationAction`,
+  bidirecional com a survey); cards Networking/Contatos compactos; novo campo **"Nome para exibição"**
+  (`display_name`, usado no card da página de Networking com prioridade); trocas de copy 2.10.
+- **PR #90 (PR3 — edição por seção + guarda, `a84e224`):** cada seção com botão Editar/Salvar próprio;
+  dirty-tracking (vs baseline) reportado à página via `onDirtyChange`; **pop-up** de alterações não
+  salvas ao trocar de aba + `beforeunload` ao fechar/recarregar.
+- **PR #91 (PR4 — prefill bidirecional da survey, `aebded9`):** nova action guardada
+  `getOwnCheckinPrefillAction` (whitelist dos campos de sobreposição, sem Timestamps/PII);
+  `SurveyEngine` ganhou prop `initialAnswers` **+ self-fetch** para `config.id === "check_in"`, com
+  seed `{ ...prefill, ...prev }` (rascunho/edição do usuário sempre prevalece). **StepRenderer não foi
+  tocado** (evita herdar o lint legado de hooks daquele arquivo).
+- Validado (todos): eslint dos arquivos tocados 0 erros, test 52/52, type-check, build exit 0.
+  Telas logadas não autenticam no preview (BUG-030) → validação em produção pela Gestora.
+- Nota de higiene (L4): o PR4 foi commitado por engano na `main` local; movido para branch própria
+  antes de qualquer push — a `main` remota nunca recebeu commit direto (branch+PR normal).
+- Itens atualizados: `DASHBOARD.md` (entrada nova), este LOG. Sem novos bugs.
+
 ## [2026-07-14] Chat de execução — Pacote 5 validado + redesign do menu sanduíche do hub (PR #87)
 
 - **Pacote 5 validado e aprovado em produção pela Gestora.** A Gestão de Carreira (design 5A +

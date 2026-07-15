@@ -12,7 +12,17 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-14 (chat de execução — **Pacote 5 validado + redesign do menu
+> **Última atualização:** 2026-07-15 (chat de execução — **Ajustes gerais da página
+> `profile_settings` (PRs #88–#91)**: pacote grande da aba Perfil & Configurações (F1-05).
+> **PR1** copy + `.no-scrollbar` (utility inerte → barra no seletor de abas) + "Apelido"/"Não
+> definido". **PR2** redesign da aba Perfil Profissional (privacidade minimalista + fix markdown,
+> 3 seções Networking/Histórico/Remuneração, toggle Banco de Talentos no header com auto-save,
+> campo "Nome para exibição", copy). **PR3** edição por seção + pop-up de alterações não salvas
+> (troca de aba + `beforeunload`). **PR4** prefill bidirecional da survey de check-in (self-fetch
+> no `SurveyEngine`, whitelist). Diagnósticos: "Nome de Usuário"=nickname (fallback corrigido);
+> survey↔profile agora bidirecional na UI. Validação em produção (BUG-030).
+>
+> _(entrada anterior)_ 2026-07-14 (chat de execução — **Pacote 5 validado + redesign do menu
 > sanduíche do hub (PR #87)**: **Pacote 5 aprovado em produção** (Gestão de Carreira, design +
 > funcionais) — lote de feedback F1-04/F1-05 (pacotes 1–6) 100% validado. **Menu sanduíche**
 > (`HubHeader`) reorganizado em seções (Geral / Jornada de Membro / Networking / Gestão da Conta),
