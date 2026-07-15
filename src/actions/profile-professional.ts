@@ -204,6 +204,12 @@ export async function updateProfessionalProfileAction(data: ProfessionalProfileD
           hashtags: data.hashtags,
           contacts: data.contacts,
           participation_talent_bank: data.participation_talent_bank,
+          // URLs dos documentos enviados (CV/portfólio) denormalizadas para o
+          // networking poder expô-las quando o dono ativa a visibilidade (BUG-071).
+          cv_doc_url: data.cv_upload?.url || "",
+          cv_doc_name: data.cv_upload?.fileName || "",
+          portfolio_doc_url: data.portfolio_upload?.url || "",
+          portfolio_doc_name: data.portfolio_upload?.fileName || "",
         }
       },
       // Atualiza photo das URLs de CV/Portfolio no nível raiz para acesso rápido
