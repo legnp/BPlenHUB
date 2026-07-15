@@ -39,6 +39,7 @@ export interface ProfessionalProfileData {
   networking_visibility: boolean;
   cv_networking_visibility: boolean;
   portfolio_networking_visibility: boolean;
+  display_name: string; // Nome exibido no card da página de Networking (fallback: nome completo)
   sales_pitch: string;
   hashtags: string[];
   contacts: {
@@ -114,6 +115,7 @@ export async function getProfessionalProfileAction(idToken?: string) {
       networking_visibility: netData?.networking_visibility ?? false,
       cv_networking_visibility: netData?.cv_networking_visibility ?? false,
       portfolio_networking_visibility: netData?.portfolio_networking_visibility ?? false,
+      display_name: netData?.display_name || "",
       sales_pitch: netData?.sales_pitch || "",
       hashtags: netData?.hashtags || ["", "", "", "", ""],
       contacts: {
@@ -157,6 +159,7 @@ export async function updateProfessionalProfileAction(data: ProfessionalProfileD
       networking_visibility: data.networking_visibility,
       cv_networking_visibility: data.cv_networking_visibility,
       portfolio_networking_visibility: data.portfolio_networking_visibility,
+      display_name: data.display_name || "",
       sales_pitch: data.sales_pitch,
       hashtags: data.hashtags,
       contacts: data.contacts,
@@ -189,6 +192,7 @@ export async function updateProfessionalProfileAction(data: ProfessionalProfileD
           networking_visibility: data.networking_visibility,
           cv_networking_visibility: data.cv_networking_visibility,
           portfolio_networking_visibility: data.portfolio_networking_visibility,
+          display_name: data.display_name || "",
           sales_pitch: data.sales_pitch,
           hashtags: data.hashtags,
           contacts: data.contacts,
@@ -204,6 +208,45 @@ export async function updateProfessionalProfileAction(data: ProfessionalProfileD
     return { success: true };
   } catch (error: unknown) {
     console.error("❌ [UpdateProfessionalProfile] Erro:", error);
+    return { success: false, error: getErrorMessage(error) };
+  }
+}
+
+/**
+ * Atualiza APENAS a participação no Banco de Talentos (toggle independente).
+ * O toggle vive no cabeçalho da aba (fora das seções editáveis), então grava
+ * na hora — sem depender do modo de edição. Espelha o mesmo destino da
+ * gravação completa: subcoleção networking + denormalização no User + a
+ * chave `banco_talentos` da survey de check-in (bidirecional com o onboarding).
+ */
+export async function updateTalentBankParticipationAction(value: boolean, idToken?: string) {
+  try {
+    const session = await requireAuth(idToken);
+    const matricula = await resolveMatricula(session.uid, session.email || "");
+    if (!matricula) throw new Error("Matrícula não identificada.");
+
+    const db = getAdminDb();
+    const batch = db.batch();
+
+    batch.set(db.doc(`User/${matricula}/profile/networking`), {
+      participation_talent_bank: value,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+
+    batch.set(db.doc(`User/${matricula}`), {
+      profile: { networking: { participation_talent_bank: value } },
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+
+    batch.set(db.doc(`User/${matricula}/results/check_in`), {
+      banco_talentos: value ? "Sim, quero fazer parte" : "Não, obrigado",
+      syncWithProfileAt: admin.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+
+    await batch.commit();
+    return { success: true };
+  } catch (error: unknown) {
+    console.error("❌ [UpdateTalentBankParticipation] Erro:", error);
     return { success: false, error: getErrorMessage(error) };
   }
 }
