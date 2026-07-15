@@ -28,6 +28,8 @@ export interface NetworkingMember {
   portfolioVisible: boolean;
   cvUrl?: string;
   portfolioUrl?: string;
+  cvName?: string;
+  portfolioName?: string;
 }
 
 export type NetworkingTab = "membros" | "profissionais" | "parceiros";
@@ -121,8 +123,12 @@ export async function getNetworkingDataAction(
           contacts: safeContacts,
           cvVisible,
           portfolioVisible,
-          cvUrl: cvVisible ? (d.profile?.address?.cv_url || "") : "",
-          portfolioUrl: portfolioVisible ? (d.profile?.address?.portfolio_url || "") : ""
+          // URL do documento enviado (CV/portfólio) só trafega quando o dono ativa
+          // a visibilidade — a leitura no card é via proxy /api/docs (BUG-071).
+          cvUrl: cvVisible ? (netProfile.cv_doc_url || "") : "",
+          portfolioUrl: portfolioVisible ? (netProfile.portfolio_doc_url || "") : "",
+          cvName: cvVisible ? (netProfile.cv_doc_name || "Currículo") : "",
+          portfolioName: portfolioVisible ? (netProfile.portfolio_doc_name || "Portfólio") : ""
         } as NetworkingMember;
       })
       .filter(Boolean) as NetworkingMember[];

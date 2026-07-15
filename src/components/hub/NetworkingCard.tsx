@@ -13,10 +13,22 @@ import {
 } from "lucide-react";
 import { NetworkingMember } from "@/actions/networking";
 import { PartnerData } from "@/actions/admin/partners";
+import { useAuthContext } from "@/context/AuthContext";
 
 interface Props {
   type: "member" | "partner";
   data: NetworkingMember | PartnerData;
+}
+
+/** Extrai o fileId de uma URL do Google Drive (para o proxy /api/docs). */
+function extractDriveFileId(url: string): string | null {
+  if (!url) return null;
+  return (
+    url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/)?.[1] ||
+    url.match(/[?&]id=([a-zA-Z0-9_-]+)/)?.[1] ||
+    url.match(/\/d\/([a-zA-Z0-9_-]+)/)?.[1] ||
+    null
+  );
 }
 
 /**
@@ -24,9 +36,24 @@ interface Props {
  * Interaction Card para Membros e Parceiros.
  */
 export function NetworkingCard({ type, data }: Props) {
+  const { user } = useAuthContext();
   const isMember = type === "member";
   const member = data as NetworkingMember;
   const partner = data as PartnerData;
+
+  // Abre um documento compartilhado (CV/portfólio) via proxy autenticado, usando
+  // o token do próprio visitante — o dono liberou a visibilidade (BUG-071).
+  const openSharedDoc = async (fileUrl: string) => {
+    if (!user) { window.open(fileUrl, "_blank"); return; }
+    const fileId = extractDriveFileId(fileUrl);
+    if (!fileId) { window.open(fileUrl, "_blank"); return; }
+    try {
+      const token = await user.getIdToken();
+      window.open(`/api/docs/${fileId}?token=${token}`, "_blank");
+    } catch {
+      window.open(fileUrl, "_blank");
+    }
+  };
 
   const name = isMember ? member.name : partner.name;
   const photo = isMember ? member.photoUrl : partner.photoUrl;
@@ -110,11 +137,26 @@ export function NetworkingCard({ type, data }: Props) {
            {/* LinkedIn */}
            {renderSocialLink(isMember ? (member.contacts?.linkedin?.visible ? member.contacts.linkedin.value : null) : partner.socials?.linkedin, <Linkedin size={14} />)}
 
-           {/* Site / Portfolio */}
-           {isMember && member.portfolioVisible && member.portfolioUrl && (
-             <a href={member.portfolioUrl} target="_blank" className="p-3 bg-[var(--social-bg)] text-[var(--text-secondary)] rounded-2xl hover:bg-[var(--accent-soft)] transition-all">
+           {/* Currículo (documento compartilhado) */}
+           {isMember && member.cvVisible && member.cvUrl && (
+             <button
+               onClick={() => openSharedDoc(member.cvUrl!)}
+               title={member.cvName || "Ver currículo"}
+               className="p-3 bg-[var(--social-bg)] text-[var(--text-secondary)] rounded-2xl hover:bg-[var(--accent-soft)] hover:text-[var(--accent-start)] transition-all"
+             >
                 <FileText size={14} />
-             </a>
+             </button>
+           )}
+
+           {/* Portfólio (documento compartilhado) */}
+           {isMember && member.portfolioVisible && member.portfolioUrl && (
+             <button
+               onClick={() => openSharedDoc(member.portfolioUrl!)}
+               title={member.portfolioName || "Ver portfólio"}
+               className="p-3 bg-[var(--social-bg)] text-[var(--text-secondary)] rounded-2xl hover:bg-[var(--accent-soft)] hover:text-[var(--accent-start)] transition-all"
+             >
+                <Briefcase size={14} />
+             </button>
            )}
 
            {!isMember && partner.socials?.site && (
