@@ -39,17 +39,21 @@ import { FileField } from "@/components/forms/SurveyFields/FileField";
 import { InputGlass } from "@/components/ui/InputGlass";
 import { TextareaGlass } from "@/components/ui/TextareaGlass";
 
+type SectionKey = "networking" | "historico" | "remuneracao";
+
 /**
  * Rótulo de seção discreto (rótulo em caixa alta + linha fina), no mesmo padrão
- * da separação de seções da Gestão de Carreira.
+ * da separação de seções da Gestão de Carreira. `action` recebe o botão de
+ * editar/salvar da seção (item 2.5 — edição por seção).
  */
-function SectionLabel({ children }: { children: React.ReactNode }) {
+function SectionLabel({ children, action }: { children: React.ReactNode; action?: React.ReactNode }) {
   return (
     <div className="flex items-center gap-4">
       <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)] shrink-0">
         {children}
       </span>
       <div className="h-px flex-1 bg-[var(--border-primary)]/40" />
+      {action}
     </div>
   );
 }
@@ -57,13 +61,21 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 /**
  * BPlen HUB — ProfileProfessionalTab
  * Gestão de carreira, networking e remuneração (dados internos).
+ * Edição por seção (2.5): cada seção habilita/salva de forma independente, e um
+ * guarda de "alterações não salvas" (beforeunload + aviso na troca de aba, via
+ * `onDirtyChange` para a página) evita perder edições.
  */
-export function ProfileProfessionalTab() {
-  const [isEditing, setIsEditing] = useState(false);
+export function ProfileProfessionalTab({ onDirtyChange }: { onDirtyChange?: (dirty: boolean) => void }) {
+  const [editing, setEditing] = useState<Record<SectionKey, boolean>>({
+    networking: false,
+    historico: false,
+    remuneracao: false
+  });
+  const [savingSection, setSavingSection] = useState<SectionKey | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
   const [isTogglingTalent, setIsTogglingTalent] = useState(false);
   const [data, setData] = useState<ProfessionalProfileData | null>(null);
+  const [baseline, setBaseline] = useState<ProfessionalProfileData | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
   // 1. Carregamento Inicial
@@ -72,11 +84,32 @@ export function ProfileProfessionalTab() {
       const res = await getProfessionalProfileAction();
       if (res.success && res.data) {
         setData(res.data);
+        setBaseline(res.data);
       }
       setIsLoading(false);
     }
     load();
   }, []);
+
+  // Dirty = alguma edição pendente (comparação com o baseline salvo).
+  const isDirty = !!(data && baseline && JSON.stringify(data) !== JSON.stringify(baseline));
+
+  // Reporta o estado para a página (guarda de troca de aba).
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
+
+  // Guarda de fechamento/reload do navegador.
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (isDirty) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [isDirty]);
 
   // 2. Manipulação de Mudanças
   const updateField = <K extends keyof ProfessionalProfileData>(field: K, value: ProfessionalProfileData[K]) => {
@@ -112,22 +145,21 @@ export function ProfileProfessionalTab() {
     updateField('hashtags', newTags);
   };
 
-  // 3. Salvamento
-  const handleSave = async () => {
+  // 3. Salvamento por seção (persiste o perfil e reseta o baseline).
+  const handleSaveSection = async (section: SectionKey) => {
     if (!data) return;
-    setIsSaving(true);
+    setSavingSection(section);
     setMessage(null);
 
     const res = await updateProfessionalProfileAction(data);
     if (res.success) {
-      setMessage({ type: 'success', text: "Perfil profissional atualizado com sucesso!" });
-      setIsEditing(false);
+      setBaseline(data);
+      setEditing((prev) => ({ ...prev, [section]: false }));
+      setMessage({ type: 'success', text: "Seção salva com sucesso!" });
     } else {
       setMessage({ type: 'error', text: "Falha ao salvar. Tente novamente." });
     }
-    setIsSaving(false);
-
-    // Limpa mensagem após 5 segundos
+    setSavingSection(null);
     setTimeout(() => setMessage(null), 5000);
   };
 
@@ -138,13 +170,39 @@ export function ProfileProfessionalTab() {
     setData({ ...data, participation_talent_bank: next });
     setIsTogglingTalent(true);
     const res = await updateTalentBankParticipationAction(next);
-    if (!res.success) {
-      // reverte em caso de falha
+    if (res.success) {
+      // Mantém o baseline em sincronia para não marcar a aba como "não salva".
+      setBaseline((prev) => prev ? { ...prev, participation_talent_bank: next } : prev);
+    } else {
       setData((prev) => prev ? { ...prev, participation_talent_bank: !next } : prev);
       setMessage({ type: 'error', text: "Falha ao atualizar o Banco de Talentos." });
       setTimeout(() => setMessage(null), 5000);
     }
     setIsTogglingTalent(false);
+  };
+
+  // Botão editar/salvar por seção (função de render — não é um componente,
+  // para não recriar tipo a cada render / react-hooks/static-components).
+  const renderSectionEditButton = (section: SectionKey) => {
+    const isSaving = savingSection === section;
+    return editing[section] ? (
+      <button
+        onClick={() => handleSaveSection(section)}
+        disabled={isSaving}
+        className="shrink-0 px-4 py-2 bg-[var(--accent-start)] text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 disabled:opacity-60"
+      >
+        {isSaving ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
+        Salvar
+      </button>
+    ) : (
+      <button
+        onClick={() => setEditing((prev) => ({ ...prev, [section]: true }))}
+        className="shrink-0 px-4 py-2 glass text-[var(--text-primary)] border border-[var(--border-primary)] rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-[var(--input-bg)] transition-all flex items-center gap-1.5"
+      >
+        <Edit3 size={12} />
+        Editar
+      </button>
+    );
   };
 
   if (isLoading) {
@@ -159,6 +217,10 @@ export function ProfileProfessionalTab() {
   }
 
   if (!data) return null;
+
+  const editNet = editing.networking;
+  const editHist = editing.historico;
+  const editRem = editing.remuneracao;
 
   return (
     <div className="max-w-5xl space-y-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -175,55 +237,34 @@ export function ProfileProfessionalTab() {
         </p>
       </div>
 
-      {/* Cabeçalho da aba: título + toggle Banco de Talentos + edição (item 2.7) */}
+      {/* Cabeçalho da aba: título + toggle Banco de Talentos (item 2.7) */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-1">
         <div className="space-y-1">
           <h2 className="text-xl font-black tracking-tight text-[var(--text-primary)]">Perfil Profissional</h2>
           <p className="text-[10px] font-medium text-[var(--text-muted)] uppercase tracking-widest opacity-60">Gestão de Carreira e Networking</p>
         </div>
 
-        <div className="flex items-center gap-3">
-          {/* Banco de Talentos — toggle direto (item 2.7) */}
-          <button
-            onClick={handleToggleTalentBank}
-            disabled={isTogglingTalent}
-            className={cn(
-              "flex items-center gap-2.5 px-4 py-2.5 rounded-2xl border transition-all disabled:opacity-60",
-              data.participation_talent_bank
-                ? "bg-emerald-500/10 border-emerald-500/25 text-emerald-500"
-                : "bg-[var(--input-bg)] border-[var(--border-primary)] text-[var(--text-muted)]"
-            )}
-            title="Participar do Banco de Talentos da BPlen"
-          >
-            <Users size={14} />
-            <span className="text-left leading-tight">
-              <span className="block text-[9px] font-black uppercase tracking-widest">Banco de Talentos</span>
-              <span className="block text-[8px] font-bold opacity-70">{data.participation_talent_bank ? "Participando" : "Não participa"}</span>
-            </span>
-            <span className={cn("relative w-9 h-5 rounded-full transition-all shrink-0", data.participation_talent_bank ? "bg-emerald-500" : "bg-[var(--border-primary)]")}>
-              <span className={cn("absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-all", data.participation_talent_bank ? "left-[18px]" : "left-0.5")} />
-            </span>
-          </button>
-
-          {isEditing ? (
-            <button
-              onClick={handleSave}
-              disabled={isSaving}
-              className="px-6 py-2.5 bg-[var(--accent-start)] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg shadow-[var(--accent-start)]/20 flex items-center gap-2"
-            >
-              {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-              Salvar Perfil
-            </button>
-          ) : (
-            <button
-              onClick={() => setIsEditing(true)}
-              className="px-6 py-2.5 glass text-[var(--text-primary)] border border-[var(--border-primary)] rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[var(--input-bg)] transition-all flex items-center gap-2"
-            >
-              <Edit3 size={14} />
-              Habilitar Edição
-            </button>
+        {/* Banco de Talentos — toggle direto (item 2.7) */}
+        <button
+          onClick={handleToggleTalentBank}
+          disabled={isTogglingTalent}
+          className={cn(
+            "flex items-center gap-2.5 px-4 py-2.5 rounded-2xl border transition-all disabled:opacity-60 self-start md:self-auto",
+            data.participation_talent_bank
+              ? "bg-emerald-500/10 border-emerald-500/25 text-emerald-500"
+              : "bg-[var(--input-bg)] border-[var(--border-primary)] text-[var(--text-muted)]"
           )}
-        </div>
+          title="Participar do Banco de Talentos da BPlen"
+        >
+          <Users size={14} />
+          <span className="text-left leading-tight">
+            <span className="block text-[9px] font-black uppercase tracking-widest">Banco de Talentos</span>
+            <span className="block text-[8px] font-bold opacity-70">{data.participation_talent_bank ? "Participando" : "Não participa"}</span>
+          </span>
+          <span className={cn("relative w-9 h-5 rounded-full transition-all shrink-0", data.participation_talent_bank ? "bg-emerald-500" : "bg-[var(--border-primary)]")}>
+            <span className={cn("absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-all", data.participation_talent_bank ? "left-[18px]" : "left-0.5")} />
+          </span>
+        </button>
       </div>
 
       {/* Feedback de Status */}
@@ -239,7 +280,7 @@ export function ProfileProfessionalTab() {
 
       {/* ===== SEÇÃO: NETWORKING ===== */}
       <section className="space-y-5">
-        <SectionLabel>Networking</SectionLabel>
+        <SectionLabel action={renderSectionEditButton("networking")}>Networking</SectionLabel>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
 
@@ -254,7 +295,7 @@ export function ProfileProfessionalTab() {
                 <UserSquare size={13} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
                 <input
                   type="text"
-                  disabled={!isEditing}
+                  disabled={!editNet}
                   value={data.display_name}
                   onChange={(e) => updateField('display_name', e.target.value)}
                   placeholder="Como seu nome aparece no card de Networking"
@@ -272,7 +313,7 @@ export function ProfileProfessionalTab() {
               </div>
               <button
                 onClick={() => updateField('networking_visibility', !data.networking_visibility)}
-                disabled={!isEditing}
+                disabled={!editNet}
                 className={cn("relative w-10 h-5 rounded-full transition-all shrink-0 disabled:opacity-40", data.networking_visibility ? "bg-[var(--accent-start)]" : "bg-[var(--border-primary)]")}
               >
                 <span className={cn("absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-all", data.networking_visibility ? "left-[22px]" : "left-0.5")} />
@@ -284,7 +325,7 @@ export function ProfileProfessionalTab() {
               <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Elevator Pitch</label>
               <textarea
                 rows={3}
-                disabled={!isEditing}
+                disabled={!editNet}
                 value={data.sales_pitch}
                 onChange={(e) => updateField('sales_pitch', e.target.value)}
                 className="w-full bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-xl p-3.5 text-[11px] text-[var(--text-primary)] placeholder:italic focus:border-[var(--accent-start)]/40 focus:outline-none transition-all disabled:opacity-40"
@@ -301,7 +342,7 @@ export function ProfileProfessionalTab() {
                     <Hash size={11} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] group-focus-within:text-[var(--accent-start)] transition-colors" />
                     <input
                       type="text"
-                      disabled={!isEditing}
+                      disabled={!editNet}
                       placeholder={`Tag ${idx + 1}`}
                       value={tag}
                       onChange={(e) => updateHashtag(idx, e.target.value)}
@@ -344,7 +385,7 @@ export function ProfileProfessionalTab() {
                       </div>
                       <input
                         type="text"
-                        disabled={!isEditing}
+                        disabled={!editNet}
                         placeholder={label}
                         value={item.value}
                         onChange={(e) => updateContact(key, 'value', e.target.value)}
@@ -353,7 +394,7 @@ export function ProfileProfessionalTab() {
                     </div>
                     <button
                       onClick={() => updateContact(key, 'isPublic', !item.isPublic)}
-                      disabled={!isEditing}
+                      disabled={!editNet}
                       className={cn(
                         "px-3 py-2.5 rounded-xl border transition-all flex items-center justify-center gap-1.5 w-24 shrink-0 disabled:opacity-40",
                         item.isPublic
@@ -375,7 +416,7 @@ export function ProfileProfessionalTab() {
 
       {/* ===== SEÇÃO: HISTÓRICO PROFISSIONAL ===== */}
       <section className="space-y-5">
-        <SectionLabel>Histórico Profissional</SectionLabel>
+        <SectionLabel action={renderSectionEditButton("historico")}>Histórico Profissional</SectionLabel>
 
         <div className="p-6 border border-[var(--border-primary)] bg-[var(--input-bg)] rounded-[2rem] glass space-y-6">
           <div className="space-y-1 pb-5 border-b border-[var(--border-primary)]">
@@ -393,7 +434,7 @@ export function ProfileProfessionalTab() {
                   <span className="text-[11px] font-black uppercase tracking-tighter text-[var(--text-primary)]">Currículo (PDF)</span>
                 </div>
                 <button
-                  disabled={!isEditing}
+                  disabled={!editHist}
                   onClick={() => updateField('cv_networking_visibility', !data.cv_networking_visibility)}
                   className={cn(
                     "px-3 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5 disabled:opacity-40",
@@ -406,7 +447,7 @@ export function ProfileProfessionalTab() {
                   Visível Network
                 </button>
               </div>
-              <div className={cn(!isEditing && "opacity-60 pointer-events-none")}>
+              <div className={cn(!editHist && "opacity-60 pointer-events-none")}>
                 <FileField
                   id="cv_upload"
                   label="Currículo / Resumo Profissional"
@@ -427,7 +468,7 @@ export function ProfileProfessionalTab() {
                   <span className="text-[11px] font-black uppercase tracking-tighter text-[var(--text-primary)]">Portfólio / Projetos</span>
                 </div>
                 <button
-                  disabled={!isEditing}
+                  disabled={!editHist}
                   onClick={() => updateField('portfolio_networking_visibility', !data.portfolio_networking_visibility)}
                   className={cn(
                     "px-3 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5 disabled:opacity-40",
@@ -440,7 +481,7 @@ export function ProfileProfessionalTab() {
                   Visível Network
                 </button>
               </div>
-              <div className={cn(!isEditing && "opacity-60 pointer-events-none")}>
+              <div className={cn(!editHist && "opacity-60 pointer-events-none")}>
                 <FileField
                   id="portfolio_upload"
                   label="Apresentação de Portfólio"
@@ -466,28 +507,28 @@ export function ProfileProfessionalTab() {
                 placeholder="linkedin.com/in/seu-perfil"
                 value={data.linkedin_url || ""}
                 onChange={(e) => updateField('linkedin_url', e.target.value)}
-                disabled={!isEditing}
+                disabled={!editHist}
               />
               <InputGlass
                 label="Instagram (URL)"
                 placeholder="@seunome"
                 value={data.instagram_url || ""}
                 onChange={(e) => updateField('instagram_url', e.target.value)}
-                disabled={!isEditing}
+                disabled={!editHist}
               />
               <InputGlass
                 label="Página Web Profissional"
                 placeholder="www.seusite.com.br"
                 value={data.web_url || ""}
                 onChange={(e) => updateField('web_url', e.target.value)}
-                disabled={!isEditing}
+                disabled={!editHist}
               />
               <InputGlass
                 label="Página de Portfólio (Behance, GitHub, etc)"
                 placeholder="behance.net/seu-perfil"
                 value={data.portfolio_url || ""}
                 onChange={(e) => updateField('portfolio_url', e.target.value)}
-                disabled={!isEditing}
+                disabled={!editHist}
               />
             </div>
           </div>
@@ -500,7 +541,7 @@ export function ProfileProfessionalTab() {
               value={data.comentarios_carreira || ""}
               onChange={(e) => updateField('comentarios_carreira', e.target.value)}
               rows={4}
-              disabled={!isEditing}
+              disabled={!editHist}
             />
           </div>
         </div>
@@ -508,7 +549,7 @@ export function ProfileProfessionalTab() {
 
       {/* ===== SEÇÃO: REMUNERAÇÃO TOTAL ===== */}
       <section className="space-y-5">
-        <SectionLabel>Remuneração Total</SectionLabel>
+        <SectionLabel action={renderSectionEditButton("remuneracao")}>Remuneração Total</SectionLabel>
 
         <div className="p-6 border border-[var(--border-primary)] bg-[var(--input-bg)] rounded-[2rem] glass space-y-6">
           <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 pb-5 border-b border-[var(--border-primary)]">
@@ -530,7 +571,7 @@ export function ProfileProfessionalTab() {
               {["CLT", "PJ", "Trabalho informal", "Não estou empregado"].map((opt) => (
                 <button
                   key={opt}
-                  disabled={!isEditing}
+                  disabled={!editRem}
                   onClick={() => updateField('regime_choice', opt)}
                   className={cn(
                     "px-4 py-3 rounded-xl border text-[11px] font-bold text-left transition-all flex-1 disabled:opacity-60",
@@ -546,7 +587,7 @@ export function ProfileProfessionalTab() {
           </div>
 
           {/* Pacote de Benefícios — Componente Rico da Survey */}
-          <div className={cn("space-y-3", !isEditing && "opacity-60 pointer-events-none")}>
+          <div className={cn("space-y-3", !editRem && "opacity-60 pointer-events-none")}>
             <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Pacote e Benefícios</label>
             <BenefitsPackage
               options={[
