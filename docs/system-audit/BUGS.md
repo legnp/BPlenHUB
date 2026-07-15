@@ -1797,6 +1797,58 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Decisão de execução: bugfix/UX. Validado por eslint + test + type-check + build.
 - Commit/PR: PR #80
 
+### BUG-070 Perfil Profissional sincroniza com documento órfão (`results/check_in` vs `Surveys/check_in`)
+
+- Severidade: Alto (fluxo de dados quebrado; identidade/perfil)
+- Área/fase onde foi achado: F1-05 / profile_settings (2026-07-15) — reportado pela Gestora
+  (editou remuneração no perfil, não refletiu na survey/admin/Firestore)
+- Arquivo(s) afetado(s): `src/actions/profile-professional.ts`, `src/actions/get-user-results.ts`
+- Cenário de falha: `getProfessionalProfileAction`/`updateProfessionalProfileAction`/
+  `updateTalentBankParticipationAction` liam/gravavam `User/{matricula}/results/check_in`
+  (minúsculo, **plano**), mas a survey de check-in real grava em `User/{matricula}/Surveys/check_in`
+  no campo aninhado `data` (`submit-survey.ts`). Ninguém além do perfil usava `results/check_in` —
+  documento **órfão**. Resultado: o bidirecional survey↔perfil nunca funcionou (perfil não lia as
+  respostas reais; edições do perfil não chegavam à survey/admin). Pré-existente; o PR4 (prefill)
+  herdou o mesmo caminho errado.
+- Status: **Corrigido** — 2026-07-15 (PR #92). Perfil passa a ler/gravar `Surveys/check_in` sob
+  `data.*` com merge; **nunca seta `status`** (não marca onboarding como concluído indevidamente —
+  `checkSurveyCompletedAction` exige `status==="completed"`). Prefill do PR4 lê `Surveys/check_in.data`.
+  Sem migração (o órfão só tinha dado de teste).
+- Decisão de execução: plano+diagnóstico apresentados e aprovados pela Gestora (área identidade/
+  dados). Validado por eslint + test 52/52 + type-check + build.
+- Commit/PR: PR #92
+
+### BUG-071 CV/Portfólio "Visível Network" não aparece na página de Networking (de enfeite)
+
+- Severidade: Médio (funcional; feature anunciada não funciona)
+- Área/fase onde foi achado: F1-05 / profile_settings + networking (2026-07-15) — reportado pela Gestora
+- Arquivo(s) afetado(s): `src/actions/profile-professional.ts`, `src/actions/networking.ts`,
+  `src/components/hub/NetworkingCard.tsx`
+- Cenário de falha: (1) `networking.ts` lia a URL do documento de `profile.address.cv_url`/
+  `portfolio_url` — campos que o save do perfil **nunca** gravava (o arquivo enviado vira
+  `cv_upload`/`portfolio_upload`); (2) o `NetworkingCard` nem renderizava o CV (só o portfólio, via
+  href cru — que não abre entre usuários). Toggle "Visível Network" era decorativo.
+- Status: **Corrigido** — 2026-07-15 (PR #93). Save denormaliza `cv_doc_url`/`portfolio_doc_url`
+  (+ nomes) no bloco `profile.networking`; `networking.ts` lê de lá respeitando as flags; o card
+  ganhou ações reais "Ver CV"/"Ver Portfólio" que abrem via proxy `/api/docs/{fileId}?token=` com o
+  token do visitante (a service account do proxy acessa o doc que o dono liberou). Sem mudança no proxy.
+- Decisão de execução: aprovado pela Gestora (fluxo real de visualização cross-user com opt-in do dono).
+  Validado por eslint + test 52/52 + type-check + build.
+- Commit/PR: PR #93
+
+### BUG-072 Admin devolutiva exibe `beneficios_pacote` como `[object Object]`
+
+- Severidade: Baixo (exibição admin)
+- Área/fase onde foi achado: F1-05 (2026-07-15) — reportado pela Gestora; **adiado para F1-06**
+- Arquivo(s) afetado(s): painel `admin/fs/devolutiva` (a confirmar no arquivo exato)
+- Cenário de falha: a devolutiva do admin renderiza `beneficios_pacote` (um `Record<string,
+  {enabled, value, currency}>`) por concatenação de string → "Salário: [object Object] | Seguro
+  Médico: [object Object] | ...". Os dados de remuneração não aparecem legíveis para o admin.
+- Status: **Aberto** — adiado para a **F1-06** (validação das páginas de admin), por decisão da
+  Gestora ("anote para corrigirmos quando validando as páginas do admin").
+- Decisão de execução: corrigir na F1-06 (formatar o objeto de benefícios de forma legível).
+- Commit/PR: —
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em

@@ -12,7 +12,16 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-15 (chat de execução — **Ajustes gerais da página
+> **Última atualização:** 2026-07-15 (chat de execução — **Feedback do pacote profile_settings:
+> causa-raiz + fixes (PRs #92–#94)**: a Gestora aprovou 1/2/4 mas o bidirecional survey↔perfil
+> não funcionava. **Causa-raiz (BUG-070):** o perfil lia/gravava `results/check_in` (doc órfão),
+> mas a survey real vive em `Surveys/check_in.data` — corrigido (PR #92). **BUG-071:** CV/portfólio
+> "Visível Network" era de enfeite (URL nunca gravada onde o networking lê; card não renderizava) —
+> agora abre via proxy `/api/docs` com opt-in do dono (PR #93). **Incremento:** "Ver documento
+> anexado" no FileField (PR #94). **BUG-072** ([object Object] no admin) adiado p/ F1-06. Parecer:
+> não desmembrar a survey (o problema era o descasamento de coleção). Validação em produção (BUG-030).
+>
+> _(entrada anterior)_ 2026-07-15 (chat de execução — **Ajustes gerais da página
 > `profile_settings` (PRs #88–#91)**: pacote grande da aba Perfil & Configurações (F1-05).
 > **PR1** copy + `.no-scrollbar` (utility inerte → barra no seletor de abas) + "Apelido"/"Não
 > definido". **PR2** redesign da aba Perfil Profissional (privacidade minimalista + fix markdown,

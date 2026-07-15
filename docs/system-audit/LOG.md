@@ -3355,6 +3355,29 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   antes de qualquer push — a `main` remota nunca recebeu commit direto (branch+PR normal).
 - Itens atualizados: `DASHBOARD.md` (entrada nova), este LOG. Sem novos bugs.
 
+## [2026-07-15] Chat de execução — Feedback do pacote profile_settings: causa-raiz + fixes (PRs #92–#94)
+
+- A Gestora validou os itens 1/2/4 do pacote anterior (aprovados) mas reportou que o item 3
+  (bidirecional survey↔perfil) **não funcionava**, com prints (perfil, admin devolutiva, Firestore).
+- **Investigação → causa-raiz (BUG-070):** as respostas reais da survey vivem em
+  `User/{matricula}/Surveys/check_in` no campo `data` (`submit-survey.ts`), mas o perfil lia/gravava
+  `results/check_in` (minúsculo, plano) — doc **órfão** que ninguém mais usa. Por isso o bidirecional
+  nunca fechou (pré-existente; o PR4 herdou). Também diagnosticados o CV/portfólio de enfeite
+  (BUG-071) e o `[object Object]` no admin (BUG-072, adiado p/ F1-06).
+- **Parecer sobre desmembrar a survey (proposta da Gestora):** recomendei **não desmembrar** —
+  o problema é o descasamento de coleção, não o tamanho da survey; dividir não corrige e traz refactor
+  + migração. Fix cirúrgico de alinhamento é suficiente. **Gestora concordou.**
+- **PR #92 (PR A — BUG-070, `b2c5efc`):** perfil passa a ler/gravar `Surveys/check_in` sob `data.*`
+  com merge; nunca seta `status` (preserva o gating de onboarding); prefill do PR4 realinhado.
+- **PR #93 (PR B — BUG-071, `d9aa6a3`):** save denormaliza `cv_doc_url`/`portfolio_doc_url` no bloco
+  networking; `networking.ts` lê de lá respeitando as flags; `NetworkingCard` ganhou "Ver CV"/"Ver
+  Portfólio" via proxy `/api/docs` com o token do visitante (opt-in do dono; proxy usa service account).
+- **PR #94 (PR C — incremento, `e19f428`):** `FileField` ganhou botão "Ver documento anexado" (abre o
+  upload via proxy), usado na aba Histórico Profissional e na survey de check-in.
+- Validado (todos): eslint dos arquivos tocados 0 erros, test 52/52, type-check, build exit 0.
+  Telas logadas não autenticam no preview (BUG-030) → validação funcional em produção pela Gestora.
+- Itens atualizados: `BUGS.md` (+BUG-070/071/072), `DASHBOARD.md` (entrada nova), este LOG.
+
 ## [2026-07-14] Chat de execução — Pacote 5 validado + redesign do menu sanduíche do hub (PR #87)
 
 - **Pacote 5 validado e aprovado em produção pela Gestora.** A Gestão de Carreira (design 5A +
