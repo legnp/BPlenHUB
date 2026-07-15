@@ -364,10 +364,20 @@ export default function GestaoCarreiraPage() {
                 }
               }
 
+              // Item 9: espelha o carimbo de conclusão do servidor no update otimista.
+              const wasCompleted = obj.status === "Alcançado";
+              let completedAt = obj.completedAt;
+              if (nextStatus === "Alcançado" && !wasCompleted) {
+                completedAt = new Date().toISOString();
+              } else if (nextStatus !== "Alcançado" && wasCompleted) {
+                completedAt = "";
+              }
+
               return {
                 ...obj,
                 goals: updatedGoals,
-                status: nextStatus
+                status: nextStatus,
+                completedAt
               };
             }
             return obj;
@@ -1048,6 +1058,12 @@ export default function GestaoCarreiraPage() {
                         {obj.targetDate && (
                           <span className="text-[8px] text-[var(--text-muted)] font-black uppercase tracking-wider font-mono block">
                             Meta ate: {new Date(obj.targetDate + "T00:00:00").toLocaleDateString("pt-BR")}
+                          </span>
+                        )}
+
+                        {obj.status === "Alcançado" && obj.completedAt && (
+                          <span className="text-[8px] text-green-400 font-black uppercase tracking-wider font-mono block flex items-center gap-1">
+                            <Check size={10} /> Concluído em: {new Date(obj.completedAt).toLocaleDateString("pt-BR")}
                           </span>
                         )}
 

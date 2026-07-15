@@ -181,14 +181,18 @@ export async function getCareerPlanningDataAction(
           const eventData = eventMap.get(eventId) || {};
           const eventSummary = eventData.summary || "Sessão de Mentoria";
 
-          // 1. Feedback qualitativo legado
+          // 1. Feedback qualitativo legado — o autor exibido é o Orientador do
+          //    evento (campo `mentor`, parseado de "Orientador:" na descrição do
+          //    evento em sync.ts), não o alias genérico (item 8.2). Fallback ao
+          //    alias quando o evento não tem orientador definido.
           if (bookingData.participantFeedback && bookingData.participantFeedback.trim()) {
             const feedbackId = `booking-${eventId}`;
             const feedbackRef = db.collection("User").doc(matricula).collection("Feedbacks").doc(feedbackId);
+            const orientador = typeof eventData.mentor === "string" && eventData.mentor.trim() ? eventData.mentor.trim() : "Consultor BPlen";
             batch.set(feedbackRef, {
               title: `Feedback - ${eventSummary}`,
               content: bookingData.participantFeedback,
-              author: "Consultor BPlen",
+              author: orientador,
               createdAt: bookingData.postEventUpdatedAt ? (bookingData.postEventUpdatedAt.toDate ? bookingData.postEventUpdatedAt.toDate().toISOString() : new Date().toISOString()) : new Date().toISOString()
             }, { merge: true });
             operationsCount++;
@@ -354,7 +358,8 @@ export async function getCareerPlanningDataAction(
         status: data.status || "Não Iniciado",
         targetDate: data.targetDate || "",
         goals: data.goals || [],
-        createdAt: data.createdAt || new Date().toISOString()
+        createdAt: data.createdAt || new Date().toISOString(),
+        completedAt: data.completedAt || ""
       });
     });
     objectives.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
@@ -574,7 +579,9 @@ export async function saveCareerObjectiveAction(
       status,
       targetDate: targetDate || "",
       goals: goals || [],
-      createdAt: now
+      createdAt: now,
+      // Item 9: se o objetivo já é criado/salvo como "Alcançado", carimba a conclusão.
+      ...(status === "Alcançado" ? { completedAt: now } : {})
     };
 
     if (id) {
@@ -650,11 +657,23 @@ export async function updateCareerGoalProgressAction(
         }
       }
 
-      transaction.update(objRef, {
+      const now = new Date().toISOString();
+      const update: Record<string, unknown> = {
         goals: updatedGoals,
         status: nextStatus,
-        updatedAt: new Date().toISOString()
-      });
+        updatedAt: now
+      };
+      // Item 9: captura a data de conclusão do OBJETIVO quando o status entra em
+      // "Alcançado" (preserva a data existente em atualizações posteriores); limpa
+      // se o objetivo deixar de estar "Alcançado".
+      const wasCompleted = data.status === "Alcançado";
+      if (nextStatus === "Alcançado" && !wasCompleted) {
+        update.completedAt = now;
+      } else if (nextStatus !== "Alcançado" && wasCompleted) {
+        update.completedAt = admin.firestore.FieldValue.delete();
+      }
+
+      transaction.update(objRef, update);
     });
 
     return { success: true };
