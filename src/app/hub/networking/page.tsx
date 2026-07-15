@@ -18,8 +18,8 @@ import { PartnerData } from "@/actions/admin/partners";
 import { FunctionalPageHeader } from "@/components/layout/FunctionalPageHeader";
 
 /**
- * BPlen HUB — Networking Space 🌐🚀✨
- * Onde conexões se transformam em performance organizacional.
+ * BPlen HUB — Networking
+ * Espaco de conexoes entre membros, profissionais e parceiros.
  */
 export default function NetworkingPage() {
   const [activeTab, setActiveTab] = useState<NetworkingTab>("membros");
@@ -28,14 +28,14 @@ export default function NetworkingPage() {
   const [data, setData] = useState<(NetworkingMember | PartnerData)[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Abas Horizontais Estilo Profile 🦴
+  // Abas horizontais (rotulos encurtados no Pacote 6 — sem "BPlen" repetido)
   const tabs = [
-    { id: "membros", label: "Networking BPlen", icon: Users },
-    { id: "profissionais", label: "Profissionais BPlen", icon: Star },
-    { id: "parceiros", label: "Parceiros BPlen", icon: Handshake },
+    { id: "membros", label: "Membros", icon: Users },
+    { id: "profissionais", label: "Profissionais", icon: Star },
+    { id: "parceiros", label: "Parceiros", icon: Handshake },
   ];
 
-  // 1. Efeito de Busca Real-time 🛰️
+  // Efeito de busca em tempo real (debounced)
   useEffect(() => {
     async function load() {
       setIsLoading(true);
@@ -48,7 +48,7 @@ export default function NetworkingPage() {
 
     const delayDebounceFn = setTimeout(() => {
       load();
-    }, 400); // Debounce de 400ms para performance soberana
+    }, 400); // Debounce de 400ms
 
     return () => clearTimeout(delayDebounceFn);
   }, [activeTab, search, serviceFilter]);
@@ -62,21 +62,22 @@ export default function NetworkingPage() {
   return (
     <div className="max-w-[1440px] mx-auto pt-[10px] px-6 md:px-12 pb-16 space-y-10 w-full animate-in fade-in duration-1000">
       
-      {/* 🔮 Hero Section & Tabs */}
-      <div className="space-y-10">
-        {/* Header — padrão canônico Gestão Funcional (F2-05) */}
+      {/* Header + barra de controle (abas ao lado da busca — Pacote 6) */}
+      <div className="space-y-8">
+        {/* Header — padrao canonico Gestao Funcional (F2-05) */}
         <FunctionalPageHeader
-          eyebrow="Conexões Soberanas"
-          title="Ecossistema"
+          eyebrow="Conexões de Valor"
+          title="Networking"
           titleAccent="BPlen"
           backHref="/hub"
           backLabel="Voltar"
           icon={<Network size={24} />}
         />
 
-        {/* Navigation Tabs */}
-        <div className="flex justify-center md:justify-start">
-           <div className="flex p-2 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-[2.5rem] glass">
+        {/* Barra de controle unica: abas (esquerda) + busca (direita) */}
+        <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+           {/* Abas */}
+           <div className="flex p-1.5 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-[1.75rem] glass shrink-0 overflow-x-auto">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
@@ -85,17 +86,17 @@ export default function NetworkingPage() {
                     key={tab.id}
                     onClick={() => {
                         if (tab.id === activeTab) return;
-                        // Limpa os dados da aba anterior para não renderizar um shape
-                        // diferente (parceiro x membro) enquanto o novo load ocorre (fix crash 7.2).
+                        // Limpa os dados da aba anterior para nao renderizar um shape
+                        // diferente (parceiro x membro) enquanto o novo load ocorre.
                         setData([]);
                         setIsLoading(true);
                         setActiveTab(tab.id as NetworkingTab);
                         setSearch("");
                     }}
                     className={cn(
-                      "flex items-center gap-3 px-6 py-3 rounded-3xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 whitespace-nowrap",
+                      "flex items-center gap-2 px-5 py-2.5 rounded-[1.25rem] text-[10px] font-black uppercase tracking-widest transition-all duration-300 whitespace-nowrap",
                       isActive
-                        ? "bg-[var(--accent-start)] text-white shadow-xl scale-105"
+                        ? "bg-[var(--accent-start)] text-white shadow-lg"
                         : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
                     )}
                   >
@@ -105,27 +106,27 @@ export default function NetworkingPage() {
                 )
               })}
            </div>
-        </div>
 
-        {/* 🔍 Centro de Filtros */}
-        <div className="bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-[3.5rem] p-8 glass space-y-6">
-           <NetworkingFilters
-              tab={activeTab}
-              search={search}
-              setSearch={setSearch}
-              serviceFilter={serviceFilter}
-              setServiceFilter={setServiceFilter}
-              availableServices={availableServices}
-           />
+           {/* Busca (+ filtro de Ramos nos Parceiros) */}
+           <div className="flex-1 w-full">
+              <NetworkingFilters
+                 tab={activeTab}
+                 search={search}
+                 setSearch={setSearch}
+                 serviceFilter={serviceFilter}
+                 setServiceFilter={setServiceFilter}
+                 availableServices={availableServices}
+              />
+           </div>
         </div>
       </div>
 
-      {/* 🚀 Grid de Resultados */}
+      {/* Grid de resultados */}
       <div>
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-32 space-y-4 animate-pulse">
              <Loader2 size={40} className="text-[var(--accent-start)] animate-spin" />
-             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)]">Carregando Networking...</p>
+             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)]">Carregando Networking</p>
           </div>
         ) : data.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
@@ -153,19 +154,14 @@ export default function NetworkingPage() {
         )}
       </div>
 
-      {/* 💡 Banner Informativo */}
-      <div>
-         <div className="p-10 bg-gradient-to-br from-[var(--accent-start)]/20 to-transparent border border-[var(--accent-start)]/20 rounded-[4rem] glass flex flex-col md:flex-row items-center gap-10">
-            <div className="p-6 bg-[var(--accent-start)] rounded-[2.5rem] text-white shadow-2xl shadow-[var(--accent-start)]/20">
-               <Info size={40} />
-            </div>
-            <div className="space-y-3 text-center md:text-left flex-1">
-               <h4 className="text-lg font-black text-[var(--text-primary)] tracking-tight uppercase">Soberania & Visibilidade</h4>
-               <p className="text-sm text-[var(--text-secondary)] leading-relaxed max-w-2xl">
-                  Seu perfil só aparece no networking se a visibilidade estiver habilitada nas configurações. No BPlen HUB, você tem autonomia total sobre quem pode visualizar seu Pitch e hashtags profissionais.
-               </p>
-            </div>
-         </div>
+      {/* Aviso discreto de visibilidade (Pacote 6) */}
+      <div className="flex items-center gap-3 px-5 py-3.5 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-2xl glass">
+         <Info size={16} className="text-[var(--accent-start)] shrink-0" />
+         <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+            <span className="font-black uppercase tracking-wide text-[10px] text-[var(--text-secondary)]">Autonomia de Visibilidade</span>
+            <span className="mx-1.5 opacity-40">·</span>
+            Seu perfil só aparece aqui se a visibilidade estiver ativada nas suas configurações — você controla o que fica visível para os demais membros.
+         </p>
       </div>
 
     </div>
