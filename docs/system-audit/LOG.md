@@ -3402,6 +3402,12 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   trocar o texto globalmente, o `Calendar` ganhou a prop opcional **`policyNote`** (omitida = política
   padrão intacta, nenhum outro consumidor muda) e o modal 1 to 1 passa a sua (sem a nota de Onboarding,
   com a regra de 24h). Rodapé voltou a ter só a nota de débito de crédito.
+- **Overflow dos créditos — PR #98 (`8fa5c7f`):** a Gestora apontou (print) que o banner de créditos
+  transbordava o modal e espremia o rótulo. Causa: renderizava **uma bolinha por crédito**
+  (`Array.from({length: total})`) em flex row sem wrap — com 56 créditos (usuário de teste) estourava.
+  Solução: até **12 créditos** (caso típico) mantém as bolinhas (agora com `flex-wrap`); acima disso
+  troca para **barra de progresso compacta** de largura fixa + contador `usadas/total` — nunca
+  transborda. Rótulo com `shrink-0`/`whitespace-nowrap` (não é mais espremido) e bloco direito `min-w-0`.
 
 ## [2026-07-14] Chat de execução — Pacote 5 validado + redesign do menu sanduíche do hub (PR #87)
 
