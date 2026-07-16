@@ -83,7 +83,13 @@ export async function getJourneyStagesAction(): Promise<JourneyStep[]> {
             // 🚀 Modo Dinâmico Premium: Respeita rigorosamente a ordem e títulos da Esteira de Entrega
             product.deliverySteps.forEach(step => {
               productSubsteps.push({
-                id: `ss-${step.type}-${step.referenceId}`,
+                // O id vem do dado (`deliverySteps[].id`, gerado pelo parser do
+                // portfolio). Recalcular aqui a partir de type+referenceId
+                // colapsava todas as paradas que repetem o mesmo referenceId num
+                // id so — e como a conclusao e gravada por id, concluir uma
+                // marcava todas as irmas (MentoCoach: 10 sessoes; GDC: 10
+                // orientacoes). O fallback cobre produto legado sem id no dado.
+                id: step.id || `ss-${step.type}-${step.referenceId}`,
                 title: step.title,
                 type: step.type,
                 referenceId: step.referenceId,

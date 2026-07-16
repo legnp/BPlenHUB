@@ -963,83 +963,83 @@
         "order": "1.5"
       },
       {
-        "id": "ss-meeting-sessao-mentocoach",
+        "id": "ss-meeting-sessao-mentocoach-2",
         "type": "meeting",
         "referenceId": "sessao-mentocoach",
         "title": "1ª Sessão de MentoCoach",
-        "description": "Sessão de MentoCoach",
+        "description": "1ª Sessão de MentoCoach",
         "order": "2"
       },
       {
-        "id": "ss-meeting-sessao-mentocoach",
+        "id": "ss-meeting-sessao-mentocoach-3",
         "type": "meeting",
         "referenceId": "sessao-mentocoach",
         "title": "2ª Sessão de MentoCoach",
-        "description": "Sessão de MentoCoach",
+        "description": "2ª Sessão de MentoCoach",
         "order": "3"
       },
       {
-        "id": "ss-meeting-sessao-mentocoach",
+        "id": "ss-meeting-sessao-mentocoach-4",
         "type": "meeting",
         "referenceId": "sessao-mentocoach",
         "title": "3ª Sessão de MentoCoach",
-        "description": "Sessão de MentoCoach",
+        "description": "3ª Sessão de MentoCoach",
         "order": "4"
       },
       {
-        "id": "ss-meeting-sessao-mentocoach",
+        "id": "ss-meeting-sessao-mentocoach-5",
         "type": "meeting",
         "referenceId": "sessao-mentocoach",
         "title": "4ª Sessão de MentoCoach",
-        "description": "Sessão de MentoCoach",
+        "description": "4ª Sessão de MentoCoach",
         "order": "5"
       },
       {
-        "id": "ss-meeting-sessao-mentocoach",
+        "id": "ss-meeting-sessao-mentocoach-6",
         "type": "meeting",
         "referenceId": "sessao-mentocoach",
         "title": "5ª Sessão de MentoCoach",
-        "description": "Sessão de MentoCoach",
+        "description": "5ª Sessão de MentoCoach",
         "order": "6"
       },
       {
-        "id": "ss-meeting-sessao-mentocoach",
+        "id": "ss-meeting-sessao-mentocoach-7",
         "type": "meeting",
         "referenceId": "sessao-mentocoach",
         "title": "6ª Sessão de MentoCoach",
-        "description": "Sessão de MentoCoach",
+        "description": "6ª Sessão de MentoCoach",
         "order": "7"
       },
       {
-        "id": "ss-meeting-sessao-mentocoach",
+        "id": "ss-meeting-sessao-mentocoach-8",
         "type": "meeting",
         "referenceId": "sessao-mentocoach",
         "title": "7ª Sessão de MentoCoach",
-        "description": "Sessão de MentoCoach",
+        "description": "7ª Sessão de MentoCoach",
         "order": "8"
       },
       {
-        "id": "ss-meeting-sessao-mentocoach",
+        "id": "ss-meeting-sessao-mentocoach-9",
         "type": "meeting",
         "referenceId": "sessao-mentocoach",
         "title": "8ª Sessão de MentoCoach",
-        "description": "Sessão de MentoCoach",
+        "description": "8ª Sessão de MentoCoach",
         "order": "9"
       },
       {
-        "id": "ss-meeting-sessao-mentocoach",
+        "id": "ss-meeting-sessao-mentocoach-10",
         "type": "meeting",
         "referenceId": "sessao-mentocoach",
         "title": "9ª Sessão de MentoCoach",
-        "description": "Sessão de MentoCoach",
+        "description": "9ª Sessão de MentoCoach",
         "order": "10"
       },
       {
-        "id": "ss-meeting-sessao-mentocoach",
+        "id": "ss-meeting-sessao-mentocoach-11",
         "type": "meeting",
         "referenceId": "sessao-mentocoach",
         "title": "10ª Sessão de MentoCoach",
-        "description": "Sessão de MentoCoach",
+        "description": "10ª Sessão de MentoCoach",
         "order": "11"
       }
     ],
