@@ -79,11 +79,21 @@ export interface UserBooking {
   week: number;
   year: number;
   category?: string;
+  /**
+   * Nome do evento gravado no ato do agendamento — usado pelo limite semanal
+   * por TIPO de sessão. Denormalizado de propósito: `category` só distingue
+   * "1to1" de "geral" (grosseiro demais) e o join com `eventDetail` some se o
+   * evento sair de `Calendar_Events`. Ausente em agendamentos legados, que caem
+   * no fallback do `eventDetail.summary`.
+   */
+  eventSummary?: string;
   timestamp: string | null;
   rating: number;
   feedback: string;
   evaluatedAt?: string | null;
   eventDetail: GoogleCalendarEvent | null;
+  /** Cancelado dentro das 24h que preservam o crédito (ver política de agendamento). */
+  lateCancellation?: boolean;
 
   // Mirrored Post-event Fields
   eventLifecycleStatus?: EventLifecycleStatus;

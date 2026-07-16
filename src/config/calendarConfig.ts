@@ -7,11 +7,19 @@ export const CALENDAR_CONFIG = {
   // Antecedência mínima para agendamentos (em dias)
   MIN_LEAD_TIME_DAYS: 3,
 
-  // Janela máxima de visibilidade para eventos de Onboarding (em dias)
-  MAX_ONBOARDING_WINDOW_DAYS: 20,
+  // Antecedência máxima para agendamentos (em dias). Vale para TODOS os tipos de
+  // evento — antes era exclusiva do Onboarding (`MAX_ONBOARDING_WINDOW_DAYS`).
+  // Não se aplica ao funil de lead público, que tem regra própria em
+  // PUBLIC_BOOKING_SETTINGS.maxDaysInFuture.
+  MAX_LEAD_TIME_DAYS: 20,
 
-  // Limite de agendamentos por usuário (SI - Semana ISO)
+  // Limite de agendamentos por usuário POR TIPO DE SESSÃO, dentro da mesma
+  // semana ISO. Tipos diferentes na mesma semana são permitidos (ex.: uma
+  // devolutiva e um 1 to 1 na mesma semana).
   MAX_BOOKINGS_PER_WEEK: 1,
+
+  // Antecedência mínima para cancelar/reagendar preservando o crédito (em horas).
+  CANCELLATION_GRACE_HOURS: 24,
 
   // Período de sincronização (em dias)
   SYNC_WINDOW_DAYS: 90,
