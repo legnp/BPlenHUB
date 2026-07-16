@@ -1,5 +1,6 @@
 import { resolverAcesso, type DecisaoAcesso } from "./resolve-access";
-import type { JourneyStep, JourneyProgress } from "@/types/journey";
+import type { JourneyStep, JourneyProgress, UserStepProgress } from "@/types/journey";
+import { normalizeString } from "@/lib/utils";
 
 /**
  * BPlen HUB — Adaptador do motor de acesso para a jornada (Fase B2)
@@ -43,16 +44,36 @@ export interface StageAccessDecision {
 /**
  * Deriva as conclusoes (em serviceCode) do progresso real: uma etapa conta como
  * concluida quando seu status no `JourneyProgress` e' "completed".
+ *
+ * A busca tolera chave LEGADA (BUG-079). A escrita
+ * (`updateJourneySubStepAction`) resolve a chave da etapa por `normalizeString` e
+ * grava na chave ja existente no documento — que pode ser legada
+ * (ex.: "plano_de_Carreira" em vez de "plano-de-carreira"). Ler cru por
+ * `stage.id` perdia essas conclusoes para SEMPRE: a etapa seguinte ficava em
+ * SEQUENCE_LOCK permanente, sem erro nenhum na tela. Leitura e escrita agora
+ * usam a mesma normalizacao.
  */
 export function conclusoesFromProgress(
   stages: readonly JourneyStep[],
   progress: JourneyProgress | null
 ): string[] {
   if (!progress?.steps) return [];
+
+  const porChaveNormalizada = new Map<string, UserStepProgress>();
+  for (const [chave, valor] of Object.entries(progress.steps)) {
+    const normalizada = normalizeString(chave);
+    // Chave exata tem precedencia: so a 1a ocupa o slot normalizado.
+    if (normalizada && !porChaveNormalizada.has(normalizada)) {
+      porChaveNormalizada.set(normalizada, valor);
+    }
+  }
+
   const conclusoes: string[] = [];
   for (const stage of stages) {
     if (!stage.serviceCode) continue;
-    if (progress.steps[stage.id]?.status === "completed") {
+    const stepProgress =
+      progress.steps[stage.id] ?? porChaveNormalizada.get(normalizeString(stage.id));
+    if (stepProgress?.status === "completed") {
       conclusoes.push(stage.serviceCode);
     }
   }

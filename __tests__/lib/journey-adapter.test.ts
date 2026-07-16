@@ -97,6 +97,53 @@ describe("conclusoesFromProgress", () => {
     expect(conclusoesFromProgress(stages, progress)).toEqual(["BPL-002"]);
   });
 
+  it("reconhece conclusao gravada em chave LEGADA (BUG-079)", () => {
+    // Caso REAL da base (BP-005-PF-260523 / BP-011-PF-260526): a escrita resolve a
+    // chave por normalizeString e grava na chave legada ja existente no documento.
+    // A leitura crua por `stage.id` perdia a conclusao -> a etapa seguinte ficava
+    // em SEQUENCE_LOCK permanente, sem erro nenhum.
+    const progress = {
+      matricula: "BP-005-PF-260523", lastActiveStepId: "x", overallProgress: 0,
+      steps: {
+        "analise-comportamental": { stepId: "analise-comportamental", status: "completed", completedSubSteps: [] },
+        "plano_de_Carreira": { stepId: "plano_de_Carreira", status: "completed", completedSubSteps: [] },
+      },
+    } as unknown as JourneyProgress;
+    expect(conclusoesFromProgress(stages, progress)).toEqual(["BPL-002", "BPL-003"]);
+  });
+
+  it("chave legada NAO concluida nao vira conclusao", () => {
+    // Discriminante: garante que a tolerancia de chave nao afrouxou o status.
+    const progress = {
+      matricula: "BP-005-PF-260523", lastActiveStepId: "x", overallProgress: 0,
+      steps: {
+        "plano_de_Carreira": { stepId: "plano_de_Carreira", status: "current", completedSubSteps: [] },
+      },
+    } as unknown as JourneyProgress;
+    expect(conclusoesFromProgress(stages, progress)).toEqual([]);
+  });
+
+  it("chave exata tem precedencia sobre a legada", () => {
+    const progress = {
+      matricula: "BP-001", lastActiveStepId: "x", overallProgress: 0,
+      steps: {
+        "plano-de-carreira": { stepId: "plano-de-carreira", status: "current", completedSubSteps: [] },
+        "plano_de_Carreira": { stepId: "plano_de_Carreira", status: "completed", completedSubSteps: [] },
+      },
+    } as unknown as JourneyProgress;
+    expect(conclusoesFromProgress(stages, progress)).toEqual([]);
+  });
+
+  it("chave sem etapa correspondente e' ignorada (ex.: 'Primeiros Passos' legado)", () => {
+    const progress = {
+      matricula: "BP-002-PF-260331", lastActiveStepId: "x", overallProgress: 0,
+      steps: {
+        "Primeiros Passos": { stepId: "Primeiros Passos", status: "completed", completedSubSteps: [] },
+      },
+    } as unknown as JourneyProgress;
+    expect(conclusoesFromProgress(stages, progress)).toEqual([]);
+  });
+
   it("progresso nulo -> vazio; etapa sem serviceCode e' ignorada", () => {
     expect(conclusoesFromProgress(stages, null)).toEqual([]);
     const semCodigo = [stage({ id: "legado" })];
