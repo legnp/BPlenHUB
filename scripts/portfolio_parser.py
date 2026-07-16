@@ -646,8 +646,13 @@ try:
             concede = parse_bool(acell(r, "concedeSelo"))
             if concede is not None:
                 attrs["concedeSelo"] = concede
+            # `apos_contratadas`: a lista de pre-requisitos NAO cabe na planilha —
+            # ela varia por pacote (um vai ate a Analise, outro ate o Plano). O
+            # dado declara o MODO e o adaptador resolve a lista em tempo de
+            # execucao (ver ACCESS-MODEL-DESIGN.md secao 10). `preReqEtapas` e'
+            # ignorado neste modo.
             modo = acell(r, "preReqModo")
-            if modo and str(modo).strip() in ("nenhum", "todos", "qualquer"):
+            if modo and str(modo).strip() in ("nenhum", "todos", "qualquer", "apos_contratadas"):
                 attrs["preRequisitos"] = {"modo": str(modo).strip(), "etapas": split_codes(acell(r, "preReqEtapas"))}
             libera = split_codes(acell(r, "libera"))
             if libera:

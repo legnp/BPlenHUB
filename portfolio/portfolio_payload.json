@@ -276,7 +276,7 @@
     "escopo": "public",
     "concedeSelo": false,
     "preRequisitos": {
-      "modo": "nenhum",
+      "modo": "apos_contratadas",
       "etapas": []
     }
   },
@@ -1068,10 +1068,8 @@
     "escopo": "member",
     "concedeSelo": true,
     "preRequisitos": {
-      "modo": "todos",
-      "etapas": [
-        "BPL-000"
-      ]
+      "modo": "apos_contratadas",
+      "etapas": []
     }
   },
   {
