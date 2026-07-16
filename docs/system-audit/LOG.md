@@ -3402,6 +3402,50 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   trocar o texto globalmente, o `Calendar` ganhou a prop opcional **`policyNote`** (omitida = política
   padrão intacta, nenhum outro consumidor muda) e o modal 1 to 1 passa a sua (sem a nota de Onboarding,
   com a regra de 24h). Rodapé voltou a ter só a nota de débito de crédito.
+## [2026-07-16] Chat de execução — afinamento de design da home do hub (PR #100)
+
+- Chat/sessão: chat de execução (Opus 4.8), retomando o HANDOFF de 2026-07-16 abaixo.
+- **Proposta do HANDOFF apresentada à Gestora e APROVADA** (com os 2 extras de limpeza que eu
+  sugeri de passagem: acentos PT-BR e emojis em comentários). Antes de propor, os valores do
+  HANDOFF foram **conferidos contra o código real** — todos batiam.
+- **Entrega: PR #100 mergeado (`9f09c4d`, squash)** — arquivo único
+  `src/components/hub/HubHomeView.tsx`, 46 inserções / 70 remoções. Branch criada ANTES do commit
+  (Lição 4) e deletada local+remota após o merge.
+- Escopo respeitado: só as 3 seções internas (Últimos Conteúdos, Suas atividades no HUB, Pulso da
+  Comunidade). **Não tocados:** header, footer, menu sanduíche, foto, `MemberJourneyHero`. Nenhuma
+  mudança de tipografia — só espaçamento/tamanho, exatamente como a diretriz pedia.
+  - Ritmo entre seções: `space-y-32` → `space-y-14`; grid `gap-20` → `gap-10`, `!mt-[45px]` → `!mt-8`.
+  - Cabeçalhos de seção: `space-y-8` → `space-y-5`, `pb-6` → `pb-4`.
+  - Últimos Conteúdos: card `p-5`→`p-4`, lista `space-y-4`→`space-y-3`, ícone `p-3`→`p-2.5`,
+    skeleton `h-24`→`h-20`, vazio `py-12`→`py-8`.
+  - `ActivityCard`: `h-44`→`h-36`, `p-6`→`p-5`, `rounded-[2rem]`→`rounded-2xl`, grid `gap-6`→`gap-4`,
+    skeleton `h-44`→`h-36`.
+  - Pulso da Comunidade: seção `py-24`→`py-10`, inner `space-y-12`→`space-y-6`, card `p-10`→`p-6` e
+    `rounded-[3.5rem]`→`rounded-[2rem]`, ícone `w-16 h-16`+`mb-6`→`w-12 h-12`+`mb-3`,
+    `space-y-8`→`space-y-5`, `pt-6`→`pt-4`.
+  - Ganho estimado: ~400–450px de ar vertical.
+- **Limpeza de passagem (aprovada junto):**
+  1. ~20 **imports mortos** removidos (Rocket, Sparkles, Lock, Layout, BarChart, Menu, User, Phone,
+     Sun, Moon, Globe, Search, Calendar, `motion`, `AnimatePresence`, `MOCK_SERVICES`/`MOCK_TOOLS`,
+     `useTheme`, `BPlenLogo`, `LucideIcons`) + a **função morta `ToolPlaceholderIcon`** (única
+     consumidora do `LucideIcons`, zero callers). ESLint do arquivo: **~20 warnings → 0**.
+  2. **Acentos PT-BR restaurados** (Lição 11) em 4 strings visíveis que estavam sem: "Próxima
+     Atividade", "Última Atividade Concluída", "Ir para Visão Geral", "Nenhuma atividade concluída".
+     Achado de passagem meu, não estava no HANDOFF.
+  3. **Emojis removidos dos comentários** do arquivo (regra Zero Emoji do `CLAUDE.md`) — idem.
+- Validado (Lição 14, `npm run check` por partes): eslint do arquivo tocado **0 problemas**,
+  `npm run test` **52/52**, `npm run type-check` limpo, `npm run build` exit 0 (`.next` limpo antes).
+  Baseline global de lint segue vermelho por ~190 erros legados pré-existentes — nenhum novo.
+- **Sem bugs novos** — `BUGS.md` inalterado. Conferência visual fica em **produção** (BUG-030:
+  telas logadas não autenticam no preview).
+- Itens atualizados: `DASHBOARD.md` (entrada nova), este LOG. **`00-PLAN.md` não mudou**: este foi
+  um pedido ad-hoc de design da Gestora, não vinculado a item do checklist (mesmo precedente dos
+  PRs #87/#99) — nenhum item mudou de status.
+- **Próximo grande item aberto: F1-06** (validação das 19 páginas de admin), não iniciada, com o
+  **BUG-072** ([object Object] nos benefícios da devolutiva do admin) já na fila dela.
+
+---
+
 ## [2026-07-16] HANDOFF — continuação em outro chat (limite de contexto)
 
 - **Estado:** `main` == `origin/main`. Última entrega: **PR #99** (copy do "Pulso da Comunidade" na

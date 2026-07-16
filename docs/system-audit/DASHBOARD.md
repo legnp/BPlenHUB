@@ -12,7 +12,18 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-15 (chat de execução — **Feedback do pacote profile_settings:
+> **Última atualização:** 2026-07-16 (chat de execução — **Afinamento de design da home do hub
+> (PR #100)**: proposta aprovada pela Gestora e implementada em `HubHomeView.tsx`. Reduzido o ar
+> vertical das 3 seções internas (Últimos Conteúdos, Suas atividades no HUB, Pulso da Comunidade)
+> sem tocar tipografia, header, footer, menu, foto ou `MemberJourneyHero`: ritmo entre seções
+> `space-y-32`→`space-y-14`, grid `gap-20`→`gap-10`, `ActivityCard` `h-44`→`h-36`, Pulso `py-24`→
+> `py-10` e card `p-10`→`p-6`. Ganho ~400–450px de scroll. Limpeza junto: ~20 imports mortos + a
+> função morta `ToolPlaceholderIcon` removidos (ESLint do arquivo: ~20 warnings → 0), acentos
+> PT-BR restaurados em 4 strings (Lição 11) e emojis removidos dos comentários (Zero Emoji).
+> Validado por eslint/test 52/52/type-check/build. Sem novos bugs. Conferência visual em produção
+> (BUG-030). **Próximo grande item: F1-06** (19 páginas de admin), com BUG-072 na fila.
+>
+> _(entrada anterior)_ 2026-07-15 (chat de execução — **Feedback do pacote profile_settings:
 > causa-raiz + fixes (PRs #92–#94)**: a Gestora aprovou 1/2/4 mas o bidirecional survey↔perfil
 > não funcionava. **Causa-raiz (BUG-070):** o perfil lia/gravava `results/check_in` (doc órfão),
 > mas a survey real vive em `Surveys/check_in.data` — corrigido (PR #92). **BUG-071:** CV/portfólio
