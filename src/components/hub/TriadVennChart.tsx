@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ThumbsUp, AlertTriangle, AlertOctagon } from "lucide-react";
+import { resolveTriadCategory, findTriadPercentage } from "@/lib/charts/triad-category";
 
 interface TriadVennChartProps {
   data: {
@@ -27,8 +28,8 @@ export function TriadVennChart({ data, title, subtitle, mini = false }: TriadVen
   // Fallback default colors in case parent data doesn't override them:
   // Green (Important), Yellow (Urgent), Red (Circumstance)
   const getCategoryTheme = (label: string) => {
-    const norm = label.toLowerCase();
-    if (norm.includes("importan")) {
+    const categoria = resolveTriadCategory(label);
+    if (categoria === "importante") {
       return {
         color: "#10b981", // Emerald Green
         gradientId: "green-grad",
@@ -36,7 +37,7 @@ export function TriadVennChart({ data, title, subtitle, mini = false }: TriadVen
         lightGlow: "rgba(16, 185, 129, 0.15)",
         strokeColor: "#34d399",
       };
-    } else if (norm.includes("urgen")) {
+    } else if (categoria === "urgente") {
       return {
         color: "#facc15", // Amber Yellow
         gradientId: "yellow-grad",
@@ -60,9 +61,13 @@ export function TriadVennChart({ data, title, subtitle, mini = false }: TriadVen
     if (!data || data.length === 0) return null;
     const sorted = [...data].sort((a, b) => b.percentage - a.percentage);
     const top = sorted[0];
-    const labelNorm = top.label.toLowerCase();
+    // Casamento tolerante a acento. Antes o `else` engolia qualquer rotulo
+    // acentuado: quem tinha "Importância" no topo (o MELHOR resultado) recebia o
+    // diagnostico de "Atencao ao Desperdicio" (BUG-082).
+    const categoria = resolveTriadCategory(top.label);
+    if (!categoria) return null;
 
-    if (labelNorm.includes("importan")) {
+    if (categoria === "importante") {
       return {
         type: "important",
         label: "Importante",
@@ -74,7 +79,7 @@ export function TriadVennChart({ data, title, subtitle, mini = false }: TriadVen
         title: "Alta Performance",
         description: "Você está focando no que realmente gera valor e impacto duradouro para sua carreira.",
       };
-    } else if (labelNorm.includes("urgen")) {
+    } else if (categoria === "urgente") {
       return {
         type: "urgent",
         label: "Urgente",
@@ -109,7 +114,6 @@ export function TriadVennChart({ data, title, subtitle, mini = false }: TriadVen
     {
       id: "important",
       label: "Importante",
-      keyPart: "importan",
       cx: 120,
       cy: 85,
       r: 58,
@@ -117,7 +121,6 @@ export function TriadVennChart({ data, title, subtitle, mini = false }: TriadVen
     {
       id: "urgent",
       label: "Urgente",
-      keyPart: "urgen",
       cx: 88,
       cy: 140,
       r: 58,
@@ -125,16 +128,18 @@ export function TriadVennChart({ data, title, subtitle, mini = false }: TriadVen
     {
       id: "circumstance",
       label: "Circunstancial",
-      keyPart: "circun",
       cx: 152,
       cy: 140,
       r: 58,
     },
   ];
 
-  // Helper to match a data item with circle config
-  const getDataItemForCircle = (keyPart: string) => {
-    return data.find((item) => item.label.toLowerCase().includes(keyPart)) || { label: "", percentage: 0 };
+  // Casa o circulo com o item do dado pela CATEGORIA (tolerante a acento), nao
+  // por substring crua do rotulo — que devolvia 0% silencioso para "Importância"
+  // e "Urgência" (BUG-082).
+  const getPercentageForCircle = (label: string) => {
+    const categoria = resolveTriadCategory(label);
+    return categoria ? findTriadPercentage(data, categoria) : 0;
   };
 
   // Mini Venn Circle Positions (Equilateral arrangement in 420x310 viewBox for perfect side/top labels)
@@ -142,7 +147,6 @@ export function TriadVennChart({ data, title, subtitle, mini = false }: TriadVen
     {
       id: "important",
       label: "Importante",
-      keyPart: "importan",
       cx: 210,
       cy: 115,
       r: 90,
@@ -150,7 +154,6 @@ export function TriadVennChart({ data, title, subtitle, mini = false }: TriadVen
     {
       id: "urgent",
       label: "Urgente",
-      keyPart: "urgen",
       cx: 162,
       cy: 195,
       r: 90,
@@ -158,7 +161,6 @@ export function TriadVennChart({ data, title, subtitle, mini = false }: TriadVen
     {
       id: "circumstance",
       label: "Circunstancial",
-      keyPart: "circun",
       cx: 258,
       cy: 195,
       r: 90,
@@ -251,7 +253,7 @@ export function TriadVennChart({ data, title, subtitle, mini = false }: TriadVen
             className="font-black tracking-tight text-[21px] fill-white pointer-events-none select-none"
             style={{ textShadow: "0 1.5px 5px rgba(0,0,0,0.75)" }}
           >
-            {Math.round(getDataItemForCircle("importan").percentage)}%
+            {Math.round(getPercentageForCircle("Importante"))}%
           </text>
 
           <text
@@ -261,7 +263,7 @@ export function TriadVennChart({ data, title, subtitle, mini = false }: TriadVen
             className="font-black tracking-tight text-[21px] fill-white pointer-events-none select-none"
             style={{ textShadow: "0 1.5px 5px rgba(0,0,0,0.75)" }}
           >
-            {Math.round(getDataItemForCircle("urgen").percentage)}%
+            {Math.round(getPercentageForCircle("Urgente"))}%
           </text>
 
           <text
@@ -271,7 +273,7 @@ export function TriadVennChart({ data, title, subtitle, mini = false }: TriadVen
             className="font-black tracking-tight text-[21px] fill-white pointer-events-none select-none"
             style={{ textShadow: "0 1.5px 5px rgba(0,0,0,0.75)" }}
           >
-            {Math.round(getDataItemForCircle("circun").percentage)}%
+            {Math.round(getPercentageForCircle("Circunstancial"))}%
           </text>
         </svg>
 
@@ -327,7 +329,7 @@ export function TriadVennChart({ data, title, subtitle, mini = false }: TriadVen
           {/* Glassmorphic SVG Elements */}
           <g style={{ mixBlendMode: "screen" }}>
             {circles.map((c) => {
-              const item = getDataItemForCircle(c.keyPart);
+              const percentage = getPercentageForCircle(c.label);
               const theme = getCategoryTheme(c.label);
               const isHovered = hoveredLabel === c.label;
 
@@ -384,7 +386,7 @@ export function TriadVennChart({ data, title, subtitle, mini = false }: TriadVen
                       textShadow: "0 1px 4px rgba(0,0,0,0.5)",
                     }}
                   >
-                    {Math.round(item.percentage)}%
+                    {Math.round(percentage)}%
                   </text>
 
                   {/* Tiny Label tag for each circle */}
@@ -418,7 +420,7 @@ export function TriadVennChart({ data, title, subtitle, mini = false }: TriadVen
                   className="text-2xl font-black tracking-tight transition-colors"
                   style={{ color: getCategoryTheme(hoveredLabel).strokeColor }}
                 >
-                  {Math.round(getDataItemForCircle(hoveredLabel).percentage)}%
+                  {Math.round(getPercentageForCircle(hoveredLabel))}%
                 </span>
                 <span className="text-[8px] font-black uppercase tracking-widest text-[var(--text-primary)] opacity-60">
                   {hoveredLabel}
