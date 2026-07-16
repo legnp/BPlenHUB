@@ -5,6 +5,12 @@ import { format, getISOWeek, getYear, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Resend } from "resend";
 import { CALENDAR_CONFIG } from "@/config/calendarConfig";
+import {
+  getBookingWindowError,
+  hasReachedWeeklyLimit,
+  preservesCredit,
+  resolveEventType
+} from "@/lib/booking/policy";
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 import { GoogleCalendarEvent, AttendeeData } from "@/types/calendar";
 import { updateGlobalProgramacaoRegistryAction, recalculateEventMetrics } from "./post-event";
@@ -93,6 +99,43 @@ export async function bookEventAction(
       const evDate = parseISO(eventData.start);
       const week = getISOWeek(evDate);
       const year = getYear(evDate);
+      const eventType = resolveEventType(eventData.summary);
+
+      // Politica de agendamento do MEMBRO — validada aqui, e nao so escondida na
+      // tela. O funil de lead publico (sem matricula) fica de fora de proposito:
+      // ele roda com PUBLIC_BOOKING_SETTINGS (janela de 33 dias) e aplicar esta
+      // regra a ele quebraria o funil.
+      if (matricula) {
+        const windowError = getBookingWindowError(eventData.start);
+        if (windowError) throw new Error(windowError);
+
+        const userBookingsSnap = await transaction.get(
+          db.collection("User").doc(matricula).collection("User_Bookings")
+            .where("week", "==", week).where("year", "==", year)
+        );
+
+        const sameWeek: Array<{ week: number; year: number; eventType: string }> = [];
+        for (const doc of userBookingsSnap.docs.filter(d => d.id !== eventId)) {
+          const data = doc.data();
+          let bookedType = resolveEventType(data.eventSummary);
+          if (!bookedType) {
+            // Agendamento legado (anterior a este PR, sem `eventSummary`): resolve
+            // o tipo pelo evento, para a regra valer desde o primeiro dia em vez
+            // de so daqui a ~3 semanas, quando os legados sairem da janela.
+            const legacyEvent = await transaction.get(
+              db.collection("Calendar_Events").doc(data.eventId || doc.id)
+            );
+            bookedType = resolveEventType(legacyEvent.data()?.summary);
+          }
+          sameWeek.push({ week: data.week, year: data.year, eventType: bookedType });
+        }
+
+        if (hasReachedWeeklyLimit(sameWeek, { week, year, eventType })) {
+          throw new Error(
+            `Você já tem uma sessão de ${eventData.summary} nesta semana. Sessões de outros tipos seguem disponíveis.`
+          );
+        }
+      }
 
       const bookingPayload = {
         userId,
@@ -103,6 +146,7 @@ export async function bookEventAction(
         attendanceStatus: "pending",
         week,
         year,
+        eventSummary: eventData.summary || "",
         oneToOneData: oneToOneData || null,
         leadInfo: leadInfo || null
       };
@@ -116,6 +160,7 @@ export async function bookEventAction(
           bookedAt: admin.firestore.FieldValue.serverTimestamp(),
           week,
           year,
+          eventSummary: eventData.summary || "",
           category: (eventData.summary || "").toLowerCase().includes("1 to 1") ? "1to1" : "geral",
           oneToOneData: oneToOneData || null,
           attendanceStatus: "pending"
@@ -225,15 +270,35 @@ export async function cancelBookingAction(
       const eventData = eventDoc.data() as GoogleCalendarEvent;
       const bookingData = bookingDoc.data();
 
+      // Politica de cancelamento: cancelar dentro das 24h continua PERMITIDO (o
+      // membro nao vai comparecer de todo jeito, e a vaga volta para o grupo) —
+      // o que se perde e o credito da sessao. Admin nao perde credito de ninguem.
+      const isLate = !session.isAdmin && eventData?.start && !preservesCredit(eventData.start);
+
       transaction.delete(userBookingInEventRef);
       transaction.delete(userBookingSubColRef);
-      
+
+      // Rastro do cancelamento tardio para o debito de credito (BUG-013), fora
+      // das subcolecoes que acabaram de ser apagadas.
+      if (isLate) {
+        const lateRef = db.collection("User").doc(matricula)
+          .collection("User_Booking_History").doc(eventId);
+        transaction.set(lateRef, {
+          eventId,
+          eventSummary: eventData?.summary || "",
+          eventStart: eventData?.start || null,
+          cancelledAt: admin.firestore.FieldValue.serverTimestamp(),
+          lateCancellation: true,
+          creditPreserved: false
+        }, { merge: true });
+      }
+
       transaction.update(eventRef, {
         registeredCount: admin.firestore.FieldValue.increment(-1),
         lastUpdated: admin.firestore.FieldValue.serverTimestamp()
       });
 
-      return { success: true, eventData, nickname: bookingData?.displayName || "Membro", email: bookingData?.email };
+      return { success: true, eventData, isLate, nickname: bookingData?.displayName || "Membro", email: bookingData?.email };
     });
 
     try {
@@ -270,7 +335,7 @@ export async function cancelBookingAction(
       }
     } catch (e) {}
 
-    return { success: true };
+    return { success: true, lateCancellation: !!result.isLate };
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : "Erro desconhecido ao cancelar agendamento.";
     console.error("Erro ao cancelar agendamento:", error);

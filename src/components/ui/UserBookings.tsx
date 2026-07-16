@@ -31,6 +31,8 @@ import {
   ArrowDown
 } from "lucide-react";
 import { getUserBookingsAction, submitEvaluationAction, cancelBookingAction } from "@/actions/calendar";
+import { preservesCredit } from "@/lib/booking/policy";
+import { CALENDAR_CONFIG } from "@/config/calendarConfig";
 import { useAuthContext } from "@/context/AuthContext";
 import { UserBooking } from "@/types/calendar";
 import GlassModal from "@/components/ui/GlassModal";
@@ -925,12 +927,22 @@ export function BookingDetailModal({
             <button 
               onClick={async () => {
                 if (!user || !matricula) return;
-                if (confirm("Tem certeza que deseja cancelar este agendamento? A vaga será liberada no HUB.")) {
+                // Cancelar dentro das 24h continua permitido — o que se perde e o
+                // credito da sessao. O aviso precisa ser explicito ANTES da acao.
+                const keepsCredit = preservesCredit(event.start);
+                const confirmMsg = keepsCredit
+                  ? "Tem certeza que deseja cancelar este agendamento? A vaga será liberada no HUB."
+                  : `Esta sessão começa em menos de ${CALENDAR_CONFIG.CANCELLATION_GRACE_HOURS}h. Você pode cancelar e a vaga será liberada, mas o crédito desta sessão não será preservado. Deseja continuar?`;
+                if (confirm(confirmMsg)) {
                   setIsDeleting(true);
                   try {
                     const res = await cancelBookingAction(matricula, booking.id, event.id, user.uid);
                     if (res?.success) {
-                      alert("Agendamento cancelado!");
+                      alert(
+                        res.lateCancellation
+                          ? "Agendamento cancelado. Como foi feito dentro das 24h, o crédito desta sessão não foi preservado."
+                          : "Agendamento cancelado!"
+                      );
                       onClose();
                       onRefresh();
                     } else {

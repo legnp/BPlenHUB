@@ -5,7 +5,6 @@ import GlassModal from "@/components/ui/GlassModal";
 import Calendar, { CalendarEvent } from "@/components/ui/Calendar";
 import { getMemberQuotasAction } from "@/actions/quotas";
 import { useAuthContext } from "@/context/AuthContext";
-import { CALENDAR_CONFIG } from "@/config/calendarConfig";
 import { Loader2, Briefcase, Info } from "lucide-react";
 
 interface OneToOneBookingModalProps {
@@ -137,7 +136,9 @@ export default function OneToOneBookingModal({
            </div>
         </div>
 
-        {/* Calendário de Escolha — política própria do 1 to 1 no card do topo */}
+        {/* Calendário de Escolha — herda a política única do `Calendar`. O texto
+            próprio daqui foi aposentado: com o crédito e o prazo de 24h na
+            política global, era duplicata (uma política, uma fonte de verdade). */}
         <div className="min-h-[440px]">
            <Calendar
               events={oneToOneEvents}
@@ -145,11 +146,6 @@ export default function OneToOneBookingModal({
                 onSuccess();
                 onClose();
               }}
-              policyNote={
-                <>
-                  As sessões deverão ser agendadas com no mínimo <span className="text-[var(--text-primary)] font-black">{CALENDAR_CONFIG.MIN_LEAD_TIME_DAYS} dias de antecedência</span>, com limite de <span className="text-[var(--text-primary)] font-black">{CALENDAR_CONFIG.MAX_BOOKINGS_PER_WEEK} sessão por semana</span>. Cancelamentos e reagendamentos deverão ser realizados até <span className="text-[var(--text-primary)] font-black">24h antes</span> da sessão; após esse prazo, o crédito não poderá ser reutilizado.
-                </>
-              }
            />
         </div>
 

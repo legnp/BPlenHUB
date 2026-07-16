@@ -13,7 +13,6 @@ import {
   isSameDay,
   addDays,
   getISOWeek,
-  getYear,
   parseISO,
   isToday,
   isBefore,
@@ -39,6 +38,12 @@ import { bookEventAction, getUserBookingsAction } from "@/actions/calendar";
 import { getOneToOneTypes } from "@/actions/OneToOneActions";
 import GlassModal from "@/components/ui/GlassModal";
 import { CALENDAR_CONFIG } from "@/config/calendarConfig";
+import {
+  isWithinBookingWindow,
+  hasReachedWeeklyLimit,
+  resolveEventType,
+  resolveEventWeek
+} from "@/lib/booking/policy";
 
 /**
  * BPlen HUB — Calendar UI (Booking Edition)
@@ -125,18 +130,9 @@ export default function Calendar({
   }, [events, filterType]);
 
   const selectedDayEvents = useMemo(() => {
-    const now = new Date();
-    const minLeadTime = addDays(startOfDay(now), CALENDAR_CONFIG.MIN_LEAD_TIME_DAYS);
-    const maxOnboardingWindow = addDays(startOfDay(now), CALENDAR_CONFIG.MAX_ONBOARDING_WINDOW_DAYS);
-
     return filteredEvents.filter(ev => {
-      const evDate = parseISO(ev.start);
-      if (!isSameDay(evDate, selectedDate)) return false;
-      if (isBefore(evDate, minLeadTime)) return false;
-      if (ev.summary.toLowerCase().includes("onboarding")) {
-        if (!isBefore(evDate, maxOnboardingWindow)) return false;
-      }
-      return true;
+      if (!isSameDay(parseISO(ev.start), selectedDate)) return false;
+      return isWithinBookingWindow(ev.start);
     });
   }, [filteredEvents, selectedDate]);
 
@@ -212,7 +208,7 @@ export default function Calendar({
           <p className="text-[10px] font-bold text-[var(--text-muted)] leading-relaxed italic text-left">
             {policyNote ?? (
               <>
-                As sessões são liberadas com <span className="text-[var(--text-primary)] font-black">{CALENDAR_CONFIG.MIN_LEAD_TIME_DAYS} dias de antecedência</span>. Eventos de <span className="text-[var(--accent-start)] font-black">Onboarding</span> possuem visibilidade limitada a {CALENDAR_CONFIG.MAX_ONBOARDING_WINDOW_DAYS} dias. O limite de participação é de <span className="text-[var(--text-primary)] font-black uppercase">{CALENDAR_CONFIG.MAX_BOOKINGS_PER_WEEK} evento por semana (SI)</span>.
+                Sessões podem ser agendadas de <span className="text-[var(--text-primary)] font-black">{CALENDAR_CONFIG.MAX_LEAD_TIME_DAYS} a {CALENDAR_CONFIG.MIN_LEAD_TIME_DAYS} dias</span> antes da data. O limite é de <span className="text-[var(--text-primary)] font-black">{CALENDAR_CONFIG.MAX_BOOKINGS_PER_WEEK === 1 ? "uma participação" : `${CALENDAR_CONFIG.MAX_BOOKINGS_PER_WEEK} participações`} por tipo de sessão a cada semana (SI)</span> — você pode combinar tipos diferentes na mesma semana. Cancelamentos e reagendamentos com até <span className="text-[var(--text-primary)] font-black">{CALENDAR_CONFIG.CANCELLATION_GRACE_HOURS}h de antecedência</span> preservam o crédito da sessão.
               </>
             )}
           </p>
@@ -272,17 +268,9 @@ export default function Calendar({
                     );
                   }
 
-                  const now = new Date();
-                  const leadDate = addDays(startOfDay(now), CALENDAR_CONFIG.MIN_LEAD_TIME_DAYS);
-                  const maxOnboarding = addDays(startOfDay(now), CALENDAR_CONFIG.MAX_ONBOARDING_WINDOW_DAYS);
-
-                  const hasVisibleEvents = filteredEvents.some(ev => {
-                    const evDate = parseISO(ev.start);
-                    if (!isSameDay(evDate, cloneDay)) return false;
-                    if (isBefore(evDate, leadDate)) return false;
-                    if (ev.summary.toLowerCase().includes("onboarding") && !isBefore(evDate, maxOnboarding)) return false;
-                    return true;
-                  });
+                  const hasVisibleEvents = filteredEvents.some(ev =>
+                    isSameDay(parseISO(ev.start), cloneDay) && isWithinBookingWindow(ev.start)
+                  );
 
                   cells.push(
                     <button
@@ -347,7 +335,7 @@ export default function Calendar({
                 </div>
                 <h3 className="text-xs font-bold text-[var(--text-muted)] opacity-40 uppercase tracking-widest leading-relaxed">
                   Nenhuma sessão disponível para esta data<br />
-                  <span className="text-[9px] opacity-50 lowercase tracking-normal">Consulte as regras de antecedência de {CALENDAR_CONFIG.MIN_LEAD_TIME_DAYS} dias</span>
+                  <span className="text-[9px] opacity-50 lowercase tracking-normal">O agendamento abre de {CALENDAR_CONFIG.MAX_LEAD_TIME_DAYS} a {CALENDAR_CONFIG.MIN_LEAD_TIME_DAYS} dias antes da sessão</span>
                 </h3>
               </div>
             ) : (
@@ -359,9 +347,17 @@ export default function Calendar({
                 const status = bookingStatus?.id === ev.id ? bookingStatus : null;
 
                 const evDate = parseISO(ev.start);
-                const evWeek = getISOWeek(evDate);
-                const evYear = getYear(evDate);
-                const isWeekLocked = userBookings.some(b => b.week === evWeek && b.year === evYear);
+                // Limite semanal e por TIPO de sessao: ter uma devolutiva na semana
+                // nao impede um 1 to 1 na mesma semana. Agendamento legado sem
+                // `eventSummary` cai no join do `eventDetail`.
+                const isWeekLocked = hasReachedWeeklyLimit(
+                  userBookings.map(b => ({
+                    week: b.week,
+                    year: b.year,
+                    eventType: resolveEventType(b.eventSummary ?? b.eventDetail?.summary)
+                  })),
+                  { ...resolveEventWeek(ev.start), eventType: resolveEventType(ev.summary) }
+                );
 
                 return (
                   <button
