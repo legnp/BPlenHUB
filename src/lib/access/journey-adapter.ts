@@ -1,6 +1,9 @@
-import { resolverAcesso, type DecisaoAcesso } from "./resolve-access";
+import { resolverAcesso, type DecisaoAcesso, type ServicoAcesso } from "./resolve-access";
 import type { JourneyStep, JourneyProgress, UserStepProgress } from "@/types/journey";
 import { normalizeString } from "@/lib/utils";
+
+/** Pre-requisito no vocabulario do MOTOR (3 modos) — ja sem `apos_contratadas`. */
+type ServicoPreRequisitos = NonNullable<ServicoAcesso["preRequisitos"]>;
 
 /**
  * BPlen HUB — Adaptador do motor de acesso para a jornada (Fase B2)
@@ -32,6 +35,56 @@ export interface JourneyAccessContext {
   conclusoes: string[];
   /** Waivers de pre-requisito do usuario (Fase A/A3). */
   dispensaPreRequisito: string[];
+  /**
+   * TODAS as etapas da jornada + se o membro possui cada uma. Necessario apenas
+   * para o modo `apos_contratadas` (Fase C), que depende do conjunto contratado
+   * pelo membro — nao de uma lista fixa. Ausente = o modo cai para "sem exigencia"
+   * (ver `expandirAposContratadas`).
+   */
+  etapasDoMembro?: ReadonlyArray<{
+    serviceCode?: string;
+    preRequisitos?: JourneyStep["preRequisitos"];
+    entitled: boolean;
+  }>;
+}
+
+/**
+ * Expande o modo `apos_contratadas` na lista concreta de pre-requisitos.
+ *
+ * Regra (ACCESS-MODEL-DESIGN.md secao 10): quando contratados junto com outros
+ * servicos, os servicos "paralelos" (Posicionamento, MentoCoach) so liberam
+ * apos a conclusao da ultima etapa da TRILHA PRINCIPAL que o membro contratou.
+ * Contratados sozinhos, nao ha o que esperar e a regra se auto-satisfaz.
+ *
+ * A trilha principal e' derivada, SEM nenhum serviceCode hardcoded:
+ *   etapas que o membro possui
+ *   MENOS as que declaram `apos_contratadas` (sao as paralelas — senao elas
+ *        esperariam umas pelas outras para sempre)
+ *   MENOS as que citam uma etapa `apos_contratadas` no proprio pre-requisito
+ *        (remove o Offboarding automaticamente: ele exige o MentoCoach e
+ *        esperaria de volta)
+ */
+function expandirAposContratadas(
+  servicoAtual: string,
+  etapas: JourneyAccessContext["etapasDoMembro"]
+): string[] {
+  if (!etapas) return [];
+
+  const paralelos = new Set(
+    etapas
+      .filter(e => e.serviceCode && e.preRequisitos?.modo === "apos_contratadas")
+      .map(e => e.serviceCode as string)
+  );
+
+  const dependeDeParalelo = (etapa: NonNullable<typeof etapas>[number]) =>
+    (etapa.preRequisitos?.etapas ?? []).some(codigo => paralelos.has(codigo));
+
+  return etapas
+    .filter(e => e.entitled && e.serviceCode)
+    .filter(e => e.serviceCode !== servicoAtual)
+    .filter(e => !paralelos.has(e.serviceCode as string))
+    .filter(e => !dependeDeParalelo(e))
+    .map(e => e.serviceCode as string);
 }
 
 export interface StageAccessDecision {
@@ -91,6 +144,15 @@ export function resolveStageAccess(
 ): StageAccessDecision | null {
   if (!stage.serviceCode || !stage.preRequisitos) return null;
 
+  // `apos_contratadas` e' um modo do DADO. Resolvemos a lista aqui — o adaptador
+  // e' quem conhece o estado real do membro — e entregamos ao motor um
+  // pre-requisito que ele ja entende. O motor segue puro, com 3 modos; o tipo
+  // acima e' o que impede este modo de vazar para ele.
+  const preRequisitos: ServicoPreRequisitos =
+    stage.preRequisitos.modo === "apos_contratadas"
+      ? { modo: "todos", etapas: expandirAposContratadas(stage.serviceCode, ctx.etapasDoMembro) }
+      : { modo: stage.preRequisitos.modo, etapas: stage.preRequisitos.etapas };
+
   const decisao = resolverAcesso(
     {
       selo: ctx.selo,
@@ -101,7 +163,7 @@ export function resolveStageAccess(
     {
       serviceCode: stage.serviceCode,
       escopo: stage.escopo,
-      preRequisitos: stage.preRequisitos,
+      preRequisitos,
     }
   );
 

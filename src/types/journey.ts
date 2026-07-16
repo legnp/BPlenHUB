@@ -50,7 +50,8 @@ export interface JourneyStep {
   serviceCode?: string;
   escopo?: "public" | "member";
   preRequisitos?: {
-    modo: "nenhum" | "todos" | "qualquer";
+    /** `apos_contratadas`: modo do dado, resolvido pelo adaptador (ver products.ts). */
+    modo: "nenhum" | "todos" | "qualquer" | "apos_contratadas";
     etapas: string[];
   };
 }

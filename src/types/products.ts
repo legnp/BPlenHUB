@@ -83,8 +83,15 @@ export interface Product {
   escopo?: 'public' | 'member'; // entregue em /hub (public) ou /hub/membro (member)
   concedeSelo?: boolean; // comprar este item concede o selo member_area_access?
   preRequisitos?: {
-    modo: 'nenhum' | 'todos' | 'qualquer';
-    etapas: string[]; // serviceCodes exigidos
+    /**
+     * `apos_contratadas` e' um modo do DADO, nao do motor: significa "depois de
+     * todas as outras etapas da trilha que o membro contratou". A lista varia por
+     * pacote, entao nao cabe na planilha — o adaptador a resolve em tempo de
+     * execucao e traduz para `todos` antes de chamar o motor, que segue puro e
+     * com 3 modos (ver ACCESS-MODEL-DESIGN.md secao 10).
+     */
+    modo: 'nenhum' | 'todos' | 'qualquer' | 'apos_contratadas';
+    etapas: string[]; // serviceCodes exigidos (ignorado em `apos_contratadas`)
   };
   libera?: string[]; // (pacotes) serviceCodes que o pacote entitla
   sku?: string; // codigo fiscal/SKU do servico

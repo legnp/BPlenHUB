@@ -6,6 +6,7 @@ import { fetchUserPermissionsStatus } from "@/actions/auth-permissions";
 import { MemberQuotaWallet } from "@/types/entitlements";
 import { normalizeString } from "@/lib/utils";
 import { resolveStageAccess, conclusoesFromProgress } from "@/lib/access/journey-adapter";
+import { isStageEntitled } from "@/lib/access/stage-entitlement";
 
 
 export interface StageTelemetry {
@@ -151,6 +152,21 @@ export function useJourney(uid: string) {
   };
 
   /**
+   * Etapas da jornada + se o membro possui cada uma. Alimenta o modo
+   * `apos_contratadas` do motor (Fase C), que depende do conjunto CONTRATADO
+   * pelo membro — nao de uma lista fixa. Memoizado: seria O(n^2) recalcular
+   * dentro de `getStageTelemetry`, que roda por etapa.
+   */
+  const etapasDoMembro = useMemo(
+    () => mergedStages.map(stage => ({
+      serviceCode: stage.serviceCode,
+      preRequisitos: stage.preRequisitos,
+      entitled: isStageEntitled(stage, quotas, services),
+    })),
+    [mergedStages, quotas, services]
+  );
+
+  /**
    * Retorna os dados analíticos de uma etapa (Telemetria Real)
    */
   const getStageTelemetry = (stepId: string): StageTelemetry => {
@@ -164,75 +180,17 @@ export function useJourney(uid: string) {
     const completedCount = validCompletedSubsteps.length;
     const percentage = totalSubsteps > 0 ? Math.round((completedCount / totalSubsteps) * 100) : 0;
 
-    // Checagem de Acesso Granular Inteligente (Suporte a Pacotes de Eventos)
-    const stepIdUpper = stepId.toUpperCase();
-    const stepIdLower = stepId.toLowerCase();
-    let hasQuota = false;
+    // Entitlement da etapa ("possui?") — calculo legado extraido para
+    // `isStageEntitled`, porque a Fase C precisa dele para TODAS as etapas
+    // (conjunto de espera), nao so para a corrente. Comportamento preservado.
+    const finalHasAccessLogic = stage ? isStageEntitled(stage, quotas, services) : false;
 
-    if (quotas && quotas.quotas) {
-       const stepIdNormalized = normalizeString(stepId);
-       for (const [quotaKey, quotaData] of Object.entries(quotas.quotas)) {
-          if (quotaData.total <= 0) continue;
-          
-          const quotaKeyNormalized = normalizeString(quotaKey);
-          
-          // Match direto ou se o EventType contem a fase ou vice-versa, com suporte a normalizacao
-          if (quotaKeyNormalized === stepIdNormalized || quotaKeyNormalized.includes(stepIdNormalized) || stepIdNormalized.includes(quotaKeyNormalized)) {
-             hasQuota = true;
-             break;
-          }
-
-          // Fallback rigoroso direto (ignora apenas hífens e case) 🛡️
-          if (quotaKey.toLowerCase().replace(/[-_]/g, "") === stepIdLower.replace(/[-_]/g, "")) {
-             hasQuota = true;
-             break;
-          }
-          
-          const keyUpper = quotaKey.toUpperCase();
-          // Fallbacks metodologicos (ex: Coaching-e-mentoria desbloqueado por sessao de coaching)
-          if (stepIdUpper === 'COACHING-E-MENTORIA' && (keyUpper.includes('COACHING') || keyUpper.includes('MENTORIA'))) {
-             hasQuota = true;
-             break;
-          }
-       }
-    }
-
-    if (!hasQuota) {
-       // Fallback original de segurança
-       const quotaLower = quotas?.quotas[stepIdLower];
-       const quotaUpper = quotas?.quotas[stepIdUpper];
-       hasQuota = (quotaLower && quotaLower.total > 0) || (quotaUpper && quotaUpper.total > 0) || false;
-    }
-    
-    // 🛡️ Checagem Mestra de Serviços (User_Permissions/access)
-    // Se o serviço estiver explicitamente listado nos `services` (do toggle do admin), 
-    // ele SOBRESCREVE a leitura de quotas.
-    const serviceKey = stepIdLower;
-    let finalHasAccess = hasQuota;
-    
-    // 🚀 Verificação Especial do Novo Limite MentoCoach
-    if (stepIdLower.includes('mentocoach') && quotas && (quotas.mentoCoachSessionsLimit || 0) > 0) {
-       finalHasAccess = true;
-    }
-    
-    if (services !== undefined && services !== null) {
-      if (services[serviceKey] === false) {
-         finalHasAccess = false; // Administrador revogou ou usuário não comprou (explicitamente false)
-      } else if (services[serviceKey] === true) {
-         finalHasAccess = true; // Liberado via acesso contínuo (ex: pacote)
-      }
-    }
-    
-    // Checagem Global: O usuário adquiriu QUALQUER serviço? 💳
-    const hasAnyQuota = quotas ? Object.values(quotas.quotas).some(q => q.total > 0) : false;
-
-    // Identificar se é o "Próximo Passo" lógico (Baseado em ID sequencial ou LastActive)
+    // Identificar se e' o "Proximo Passo" logico (Baseado em ID sequencial ou LastActive)
     const currentStepIndex = mergedStages.findIndex(s => s.id === progress?.lastActiveStepId);
     const thisStepIndex = mergedStages.findIndex(s => s.id === stepId);
     const isNext = thisStepIndex === currentStepIndex + 1;
 
     const isOffboarding = stepId.toLowerCase() === 'offboarding';
-    const finalHasAccessLogic = finalHasAccess || stage?.order === 0 || ((stepId === 'onboarding' || isOffboarding) && hasAnyQuota);
 
     // 🧬 MOTOR DE ACESSO (Fase B2 — ACCESS-MODEL-DESIGN.md secao 4)
     // Quando a etapa tem atributos sincronizados (serviceCode + preRequisitos, via
@@ -247,6 +205,7 @@ export function useJourney(uid: string) {
       legacyEntitled: finalHasAccessLogic,
       conclusoes: conclusoesFromProgress(mergedStages, progress),
       dispensaPreRequisito,
+      etapasDoMembro,
     }) : null;
 
     if (motorDecision) {
