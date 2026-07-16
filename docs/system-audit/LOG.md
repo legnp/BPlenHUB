@@ -3402,6 +3402,41 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   trocar o texto globalmente, o `Calendar` ganhou a prop opcional **`policyNote`** (omitida = política
   padrão intacta, nenhum outro consumidor muda) e o modal 1 to 1 passa a sua (sem a nota de Onboarding,
   com a regra de 24h). Rodapé voltou a ter só a nota de débito de crédito.
+## [2026-07-16] Chat de execução — clique mudo na 1a etapa travada (PR #108)
+
+- Chat/sessão: mesmo chat, após a Gestora **validar a Fase C em produção**: os status dos dois
+  paralelos ficaram corretos ("Aguardando Fase Anterior", inclusive no MentoCoach **com barra de
+  progresso** — o comportamento que ela queria, e que o `BUG-080` viabilizou).
+- **Reporte dela:** clicar no MentoCoach travado abre o modal; clicar no Posicionamento travado
+  **não faz nada** — sem modal, sem navegação, sem erro.
+- **`BUG-081` — dois defeitos, uma raiz:** a UI deduzia a pendência pela **posição** na lista, em vez
+  de usar a resposta do motor.
+  1. **Return mudo:** `if (isSequenceLocked) { ... if (stageIndex > 0) {...} return; }`. O
+     Posicionamento é a etapa de índice **0** → condição falsa → retorno calado. O guard nasceu de
+     uma premissa **verdadeira até a Fase C**: "a 1ª etapa nunca pode estar travada por sequência".
+     A regra de ontem invalidou a premissa de um `if` escrito meses atrás.
+  2. **Modal mentia:** mostrava `stages[indice - 1].title` — "a etapa anterior" por posição. Os
+     paralelos esperam `pendentes: [BPL-003, BPL-004]`; para o MentoCoach o modal exibia só o GDC e
+     **escondia o Plano de Carreira**. Nem a Gestora nem eu tínhamos notado — o modal abria, então
+     parecia certo.
+- **O motor SEMPRE calculou `pendentes`** — o adaptador já registrava "para UI futura: listar
+  pendentes no modal". A UI é que descartava. Foi só ligar o que já existia.
+- **Entrega: PR #108 mergeado (`2d6ea98`, squash).** `pendentes` exposto na `StageTelemetry`; o modal
+  **abre sempre** que a etapa está travada; pendências resolvidas em `resolvePendingStageTitles`
+  (pura), com dedução posicional **só** no fallback legado; modal recebe **lista** e ficou
+  plural-aware; lista vazia usa texto genérico em vez de nomear a etapa errada; `SubStepRail`
+  (o outro consumidor) atualizado.
+- **Um teste meu falhou e estava certo** (2ª vez na semana, ver Lição 22): eu tinha deixado o
+  fallback posicional ativo quando o motor responde mas os códigos não mapeiam — o que
+  **inventaria** uma etapa errada. Corrigi o código, não o teste.
+- Validado: 10 testes novos + mutação das 2 regras centrais; test **122/122**; type-check; build
+  exit 0; eslint **sem warning novo** (`SubStepRail` mantém o baseline legado de 2/0, idêntico à
+  `main`, conferido por checkout comparativo).
+- Itens atualizados: `BUGS.md` (+BUG-081), `DASHBOARD.md`, `RETROSPECTIVE.md` (Lição 29), este LOG.
+- Conferência em **produção** pela Gestora (BUG-030).
+
+---
+
 ## [2026-07-16] Chat de execução — Fase C: liberação relativa ao pacote (PRs #105/#106/#107 + sync)
 
 - Chat/sessão: mesmo chat de execução. A Gestora aprovou o plano da seção 10 do

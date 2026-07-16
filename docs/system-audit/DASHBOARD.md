@@ -12,7 +12,20 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-16 (chat de execução — **Fase C: liberação relativa ao pacote
+> **Última atualização:** 2026-07-16 (chat de execução — **Clique mudo na 1ª etapa travada
+> (PR #108)**. **Fase C validada em produção pela Gestora** — status dos dois paralelos corretos,
+> inclusive o MentoCoach com barra de progresso exibindo "Aguardando Fase Anterior". Ela reportou:
+> clicar no MentoCoach travado abre o modal, no Posicionamento **não faz nada**. **BUG-081**, dois
+> defeitos com a mesma raiz (a UI deduzia a pendência pela POSIÇÃO em vez de usar o motor): (1)
+> `if (stageIndex > 0)` antes de abrir o modal — o Posicionamento é índice **0** → return mudo. O
+> guard era correto até a Fase C tornar a 1ª etapa travável: a regra nova não quebrou o código,
+> quebrou a **premissa** dele. (2) O modal mostrava "a etapa anterior" por posição, escondendo o
+> Plano de Carreira nas pendências do MentoCoach. O motor **sempre** calculou `pendentes` — a UI
+> descartava. Fix: `pendentes` na telemetria, modal **abre sempre**, resolução em função pura,
+> modal plural-aware. Validado: test **122/122**, type-check, build, eslint sem warning novo.
+> Conferência em produção (BUG-030).
+>
+> _(entrada anterior)_ 2026-07-16 (chat de execução — **Fase C: liberação relativa ao pacote
 > (PRs #105/#106/#107 + sync)**. Regra da Gestora: Posicionamento (BPL-001) e MentoCoach (BPL-005)
 > só liberam após a última etapa da trilha que o membro contratou; comprados avulsos, liberam de
 > imediato; a exceção é do admin. **A lista de pré-requisitos não cabia na planilha** (varia por

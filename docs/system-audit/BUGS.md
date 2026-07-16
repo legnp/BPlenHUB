@@ -2070,6 +2070,41 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   2 regras centrais, test 97/97, type-check, build, eslint 0.
 - Commit/PR: PR #106
 
+### BUG-081 Clique na 1a etapa travada nao fazia nada (return mudo) + modal nomeava a etapa errada
+
+- Severidade: Médio (usabilidade; o membro clica e nada acontece — sem modal, sem navegacao, sem erro)
+- Área/fase onde foi achado: F1-03 / jornada — **reportado pela Gestora** ao validar a Fase C
+  (2026-07-16): clicar no MentoCoach travado abria o modal, mas clicar no Posicionamento travado
+  nao fazia absolutamente nada.
+- Arquivo(s) afetado(s): `src/components/journey/JourneyNav.tsx` (`handleStageClick`),
+  `src/components/journey/SequenceLockModal.tsx`, `src/hooks/useJourney.ts`; regra extraida para
+  `src/lib/journey/pending-stages.ts`
+- Cenário de falha: **[CONFIRMADO]** por leitura direta. Dois defeitos com a mesma raiz — a UI
+  deduzia a pendencia pela POSICAO em vez de usar a resposta do motor:
+  1. **Return mudo:** `if (isSequenceLocked) { const i = stages.findIndex(...); if (i > 0) { ...abre
+     modal... } return; }`. O Posicionamento e' a etapa de indice **0**, entao a condicao era falsa e
+     a funcao retornava sem fazer nada. O guard nasceu de uma premissa verdadeira ate a Fase C: "a
+     1a etapa nunca pode estar travada por sequencia".
+  2. **Modal mentia:** exibia `stages[indice - 1].title` — "a etapa anterior" por posicao. Mas os
+     servicos paralelos nao esperam a etapa anterior: esperam `pendentes: [BPL-003, BPL-004]`. Para o
+     MentoCoach o modal mostrava so o GDC, escondendo o Plano de Carreira.
+  O motor **sempre** calculou `pendentes` (o proprio adaptador ja registrava "para UI futura: listar
+  pendentes no modal") — a UI e' que descartava.
+- Status: **Corrigido** — 2026-07-16 (PR #108). `pendentes` exposto na `StageTelemetry`; o modal
+  abre **sempre** que a etapa esta travada; as pendencias vem do motor e sao resolvidas em
+  `resolvePendingStageTitles` (funcao pura), com deducao posicional **apenas** no fallback legado
+  (etapa sem atributos, em que `pendentes` vem vazio). Modal passou a receber uma **lista** e ficou
+  plural-aware ("a etapa X precisa" / "as etapas X e Y precisam"); lista vazia usa texto generico em
+  vez de nomear a etapa errada. `SubStepRail` (o outro consumidor do modal) atualizado.
+- Decisão de execução: bugfix direto, reportado pela Gestora. Validado por 10 testes novos +
+  mutação das 2 regras centrais (voltar a deduzir pela posição; ignorar o motor), test 122/122,
+  type-check, build, eslint sem warning novo (`SubStepRail` mantém o baseline legado de 2/0,
+  idêntico à `main`).
+- Nota de processo: um teste meu falhou e **estava certo** — eu tinha deixado o fallback posicional
+  ativo quando o motor respondia mas os códigos não mapeavam, o que **inventaria** uma etapa errada.
+  Corrigido o código, não o teste (mesmo padrão da fronteira de 20 dias no `BUG-076`).
+- Commit/PR: PR #108
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em

@@ -230,6 +230,19 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
     acesso não se valida no caso que a motivou; valida-se na população inteira**, e o caso
     surpreendente é o que merece a decisão dela, não a sua. _(Caso real: PR #107.)_
 
+29. **Ao afrouxar/apertar uma regra de negócio, cace os `if` que assumiam a regra ANTIGA.** A Fase C
+    tornou a 1ª etapa travável. Meses antes, alguém escreveu `if (stageIndex > 0)` antes de abrir o
+    modal de trava — correto **na época**, porque a 1ª etapa nunca podia estar travada. A regra nova
+    não quebrou o código; quebrou a **premissa** dele, e o sintoma foi o pior possível: um clique que
+    não faz nada, sem erro. **Regra nova = varredura dos guards que codificavam a regra velha**
+    (`índice > 0`, `!== primeiro`, `length - 1`), não só dos que a implementavam. _(Caso real:
+    `BUG-081`, achado pela Gestora horas depois do merge da Fase C.)_
+
+    Corolário: **se o motor já calcula a resposta, a UI não pode deduzi-la por conta própria.** O
+    `pendentes` existia desde o PR B2 e a UI deduzia "a etapa anterior" pela posição — o que também
+    estava errado, silenciosamente, para os paralelos. Dedução paralela à fonte de verdade é bug
+    esperando a regra mudar.
+
 ---
 
 ## Melhorias sugeridas para o PLANO (para o chat de planejamento refinar)
@@ -295,6 +308,9 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
   — extraia a fonte única), 22 (teste que falha pode estar certo; cheque a regra
   antes de corrigir o teste) e 23 (action compartilhada: mapeie os chamadores,
   um deles pode ser receita) adicionadas, a partir do `BUG-076` (PRs #102/#103).
+- 2026-07-16 — Lição 29 (regra nova invalida a premissa de guards antigos: cace
+  os `if` que codificavam a regra velha; e a UI não deduz o que o motor já
+  calcula) adicionada, a partir do `BUG-081`.
 - 2026-07-16 — Lições 27 (o insumo da regra é parte do escopo da regra) e 28
   (rode a regra de acesso contra a população inteira antes de mergear, não só
   contra o caso que a motivou) adicionadas, a partir da Fase C (PRs #105-#107).
