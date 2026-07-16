@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { TriadDonutChart } from "@/components/hub/TriadDonutChart";
 import { TriadVennChart } from "@/components/hub/TriadVennChart";
 import { StackedBarChart } from "@/components/hub/StackedBarChart";
@@ -20,6 +20,7 @@ import {
 } from "@/actions/get-user-results";
 import { getUserBookingsAction } from "@/actions/calendar";
 import { UserBooking } from "@/types/calendar";
+import { getDevolutivaDocs } from "@/lib/journey/devolutiva-docs";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Clock, 
@@ -35,7 +36,8 @@ import {
   Video,
   Briefcase,
   CheckCircle2,
-  Circle
+  Circle,
+  FileText
 } from "lucide-react";
 import { GlobalFooter } from "@/components/layout/GlobalFooter";
 import { useAuthContext } from "@/context/AuthContext";
@@ -67,6 +69,7 @@ export default function MemberDashboardView() {
 
   // Dashboard Agenda Modal (Reuse)
   const [selectedBooking_Dashboard, setSelectedBooking_Dashboard] = useState<UserBooking | null>(null);
+  const [docsMenuOpen, setDocsMenuOpen] = useState(false);
   const [isEvaluating_Dashboard, setIsEvaluating_Dashboard] = useState<string | null>(null);
 
   // Career Module State
@@ -196,6 +199,10 @@ export default function MemberDashboardView() {
     { label: 'Analista', percentage: discResult.scores.analista?.percentage || 0, color: '#ef4444' },
   ] : [];
 
+  // Documentos entregues na devolutiva de analise comportamental (anexados pelo
+  // admin naquele agendamento). Derivado dos bookings que a tela ja carrega.
+  const devolutivaDocs = useMemo(() => getDevolutivaDocs(historyBookings), [historyBookings]);
+
   const handleDownload = async (fileId: string) => {
     if (!user) return;
     try {
@@ -230,53 +237,87 @@ export default function MemberDashboardView() {
                 <aside id="hub-assessments" className="space-y-6">
                   <div className="p-8 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-[3.5rem] space-y-8 shadow-sm relative overflow-hidden group">
                      {/* Header do Laboratório */}
-                     <div className="flex items-center gap-4 mb-2">
-                        <div className="p-3 bg-blue-500/10 rounded-2xl border border-blue-500/20 text-blue-500">
-                           <Brain size={20} />
+                     <div className="flex items-start justify-between gap-4 mb-2">
+                        <div className="flex items-center gap-4">
+                           <div className="p-3 bg-blue-500/10 rounded-2xl border border-blue-500/20 text-blue-500">
+                              <Brain size={20} />
+                           </div>
+                           <div className="flex flex-col text-left">
+                              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)]">Perfil & Assessments</h3>
+                              <p className="text-xs font-black text-[var(--text-primary)] tracking-tight mt-1">Análise Comportamental</p>
+                           </div>
                         </div>
-                        <div className="flex flex-col text-left">
-                           <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)]">Perfil & Assessments</h3>
-                           <p className="text-xs font-black text-[var(--text-primary)] tracking-tight mt-1">Análise Comportamental</p>
-                        </div>
+
+                        {/* Documentos entregues na devolutiva. Só aparece quando há
+                            anexos registrados pelo admin naquela sessão. */}
+                        {devolutivaDocs.length > 0 && (
+                           <div className="relative shrink-0">
+                              <button
+                                 onClick={() => setDocsMenuOpen(v => !v)}
+                                 aria-expanded={docsMenuOpen}
+                                 aria-label="Documentos da devolutiva"
+                                 className="p-2 rounded-xl border border-[var(--border-primary)] bg-[var(--bg-primary)] text-[var(--text-muted)] hover:text-[var(--accent-start)] hover:border-[var(--accent-start)]/30 hover:bg-[var(--accent-soft)] transition-all"
+                              >
+                                 <FileText size={14} />
+                              </button>
+
+                              <AnimatePresence>
+                                 {docsMenuOpen && (
+                                    <>
+                                       {/* Captura o clique fora para fechar */}
+                                       <div className="fixed inset-0 z-40" onClick={() => setDocsMenuOpen(false)} />
+                                       <motion.div
+                                          initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                                          exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                                          transition={{ duration: 0.15 }}
+                                          className="absolute right-0 top-full mt-2 w-64 z-50 p-2 rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-primary)] shadow-2xl"
+                                       >
+                                          <p className="px-2 py-1.5 text-[8px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)] opacity-60">
+                                             Documentos da Devolutiva
+                                          </p>
+                                          <div className="space-y-0.5">
+                                             {devolutivaDocs.map(doc => (
+                                                <button
+                                                   key={doc.fileId}
+                                                   onClick={() => { handleDownload(doc.fileId); setDocsMenuOpen(false); }}
+                                                   className="w-full flex items-center gap-2.5 px-2 py-2 rounded-xl text-left hover:bg-[var(--accent-soft)] transition-colors group/doc"
+                                                >
+                                                   <FileText size={12} className="shrink-0 text-[var(--text-muted)] opacity-50 group-hover/doc:text-[var(--accent-start)] group-hover/doc:opacity-100 transition-all" />
+                                                   <span className="text-[10px] font-bold text-[var(--text-secondary)] group-hover/doc:text-[var(--text-primary)] truncate transition-colors">
+                                                      {doc.fileName}
+                                                   </span>
+                                                </button>
+                                             ))}
+                                          </div>
+                                       </motion.div>
+                                    </>
+                                 )}
+                              </AnimatePresence>
+                           </div>
+                        )}
                      </div>
 
                      <div className="space-y-6 relative z-10">
-                        {/* Lâmina 01: DISC */}
-                        <div className={`p-8 bg-[var(--input-bg)]/20 border border-[var(--border-primary)] rounded-[2.5rem] space-y-4 transition-all relative overflow-hidden group/blade ${!discResult ? 'opacity-60 grayscale' : 'hover:bg-[var(--input-bg)]/40 hover:border-blue-500/30'}`}>
-                           <div className="flex items-center justify-between mb-4 relative z-10">
-                              <div className="flex flex-col">
-                                 <span className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)]">Analise 01</span>
-                                 <h4 className="text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)]">Comportamental DISC</h4>
-                              </div>
-                              {discResult?.isReleased === false ? (
-                                 <div className="flex items-center gap-2 px-2.5 py-1 bg-amber-500/10 border border-amber-500/20 rounded-full">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                                    <span className="text-[7px] font-black uppercase tracking-[0.15em] text-amber-600">Ativo</span>
-                                 </div>
-                              ) : discResult ? (
-                                 <div className="flex items-center gap-2 px-2.5 py-1 bg-green-500/10 border border-green-500/10 rounded-full">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                                    <span className="text-[7px] font-black uppercase tracking-[0.15em] text-green-600">Analisado</span>
-                                 </div>
-                              ) : null}
-                           </div>
-
-                           {discResult ? (
-                              <div className={`space-y-6 relative z-10 transition-all duration-700 ${discResult.isReleased === false ? 'blur-md grayscale opacity-30 select-none' : 'opacity-100'}`}>
-                                 <DiscChart data={discData} mini />
-                              </div>
-                           ) : (
-                              <div className="w-24 h-24 mx-auto rounded-full border border-dashed border-[var(--border-primary)] flex items-center justify-center bg-[var(--bg-primary)]/30">
-                                 <Brain size={20} className="text-[var(--text-muted)] opacity-20" />
-                              </div>
-                           )}
-                        </div>
+                        {/* Análise 01: DISC */}
+                        {discResult && (
+                           <MiniCard
+                              title="Comportamental DISC"
+                              subtitle="Análise 01"
+                              isReleased={discResult.isReleased !== false}
+                              submittedAt={discResult.submittedAt}
+                              icon={<Brain size={14} className="text-[var(--accent-start)]" />}
+                              chart={<DiscChart data={discData} mini />}
+                              data={discData}
+                              hideLegend
+                           />
+                        )}
 
                         {/* Análise 02: Tempo */}
                         {gestaoResult && (
                            <MiniCard 
                               title="Gestão do Tempo" 
-                              subtitle="Análise 02 / Tríade" 
+                              subtitle="Análise 02" 
                               isReleased={gestaoResult.isReleased !== false}
                               submittedAt={gestaoResult.submittedAt}
                               icon={<Clock size={14} className="text-[var(--accent-start)]" />}
@@ -289,8 +330,8 @@ export default function MemberDashboardView() {
                         {/* Análise 03: Aprendizado */}
                         {aprendizadoResult && (
                            <MiniCard 
-                              title="Aprendizado" 
-                              subtitle="Análise 03 / VACD" 
+                              title="Preferências de Aprendizado" 
+                              subtitle="Análise 03" 
                               isReleased={aprendizadoResult.isReleased !== false}
                               submittedAt={aprendizadoResult.submittedAt}
                               icon={<Sparkles size={14} className="text-[var(--accent-start)]" />}
@@ -302,8 +343,8 @@ export default function MemberDashboardView() {
                         {/* Análise 04: Reconhecimento */}
                         {reconhecimentoResult && (
                            <MiniCard 
-                              title="Reconhecimento" 
-                              subtitle="Análise 04 / Premiações" 
+                              title="Preferências de Reconhecimento" 
+                              subtitle="Análise 04" 
                               isReleased={reconhecimentoResult.isReleased !== false}
                               submittedAt={reconhecimentoResult.submittedAt}
                               icon={<Target size={14} className="text-[var(--accent-start)]" />}
