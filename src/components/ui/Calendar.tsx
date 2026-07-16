@@ -27,10 +27,8 @@ import {
   Loader2,
   Clock,
   ChevronDown,
-  Filter,
   CheckCircle2,
   AlertCircle,
-  Users,
   User,
   Tag,
   BadgeCheck
@@ -325,16 +323,18 @@ export default function Calendar({
         </div>
 
         {/* COLUNA DIREITA: EVENT PANEL */}
-        <div className="flex-1 w-full lg:h-[400px] bg-[var(--input-bg)]/20 backdrop-blur-[40px] rounded-3xl border border-[var(--input-border)] p-8 shadow-[0_8px_32_0_rgba(31,38,135,0.03)] flex flex-col">
+        <div className="flex-1 w-full lg:h-[400px] bg-[var(--input-bg)]/20 backdrop-blur-[40px] rounded-3xl border border-[var(--input-border)] p-5 shadow-[0_8px_32_0_rgba(31,38,135,0.03)] flex flex-col">
 
-          <div className="mb-4 text-left">
+          <div className="mb-3 text-left">
             <h4 className="text-[10px] font-black text-[var(--accent-start)] uppercase tracking-[0.2em] mb-1">PROGRAMAÇÃO DISPONÍVEL</h4>
-            <h2 className="text-2xl font-black text-[var(--text-primary)] capitalize">
+            {/* first-letter (nao `capitalize`): o locale devolve "sexta-feira, 31 de julho" e
+                `capitalize` maiusculizava cada palavra, gerando "31 De Julho". */}
+            <h2 className="text-sm font-black text-[var(--text-primary)] first-letter:uppercase">
               {format(selectedDate, "EEEE, dd 'de' MMMM", { locale: ptBR })}
             </h2>
           </div>
 
-          <div className="flex-1 space-y-4 overflow-y-auto pr-4 custom-scrollbar">
+          <div className="flex-1 space-y-2.5 overflow-y-auto pr-3 custom-scrollbar">
             {isLoading ? (
               <div className="flex flex-col items-center justify-center py-20 gap-3 opacity-20">
                 <Loader2 className="w-6 h-6 animate-spin" />
@@ -355,6 +355,7 @@ export default function Calendar({
                 const capacity = ev.totalCapacity || 0;
                 const registered = ev.registeredCount || 0;
                 const isFull = registered >= capacity && capacity > 0;
+                const remaining = Math.max(0, capacity - registered);
                 const status = bookingStatus?.id === ev.id ? bookingStatus : null;
 
                 const evDate = parseISO(ev.start);
@@ -367,74 +368,65 @@ export default function Calendar({
                     key={ev.id}
                     onClick={() => openConfirmModal(ev)}
                     disabled={isBooking === ev.id || isFull || isWeekLocked}
-                    className={`group relative flex flex-col p-6 rounded-3xl transition-all duration-300 border text-left w-full focus:outline-none focus:ring-2 focus:ring-[var(--accent-start)]
+                    className={`group relative flex flex-col gap-1.5 p-4 rounded-2xl transition-all duration-300 border text-left w-full focus:outline-none focus:ring-2 focus:ring-[var(--accent-start)]
                        ${isFull || isWeekLocked
                           ? "bg-[var(--bg-primary)]/20 border-[var(--border-primary)] opacity-50 grayscale cursor-not-allowed"
                           : isBooking === ev.id
                             ? "bg-[var(--accent-soft)] border-[var(--accent-start)]/50 cursor-wait opacity-80"
-                            : "bg-[var(--bg-primary)]/40 border-[var(--border-primary)] hover:border-[var(--accent-start)] hover:bg-[var(--accent-soft)]/20 hover:shadow-2xl hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+                            : "bg-[var(--bg-primary)]/40 border-[var(--border-primary)] hover:border-[var(--accent-start)] hover:bg-[var(--accent-soft)]/20 hover:shadow-2xl cursor-pointer"
                        }
                     `}
                   >
-                    <div className="flex gap-5 w-full">
-                      <div className="shrink-0 flex flex-col items-center gap-0.5 pt-0.5 min-w-[44px]">
-                        <span className={`text-[12px] font-black ${isFull || isWeekLocked ? "text-[var(--text-muted)] opacity-50" : "text-[var(--text-primary)]"}`}>{format(evDate, "HH:mm")}</span>
-                        <div className="w-px h-3 bg-[var(--text-muted)] opacity-20 my-0.5 rounded-full" />
-                        <span className="text-[10px] font-black text-[var(--text-muted)] opacity-50">
-                           {ev.end ? format(parseISO(ev.end), "HH:mm") : format(new Date(evDate.getTime() + 60 * 60000), "HH:mm")}
+                    {/* Linha 1: horario + vagas a esquerda, acao a direita. `flex-wrap` para
+                        que num aperto extremo a acao desca em vez de o card estourar. */}
+                    <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 w-full">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Clock className="w-3 h-3 text-[var(--text-muted)] opacity-40 shrink-0" />
+                        <span className={`text-[11px] font-black whitespace-nowrap ${isFull || isWeekLocked ? "text-[var(--text-muted)] opacity-50" : "text-[var(--text-primary)]"}`}>
+                          {format(evDate, "HH:mm")} — {ev.end ? format(parseISO(ev.end), "HH:mm") : format(new Date(evDate.getTime() + 60 * 60000), "HH:mm")}
+                        </span>
+                        <span className="text-[11px] text-[var(--text-muted)] opacity-25 shrink-0">·</span>
+                        <span className={`text-[11px] font-bold whitespace-nowrap ${isFull ? "text-red-500" : "text-[var(--text-muted)] opacity-70"}`}>
+                          {isFull ? "Sem vagas" : `${remaining} ${remaining === 1 ? "vaga" : "vagas"}`}
                         </span>
                       </div>
 
-                      <div className="flex-1 min-w-0 flex flex-col justify-center">
-                        <div className="flex justify-end items-start mb-0.5 gap-4">
-                           {/* Compact and clear select button or status badge */}
-                           {isBooking === ev.id ? (
-                              <span className="text-[9px] px-2 py-1 bg-[var(--accent-start)]/10 rounded-md font-black tracking-widest uppercase text-[var(--accent-start)] animate-pulse shrink-0">Aguarde...</span>
-                           ) : isFull ? (
-                              <span className="text-[9px] px-2 py-1 bg-red-500/10 rounded-md font-black tracking-widest uppercase text-red-500 opacity-80 shrink-0">Esgotado</span>
-                           ) : isWeekLocked ? (
-                              <span className="text-[9px] px-2 py-1 bg-[var(--text-muted)]/10 rounded-md font-black tracking-widest uppercase text-[var(--text-muted)] opacity-60 shrink-0">Ocupado</span>
-                           ) : (
-                              <span className="text-[9px] px-2.5 py-1 bg-[var(--text-muted)]/5 group-hover:bg-[var(--accent-start)]/10 rounded-md font-black tracking-widest uppercase text-[var(--text-muted)] opacity-60 group-hover:opacity-100 group-hover:text-[var(--accent-start)] transition-all shrink-0">Selecionar</span>
-                           )}
-                        </div>
-
-                        {/* Inline details to save space */}
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5 text-[10px] uppercase tracking-tight">
-                           <div className="flex items-center gap-1.5">
-                             <Users className="w-3 h-3 text-[var(--text-muted)] opacity-40 shrink-0" />
-                             <span className={`font-bold ${isFull ? "text-red-500" : "text-[var(--text-muted)] opacity-70"}`}>
-                               {isFull ? "SEM VAGAS" : `${capacity - registered} VAGAS`}
-                             </span>
-                           </div>
-
-                           <div className="flex items-center gap-1.5">
-                             <User className="w-3 h-3 text-[var(--text-muted)] opacity-40 shrink-0" />
-                             <span className="font-bold text-[var(--text-muted)] opacity-70">
-                               Orientador: <span className="text-[var(--text-primary)] opacity-90">{ev.mentor || "BPlen"}</span>
-                             </span>
-                           </div>
-
-                           {ev.theme && (
-                             <div className="flex items-center gap-1.5">
-                               <Tag className="w-3 h-3 text-[var(--accent-start)] opacity-40 shrink-0" />
-                               <span className="font-bold text-[var(--accent-start)] opacity-90">
-                                 {ev.theme}
-                               </span>
-                             </div>
-                           )}
-                        </div>
-
-                        {ev.description && (
-                          <p className="text-[10px] text-[var(--text-muted)] opacity-60 line-clamp-1 italic leading-relaxed mt-2 text-left">
-                            {ev.description}
-                          </p>
-                        )}
-                      </div>
+                      {isBooking === ev.id ? (
+                        <span className="text-[9px] px-2 py-1 bg-[var(--accent-start)]/10 rounded-md font-black tracking-widest uppercase text-[var(--accent-start)] animate-pulse shrink-0">Aguarde...</span>
+                      ) : isFull ? (
+                        <span className="text-[9px] px-2 py-1 bg-red-500/10 rounded-md font-black tracking-widest uppercase text-red-500 opacity-80 shrink-0">Esgotado</span>
+                      ) : isWeekLocked ? (
+                        <span className="text-[9px] px-2 py-1 bg-[var(--text-muted)]/10 rounded-md font-black tracking-widest uppercase text-[var(--text-muted)] opacity-60 shrink-0">Ocupado</span>
+                      ) : (
+                        <span className="text-[9px] px-2.5 py-1 bg-[var(--text-muted)]/5 group-hover:bg-[var(--accent-start)]/10 rounded-md font-black tracking-widest uppercase text-[var(--text-muted)] opacity-60 group-hover:opacity-100 group-hover:text-[var(--accent-start)] transition-all shrink-0">Selecionar</span>
+                      )}
                     </div>
 
+                    {/* Um campo por linha, cada um `nowrap`: nenhum campo quebra no meio. */}
+                    <div className="flex items-center gap-2 min-w-0">
+                      <User className="w-3 h-3 text-[var(--text-muted)] opacity-40 shrink-0" />
+                      <span className="text-[11px] font-bold text-[var(--text-muted)] opacity-70 whitespace-nowrap truncate">
+                        Orientador: <span className="text-[var(--text-primary)] opacity-90">{ev.mentor || "BPlen"}</span>
+                      </span>
+                    </div>
+
+                    {ev.theme && (
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Tag className="w-3 h-3 text-[var(--accent-start)] opacity-40 shrink-0" />
+                        <span className="text-[11px] font-bold text-[var(--accent-start)] opacity-90 whitespace-nowrap truncate">
+                          {ev.theme}
+                        </span>
+                      </div>
+                    )}
+
+                    {ev.description && (
+                      <p className="text-[11px] text-[var(--text-muted)] opacity-60 line-clamp-1 italic leading-relaxed text-left">
+                        {ev.description}
+                      </p>
+                    )}
+
                     {status && (
-                      <div className={`mt-4 flex items-center gap-3 p-3 rounded-2xl animate-in slide-in-from-bottom-2 ${status.type === 'success' ? "bg-green-500/10 text-green-700 border border-green-500/20" : "bg-red-500/10 text-red-700 border border-red-500/20"
+                      <div className={`mt-1.5 flex items-center gap-3 p-3 rounded-2xl animate-in slide-in-from-bottom-2 ${status.type === 'success' ? "bg-green-500/10 text-green-700 border border-green-500/20" : "bg-red-500/10 text-red-700 border border-red-500/20"
                         }`}>
                         {status.type === 'success' ? <CheckCircle2 className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
                         <span className="text-[10px] font-bold uppercase tracking-tight">{status.message}</span>
