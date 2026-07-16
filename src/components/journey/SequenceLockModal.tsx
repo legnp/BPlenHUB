@@ -4,11 +4,17 @@ import React from "react";
 import GlassModal from "@/components/ui/GlassModal";
 import { Lock, Sparkles, ArrowRightCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatarListaPtBr } from "@/lib/journey/pending-stages";
 
 interface SequenceLockModalProps {
   isOpen: boolean;
   onClose: () => void;
-  prevStageTitle: string;
+  /**
+   * Etapas/paradas que faltam concluir. E' uma LISTA porque os servicos
+   * paralelos (Fase C) podem esperar mais de uma — antes o modal recebia um
+   * titulo unico, deduzido pela posicao, e mentia nesses casos (BUG-081).
+   */
+  pendingTitles: string[];
   type?: "etapa" | "parada";
 }
 
@@ -18,7 +24,17 @@ interface SequenceLockModalProps {
  * (portal, backdrop, z-index e scroll unificados); conteudo especifico como children.
  */
 // Nota: comentarios em ASCII; textos de interface preservam a acentuacao PT-BR.
-export function SequenceLockModal({ isOpen, onClose, prevStageTitle, type = "etapa" }: SequenceLockModalProps) {
+export function SequenceLockModal({ isOpen, onClose, pendingTitles, type = "etapa" }: SequenceLockModalProps) {
+  // Lista vazia: o motor travou mas nao foi possivel nomear o que falta (dado
+  // inconsistente). Melhor um texto generico e verdadeiro do que nomear a etapa
+  // errada — e o modal ABRE de qualquer forma, nunca engole o clique (BUG-081).
+  const desconhecido = pendingTitles.length === 0;
+  const plural = pendingTitles.length > 1 || desconhecido;
+  const substantivo = type === "etapa" ? (plural ? "etapas" : "etapa") : (plural ? "paradas" : "parada");
+  const tituloLinha2 = type === "etapa"
+    ? (plural ? "das Etapas Anteriores" : "da Etapa Anterior")
+    : (plural ? "das Paradas Anteriores" : "Anterior");
+
   return (
     <GlassModal isOpen={isOpen} onClose={onClose} maxWidth="max-w-[440px]">
       <div className="flex flex-col items-center text-center space-y-8">
@@ -38,10 +54,21 @@ export function SequenceLockModal({ isOpen, onClose, prevStageTitle, type = "eta
         {/* Mensagem */}
         <div className="space-y-4">
           <h3 className="text-2xl font-black text-[var(--text-primary)] tracking-tight leading-tight">
-            {type === "etapa" ? "Aguardando Conclusão" : "Aguardando Parada"} <br /> {type === "etapa" ? "da Etapa Anterior" : "Anterior"}
+            {type === "etapa" ? "Aguardando Conclusão" : "Aguardando Parada"} <br /> {tituloLinha2}
           </h3>
           <p className="text-[13px] leading-relaxed text-[var(--text-secondary)] font-medium">
-            Para garantir a eficácia do seu progresso, a {type} <span className="text-amber-500 font-black">{prevStageTitle}</span> precisa ser concluída 100% antes de liberar este novo ciclo.
+            {desconhecido ? (
+              <>
+                Para garantir a eficácia do seu progresso, {substantivo} anteriores precisam ser
+                concluídas 100% antes de liberar este novo ciclo.
+              </>
+            ) : (
+              <>
+                Para garantir a eficácia do seu progresso, {plural ? "as" : "a"} {substantivo}{" "}
+                <span className="text-amber-500 font-black">{formatarListaPtBr(pendingTitles)}</span>{" "}
+                {plural ? "precisam" : "precisa"} ser {plural ? "concluídas" : "concluída"} 100% antes de liberar este novo ciclo.
+              </>
+            )}
           </p>
         </div>
 

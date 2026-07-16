@@ -20,7 +20,7 @@ interface SubStepRailProps {
  */
 export function SubStepRail({ id, style, substeps, currentSubStepId, completedSubStepIds, onSelectSubStep }: SubStepRailProps) {
   const [sequenceLockModalOpen, setSequenceLockModalOpen] = useState(false);
-  const [prevSubStepTitle, setPrevSubStepTitle] = useState("");
+  const [pendingSubStepTitles, setPendingSubStepTitles] = useState<string[]>([]);
 
   // 🧬 Agrupamento de SubSteps por Ordem Majoritária (ex: 5.1, 5.2 -> Parada 5)
   const groupedSubSteps = substeps.reduce((acc, ss) => {
@@ -47,7 +47,7 @@ export function SubStepRail({ id, style, substeps, currentSubStepId, completedSu
     const isLocked = absoluteIdx > 0 && !completedSubStepIds.includes(substeps[absoluteIdx - 1].id);
 
     if (isLocked) {
-      setPrevSubStepTitle(substeps[absoluteIdx - 1].title);
+      setPendingSubStepTitles([substeps[absoluteIdx - 1].title]);
       setSequenceLockModalOpen(true);
       return;
     }
@@ -179,7 +179,7 @@ export function SubStepRail({ id, style, substeps, currentSubStepId, completedSu
       <SequenceLockModal 
         isOpen={sequenceLockModalOpen}
         onClose={() => setSequenceLockModalOpen(false)}
-        prevStageTitle={prevSubStepTitle}
+        pendingTitles={pendingSubStepTitles}
         type="parada"
       />
     </div>

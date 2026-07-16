@@ -15,6 +15,7 @@ import { SequenceLockModal } from "./SequenceLockModal";
 import GlassModal from "@/components/ui/GlassModal";
 import { BPlenRichTextRenderer } from "@/components/shared/BPlenRichTextRenderer";
 import { resolveStageBeacon } from "@/lib/journey/stage-beacon";
+import { resolvePendingStageTitles } from "@/lib/journey/pending-stages";
 
 interface JourneyNavProps {
   stages: JourneyStep[];
@@ -109,7 +110,7 @@ export function JourneyNav({ stages, currentStepId, stepStatusMap, getStageTelem
 
   // Sequence Lock State 🔒
   const [sequenceLockModalOpen, setSequenceLockModalOpen] = useState(false);
-  const [prevStageTitle, setPrevStageTitle] = useState("");
+  const [pendingStageTitles, setPendingStageTitles] = useState<string[]>([]);
 
   // Gate para Não-Membros (mesmo padrão visual p/ Onboarding e Offboarding) 🔒
   const [offboardingLockedModalOpen, setOffboardingLockedModalOpen] = useState(false);
@@ -118,7 +119,7 @@ export function JourneyNav({ stages, currentStepId, stepStatusMap, getStageTelem
   const currentStepIndex = stages.findIndex(s => s.id === currentStepId);
 
   // Manipulador de Clique Inteligente (Governança + Upsell + Sequência 🛡️✨)
-  const handleStageClick = async (stage: JourneyStep, hasAccess: boolean, isSequenceLocked: boolean) => {
+  const handleStageClick = async (stage: JourneyStep, hasAccess: boolean, isSequenceLocked: boolean, pendentes: string[] = []) => {
     // 0. Exceção do Offboarding para Não-Membros
     if (!hasAccess && stage.id.toLowerCase() === 'offboarding') {
       setOffboardingLockedModalOpen(true);
@@ -147,13 +148,14 @@ export function JourneyNav({ stages, currentStepId, stepStatusMap, getStageTelem
       return;
     }
 
-    // 2. Segunda Prioridade: Tem acesso, mas a sequência está travada metodologicamente 🔒
+    // 2. Segunda Prioridade: Tem acesso, mas a sequência está travada metodologicamente
     if (isSequenceLocked) {
-       const stageIndex = stages.findIndex(s => s.id === stage.id);
-       if (stageIndex > 0) {
-          setPrevStageTitle(stages[stageIndex - 1].title);
-          setSequenceLockModalOpen(true);
-       }
+       // O modal abre SEMPRE que a etapa esta travada. Antes havia um
+       // `if (stageIndex > 0)` aqui: a 1a etapa caia num return mudo, e o clique
+       // no Posicionamento (etapa 1, travavel desde a Fase C) nao fazia nada
+       // (BUG-081). As pendencias vem do motor, nao da posicao na lista.
+       setPendingStageTitles(resolvePendingStageTitles(pendentes, stages, stage.id));
+       setSequenceLockModalOpen(true);
        return;
     }
 
@@ -188,7 +190,8 @@ export function JourneyNav({ stages, currentStepId, stepStatusMap, getStageTelem
               hasAccess: true,
               isNext: false,
               isSequenceLocked: false,
-              substepsLabel: "0/0"
+              substepsLabel: "0/0",
+              pendentes: []
             };
 
             const isCurrent = stage.id === currentStepId;
@@ -234,7 +237,7 @@ export function JourneyNav({ stages, currentStepId, stepStatusMap, getStageTelem
             const WrapperComponent = (onSelectStep || isBlocked || isBlockedBySequence) ? "div" : Link;
             
             const wrapperProps = onSelectStep || isBlocked || isBlockedBySequence
-              ? { onClick: () => handleStageClick(stage, telemetry.hasAccess, telemetry.isSequenceLocked), role: "button" } 
+              ? { onClick: () => handleStageClick(stage, telemetry.hasAccess, telemetry.isSequenceLocked, telemetry.pendentes ?? []), role: "button" } 
               : { href: (stage.id === 'PRIMEIROS_PASSOS' || stage.id === 'primeiros_passos' || stage.order === 0) 
                   ? "/hub/journey/posicionamento-profissional" 
                   : `/hub/journey/${stage.id}` 
@@ -491,7 +494,7 @@ export function JourneyNav({ stages, currentStepId, stepStatusMap, getStageTelem
       <SequenceLockModal 
         isOpen={sequenceLockModalOpen}
         onClose={() => setSequenceLockModalOpen(false)}
-        prevStageTitle={prevStageTitle}
+        pendingTitles={pendingStageTitles}
       />
 
       {/* Gate para Não-Membros — mesmo padrão visual (sem foto/upsell) p/ Offboarding e Onboarding */}
