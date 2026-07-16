@@ -26,6 +26,7 @@ import { getSyncedEvents, getUserBookingsAction, submitEvaluationAction } from "
 import { UserBooking, GoogleCalendarEvent } from "@/types/calendar";
 import { SurveyEngine } from "@/components/forms/SurveyEngine";
 import { getSurveyConfig } from "@/config/surveys";
+import { getMeetingFilterKeyword } from "@/lib/journey/meeting-keyword";
 import { useAuthContext } from "@/context/AuthContext";
 import { BPLEN_NOMENCLATURE } from "@/config/nomenclature";
 import { checkSurveyCompletedAction } from "@/actions/submit-survey";
@@ -37,39 +38,6 @@ import { SurveyValue } from "@/types/survey";
 const normalizeStr = (str: string) => 
   str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
-/**
- * Helper para obter dinamicamente a palavra-chave de busca de eventos para cada etapa 🧬📅
- */
-function getMeetingFilterKeyword(substep: SubStepConfig): string {
-  const refId = (substep.referenceId || "").toLowerCase();
-  const title = (substep.title || "").toLowerCase();
-
-  if (refId.includes("feedback") && refId.includes("posicionamento")) {
-    return "feedback posicionamento";
-  }
-
-  if (refId.includes("onboarding") || title.includes("onboarding")) return "onboarding";
-  
-  if (refId.includes("analise") || refId.includes("comportamental") || 
-      title.includes("analise") || title.includes("comportamental")) {
-    return "analise comportamental";
-  }
-  
-  if (refId.includes("carreira") || refId.includes("plano") || 
-      title.includes("carreira") || title.includes("plano")) {
-    return "plano de carreira";
-  }
-  
-  if (refId.includes("grupo") || title.includes("grupo")) return "orientacao em grupo";
-  if (refId.includes("individual") || title.includes("individual")) return "orientacao individual";
-  if (refId.includes("coaching") || title.includes("coaching")) return "coaching";
-  if (refId.includes("mentoria") || title.includes("mentoria")) return "mentoria";
-  if (refId.includes("offboarding") || title.includes("offboarding")) return "offboarding";
-
-  return substep.referenceId 
-    ? substep.referenceId.replace(/_/g, " ").replace(/-/g, " ").toLowerCase() 
-    : title;
-}
 
 interface StepRendererProps {
   substep: SubStepConfig;
