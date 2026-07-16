@@ -16,6 +16,13 @@ export interface StageTelemetry {
   isNext: boolean;
   isSequenceLocked: boolean;
   substepsLabel: string;
+  /**
+   * Em `isSequenceLocked`, os serviceCodes que faltam concluir. O motor sempre
+   * calculou isto; a UI e' que descartava e deduzia "a etapa anterior" pela
+   * POSICAO — o que e' errado para os servicos paralelos (BUG-081).
+   * Vazio no fallback legado (etapa sem atributos sincronizados).
+   */
+  pendentes: string[];
 }
 
 /**
@@ -199,6 +206,7 @@ export function useJourney(uid: string) {
     // do admin), substituindo a trava linear hardcoded e suas excecoes.
     let motorHasAccess = finalHasAccessLogic;
     let isSequenceLocked = false;
+    let pendentes: string[] = [];
 
     const motorDecision = stage ? resolveStageAccess(stage, {
       selo: services?.member_area_access === true,
@@ -211,6 +219,7 @@ export function useJourney(uid: string) {
     if (motorDecision) {
       motorHasAccess = motorDecision.hasAccess;
       isSequenceLocked = motorDecision.isSequenceLocked;
+      pendentes = motorDecision.decisao.pendentes;
     } else if (thisStepIndex > 0) {
        // 🔒 FALLBACK LEGADO (etapa sem atributos sincronizados): trava linear —
        // uma etapa so pode ser acessada se a anterior estiver 'completed', com
@@ -243,7 +252,8 @@ export function useJourney(uid: string) {
       hasAccess: motorHasAccess,
       isNext,
       isSequenceLocked, // 🧬 Flag de governança metodológica (motor ou fallback legado)
-      substepsLabel: `${completedCount}/${totalSubsteps}`
+      substepsLabel: `${completedCount}/${totalSubsteps}`,
+      pendentes
     };
   };
 
