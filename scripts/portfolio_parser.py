@@ -216,25 +216,44 @@ try:
     cp_sheet = wb_config["Checkpoints"]
     checkpoints_by_service = {}
 
+    # Pre-passada: quantas vezes cada (servico, tipo, referenceId) aparece.
+    # O id do checkpoint e derivado desse par, entao servicos que repetem o mesmo
+    # referenceId em varias paradas (MentoCoach: 10x "sessao-mentocoach"; GDC:
+    # 10x "orientacao-em-grupo") geravam ids IDENTICOS. Como a conclusao e
+    # gravada por id, concluir uma parada marcava todas as irmas de uma vez.
+    # So o par repetido ganha o sufixo de ordem: os ids ja em uso (ex.:
+    # ss-survey-disc) seguem estaveis e nenhum progresso e orfanado.
+    pair_counts = {}
+    for r in range(2, cp_sheet.max_row + 1):
+        sc = cp_sheet.cell(row=r, column=1).value
+        if not sc:
+            continue
+        key = (
+            str(sc).strip(),
+            str(cp_sheet.cell(row=r, column=6).value or "").strip(),
+            str(cp_sheet.cell(row=r, column=7).value or "").strip()
+        )
+        pair_counts[key] = pair_counts.get(key, 0) + 1
+
     for r in range(2, cp_sheet.max_row + 1):
         service_code = cp_sheet.cell(row=r, column=1).value
         if not service_code:
             continue
         service_code = str(service_code).strip()
-        checkpoint_id = str(cp_sheet.cell(row=r, column=3).value or "").strip()
         order = cp_sheet.cell(row=r, column=4).value
         title = str(cp_sheet.cell(row=r, column=5).value or "").strip()
         type_val = str(cp_sheet.cell(row=r, column=6).value or "").strip()
         ref_id = str(cp_sheet.cell(row=r, column=7).value or "").strip()
         desc = str(cp_sheet.cell(row=r, column=8).value or "").strip()
-        
+
         if service_code not in checkpoints_by_service:
             checkpoints_by_service[service_code] = []
-            
+
         checkpoint_id = f"ss-{type_val}-{ref_id}"
-        if service_code == "BPL-004" and order is not None:
+        is_repeated = pair_counts.get((service_code, type_val, ref_id), 0) > 1
+        if is_repeated and order is not None:
             checkpoint_id = f"{checkpoint_id}-{order}"
-            
+
         checkpoints_by_service[service_code].append({
             "id": checkpoint_id,
             "type": type_val,
@@ -243,6 +262,14 @@ try:
             "description": desc or "Etapa recomendada de desenvolvimento",
             "order": str(order) if order is not None else ""
         })
+    # Trava: id duplicado faz a conclusao de uma parada marcar todas as irmas.
+    # Falhar alto aqui e melhor que gerar um payload silenciosamente quebrado.
+    for code, cps in checkpoints_by_service.items():
+        ids = [c["id"] for c in cps]
+        dupes = sorted({i for i in ids if ids.count(i) > 1})
+        if dupes:
+            raise SystemExit(f"ERRO: checkpoints com id duplicado em {code}: {dupes}")
+
     print(f" -> Loaded checkpoints for {len(checkpoints_by_service)} services.")
 except KeyError:
     print("ERROR: 'Checkpoints' sheet not found. Delivery steps will be empty.")
