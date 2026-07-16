@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Upload, Check, AlertCircle, Loader2, Eye } from "lucide-react";
+import { Upload, Check, AlertCircle, Loader2, Eye, Trash2 } from "lucide-react";
 
 import { uploadToUserDrive } from "@/actions/upload-to-drive";
 import { getAuth } from "firebase/auth";
@@ -27,6 +27,8 @@ interface FileFieldProps {
   value: { url: string; fileName: string } | null;
   onChange: (value: { url: string; fileName: string } | null) => void;
   maxSizeMB: number;
+  /** Bloqueia o upload/remoção (fora do modo edição). O botão "Ver documento" segue clicável. */
+  disabled?: boolean;
 }
 
 /**
@@ -34,7 +36,7 @@ interface FileFieldProps {
  * Componente de upload imediato que sincroniza arquivos diretamente com o Google Drive.
  * Substitui o Firebase Storage por uma arquitetura de bypass server-side.
  */
-export function FileField({ id, label, type = "CV", matricula, value, onChange, maxSizeMB }: FileFieldProps) {
+export function FileField({ id, label, type = "CV", matricula, value, onChange, maxSizeMB, disabled = false }: FileFieldProps) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -110,19 +112,20 @@ export function FileField({ id, label, type = "CV", matricula, value, onChange, 
         <input
           type="file"
           id={id}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
+          className={`absolute inset-0 w-full h-full opacity-0 z-20 ${disabled ? "cursor-default pointer-events-none" : "cursor-pointer"}`}
           onChange={handleFile}
-          disabled={uploading}
+          disabled={uploading || disabled}
           accept=".pdf,.doc,.docx,.jpg,.png,.webp"
         />
-        
+
         <div className={`
           p-6 border-[1px] border-dashed rounded-[2rem] transition-all duration-500 flex flex-col items-center justify-center gap-3
-          ${uploading 
-            ? "bg-white/5 border-[var(--accent-start)]/40 shadow-[0_0_20px_rgba(255,255,255,0.05)]" 
+          ${uploading
+            ? "bg-white/5 border-[var(--accent-start)]/40 shadow-[0_0_20px_rgba(255,255,255,0.05)]"
             : "bg-white/5 border-white/10 hover:border-[var(--accent-start)]/40 hover:bg-white/10"}
           ${value ? "border-green-500/40 bg-green-500/5 text-green-500 shadow-[0_0_30px_rgba(34,197,94,0.1)]" : ""}
           ${error ? "border-red-500/40 bg-red-500/5 text-red-500" : ""}
+          ${disabled ? "opacity-60" : ""}
         `}>
 
           
@@ -155,13 +158,27 @@ export function FileField({ id, label, type = "CV", matricula, value, onChange, 
       </div>
 
       {value?.url && (
-        <button
-          type="button"
-          onClick={handleView}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-xl text-[9px] font-black uppercase tracking-widest text-[var(--text-secondary)] hover:text-[var(--accent-start)] hover:border-[var(--accent-start)]/30 transition-all"
-        >
-          <Eye size={12} /> Ver documento anexado
-        </button>
+        <div className="flex gap-2">
+          {/* "Ver documento" fica sempre clicável, mesmo fora do modo edição. */}
+          <button
+            type="button"
+            onClick={handleView}
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-xl text-[9px] font-black uppercase tracking-widest text-[var(--text-secondary)] hover:text-[var(--accent-start)] hover:border-[var(--accent-start)]/30 transition-all"
+          >
+            <Eye size={12} /> Ver documento anexado
+          </button>
+          {/* Remover só no modo edição (a remoção é persistida ao salvar). */}
+          {!disabled && (
+            <button
+              type="button"
+              onClick={() => onChange(null)}
+              title="Remover arquivo"
+              className="px-3 py-2.5 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-xl text-red-500/70 hover:text-red-500 hover:border-red-500/30 transition-all"
+            >
+              <Trash2 size={14} />
+            </button>
+          )}
+        </div>
       )}
 
       {error && (

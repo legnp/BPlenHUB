@@ -141,7 +141,7 @@ export function NetworkingCard({ type, data }: Props) {
            {isMember && member.cvVisible && member.cvUrl && (
              <button
                onClick={() => openSharedDoc(member.cvUrl!)}
-               title={member.cvName || "Ver currículo"}
+               title="Visualizar Currículo"
                className="p-3 bg-[var(--social-bg)] text-[var(--text-secondary)] rounded-2xl hover:bg-[var(--accent-soft)] hover:text-[var(--accent-start)] transition-all"
              >
                 <FileText size={14} />
@@ -152,7 +152,7 @@ export function NetworkingCard({ type, data }: Props) {
            {isMember && member.portfolioVisible && member.portfolioUrl && (
              <button
                onClick={() => openSharedDoc(member.portfolioUrl!)}
-               title={member.portfolioName || "Ver portfólio"}
+               title="Visualizar Portfólio"
                className="p-3 bg-[var(--social-bg)] text-[var(--text-secondary)] rounded-2xl hover:bg-[var(--accent-soft)] hover:text-[var(--accent-start)] transition-all"
              >
                 <Briefcase size={14} />

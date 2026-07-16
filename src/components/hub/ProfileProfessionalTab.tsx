@@ -431,7 +431,7 @@ export function ProfileProfessionalTab({ onDirtyChange }: { onDirtyChange?: (dir
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <FileText size={18} className="text-[var(--accent-start)]" />
-                  <span className="text-[11px] font-black uppercase tracking-tighter text-[var(--text-primary)]">Currículo (PDF)</span>
+                  <span className="text-[11px] font-black uppercase tracking-tighter text-[var(--text-primary)]">Currículo</span>
                 </div>
                 <button
                   disabled={!editHist}
@@ -447,17 +447,16 @@ export function ProfileProfessionalTab({ onDirtyChange }: { onDirtyChange?: (dir
                   Visível Network
                 </button>
               </div>
-              <div className={cn(!editHist && "opacity-60 pointer-events-none")}>
-                <FileField
-                  id="cv_upload"
-                  label="Currículo / Resumo Profissional"
-                  type="CV"
-                  matricula={data.matricula || ""}
-                  value={data.cv_upload || null}
-                  maxSizeMB={5}
-                  onChange={(val) => updateField('cv_upload', val)}
-                />
-              </div>
+              <FileField
+                id="cv_upload"
+                label="Currículo / Resumo Profissional"
+                type="CV"
+                matricula={data.matricula || ""}
+                value={data.cv_upload || null}
+                maxSizeMB={5}
+                onChange={(val) => updateField('cv_upload', val)}
+                disabled={!editHist}
+              />
             </div>
 
             {/* Portfólio */}
@@ -481,17 +480,16 @@ export function ProfileProfessionalTab({ onDirtyChange }: { onDirtyChange?: (dir
                   Visível Network
                 </button>
               </div>
-              <div className={cn(!editHist && "opacity-60 pointer-events-none")}>
-                <FileField
-                  id="portfolio_upload"
-                  label="Apresentação de Portfólio"
-                  type="Portfolio"
-                  matricula={data.matricula || ""}
-                  value={data.portfolio_upload || null}
-                  maxSizeMB={20}
-                  onChange={(val) => updateField('portfolio_upload', val)}
-                />
-              </div>
+              <FileField
+                id="portfolio_upload"
+                label="Apresentação de Portfólio"
+                type="Portfolio"
+                matricula={data.matricula || ""}
+                value={data.portfolio_upload || null}
+                maxSizeMB={20}
+                onChange={(val) => updateField('portfolio_upload', val)}
+                disabled={!editHist}
+              />
             </div>
           </div>
 
