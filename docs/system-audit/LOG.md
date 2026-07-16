@@ -3402,6 +3402,61 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   trocar o texto globalmente, o `Calendar` ganhou a prop opcional **`policyNote`** (omitida = política
   padrão intacta, nenhum outro consumidor muda) e o modal 1 to 1 passa a sua (sem a nota de Onboarding,
   com a regra de 24h). Rodapé voltou a ter só a nota de débito de crédito.
+## [2026-07-16] Chat de execução — política de agendamento: texto, regras e layout (PRs #102/#103)
+
+- Chat/sessão: mesmo chat de execução, após o **PR #101 ser validado e aprovado em produção** pela
+  Gestora (MentoCoach aparecendo, 1 to 1 idem — prints conferidos).
+- **Pedido da Gestora (3 frentes):** reescrever o texto da política de agendamento (validando o
+  texto com ela antes de implementar); fazer um double-check de todos os fluxos de agendamento
+  contra a política; e afinar o layout dos cards de horário. Página pública explicitamente fora de
+  escopo.
+- **Achado que reordenou a tarefa:** ao auditar antes de escrever o texto, descobri que **a política
+  exibida não era a que o sistema executava** — 4 regras desalinhadas (`BUG-076`, Alto). Escrever o
+  texto sozinho seria publicar uma promessa vazia. Reportei antes de propor qualquer redação.
+- **Entrega em 2 PRs**, para o texto e a execução chegarem juntos:
+  - **PR #102 (`2c69453`) — layout dos cards de horário.** O corte no hover tinha causa exata:
+    `hover:scale-[1.01]` dentro de container com `overflow-y-auto` sem respiro → o card crescia e
+    era cortado; scale removido. Card reestruturado (relógio + horário horizontal + vagas na linha
+    1 alinhados ao botão; um campo por linha com `whitespace-nowrap`, como a Gestora corrigiu);
+    texto unificado em 11px; dia da semana 24px→14px; respiros menores. **~124px → ~88px por card**
+    (de 3 para 4-5 horários visíveis). Passagem: "1 VAGAS"→"1 vaga", "Sexta-Feira, 31 De
+    Julho"→"Sexta-feira, 31 de julho" (o `capitalize` maiusculizava cada palavra), imports mortos.
+  - **PR #103 (`e2bc67b`) — política única, alinhada e validada no servidor.** Texto opção B
+    aprovado; texto próprio do modal 1 to 1 **aposentado** (duplicata → uma fonte de verdade);
+    valores vindos da config para texto e regra não dessincronizarem.
+- **As 4 regras corrigidas (`BUG-076`):** (1) janela de 20 dias passa a valer para **todos** os
+  eventos (antes só "onboarding"; os demais apareciam com até 90 dias); (2) limite semanal passa a
+  ser **por tipo** de sessão — antes qualquer agendamento trancava a semana inteira, impedindo
+  devolutiva + 1 to 1 na mesma semana; (3) as regras passam a ser validadas no **servidor** (antes
+  requisição forjada agendava fora da política); (4) **prazo de 24h** no cancelamento, que não
+  existia em lugar nenhum.
+- **Novo `src/lib/booking/policy.ts`:** fonte única chamada por **cliente e servidor** — as duas
+  pontas não podem mais divergir, que foi exatamente como o desalinhamento nasceu.
+- **Decisões de implementação registradas:**
+  1. **Funil de lead público ficou de fora de propósito** — `bookEventAction` é compartilhado e o
+     público roda com `PUBLIC_BOOKING_SETTINGS` (33 dias). Aplicar 20 dias globalmente quebraria o
+     funil (receita). Regras só incidem com matrícula.
+  2. **Cancelar dentro das 24h continua permitido** (decisão da Gestora): fiel a "perder o direito
+     ao crédito", não "não pode cancelar", e evita o membro preso como inscrito numa sessão que não
+     vai comparecer. Rastro `lateCancellation` em `User_Booking_History`, pronto para o `BUG-013`.
+  3. **`eventSummary` denormalizado** no agendamento (o `category` só distinguia "1to1"/"geral");
+     legados têm o tipo resolvido pelo evento, para a regra valer desde o dia 1.
+  4. **Fronteira da janela virou por DIA e simétrica** (3º e 20º dia cabem inteiros) — a regra
+     legada cortava no início do 20º dia, excluindo-o e contradizendo o texto publicado. **Achado
+     por um teste que "falhou" e estava certo em cobrar.**
+- Validado: 20 testes novos (**mutação das 3 regras centrais quebra o teste correspondente**,
+  Lição 15); eslint dos arquivos tocados **sem nenhum warning novo** (Calendar 3/0 idêntico à
+  `main`); test **79/79**; type-check; build exit 0. Pre-commit passou limpo nos dois PRs (sem
+  `--no-verify`).
+- **Dependência honesta comunicada:** "preservam o crédito" é **operacional/manual hoje** — o débito
+  de crédito ao agendar nunca foi ligado (`BUG-013`, aberto). O rastro ficou pronto; ligar é
+  esforço próprio.
+- Itens atualizados: `BUGS.md` (+BUG-076), `00-PLAN.md` (F2-04/F1-03), `DASHBOARD.md`,
+  `RETROSPECTIVE.md` (Lição 20), este LOG.
+- Conferência em **produção** pela Gestora (BUG-030).
+
+---
+
 ## [2026-07-16] Chat de execução — MentoCoach invisível na agenda do membro (PR #101)
 
 - Chat/sessão: mesmo chat de execução, após o PR #100 ser **validado e aprovado em produção** pela

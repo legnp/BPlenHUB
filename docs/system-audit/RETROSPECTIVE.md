@@ -165,6 +165,34 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
     filtro do Plano de Carreira. **Identificador tem precedência sobre rótulo** — texto de UI só
     pode ser fallback, nunca fonte de decisão de negócio. _(Caso real: `BUG-074`, PR #101.)_
 
+20. **Antes de escrever a copy de uma regra, verifique se o sistema executa a regra.** A Gestora
+    pediu para reescrever o card "Política de Agendamento". Auditar antes de redigir revelou que
+    **nenhuma das 4 regras anunciadas era cumprida** (`BUG-076`): a janela máxima só valia para
+    "onboarding", o limite semanal fazia o **oposto** do pretendido (trancava a semana inteira), o
+    prazo de 24h não existia, e **nada era validado no servidor**. Publicar só o texto teria
+    transformado um bug silencioso numa promessa explícita — pior que o estado anterior. **Texto de
+    regra de negócio é contrato: audite a execução antes de redigir, e entregue os dois juntos.**
+    _(Caso real: PRs #102/#103, 2026-07-16.)_
+
+21. **Regra duplicada entre cliente e servidor vira regra divergente — extraia a fonte única.** As
+    regras de agendamento viviam só no `Calendar.tsx` (escondendo o evento) e o servidor aceitava
+    qualquer coisa. Quando um lado é "a tela" e o outro é "a verdade", eles divergem por construção.
+    A correção não foi copiar as regras para o servidor — foi criar `src/lib/booking/policy.ts` e
+    fazer **as duas pontas chamarem as mesmas funções**. Vale o mesmo para o texto: os números da
+    copy saem da config, então texto e regra não podem dessincronizar. _(Caso real: `BUG-076`.)_
+
+22. **Um teste que "falha" pode estar certo — cheque a regra antes de corrigir o teste.** Ao cobrir
+    a janela de 20 dias, um teste falhou na fronteira. O reflexo é ajustar o teste; a checagem
+    mostrou uma **ambiguidade real de negócio**: a regra legada cortava no *início* do 20º dia, ou
+    seja, o último dia agendável era o 19º — contradizendo o texto "de 20 a 3 dias" que estávamos
+    prestes a publicar. O teste foi o único a notar. _(Caso real: PR #103.)_
+
+23. **Ao mudar uma action compartilhada, mapeie TODOS os chamadores antes — um deles pode ser
+    receita.** `bookEventAction` parece "o agendamento do membro", mas também serve o **funil de
+    lead público**, que roda com janela de 33 dias. Aplicar a política de 20 dias "globalmente"
+    teria quebrado o funil silenciosamente. A trava foi escopar as regras a quando há matrícula.
+    _(Caso real: PR #103; mesma família da Lição 9 — cheque quem mais chama antes de guardar.)_
+
 ---
 
 ## Melhorias sugeridas para o PLANO (para o chat de planejamento refinar)
@@ -225,3 +253,8 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
   (inventário read-only antes de teorizar; simulador com a função de produção,
   não uma cópia) e 19 (identificador tem precedência sobre rótulo editável)
   adicionadas, a partir do `BUG-073`/`BUG-074` (PR #101).
+- 2026-07-16 — Lições 20 (copy de regra é contrato: audite a execução antes de
+  redigir), 21 (regra duplicada entre cliente e servidor diverge por construção
+  — extraia a fonte única), 22 (teste que falha pode estar certo; cheque a regra
+  antes de corrigir o teste) e 23 (action compartilhada: mapeie os chamadores,
+  um deles pode ser receita) adicionadas, a partir do `BUG-076` (PRs #102/#103).

@@ -12,7 +12,25 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-16 (chat de execução — **MentoCoach invisível na agenda do membro
+> **Última atualização:** 2026-07-16 (chat de execução — **Política de agendamento: texto, regras e
+> layout (PRs #102/#103)**. PR #101 **validado e aprovado em produção**. A Gestora pediu para
+> reescrever o card "Política de Agendamento" — auditar antes de redigir revelou que **nenhuma das 4
+> regras anunciadas era cumprida** (**BUG-076**, Alto): a janela de 20 dias só valia para
+> "onboarding" (os demais apareciam com até 90 dias); o limite semanal fazia o **oposto** do
+> pretendido (qualquer agendamento trancava a semana inteira, impedindo devolutiva + 1 to 1 juntos);
+> o prazo de 24h **não existia**; e **nada era validado no servidor**. **PR #103:** texto único
+> aprovado (opção B, enquadramento positivo), texto duplicado do modal 1 to 1 aposentado, as 4
+> regras corrigidas e validadas no servidor, nova fonte única `src/lib/booking/policy.ts` chamada
+> por cliente **e** servidor. Funil de lead público preservado de propósito (roda com janela de 33
+> dias — aplicar 20 globalmente quebraria receita). **PR #102:** redesign dos cards de horário —
+> corte no hover resolvido (`scale` dentro de container com overflow), card **~124px → ~88px**
+> (3 → 4-5 horários visíveis), texto unificado em 11px, "1 VAGAS"→"1 vaga", "31 De Julho"→"31 de
+> julho". Validado: **79/79** testes (20 novos; mutação das 3 regras centrais quebra o teste certo),
+> eslint sem warning novo, type-check, build. **Dependência aberta:** "preservam o crédito" é
+> manual hoje — o débito ao agendar (**BUG-013**) nunca foi ligado; o rastro ficou pronto.
+> Conferência em produção (BUG-030).
+>
+> _(entrada anterior)_ 2026-07-16 (chat de execução — **MentoCoach invisível na agenda do membro
 > (PR #101)**: a Gestora reportou que os eventos "MentoCoach" sincronizados não ficavam disponíveis.
 > Inventário read-only na base real provou que **o sync estava correto** (25 eventos gravados) — o
 > defeito era o filtro `getMeetingFilterKeyword`, **sem regra para mentocoach** (a regra "coaching"

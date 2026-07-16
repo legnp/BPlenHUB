@@ -1920,6 +1920,48 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Decisão de execução: aguarda decisão da Gestora (dado vs. código).
 - Commit/PR: —
 
+### BUG-076 Política de agendamento não era executada pelo sistema (4 regras desalinhadas)
+
+- Severidade: **Alto** (segurança + adequação funcional; regras de negócio anunciadas ao membro
+  sem nenhuma trava real no servidor)
+- Área/fase onde foi achado: F1-03/F1-04 / agendamento — achado ao auditar os 5 pontos de
+  agendamento a pedido da Gestora (2026-07-16), antes de reescrever o texto da política
+- Arquivo(s) afetado(s): `src/config/calendarConfig.ts`, `src/components/ui/Calendar.tsx`,
+  `src/actions/calendar-module/booking.ts`, `src/components/ui/UserBookings.tsx`,
+  `src/components/shared/OneToOneBookingModal.tsx`; novo `src/lib/booking/policy.ts`
+- Cenário de falha: **[CONFIRMADO]** por leitura direta. O card "Política de Agendamento" anunciava
+  regras que o sistema não cumpria:
+  1. **Janela máxima de 20 dias só valia para eventos com "onboarding" no nome** — todos os outros
+     apareciam com até 90 dias de antecedência (a janela do sync).
+  2. **O limite semanal fazia o oposto do pretendido**: `isWeekLocked` comparava só semana/ano, então
+     **qualquer** agendamento trancava a semana inteira. Um membro com devolutiva na segunda **não
+     conseguia** marcar um 1 to 1 na mesma semana.
+  3. **Nenhuma das regras era validada no servidor.** `bookEventAction` checava apenas vaga,
+     duplicidade, rate-limit e sessão — o resto era só o cliente escondendo/desabilitando o botão.
+     Requisição forjada agendava fora da política sem resistência.
+  4. **A regra de 24h para cancelar/reagendar não existia em lugar nenhum** — o membro cancelava
+     minutos antes da sessão, sem aviso e sem consequência.
+- Status: **Corrigido** — 2026-07-16 (PR #103). Janela de 20 dias para todos; limite semanal por
+  **tipo** de sessão (relaxa a regra para o que a política sempre quis dizer); as 3 regras validadas
+  no servidor; prazo de 24h implementado com aviso antes da ação e rastro `lateCancellation` em
+  `User_Booking_History`. Novo `src/lib/booking/policy.ts` é a **fonte única** chamada por cliente e
+  servidor — as duas pontas não podem mais divergir, que foi como o desalinhamento nasceu.
+- Decisão de execução: plano apresentado e **aprovado pela Gestora** (opção "Completo: tela +
+  servidor"; cancelamento tardio = permite + marca crédito como perdido). Decisões registradas:
+  - **O funil de lead público ficou de fora de propósito** — `bookEventAction` é compartilhado e o
+    público roda com `PUBLIC_BOOKING_SETTINGS` (33 dias); aplicar 20 dias globalmente quebraria o
+    funil (receita). As regras só incidem quando há matrícula.
+  - **`eventSummary` passa a ser denormalizado no agendamento** (o `category` só distinguia
+    "1to1"/"geral"); legados têm o tipo resolvido pelo evento, para a regra valer desde o dia 1.
+  - **Fronteira da janela virou por DIA e simétrica** (3º e 20º dia cabem inteiros) — a regra legada
+    cortava no início do 20º dia, o que excluiria o 20º dia e contradiria o texto publicado. Achado
+    por um teste.
+  - Validado: 20 testes novos, **mutação das 3 regras centrais quebra o teste correspondente**;
+    eslint sem warning novo; test 79/79; type-check; build exit 0.
+- Nota de dependência: a frase "preservam o crédito" é **operacional/manual hoje** — o débito de
+  crédito ao agendar nunca foi ligado (`BUG-013`). Este PR deixa o rastro pronto, mas não liga.
+- Commit/PR: PR #103
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em

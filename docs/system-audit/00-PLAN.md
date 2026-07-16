@@ -680,9 +680,20 @@ sem copy hardcoded fora do que o guia permitir).
   migração `scripts/normalize-quota-keys.js` (a rodar pela Gestora). BUG-013
   (ligar consumo ao booking) não iniciado.
 - Resultado: ✓ BUG-008 (chave 1-to-1 unificada, PR #71). ○ BUG-013 (consumo não
-  conectado ao booking — aguarda decisão de negócio).
-- Bug(s) vinculado(s): BUG-008 (Corrigido, PR #71), BUG-013 (Aberto)
+  conectado ao booking — aguarda decisão de negócio). **[2026-07-16]** O `BUG-013`
+  ganhou **dependente**: a política de agendamento agora publicada (PR #103) diz que
+  cancelar com menos de 24h faz o membro perder o crédito da sessão. A regra está
+  implementada e **deixa o rastro pronto** (`lateCancellation` em
+  `User_Booking_History`), mas **o débito em si continua manual/operacional** enquanto
+  o `consumeQuotaAction` não for ligado ao booking. Enquanto isso, a frase "preservam
+  o crédito" é verdadeira apenas como regra de conduta, não como automação.
+- Bug(s) vinculado(s): BUG-008 (Corrigido, PR #71), BUG-013 (Aberto — agora com a
+  política de 24h dependendo dele para virar automática), BUG-076 (Corrigido, PR #103)
 - Log: [2026-07-11] BUG-008 corrigido — ver `LOG.md`
+  [2026-07-16] **BUG-076 corrigido (PR #103)** — política de agendamento única, alinhada
+  e validada no servidor (janela de 20 dias para todos, limite semanal por tipo de sessão,
+  prazo de 24h). Fonte única em `src/lib/booking/policy.ts`, chamada por cliente e servidor.
+  Ver `LOG.md`
 
 ### [F2-05] Categorização das páginas logadas nos 4 conceitos + padrão de design por conceito
 - Categoria(s) de qualidade: Usabilidade / Manutenibilidade (sistema de design)
