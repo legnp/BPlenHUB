@@ -29,6 +29,10 @@ export default function OneToOneBookingModal({
   const [quotas, setQuotas] = useState<{ total: number; used: number } | null>(null);
   const [isLoadingQuotas, setIsLoadingQuotas] = useState(true);
 
+  // Acima deste total, as bolinhas dariam overflow no card — troca por barra de
+  // progresso compacta (o visual de bolinhas segue no caso típico, de poucos créditos).
+  const MAX_DOTS = 12;
+
   // 1. Filtrar eventos para apenas 1-to-1
   const oneToOneEvents = useMemo(() => {
     return allEvents.filter(ev => 
@@ -74,35 +78,52 @@ export default function OneToOneBookingModal({
     >
       <div className="space-y-5 py-1">
 
-        {/* Banner de Créditos (Bolinhas) */}
-        <div className="p-4 bg-[var(--input-bg)]/50 border border-[var(--border-primary)] rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4">
-           <div className="flex items-center gap-3">
+        {/* Banner de Créditos */}
+        <div className="p-4 bg-[var(--input-bg)]/50 border border-[var(--border-primary)] rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+           {/* shrink-0: o rótulo nunca é espremido pelo indicador de créditos */}
+           <div className="flex items-center gap-3 shrink-0">
               <div className="p-2.5 bg-[var(--accent-start)]/10 rounded-xl text-[var(--accent-start)]">
                  <Briefcase size={18} />
               </div>
               <div className="text-left">
-                 <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)] leading-none mb-1">Créditos de Consultoria</h4>
-                 <p className="text-sm font-black text-[var(--text-primary)]">Sessões 1 to 1 Contratadas</p>
+                 <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)] leading-none mb-1 whitespace-nowrap">Créditos de Consultoria</h4>
+                 <p className="text-sm font-black text-[var(--text-primary)] whitespace-nowrap">Sessões 1 to 1 Contratadas</p>
               </div>
            </div>
 
-           <div className="flex flex-col items-center md:items-end gap-2 px-2">
+           <div className="flex flex-col items-center md:items-end gap-2 min-w-0">
               {isLoadingQuotas ? (
                  <Loader2 className="w-4 h-4 animate-spin opacity-20" />
               ) : quotas ? (
-                 <div className="flex flex-col gap-1.5">
-                    <div className="flex items-center gap-2">
-                       {Array.from({ length: quotas.total }).map((_, i) => (
-                          <div
-                            key={i}
-                            className={`w-3 h-3 rounded-full border-2 transition-all duration-500 ${
-                              i < quotas.used
-                                ? "bg-[var(--accent-start)] border-[var(--accent-start)] shadow-[0_0_10px_rgba(var(--accent-rgb),0.3)]"
-                                : "bg-transparent border-[var(--border-primary)] opacity-40"
-                            }`}
-                          />
-                       ))}
-                    </div>
+                 <div className="flex flex-col items-center md:items-end gap-1.5 w-full min-w-0">
+                    {quotas.total <= MAX_DOTS ? (
+                       /* Poucos créditos: bolinhas (uma por sessão) */
+                       <div className="flex flex-wrap items-center justify-center md:justify-end gap-2">
+                          {Array.from({ length: quotas.total }).map((_, i) => (
+                             <div
+                               key={i}
+                               className={`w-3 h-3 rounded-full border-2 shrink-0 transition-all duration-500 ${
+                                 i < quotas.used
+                                   ? "bg-[var(--accent-start)] border-[var(--accent-start)] shadow-[0_0_10px_rgba(var(--accent-rgb),0.3)]"
+                                   : "bg-transparent border-[var(--border-primary)] opacity-40"
+                               }`}
+                             />
+                          ))}
+                       </div>
+                    ) : (
+                       /* Muitos créditos: barra compacta — nunca transborda o card */
+                       <div className="flex items-center gap-3 w-full md:w-56">
+                          <div className="flex-1 h-1.5 bg-[var(--border-primary)]/50 rounded-full overflow-hidden">
+                             <div
+                               className="h-full bg-[var(--accent-start)] rounded-full transition-all duration-500"
+                               style={{ width: `${Math.min(100, Math.round((quotas.used / quotas.total) * 100))}%` }}
+                             />
+                          </div>
+                          <span className="text-[10px] font-black font-mono text-[var(--text-primary)] shrink-0">
+                             {quotas.used}/{quotas.total}
+                          </span>
+                       </div>
+                    )}
                     <p className="text-[10px] font-bold text-[var(--text-muted)] text-center md:text-right uppercase tracking-widest opacity-60">
                        {quotas.used} de {quotas.total} sessões realizadas
                     </p>
