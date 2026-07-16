@@ -3384,6 +3384,18 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   no Networking → textos padrão "Visualizar Currículo"/"Visualizar Portfólio". eslint 0 erros, test 52/52,
   type-check, build exit 0.
 
+## [2026-07-15] Chat de execução — Ajustes globais no modal de agendamento 1 to 1 (PR #96)
+
+- Ajustes da Gestora no `OneToOneBookingModal`: (copy) subtítulo "Sessão individual estratégica com
+  orientador"→"Consultoria individual de Gestão e Desenvolvimento de Carreira"; "Créditos de
+  Mentoria"→"Créditos de Consultoria"; **nova política de agendamento** elegante no rodapé (o modal só
+  tinha a linha de débito de crédito) usando `CALENDAR_CONFIG` (`MIN_LEAD_TIME_DAYS`/
+  `MAX_BOOKINGS_PER_WEEK`) em vez de hardcode: 3 dias de antecedência, 1 sessão/semana, cancelamento/
+  reagendamento até 24h. (design) layout mais enxuto — espaçamentos reduzidos, banner de créditos
+  compacto, calendário min-h 500→440, rodapé com divisor fino. Limpeza: import morto removido.
+- Validado: eslint 0 problemas, test 52/52, type-check, build exit 0. Validação visual em produção
+  pela Gestora (BUG-030). O modal é usado pela Gestão de Agenda e pelo menu do hub (Agendar 1 to 1).
+
 ## [2026-07-14] Chat de execução — Pacote 5 validado + redesign do menu sanduíche do hub (PR #87)
 
 - **Pacote 5 validado e aprovado em produção pela Gestora.** A Gestão de Carreira (design 5A +
