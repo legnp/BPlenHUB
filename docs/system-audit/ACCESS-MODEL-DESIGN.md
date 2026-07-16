@@ -387,7 +387,132 @@ Observação registrada: os arquivos de `portfolio/` (preços/config comercial) 
 **versionados no repo** — decisão deliberada da Gestora (o parser os trata como
 "secure sources"); não é bug, mas fica anotado.
 
+## 10. Fase C — liberação relativa ao pacote (Posicionamento e MentoCoach)
+
+**Status: PLANO — aguarda aprovação da Gestora para implementar** (área sensível:
+gating de jornada). Desenhado em 2026-07-16 a partir do pedido dela, com as 4
+decisões de escopo já respondidas (deadlock, procedência, posicionamento, escopo).
+
+### 10.1 A regra (como entendida e confirmada)
+
+Posicionamento (BPL-001) e MentoCoach (BPL-005) hoje abrem cedo demais: o
+primeiro tem `preReq: nenhum` e o segundo exige só o Onboarding. A regra pedida:
+
+> Quando contratados **junto com outros serviços**, BPL-001 e BPL-005 só liberam
+> **após a conclusão da última etapa contratada**. As etapas se fazem uma por vez.
+> Comprados **diretamente/avulsos**, liberam de imediato. A exceção — realizar em
+> paralelo — é **do admin**, caso a caso, nunca regra.
+
+Decisões da Gestora (2026-07-16):
+1. **Conjunto de espera = só a trilha principal** (Onboarding, Análise, Plano,
+   GDC). BPL-001, BPL-005 e Offboarding **ficam fora do cálculo** — sem isso há
+   deadlock (BPL-001 e BPL-005 esperariam um pelo outro; o Offboarding exige o
+   BPL-005 e esperaria de volta).
+2. **Procedência derivada, sem campo novo**: a regra é "espere as **outras**
+   etapas que o membro tem". Quem só tem o serviço não tem o que esperar — a
+   regra **se auto-satisfaz** e o acesso é imediato. **Ressalva aceita pela
+   Gestora**: um membro que já está na jornada e compra o serviço avulso ficaria
+   travado até concluir o resto; o desbloqueio nesse caso é **via admin**.
+3. **Posicionamento segue a mesma regra do MentoCoach**, apesar de ser o ícone 1.
+4. Após a última etapa da trilha, **os dois abrem juntos** (paralelos entre si).
+
+### 10.2 Bloqueador — resolver ANTES (BUG-079)
+
+`conclusoesFromProgress` lê `progress.steps[stage.id]` **cru**, enquanto a escrita
+(`updateJourneySubStepAction`) **normaliza** e grava na chave legada. Confirmado no
+dado real: `BP-005`/`BP-011` têm `plano_de_Carreira`, que não casa com
+`plano-de-carreira` (BPL-003). Sob a regra nova, BPL-001/BPL-005 esperariam uma
+conclusão que o sistema **nunca enxerga** → **nunca destravariam**.
+
+Correção proposta: **leitura tolerante** em `conclusoesFromProgress`, com a mesma
+normalização que a escrita já usa. Sem migração de dado (as chaves legadas seguem
+funcionando). Migrar as chaves é higiene opcional, depois.
+
+### 10.3 Design — modo novo, motor intacto
+
+A Gestora observou, corretamente, que **a lista de pré-requisitos não pode ser
+configurada no Excel** (varia por pacote). A saída é configurar o **modo**, não a
+lista:
+
+- **Dado (aba `Atributos`):** `preReqModo = apos_contratadas`, `preReqEtapas` vazio,
+  para BPL-001 e BPL-005. Nada mais muda na planilha.
+- **Adaptador (`journey-adapter.ts`):** expande `apos_contratadas` em
+  `{ modo: "todos", etapas: [<trilha principal que o membro tem>] }` **antes** de
+  chamar o motor. É trabalho de tradução — exatamente o papel do adaptador.
+- **Motor (`resolve-access.ts`): NÃO muda.** Segue com 3 modos e permanece puro
+  (§0: "criar um serviço/pacote novo = preencher atributos; o motor não muda").
+
+**Derivação do conjunto de espera — sem nenhum serviceCode hardcoded** (Lição 26
+do `RETROSPECTIVE.md`: remendo com nome de serviço fixo é bug mal diagnosticado):
+
+> trilha principal = etapas que o membro tem (`entitlements`)
+> — MENOS as que declaram `modo: apos_contratadas` (elas são as paralelas)
+> — MENOS as que citam uma etapa `apos_contratadas` em `preReqEtapas`
+
+A segunda exclusão remove o Offboarding **automaticamente** (ele cita BPL-005),
+sem citá-lo pelo nome. Se amanhã um serviço novo for paralelo, basta o modo no
+Excel — nenhum código muda.
+
+**Conferência com o estado real do `BP-005-PF-260523`** (Embaixador): entitlements
+da trilha = BPL-000 (completed), BPL-002 (completed), BPL-003 (current), BPL-004
+(não iniciada) → BPL-001 e BPL-005 = `SEQUENCE_LOCK`, `pendentes: [BPL-003, BPL-004]`
+— exatamente o "aguardando etapa anterior" que a Gestora espera.
+
+### 10.4 Exceção do admin — já existe, nada a construir
+
+`dispensaPreRequisito` está implementado ponta a ponta: o motor consome (regra 3),
+`users-admin.ts` grava com guard, `auth-permissions.ts` lê e `admin/users` tem o
+toggle (`handleToggleWaiver`). Liberar BPL-001/BPL-005 em paralelo para um membro
+específico **já é possível hoje**. A validar na F1-06: se o toggle lista os dois
+serviços e se o rótulo explica o efeito.
+
+### 10.5 Rótulos da jornada — 2 bugs que anulariam a regra
+
+Sem isto, a Gestora **não veria** a regra funcionando (`JourneyNav.tsx`):
+
+1. **Progresso mascara a trava.** `"Foco Atual"` é decidido por `percentage > 0`
+   **antes** do ramo de sequência. O MentoCoach tem 33% (as 5 paradas de Análise
+   que ele compartilha), então continuaria exibindo "Foco Atual" mesmo travado.
+   Correção: testar `isBlockedBySequence` **antes** do progresso.
+2. **`"Não Liberado"` mente.** É o *default* da cadeia; cai nele a etapa
+   **acessível mas que não é a próxima da fila** — é por isso que o Posicionamento,
+   que está liberado e clicável hoje, aparece como "Não Liberado". Falta um caso
+   para "acessível" (ex.: "Disponível").
+
+### 10.6 Arquivos, risco e validação
+
+| Arquivo | Mudança | Risco |
+|---|---|---|
+| `portfolio_bplen.xlsx` (aba Atributos) | `preReqModo` dos 2 serviços | Baixo (dado, reversível) |
+| `portfolio_parser.py` | aceitar o modo novo | Baixo |
+| `src/types/products.ts` | modo novo no tipo do dado | Baixo |
+| `journey-adapter.ts` | expandir o modo + leitura tolerante (BUG-079) | **Médio — gating** |
+| `resolve-access.ts` | **nenhuma** | — |
+| `JourneyNav.tsx` | ordem dos rótulos + caso "Disponível" | Baixo |
+
+- **Sem migração de dado de usuário** (a leitura tolerante cobre as chaves legadas).
+- **Sync de produção** necessário (mesmo pipeline dos PRs #104), com backup.
+- **Validação:** testes de unidade do adaptador (expansão do modo, deadlock,
+  auto-satisfação do avulso, chave legada), **mutação das regras centrais** antes de
+  confiar na suíte (Lição 15), e simulação contra o dado real dos 4 usuários com
+  progresso antes/depois (Lição 18) — o comprovante de que ninguém trava sem querer.
+- **Rollback:** reverter o `preReqModo` na planilha + sync desfaz a regra sem deploy.
+
+### 10.7 Ordem de execução proposta
+
+1. **PR 1 — BUG-079** (leitura tolerante) + testes. Independente e corrige um Alto
+   já existente, mesmo que a Fase C não avance.
+2. **PR 2 — rótulos** (10.5). Independente; conserta o que a Gestora vê hoje.
+3. **PR 3 — modo `apos_contratadas`** (adaptador + tipo + parser) + planilha + sync.
+
 ## Registro de revisões
+
+- 2026-07-16 — **seção 10 (Fase C — liberação relativa ao pacote)** adicionada: plano da
+  regra pedida pela Gestora para BPL-001/BPL-005, com as 4 decisões de escopo dela
+  respondidas. Registrado o bloqueador `BUG-079` (leitura crua x escrita normalizada da
+  chave de progresso) e os 2 bugs de rótulo do `JourneyNav` que anulariam a regra na tela.
+  Desenho preserva o motor puro: o modo novo é expandido no adaptador, e o conjunto de
+  espera é derivado sem nenhum serviceCode hardcoded. **Aguarda aprovação para implementar.**
 - 2026-07-08 — **Revisão da Gestora nos atributos (pós-B2, via planilha — zero
   código):** Onboarding (BPL-000) vira pré-requisito de análise/plano/GDC/mentocoach,
   e os pacotes pleno..embaixador passam a liberar BPL-000. Fecha a lacuna de o

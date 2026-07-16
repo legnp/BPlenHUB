@@ -2019,6 +2019,33 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   duplicidade era do dado, corrigida na fonte.
 - Commit/PR: PR #104
 
+### BUG-079 Conclusão de etapa com chave legada nunca é reconhecida (leitura crua vs escrita normalizada)
+
+- Severidade: **Alto** (adequação funcional; etapa concluída não destrava a seguinte — trava a
+  jornada de forma permanente e silenciosa)
+- Área/fase onde foi achado: F1-03 / motor de acesso — achado ao desenhar a regra de liberação
+  do Posicionamento/MentoCoach pedida pela Gestora (2026-07-16). **Latente**: ninguém concluiu a
+  etapa afetada ainda.
+- Arquivo(s) afetado(s): `src/lib/access/journey-adapter.ts` (`conclusoesFromProgress`),
+  `src/actions/journey.ts` (`updateJourneySubStepAction`)
+- Cenário de falha: **[CONFIRMADO]** por levantamento read-only. A **escrita** normaliza a chave
+  da etapa (`updateJourneySubStepAction` procura `matchedDbKey` por `normalizeString`), então
+  grava na chave **legada** já existente no documento. A **leitura** não normaliza:
+  `conclusoesFromProgress` faz `progress.steps[stage.id]` cru. Assimetria confirmada no dado real:
+  - `BP-005-PF-260523` e `BP-011-PF-260526` têm a chave **`plano_de_Carreira`**, que não casa com o
+    id da etapa `plano-de-carreira` (BPL-003);
+  - `BP-002-PF-260331` tem `Primeiros Passos`, que não casa com nenhum id.
+  Efeito: ao concluir o Plano de Carreira, **BPL-003 nunca entra em `conclusoes`** → a Gestão e
+  Desenvolvimento (`preReq: todos [BPL-000, BPL-003]`) fica **permanentemente** em `SEQUENCE_LOCK`.
+  Hoje não se manifestou porque os dois usuários estão com o plano em `current`, não `completed`.
+- Status: **Aberto** — **bloqueia** a regra de liberação pedida pela Gestora (ver
+  `ACCESS-MODEL-DESIGN.md#10`): sob a regra nova, Posicionamento e MentoCoach esperariam por uma
+  conclusão que o sistema nunca enxerga, e **nunca destravariam**.
+- Decisão de execução: proposto no plano da seção 10 — **leitura tolerante** em
+  `conclusoesFromProgress` (mesma normalização que a escrita já usa; sem migração de dado), com
+  migração das chaves legadas como higiene opcional posterior. Aguarda aprovação da Gestora.
+- Commit/PR: —
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em
