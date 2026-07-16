@@ -142,6 +142,31 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
     confirmar o estado real — não confie no "APLICADO" do log.** _(Caso real: 3b,
     2026-07-08. Backups do estado original protegidos de sobrescrita na reexecução.)_
 
+17. **"Tela aprovada" não é "fluxo exercido com dado real" — valide cada variação, não o motor.**
+    A `F1-03` (motor de jornada) foi validada e **aprovada em produção** em 2026-07-11, e ainda
+    assim as 10 paradas de **MentoCoach** nunca mostraram uma única sessão (`BUG-073`, Alto) e 2
+    paradas de grupo listavam sessões de **outro serviço**, agendáveis (`BUG-074`, Alto). O motor
+    estava certo; o que quebrou foi a **tabela de palavras-chave por serviço** — um heurístico de
+    substring que falha silenciosamente, serviço a serviço, sem erro no console. Aprovar "a
+    jornada" olhando 1-2 paradas não cobre isso. _(Caso real: 2026-07-16, achado só quando a
+    Gestora tentou usar o MentoCoach de verdade.)_
+
+18. **Antes de teorizar a causa, faça um inventário read-only da base real — o palpite mais óbvio
+    costuma ser o errado.** O reporte era "sincronizei e não aparece", e a hipótese natural (sync
+    quebrado) estava **errada**: os 25 eventos já estavam gravados corretamente. Um dump de 3
+    consultas (`products.deliverySteps`, `Calendar_Events`, simulação do filtro) apontou a causa
+    exata em minutos e ainda revelou um 2º Alto fora do escopo. **Escreva o simulador importando a
+    função de produção compilada, não uma cópia colada** — a cópia diverge do código que vai para a
+    `main` e você valida uma ficção. _(Caso real: `BUG-073`/`BUG-074`, 2026-07-16.)_
+
+19. **Heurístico que lê texto livre editável no admin é bug esperando data.** O filtro de eventos
+    casava pelo `title` da parada (editável pela Gestora) junto com o `referenceId` (identificador
+    real). Bastou uma parada se chamar "Finanças para **Carreira** Profissional" para ela herdar o
+    filtro do Plano de Carreira. **Identificador tem precedência sobre rótulo** — texto de UI só
+    pode ser fallback, nunca fonte de decisão de negócio. _(Caso real: `BUG-074`, PR #101.)_
+
+---
+
 ## Melhorias sugeridas para o PLANO (para o chat de planejamento refinar)
 
 1. **Rollup de progresso nativo.** O plano rastreava itens/bugs mas não tinha
@@ -196,3 +221,7 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
   origem: PR B1 do motor de acesso) adicionadas.
 - 2026-07-08 — Lição 16 (`set(merge:true)` não remove chave de map; reexecutar
   inventário pós-migração — origem: 3b/BUG-042) adicionada.
+- 2026-07-16 — Lições 17 (tela aprovada ≠ fluxo exercido com dado real), 18
+  (inventário read-only antes de teorizar; simulador com a função de produção,
+  não uma cópia) e 19 (identificador tem precedência sobre rótulo editável)
+  adicionadas, a partir do `BUG-073`/`BUG-074` (PR #101).

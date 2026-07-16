@@ -3402,6 +3402,64 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   trocar o texto globalmente, o `Calendar` ganhou a prop opcional **`policyNote`** (omitida = política
   padrão intacta, nenhum outro consumidor muda) e o modal 1 to 1 passa a sua (sem a nota de Onboarding,
   com a regra de 24h). Rodapé voltou a ter só a nota de débito de crédito.
+## [2026-07-16] Chat de execução — MentoCoach invisível na agenda do membro (PR #101)
+
+- Chat/sessão: mesmo chat de execução, após o PR #100 ser **validado e aprovado em produção** pela
+  Gestora.
+- **Reporte da Gestora:** sincronizou os eventos "MentoCoach" pelo admin, mas a agenda seguia vazia
+  em `/hub/journey/mentocoach` ("Nenhuma sessão disponível para esta data", em toda data). Print
+  anexado no chat. Nome do evento no Google Calendar: "MentoCoach".
+- **Método:** inventário **read-only** na base real (`scratch/`, ignorado pelo git) antes de
+  qualquer hipótese — dumps de `products.deliverySteps`, de `Calendar_Events` e simulação do filtro
+  contra os 538 eventos reais. Confirmou o diagnóstico por dado, não por leitura especulativa.
+- **O sync NÃO era o problema** — 25 eventos `summary="MentoCoach"` já estavam em `Calendar_Events`
+  com data futura, `totalCapacity=1` e `mentor="Lisandra Lencina"`. O defeito era o **filtro de
+  exibição** da jornada.
+- **BUG-073 (Alto, corrigido):** `getMeetingFilterKeyword` tem regra explícita por serviço mas
+  **nenhuma para mentocoach**; a regra `coaching` não pega `mentocoach` (termina em "coach", não
+  "coaching"). Caía no fallback do `referenceId` → palavra-chave `"sessao mentocoach"`, e o filtro
+  exige que o **nome do evento contenha** a palavra-chave — `"MentoCoach"` não contém → **0 eventos
+  nas 10 paradas**.
+- **BUG-074 (Alto, corrigido) — achado colateral fora do escopo do reporte:** o helper consultava
+  `referenceId` **e** `title` na mesma regra, então o título sequestrava o filtro. Em
+  `gestao-e-desenvolvimento` (10 paradas com `referenceId="orientacao-em-grupo"`), duas listavam o
+  serviço errado: "Gestão Comportamental e Emocional" → 111 sessões de **Devolutiva**; "Finanças
+  para Carreira Profissional" → 93 de **Plano de Carreira**. Cards clicáveis: o membro podia
+  **agendar a sessão errada**. Mais grave que o reporte original.
+- **Entrega: PR #101 mergeado (`937ab92`, squash).** Regra `mentocoach` adicionada; `referenceId`
+  passa a resolver antes do título; helper extraído de `StepRenderer.tsx` para
+  `src/lib/journey/meeting-keyword.ts` (lógica pura, sem mudança de comportamento) para ser
+  testável — o padrão de teste do projeto é `__tests__/lib/` e importar componente client em teste
+  seria frágil. **7 testes de regressão** novos.
+- **Verificação contra dado real, com a função de produção compilada** (não uma cópia, para não
+  haver drift): MentoCoach **0 → 25** nas 10 paradas; "Gestão Comportamental" **111 → 0** e
+  "Finanças para Carreira" **93 → 0**; Devolutiva 111, Onboarding 37, Plano 93, Feedback 30 e
+  Autoconhecimento 1 **inalterados** (zero regressão). **Mutação das 2 regras centrais quebra o
+  teste correspondente** (Lição 15 aplicada: inverter a precedência derruba o teste do BUG-074;
+  remover a regra mentocoach derruba o do BUG-073).
+- Validado: eslint dos arquivos novos **0 problemas**; `StepRenderer.tsx` mantém **29 problemas
+  legados (18 erros de ordem de hooks), contagem idêntica na `main`** (conferido por checkout
+  comparativo — não é regressão minha); test **59/59**; type-check; build exit 0.
+- **`--no-verify` usado neste commit** (caso a caso, como o processo prevê): o pre-commit roda
+  ESLint sem distinguir baseline de regressão e barraria pelos 18 erros legados pré-existentes.
+  Corrigi-los exigiria reestruturar o `StepRenderer` (early return antes dos hooks) — refactor
+  arriscado e fora do escopo de um fix que destrava um serviço.
+- **Achados de DADO reportados à Gestora (não são código, ação dela):**
+  1. As outras 7 paradas de grupo mostram 0 porque os 43 eventos de "Orientação em Grupo" usam o
+     mecanismo `Tema:` (casa exatamente com o título da parada) e **42 dos 43 estão com
+     `Tema: "A DEFINIR"`** — só 1 tem tema real. Preencher no Google Calendar destrava.
+  2. **BUG-075 (Baixo, Aberto):** 5 eventos escritos **"Bloquado"** (sem o "e") escapam do filtro de
+     bloqueio. Todos de maio/2026 (passados) → sem impacto vivo; latente. Correção mais rápida é de
+     dado (renomear no Google Calendar).
+  3. Não existe **nenhum** evento de Offboarding na agenda.
+- **Expectativa pós-fix comunicada:** a política de **3 dias de antecedência** segue valendo — 16 e
+  17/07 não aparecem; o primeiro visível é **21/07**. Registrado para não parecer bug na validação.
+- Itens atualizados: `BUGS.md` (+BUG-073/074/075), `00-PLAN.md` (F1-03 reaberta parcialmente +
+  triagem por severidade), `DASHBOARD.md`, este LOG.
+- Conferência final em **produção** pela Gestora (BUG-030).
+
+---
+
 ## [2026-07-16] Chat de execução — afinamento de design da home do hub (PR #100)
 
 - Chat/sessão: chat de execução (Opus 4.8), retomando o HANDOFF de 2026-07-16 abaixo.

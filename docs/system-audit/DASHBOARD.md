@@ -12,8 +12,24 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-16 (chat de execução — **Afinamento de design da home do hub
-> (PR #100)**: proposta aprovada pela Gestora e implementada em `HubHomeView.tsx`. Reduzido o ar
+> **Última atualização:** 2026-07-16 (chat de execução — **MentoCoach invisível na agenda do membro
+> (PR #101)**: a Gestora reportou que os eventos "MentoCoach" sincronizados não ficavam disponíveis.
+> Inventário read-only na base real provou que **o sync estava correto** (25 eventos gravados) — o
+> defeito era o filtro `getMeetingFilterKeyword`, **sem regra para mentocoach** (a regra "coaching"
+> não pega "mentocoach"), caindo num fallback que nunca casa: **0 eventos nas 10 paradas**
+> (**BUG-073**, Alto). A investigação achou um 2º Alto fora do escopo (**BUG-074**): o título
+> sequestrava o filtro e 2 paradas de grupo listavam sessões de **outro serviço**, agendáveis
+> ("Gestão Comportamental"→111 Devolutivas; "Finanças para Carreira"→93 Planos). Fix: regra
+> mentocoach + `referenceId` com precedência sobre o título; helper extraído para
+> `src/lib/journey/meeting-keyword.ts` com **7 testes** (mutação das 2 regras centrais quebra o
+> teste certo). Verificado com a função de produção contra os 538 eventos reais: MentoCoach
+> **0→25**, as 2 paradas erradas **111→0** e **93→0**, demais inalteradas. Validado por eslint/test
+> **59/59**/type-check/build. **BUG-075** (typo "Bloquado" escapa do filtro de bloqueio, Baixo)
+> registrado/Aberto. Achados de dado p/ a Gestora: 42 dos 43 eventos de grupo com `Tema: "A DEFINIR"`
+> (trava as 7 paradas restantes) e nenhum evento de Offboarding. Conferência em produção (BUG-030).
+>
+> _(entrada anterior)_ 2026-07-16 (chat de execução — **Afinamento de design da home do hub
+> (PR #100)** — **validado e aprovado em produção pela Gestora**: proposta aprovada pela Gestora e implementada em `HubHomeView.tsx`. Reduzido o ar
 > vertical das 3 seções internas (Últimos Conteúdos, Suas atividades no HUB, Pulso da Comunidade)
 > sem tocar tipografia, header, footer, menu, foto ou `MemberJourneyHero`: ritmo entre seções
 > `space-y-32`→`space-y-14`, grid `gap-20`→`gap-10`, `ActivityCard` `h-44`→`h-36`, Pulso `py-24`→

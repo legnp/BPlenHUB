@@ -233,7 +233,13 @@ ativa furando a ordem das fases.
 |---|---|---|---|
 | _(vazia)_ | — | — | Nenhum `Crítico`/`Alto` com Status `Aberto` |
 
-**Fila vazia (2026-07-11):** o último Alto aberto — `BUG-008` (chave de cota
+**Fila vazia (2026-07-16):** dois `Alto` novos entraram e saíram no mesmo dia —
+`BUG-073` (sessões de MentoCoach invisíveis para o membro) e `BUG-074` (paradas
+listando sessões de outro serviço, agendáveis), ambos corrigidos no PR #101. O
+`BUG-075` (typo "Bloquado" escapando do filtro de bloqueio) fica `Aberto` mas é
+`Baixo` — sem impacto vivo (eventos passados) — e não entra nesta fila.
+
+_(anterior, 2026-07-11):_ o último Alto aberto — `BUG-008` (chave de cota
 1-to-1) — foi corrigido (PR #71). Nenhum `Crítico`/`Alto` aberto no momento.
 Nenhum `Crítico` aberto no momento. Os dois Críticos registrados no processo
 (`BUG-003` recover sem auth, PR #3; `BUG-032` escalação de privilégio no login,
@@ -518,9 +524,20 @@ sem copy hardcoded fora do que o guia permitir).
   fechada. (BUG-015 — `/hub/step-journey` órfã/duplicada — segue à parte no F2-01, destino do
   `step-journey`, não bloqueia esta página.)
 - Bug(s) vinculado(s): BUG-015 (Aberto — tratado no F2-01), BUG-059 (Corrigido, PR #72),
-  BUG-060 (Corrigido, PR #72), BUG-061 (Corrigido, PR #72)
+  BUG-060 (Corrigido, PR #72), BUG-061 (Corrigido, PR #72), **BUG-073 (Corrigido, PR #101)**,
+  **BUG-074 (Corrigido, PR #101)**, **BUG-075 (Aberto — dado/typo "Bloquado", Baixo)**
 - Log: [2026-07-11] validação da Gestora (itens 1-4 + os 3 ajustes aprovados); modais
   BUG-059/060/061 (PR #72) — **F1-03 fechada** — ver `LOG.md`
+  [2026-07-16] **F1-03 reaberta pontualmente e refechada no mesmo dia** — a Gestora reportou que as
+  sessões de **MentoCoach** nunca apareciam na agenda do membro (`BUG-073`, Alto). Causa confirmada
+  por inventário read-only na base real: **não era o sync** (25 eventos já sincronizados), e sim o
+  filtro `getMeetingFilterKeyword`, sem regra para mentocoach. A investigação achou um 2º Alto fora
+  do escopo (`BUG-074`): o título sequestrava o filtro e 2 paradas de grupo listavam sessões de
+  **outro serviço**, agendáveis. Ambos corrigidos no **PR #101** (0→25 no MentoCoach; 111→0 e 93→0
+  nas 2 paradas erradas; zero regressão nas demais, verificado contra os 538 eventos reais).
+  Lacuna de processo registrada: a validação de 2026-07-11 aprovou o motor de jornada **sem exercer
+  o agendamento de cada parada com dado real** — ver Lição 17 do `RETROSPECTIVE.md`. Conferência do
+  fix em produção pendente.
 
 ### [F1-04] Hub — carreira, agenda do membro, contratos, visão geral
 - Categoria(s) de qualidade: Adequação funcional

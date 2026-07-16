@@ -1849,6 +1849,77 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Decisão de execução: corrigir na F1-06 (formatar o objeto de benefícios de forma legível).
 - Commit/PR: —
 
+### BUG-073 Sessões de MentoCoach nunca aparecem para o membro (agenda sempre vazia)
+
+- Severidade: **Alto** (funcional; serviço contratado não é entregável — o membro não consegue
+  agendar nenhuma das 10 sessões de MentoCoach)
+- Área/fase onde foi achado: F1-03 / jornada — reportado pela Gestora em 2026-07-16 (print de
+  `/hub/journey/mentocoach` com "Nenhuma sessão disponível para esta data" em toda data)
+- Arquivo(s) afetado(s): `src/components/journey/StepRenderer.tsx` (`getMeetingFilterKeyword`),
+  extraída para `src/lib/journey/meeting-keyword.ts`
+- Cenário de falha: **[CONFIRMADO]** por inventário read-only na base real (2026-07-16). O sync do
+  admin está **correto** — há 25 eventos `summary="MentoCoach"` em `Calendar_Events`, com data
+  futura, `totalCapacity=1` e `mentor="Lisandra Lencina"`. O defeito é no filtro de exibição:
+  `getMeetingFilterKeyword` tem regra explícita para cada serviço (onboarding, análise
+  comportamental, plano de carreira, grupo, individual, coaching, mentoria, offboarding) mas
+  **nenhuma para mentocoach** — a regra `coaching` não pega `mentocoach` (a palavra termina em
+  "coach", não "coaching"). Sem regra, cai no fallback do `referenceId`: `sessao-mentocoach` →
+  `"sessao mentocoach"`. O filtro então exige que o nome do evento **contenha** essa frase, e
+  `"MentoCoach"` não contém `"sessao mentocoach"` → **0 eventos em todas as 10 paradas**.
+- Status: **Corrigido** — 2026-07-16 (PR #101). Regra `mentocoach` adicionada. Simulação da função
+  real contra os 538 eventos da base: as 10 paradas passam de **0 para 25** eventos, sem alterar
+  nenhuma parada que já funcionava.
+- Decisão de execução: aprovado pela Gestora (opção "MentoCoach + as 2 paradas erradas").
+  Validado por eslint dos arquivos tocados (baseline do `StepRenderer` idêntico ao da `main`:
+  29 problemas legados), test 59/59 (7 novos, com mutação da regra central), type-check, build.
+- Nota operacional (não é código): a política de **3 dias de antecedência** segue valendo — os
+  eventos de 16 e 17/07 não aparecem; o primeiro visível é o de **21/07**.
+- Commit/PR: PR #101
+
+### BUG-074 Paradas da jornada listam sessões de OUTRO serviço (título sequestra o filtro)
+
+- Severidade: **Alto** (funcional; o membro pode agendar a sessão errada — o card é clicável)
+- Área/fase onde foi achado: F1-03 / jornada — achado colateral durante a investigação do
+  `BUG-073` (2026-07-16), não estava no escopo do reporte da Gestora
+- Arquivo(s) afetado(s): `src/lib/journey/meeting-keyword.ts` (extraída de `StepRenderer.tsx`)
+- Cenário de falha: **[CONFIRMADO]** por simulação contra a base real. `getMeetingFilterKeyword`
+  consultava `referenceId` **e** `title` na mesma regra, então uma parada cujo título apenas citava
+  outro serviço herdava o filtro errado. Em `gestao-e-desenvolvimento`, todas as 10 paradas têm
+  `referenceId="orientacao-em-grupo"`, mas 2 eram sequestradas pelo título:
+  - "Gestão Comportamental e Emocional" (título tem "comportamental") → listava **111 sessões de
+    Devolutiva Análise Comportamental**;
+  - "Finanças para Carreira Profissional" (título tem "carreira") → listava **93 sessões de
+    Consultoria Plano de Carreira**.
+- Status: **Corrigido** — 2026-07-16 (PR #101). O `referenceId` (que identifica o tipo de sessão)
+  passa a ser consultado **antes** do título (texto livre, editável no admin); o título segue como
+  fallback para paradas cujo `referenceId` não identifica o tipo. As 2 paradas passam de 111/93
+  eventos errados para **0** — estado correto até os `Tema:` serem preenchidos (ver nota abaixo).
+- Decisão de execução: aprovado pela Gestora junto do BUG-073.
+- Nota de dado (não é código, ação da Gestora): as demais 7 paradas de grupo mostram 0 porque os
+  eventos "Orientação em Grupo" usam o mecanismo `Tema:` da descrição, que casa **exatamente** com
+  o título da parada. Hoje **42 dos 43 eventos estão com `Tema: "A DEFINIR"`** e só 1 tem tema real
+  ("Autoconhecimento e Aprendizagem" — a única parada de grupo que exibe evento). Preencher o
+  `Tema:` no Google Calendar destrava as demais. Também registrado: não existe **nenhum** evento de
+  Offboarding na agenda.
+- Commit/PR: PR #101
+
+### BUG-075 Filtro de bloqueio de agenda não tolera erro de digitação ("Bloquado")
+
+- Severidade: Baixo (sem impacto vivo hoje; latente)
+- Área/fase onde foi achado: F1-03 / jornada — achado colateral da investigação do `BUG-073`
+  (2026-07-16)
+- Arquivo(s) afetado(s): `src/actions/calendar-module/sync.ts`, `src/actions/calendar-module/queries.ts`
+- Cenário de falha: **[CONFIRMADO]** o sync e o `getSyncedEvents` escondem eventos por
+  `summary.toLowerCase().includes("bloqueado")`. Há **5 eventos escritos "Bloquado"** (sem o "e") na
+  base, que escapam do filtro e entram no HUB como eventos comuns. Hoje **sem impacto**: são todos de
+  maio/2026 (passados) e nenhuma palavra-chave de parada casa com "bloquado". O risco é um bloqueio
+  futuro com o mesmo typo virar horário agendável.
+- Status: **Aberto** — reportado à Gestora. A correção mais rápida é de **dado** (renomear os 5
+  eventos no Google Calendar); endurecer o filtro no código exige cuidado para não capturar títulos
+  legítimos por engano.
+- Decisão de execução: aguarda decisão da Gestora (dado vs. código).
+- Commit/PR: —
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em
