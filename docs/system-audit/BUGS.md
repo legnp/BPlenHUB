@@ -2105,6 +2105,54 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   Corrigido o código, não o teste (mesmo padrão da fronteira de 20 dias no `BUG-076`).
 - Commit/PR: PR #108
 
+### BUG-082 Gráfico da Tríade do Tempo plotava 0% e o diagnóstico saía invertido
+
+- Severidade: **Alto** (adequação funcional + dano ao membro: além do gráfico errado, o sistema
+  entregava um diagnóstico negativo a quem teve o melhor resultado)
+- Área/fase onde foi achado: F1-04 / `hub/membro` — **reportado pela Gestora** (2026-07-16), com
+  print do `BP-005-PF-260523`
+- Arquivo(s) afetado(s): `src/components/hub/TriadVennChart.tsx`; regra extraída para
+  `src/lib/charts/triad-category.ts`
+- Cenário de falha: **[CONFIRMADO]** contra o dado real. O gráfico exibia **0% / 0% / 29%** para um
+  membro com **41% / 29% / 29%** gravados. O dado no banco está **correto** e a action lê o doc
+  certo (`User/{matricula}/results/gestao_tempo`) — o defeito era o casamento de rótulo:
+  `data.find(item => item.label.toLowerCase().includes(keyPart))`. Os rótulos da tela do membro têm
+  **acento**: `"importância"` **não** contém `"importan"` (o `â` quebra a substring) e `"urgência"`
+  não contém `"urgen"`. Só `"circunstância"` casava, porque o acento dela vem **depois** do trecho
+  buscado — exatamente o 0%/0%/29% do print. O `|| { percentage: 0 }` transformava a falha de busca
+  num **zero silencioso**.
+  **Por que ninguém tinha visto:** a tela do **admin** passa os rótulos **sem acento**
+  (`"Importancia"`), e por isso sempre funcionou — a Gestora via o valor certo no admin e zero no
+  membro.
+  **2º defeito, na mesma função:** `getDiagnostic` caía no `else` para qualquer rótulo acentuado. O
+  `BP-005` tem **"Importância" no topo (41%)** — o **melhor** resultado da tríade, cujo diagnóstico
+  é "Alta Performance" — e recebia **"Atenção ao Desperdício: excesso de tempo em distrações ou
+  tarefas irrelevantes"**. **3º:** no render grande, o hover passava o *label inteiro* como
+  `keyPart`, que nunca casaria — outro 0% silencioso.
+- Status: **Corrigido** — 2026-07-16 (PR #109). Casamento por **categoria**, tolerante a acento, em
+  `resolveTriadCategory` (pura). Rótulo fora da tríade devolve `null` em vez de virar
+  "circunstancial" por queda no `else`.
+- Decisão de execução: **a correção é no casamento, não nos rótulos.** Tirar o acento dos rótulos do
+  membro faria o gráfico funcionar e seria **regressão de copy** — eles aparecem na legenda
+  (Lição 11). Validado por 10 testes + mutação (o casamento cru reproduz o bug e quebra 4 testes;
+  o `else` do diagnóstico quebra o discriminante), test 140/140, type-check, build, eslint sem
+  warning novo.
+- Commit/PR: PR #109
+
+### BUG-083 Card do DISC fora do padrão dos demais assessments
+
+- Severidade: Baixo (usabilidade/design)
+- Área/fase onde foi achado: F1-04 / `hub/membro` — reportado pela Gestora (2026-07-16)
+- Arquivo(s) afetado(s): `src/components/hub/MemberDashboardView.tsx`
+- Cenário de falha: o card do DISC tinha header próprio (kicker "Analise 01" na 1ª linha, título na
+  2ª, sem ícone) e uma tag de status "Analisado"/"Ativo" que nenhum outro card tinha.
+- Status: **Corrigido** — 2026-07-16 (PR #109). Convertido para o `MiniCard` usado pelos demais
+  (ícone + título na 1ª linha + subtítulo na 2ª); tag removida. Textos ajustados no mesmo PR:
+  "Análise 02 / Tríade"→"Análise 02", "Análise 03 / VACD"→"Análise 03", "Análise 04 /
+  Premiações"→"Análise 04", "Aprendizado"→"Preferências de Aprendizado",
+  "Reconhecimento"→"Preferências de Reconhecimento".
+- Commit/PR: PR #109
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em

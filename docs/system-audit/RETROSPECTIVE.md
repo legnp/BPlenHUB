@@ -243,6 +243,23 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
     estava errado, silenciosamente, para os paralelos. Dedução paralela à fonte de verdade é bug
     esperando a regra mudar.
 
+30. **Casar string por `includes` de trecho é bug esperando um acento — e o acento cai onde você
+    não olhou.** O gráfico da Tríade casava `label.includes("importan")`, e o rótulo do membro é
+    **"Importância"**: o `â` cai **dentro** do trecho buscado e a comparação falha. `"circunstância"`
+    passava, porque o acento dela vem **depois** de `"circun"` — por isso o sintoma foi
+    "0% / 0% / **29%**", parcial, que parece dado ruim e não bug de código (`BUG-082`).
+    **Duas armadilhas juntas:**
+    - **O fallback mudo.** `|| { percentage: 0 }` e `else` transformam "não encontrei" em uma
+      resposta *plausível*. O gráfico mostrou 0% e o diagnóstico mostrou "Atenção ao Desperdício"
+      para quem teve o **melhor** resultado — nenhum erro, nenhum log. Prefira `null` e deixe o
+      chamador decidir.
+    - **A correção tentadora é a errada.** Tirar o acento dos rótulos do membro faria o gráfico
+      funcionar na hora — e seria regressão de copy (Lição 11), porque eles aparecem na legenda. O
+      defeito é do **casamento**, não do dado. Normalize na comparação, nunca na exibição.
+    _(Caso real: PR #109. A tela do admin passava os rótulos sem acento e por isso sempre
+    funcionou — foi o que manteve o bug invisível, com dois códigos lendo o mesmo dado e
+    divergindo; ver Lição 21.)_
+
 ---
 
 ## Melhorias sugeridas para o PLANO (para o chat de planejamento refinar)
@@ -308,6 +325,10 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
   — extraia a fonte única), 22 (teste que falha pode estar certo; cheque a regra
   antes de corrigir o teste) e 23 (action compartilhada: mapeie os chamadores,
   um deles pode ser receita) adicionadas, a partir do `BUG-076` (PRs #102/#103).
+- 2026-07-16 — Lição 30 (casar string por `includes` quebra com acento; o
+  fallback mudo disfarça a falha de resposta plausível; e normalizar na
+  exibição em vez da comparação é regressão de copy) adicionada, a partir do
+  `BUG-082`.
 - 2026-07-16 — Lição 29 (regra nova invalida a premissa de guards antigos: cace
   os `if` que codificavam a regra velha; e a UI não deduz o que o motor já
   calcula) adicionada, a partir do `BUG-081`.

@@ -12,7 +12,23 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-16 (chat de execução — **Clique mudo na 1ª etapa travada
+> **Última atualização:** 2026-07-16 (chat de execução — **Card Perfil & Assessments: Tríade 0%,
+> headers e documentos (PR #109)**. PR #108 **validado em produção**. A Gestora reportou que o
+> gráfico de Gestão do Tempo do BP-005 plotava **0%** em círculos com valor maior registrado.
+> **BUG-082** (Alto): o dado está **correto** (41/29/29) e a action lê o doc certo — o defeito era
+> `label.toLowerCase().includes("importan")` contra o rótulo **"Importância"**: o `â` cai dentro do
+> trecho buscado e quebra a substring. `"urgência"` idem; só `"circunstância"` casava (acento depois
+> do trecho) — exatamente o **0%/0%/29%** do print. O `|| {percentage: 0}` virava zero mudo. **A
+> tela do admin passa rótulos sem acento e sempre funcionou**, o que manteve o bug invisível.
+> **2º defeito, pior:** o diagnóstico caía no `else` e dizia **"Atenção ao Desperdício"** a quem tem
+> "Importância" no topo — o **melhor** resultado. Correção no **casamento**, não nos rótulos (tirar
+> o acento seria regressão de copy — Lição 11). Também: card do DISC normalizado no `MiniCard` dos
+> demais + tag "Analisado" removida (**BUG-083**), textos ajustados, e **ícone de documentos da
+> devolutiva** no topo do card (ata + anexos do agendamento, via `/api/docs`). Validado: **140/140**
+> testes (18 novos; mutação reproduz o bug), type-check, build, eslint sem warning novo.
+> Conferência em produção (BUG-030).
+>
+> _(entrada anterior)_ 2026-07-16 (chat de execução — **Clique mudo na 1ª etapa travada
 > (PR #108)**. **Fase C validada em produção pela Gestora** — status dos dois paralelos corretos,
 > inclusive o MentoCoach com barra de progresso exibindo "Aguardando Fase Anterior". Ela reportou:
 > clicar no MentoCoach travado abre o modal, no Posicionamento **não faz nada**. **BUG-081**, dois

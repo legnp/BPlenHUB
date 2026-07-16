@@ -3402,6 +3402,48 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   trocar o texto globalmente, o `Calendar` ganhou a prop opcional **`policyNote`** (omitida = política
   padrão intacta, nenhum outro consumidor muda) e o modal 1 to 1 passa a sua (sem a nota de Onboarding,
   com a regra de 24h). Rodapé voltou a ter só a nota de débito de crédito.
+## [2026-07-16] Chat de execução — card Perfil & Assessments: Tríade 0%, headers e documentos (PR #109)
+
+- Chat/sessão: mesmo chat, após a Gestora **validar o PR #108 em produção**.
+- **Reporte dela (4 itens):** (1) o gráfico de Gestão do Tempo do `BP-005` plotava 0% em círculos
+  que têm valor maior registrado; (2) normalizar o header do card do DISC, que destoava dos demais,
+  e remover a tag "Analisado"; (3) ajustes de texto; (4) ícone no topo do card para abrir os
+  documentos entregues na devolutiva.
+- **`BUG-082` (Alto) — o item 1 era um bug de casamento de string, e destampou um pior.** O dado no
+  banco está **correto** (41/29/29) e a action lê o doc certo. O defeito:
+  `label.toLowerCase().includes("importan")` — e o rótulo do membro é **"Importância"**, com `â`,
+  que **quebra a substring**. `"urgência"` idem. Só `"circunstância"` casava, porque o acento dela
+  vem depois do trecho buscado: **exatamente o 0%/0%/29% do print**. O `|| { percentage: 0 }`
+  transformava a falha num zero mudo.
+- **Por que ficou invisível:** a tela do **admin** passa os rótulos **sem acento**, e por isso
+  sempre funcionou. A Gestora via o valor certo no admin e zero no membro — dois códigos lendo o
+  mesmo dado com resultados diferentes.
+- **O 2º defeito é pior que o gráfico:** `getDiagnostic` caía no `else` para rótulo acentuado. O
+  `BP-005` tem **"Importância" no topo (41%)** — o **melhor** resultado, "Alta Performance" — e
+  recebia **"Atenção ao Desperdício: excesso de tempo em distrações ou tarefas irrelevantes"**. O
+  sistema estava dando um diagnóstico negativo a quem foi bem.
+- **A correção é no casamento, NÃO nos rótulos.** Tirar o acento do membro faria o gráfico
+  funcionar e seria **regressão de copy** (os rótulos aparecem na legenda — Lição 11). Foi a
+  primeira coisa que me ocorreu e teria sido errada.
+- **Entrega: PR #109 mergeado (`80566cc`, squash).** `resolveTriadCategory` (pura, tolerante a
+  acento); rótulo fora da tríade devolve `null` em vez de virar "circunstancial"; card do DISC no
+  `MiniCard` dos demais + tag removida (`BUG-083`); textos ajustados; ícone de documentos da
+  devolutiva no topo do card (ata + anexos do agendamento, via o proxy `/api/docs` já existente;
+  some quando não há anexo — no `BP-005` são 2).
+- **Nota de honestidade:** a normalização de acento em `devolutiva-docs` é **defensiva** — a mutação
+  dela **não quebra teste nenhum**, porque os termos buscados ("devolutiva"/"comportamental") não
+  têm acento. Documentei como tal, em vez de fingir cobertura.
+- **Interrupção de infra:** a API REST do GitHub ficou **503** por alguns minutos (GitHub Status:
+  "Partially Degraded Service"). O protocolo git seguia funcionando, então o commit estava seguro no
+  remoto; só o abrir/mergear do PR ficou bloqueado. Confirmado que não era token nem código antes de
+  reportar; voltou sozinha.
+- Validado: 18 testes novos + mutação; test **140/140**; type-check; build exit 0; eslint sem
+  warning novo (idêntico à `main`, conferido por checkout comparativo).
+- Itens atualizados: `BUGS.md` (+BUG-082/083), `DASHBOARD.md`, `RETROSPECTIVE.md` (Lição 30), este LOG.
+- Conferência em **produção** pela Gestora (BUG-030).
+
+---
+
 ## [2026-07-16] Chat de execução — clique mudo na 1a etapa travada (PR #108)
 
 - Chat/sessão: mesmo chat, após a Gestora **validar a Fase C em produção**: os status dos dois
