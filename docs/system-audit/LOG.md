@@ -3395,6 +3395,13 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   compacto, calendário min-h 500→440, rodapé com divisor fino. Limpeza: import morto removido.
 - Validado: eslint 0 problemas, test 52/52, type-check, build exit 0. Validação visual em produção
   pela Gestora (BUG-030). O modal é usado pela Gestão de Agenda e pelo menu do hub (Agendar 1 to 1).
+- **Correção de posicionamento — PR #97 (`5a3fa37`):** a Gestora apontou (print) que a política foi
+  parar no **rodapé**; o lugar certo é o card rosa "Política de Agendamento" no **topo**, que vem do
+  componente **`Calendar` (compartilhado** — SurveyEngine/StepRenderer/AgendaManagementView/modal 1 to 1),
+  cujo texto padrão cita a janela de Onboarding (20 dias), relevante nos outros contextos. Em vez de
+  trocar o texto globalmente, o `Calendar` ganhou a prop opcional **`policyNote`** (omitida = política
+  padrão intacta, nenhum outro consumidor muda) e o modal 1 to 1 passa a sua (sem a nota de Onboarding,
+  com a regra de 24h). Rodapé voltou a ter só a nota de débito de crédito.
 
 ## [2026-07-14] Chat de execução — Pacote 5 validado + redesign do menu sanduíche do hub (PR #87)
 
