@@ -3402,6 +3402,35 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   trocar o texto globalmente, o `Calendar` ganhou a prop opcional **`policyNote`** (omitida = política
   padrão intacta, nenhum outro consumidor muda) e o modal 1 to 1 passa a sua (sem a nota de Onboarding,
   com a regra de 24h). Rodapé voltou a ter só a nota de débito de crédito.
+## [2026-07-16] HANDOFF — continuação em outro chat (limite de contexto)
+
+- **Estado:** `main` == `origin/main`. Última entrega: **PR #99** (copy do "Pulso da Comunidade" na
+  home do hub: "A BPlen evolui com a sua participação"; "A BPlen está em constante melhoria contínua";
+  "No momento não há enquetes abertas. Te avisaremos para participar das próximas evoluções";
+  "Monitoramento Ativo"→"Desenvolvimento Ativo"). Validado por eslint/test 52/52/type-check/build.
+- **PRÓXIMA TAREFA (proposta apresentada à Gestora, aguarda aprovação): afinamento de design da home
+  do hub** (`src/components/hub/HubHomeView.tsx`). Escopo: só as 3 seções internas — **Últimos
+  Conteúdos**, **Suas atividades no HUB** e **Pulso da Comunidade**. **NÃO** tocar: header, footer,
+  menu sanduíche, foto e o **card de jornada** (`MemberJourneyHero`). Foco em **espaçamentos e
+  tamanho de componentes**, não em tamanho de texto. Proposta (valores exatos):
+  - Ritmo entre seções: `main` `space-y-32` → **`space-y-14`** (maior ganho de scroll: ~2×72px).
+  - Grid dos 2 blocos: `gap-20` → **`gap-10`**; `!mt-[45px]` → **`!mt-8`**.
+  - Cabeçalhos de seção: `space-y-8`→**`space-y-5`**, `pb-6`→**`pb-4`**.
+  - Últimos Conteúdos: card `p-5`→**`p-4`**, lista `space-y-4`→**`space-y-3`**, caixa do ícone
+    `p-3`→**`p-2.5`**, skeleton `h-24`→**`h-20`**, vazio `py-12`→**`py-8`**.
+  - Suas atividades (`ActivityCard`): `h-44`→**`h-36`**, `p-6`→**`p-5`**, `rounded-[2rem]`→
+    **`rounded-2xl`**, grid `gap-6`→**`gap-4`**, skeleton `h-44`→**`h-36`**.
+  - Pulso da Comunidade (o maior desperdício vertical): seção `py-24`→**`py-10`**, inner
+    `space-y-12`→**`space-y-6`**, card `p-10`→**`p-6`** e `rounded-[3.5rem]`→**`rounded-[2rem]`**,
+    ícone `w-16 h-16`+`mb-6`→**`w-12 h-12`+`mb-3`**, `space-y-8`→**`space-y-5`**, `pt-6`→**`pt-4`**.
+  - Limpeza de passagem: o arquivo tem ~20 warnings de **imports mortos** (Rocket, Sparkles, Menu,
+    User, Phone, Sun, Moon, MOCK_SERVICES/MOCK_TOOLS, `ToolPlaceholderIcon` etc.) — remover junto.
+  - Ganho estimado: ~400–450px de ar vertical removido, sem mexer em tipografia.
+- **Depois disso:** o grande item aberto do processo é a **F1-06** (validação das 19 páginas de
+  admin), não iniciada — com o **BUG-072** ([object Object] nos benefícios na devolutiva) já na fila.
+
+## [2026-07-15] (continuação) — ajustes do modal 1 to 1
+
 - **Overflow dos créditos — PR #98 (`8fa5c7f`):** a Gestora apontou (print) que o banner de créditos
   transbordava o modal e espremia o rótulo. Causa: renderizava **uma bolinha por crédito**
   (`Array.from({length: total})`) em flex row sem wrap — com 56 créditos (usuário de teste) estourava.
