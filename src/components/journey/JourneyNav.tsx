@@ -14,6 +14,7 @@ import { StageTelemetry } from "@/hooks/useJourney";
 import { SequenceLockModal } from "./SequenceLockModal";
 import GlassModal from "@/components/ui/GlassModal";
 import { BPlenRichTextRenderer } from "@/components/shared/BPlenRichTextRenderer";
+import { resolveStageBeacon } from "@/lib/journey/stage-beacon";
 
 interface JourneyNavProps {
   stages: JourneyStep[];
@@ -215,31 +216,18 @@ export function JourneyNav({ stages, currentStepId, stepStatusMap, getStageTelem
               ? LucideIcons[iconName] as LucideIcon
               : theme.icon;
 
-            // Lógica de Cores do Farol (Beacons) Rigorosa — BPlen Mapping 🚥
-            let beaconColor = "bg-slate-400/40"; // Default: ⚪ Cinza
-            let beaconStatus = "Não Liberado";
+            // Farol (beacon) da etapa — regra pura e testada em `stage-beacon.ts`.
+            const beacon = resolveStageBeacon({
+              status: telemetry.status,
+              percentage: telemetry.percentage,
+              hasAccess: telemetry.hasAccess,
+              isNext: telemetry.isNext,
+              isSequenceLocked: telemetry.isSequenceLocked,
+              isCurrent
+            });
+            const beaconColor = beacon.color;
+            const beaconStatus = beacon.status;
             const isPinkPulsing = !telemetry.hasAccess && telemetry.isNext;
-
-            if (telemetry.status === "completed") {
-                // 🟢 Verde: Missão cumprida
-                beaconColor = "bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.8)]";
-                beaconStatus = "Concluído";
-            } else if (isCurrent || (telemetry.percentage > 0 && telemetry.status !== "completed")) {
-                // 🟡 Amarelo: Foco atual (Em progresso)
-                beaconColor = "bg-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.8)]";
-                beaconStatus = "Foco Atual";
-            } else if (telemetry.hasAccess && !telemetry.isSequenceLocked && telemetry.isNext) {
-                // 🔵 Azul: O horizonte (Próximo liberado)
-                beaconColor = "bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.8)]";
-                beaconStatus = "Próximo Passo";
-            } else if (isPinkPulsing) {
-                // 💗 Rosa BPlen: Aguardando liberação administrativa
-                beaconColor = "bg-[#ff2c8d] shadow-[0_0_15px_rgba(255,44,141,0.8)] animate-pulse";
-                beaconStatus = "Bloqueado Admin";
-            } else if (isBlockedBySequence) {
-                beaconColor = "bg-amber-100/40 border-amber-400/30";
-                beaconStatus = "Aguardando Fase Anterior";
-            }
 
             // Governança de Wrapper (Híbrido Link/Upsell/Sequence 🧬)
             const isBlocked = !telemetry.hasAccess;
