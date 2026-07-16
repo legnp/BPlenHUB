@@ -65,13 +65,21 @@ interface CalendarProps {
   isLoading?: boolean;
   onMonthChange?: (date: Date) => void;
   onBookingSuccess?: (event?: CalendarEvent) => void;
+  /**
+   * Texto do card "Política de Agendamento". Quando omitido, usa a política
+   * padrão (antecedência + janela de Onboarding + limite semanal). Cada
+   * contexto pode passar a sua — ex.: o modal 1 to 1 (que não trata Onboarding
+   * e precisa citar a regra de cancelamento).
+   */
+  policyNote?: React.ReactNode;
 }
 
 export default function Calendar({
   events = [],
   isLoading = false,
   onMonthChange,
-  onBookingSuccess
+  onBookingSuccess,
+  policyNote
 }: CalendarProps) {
   const { user, matricula, nickname } = useAuthContext();
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -204,7 +212,11 @@ export default function Calendar({
         </div>
         <div className="flex-1 text-left">
           <p className="text-[10px] font-bold text-[var(--text-muted)] leading-relaxed italic text-left">
-            As sessões são liberadas com <span className="text-[var(--text-primary)] font-black">{CALENDAR_CONFIG.MIN_LEAD_TIME_DAYS} dias de antecedência</span>. Eventos de <span className="text-[var(--accent-start)] font-black">Onboarding</span> possuem visibilidade limitada a {CALENDAR_CONFIG.MAX_ONBOARDING_WINDOW_DAYS} dias. O limite de participação é de <span className="text-[var(--text-primary)] font-black uppercase">{CALENDAR_CONFIG.MAX_BOOKINGS_PER_WEEK} evento por semana (SI)</span>.
+            {policyNote ?? (
+              <>
+                As sessões são liberadas com <span className="text-[var(--text-primary)] font-black">{CALENDAR_CONFIG.MIN_LEAD_TIME_DAYS} dias de antecedência</span>. Eventos de <span className="text-[var(--accent-start)] font-black">Onboarding</span> possuem visibilidade limitada a {CALENDAR_CONFIG.MAX_ONBOARDING_WINDOW_DAYS} dias. O limite de participação é de <span className="text-[var(--text-primary)] font-black uppercase">{CALENDAR_CONFIG.MAX_BOOKINGS_PER_WEEK} evento por semana (SI)</span>.
+              </>
+            )}
           </p>
         </div>
       </div>

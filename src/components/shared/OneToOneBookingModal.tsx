@@ -116,7 +116,7 @@ export default function OneToOneBookingModal({
            </div>
         </div>
 
-        {/* Calendário de Escolha */}
+        {/* Calendário de Escolha — política própria do 1 to 1 no card do topo */}
         <div className="min-h-[440px]">
            <Calendar
               events={oneToOneEvents}
@@ -124,18 +124,17 @@ export default function OneToOneBookingModal({
                 onSuccess();
                 onClose();
               }}
+              policyNote={
+                <>
+                  As sessões deverão ser agendadas com no mínimo <span className="text-[var(--text-primary)] font-black">{CALENDAR_CONFIG.MIN_LEAD_TIME_DAYS} dias de antecedência</span>, com limite de <span className="text-[var(--text-primary)] font-black">{CALENDAR_CONFIG.MAX_BOOKINGS_PER_WEEK} sessão por semana</span>. Cancelamentos e reagendamentos deverão ser realizados até <span className="text-[var(--text-primary)] font-black">24h antes</span> da sessão; após esse prazo, o crédito não poderá ser reutilizado.
+                </>
+              }
            />
         </div>
 
-        {/* Política de agendamento */}
-        <div className="border-t border-[var(--border-primary)]/40 pt-3 space-y-1 text-center">
-           <p className="text-[10px] text-[var(--text-muted)] leading-relaxed max-w-2xl mx-auto">
-              Agende com no mínimo {CALENDAR_CONFIG.MIN_LEAD_TIME_DAYS} dias de antecedência — limite de {CALENDAR_CONFIG.MAX_BOOKINGS_PER_WEEK} sessão por semana. Cancelamentos e reagendamentos até 24h antes da sessão; após esse prazo, o crédito não poderá ser reutilizado.
-           </p>
-           <p className="text-[9px] text-[var(--text-muted)] opacity-50 font-bold uppercase tracking-widest">
-              Ao agendar, um crédito é debitado da sua carteira
-           </p>
-        </div>
+        <p className="text-[9px] text-[var(--text-muted)] opacity-50 font-bold uppercase tracking-widest text-center">
+           Ao agendar, um crédito é debitado da sua carteira
+        </p>
       </div>
     </GlassModal>
   );
