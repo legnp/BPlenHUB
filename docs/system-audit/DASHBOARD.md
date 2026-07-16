@@ -12,7 +12,25 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-16 (chat de execução — **IDs de parada colapsados + nomes dos
+> **Última atualização:** 2026-07-16 (chat de execução — **Fase C: liberação relativa ao pacote
+> (PRs #105/#106/#107 + sync)**. Regra da Gestora: Posicionamento (BPL-001) e MentoCoach (BPL-005)
+> só liberam após a última etapa da trilha que o membro contratou; comprados avulsos, liberam de
+> imediato; a exceção é do admin. **A lista de pré-requisitos não cabia na planilha** (varia por
+> pacote), então o dado declara o **MODO** (`apos_contratadas`) e o **adaptador** resolve a lista em
+> runtime — o **motor não muda** (segue puro, 3 modos; a fronteira é enforced pelo compilador).
+> Conjunto de espera derivado **sem nenhum serviceCode hardcoded**; a exclusão "etapa que cita um
+> paralelo" remove o Offboarding automaticamente, evitando deadlock. **PR #105 — BUG-079** (Alto): a
+> escrita do progresso normalizava a chave e a leitura não; BP-005/BP-011 têm `plano_de_Carreira` e
+> **nunca teriam a conclusão reconhecida** — travaria o GDC para sempre e mataria a Fase C em
+> silêncio. **PR #106 — BUG-080**: rótulos mentiam (progresso mascarava a trava; "Não Liberado" no
+> Posicionamento liberado) — sem isso a regra seria invisível na tela. **Sync de produção**
+> (backup `products_backup_20260716191318`). **BP-002** estava com 10 paradas feitas no
+> Posicionamento e seria expulso: levado à Gestora ANTES do merge, ela manteve a regra e concedeu a
+> **dispensa de BPL-001** (verificado pós-sync: LIBERADO). Verificação final contra a produção com o
+> adaptador compilado: BP-005/BP-011 → `SEQUENCE_LOCK` pendentes `[BPL-003, BPL-004]`. Validado:
+> test **112/112**, type-check, build, eslint 0. Conferência visual em produção (BUG-030).
+>
+> _(entrada anterior)_ 2026-07-16 (chat de execução — **IDs de parada colapsados + nomes dos
 > cards (PR #104 + sync de produção)**. PRs #102/#103 **validados e aprovados em produção**. Uma
 > **dúvida** da Gestora sobre o nome dos cards da `visao_geral` expôs um **Alto fora do escopo**:
 > **BUG-077** — o `journey.ts` descartava o `deliverySteps[].id` do dado e recalculava

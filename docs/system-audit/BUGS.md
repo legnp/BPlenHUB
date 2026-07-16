@@ -2038,13 +2038,37 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   Efeito: ao concluir o Plano de Carreira, **BPL-003 nunca entra em `conclusoes`** → a Gestão e
   Desenvolvimento (`preReq: todos [BPL-000, BPL-003]`) fica **permanentemente** em `SEQUENCE_LOCK`.
   Hoje não se manifestou porque os dois usuários estão com o plano em `current`, não `completed`.
-- Status: **Aberto** — **bloqueia** a regra de liberação pedida pela Gestora (ver
-  `ACCESS-MODEL-DESIGN.md#10`): sob a regra nova, Posicionamento e MentoCoach esperariam por uma
-  conclusão que o sistema nunca enxerga, e **nunca destravariam**.
-- Decisão de execução: proposto no plano da seção 10 — **leitura tolerante** em
-  `conclusoesFromProgress` (mesma normalização que a escrita já usa; sem migração de dado), com
-  migração das chaves legadas como higiene opcional posterior. Aguarda aprovação da Gestora.
-- Commit/PR: —
+- Status: **Corrigido** — 2026-07-16 (PR #105). Leitura tolerante em `conclusoesFromProgress`, com a
+  **mesma normalização que a escrita já usa** (`normalizeString`); chave exata tem precedência sobre
+  a legada. **Sem migração de dado** — as chaves legadas seguem funcionando; migrá-las é higiene
+  opcional posterior.
+- Decisão de execução: aprovado pela Gestora no plano da seção 10. Validado por 5 testes novos
+  (incluindo os discriminantes "chave legada NÃO concluída não vira conclusão" e "chave exata vence
+  a legada") + **mutação das 2 regras centrais**, test 88/88, type-check, build, eslint 0.
+- Commit/PR: PR #105
+
+### BUG-080 Rótulos do farol da jornada mentiam sobre o estado da etapa
+
+- Severidade: Médio (usabilidade; o membro lê o oposto do estado real)
+- Área/fase onde foi achado: F1-03 / jornada — achado ao investigar a dúvida da Gestora sobre o
+  Posicionamento aparecer como "Não liberado" (2026-07-16)
+- Arquivo(s) afetado(s): `src/components/journey/JourneyNav.tsx`; regra extraída para
+  `src/lib/journey/stage-beacon.ts`
+- Cenário de falha: **[CONFIRMADO]** por leitura da cadeia de rótulos. Dois defeitos, ambos de ORDEM:
+  1. **Progresso mascarava a trava**: "Foco Atual" era decidido por `percentage > 0` **antes** do
+     ramo de sequência. O MentoCoach tem 33% (as 5 paradas de Análise Comportamental que ele
+     compartilha), então exibiria "Foco Atual" **mesmo travado** — anulando a Fase C na tela.
+  2. **"Não Liberado" mentia**: era o *default* da cadeia, e caía nele a etapa **acessível que
+     apenas não é a próxima da fila**. Era por isso que o Posicionamento, liberado e clicável,
+     aparecia como "Não Liberado" para a Gestora.
+- Status: **Corrigido** — 2026-07-16 (PR #106). Trava avaliada antes do progresso; caso novo
+  "Disponível" para a etapa acessível fora da fila. Regra extraída para função pura (a ordem das
+  regras **é** a regra, já errou duas vezes e estava inline no JSX, intestável). Cor de "Disponível"
+  reaproveita o azul de "Próximo Passo" em variante discreta — sem cor nova na paleta.
+- Decisão de execução: aprovado pela Gestora no plano da seção 10. Validado por 9 testes (incluindo
+  o discriminante "travada SEM possuir o serviço não vira 'Aguardando Fase Anterior'") + mutação das
+  2 regras centrais, test 97/97, type-check, build, eslint 0.
+- Commit/PR: PR #106
 
 ---
 

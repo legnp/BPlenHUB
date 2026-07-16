@@ -3402,6 +3402,41 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   trocar o texto globalmente, o `Calendar` ganhou a prop opcional **`policyNote`** (omitida = política
   padrão intacta, nenhum outro consumidor muda) e o modal 1 to 1 passa a sua (sem a nota de Onboarding,
   com a regra de 24h). Rodapé voltou a ter só a nota de débito de crédito.
+## [2026-07-16] Chat de execução — Fase C: liberação relativa ao pacote (PRs #105/#106/#107 + sync)
+
+- Chat/sessão: mesmo chat de execução. A Gestora aprovou o plano da seção 10 do
+  `ACCESS-MODEL-DESIGN.md` ("pode seguir") e os 3 PRs saíram na ordem planejada.
+- **PR #105 (`0f38458`) — `BUG-079`, o bloqueador.** Leitura tolerante em `conclusoesFromProgress`,
+  com a mesma normalização que a escrita já usava. Sem migração de dado. 5 testes; mutação das 2
+  regras centrais quebra o teste certo.
+- **PR #106 (`ae44c08`) — `BUG-080`, os rótulos.** Trava passa a ser avaliada **antes** do progresso
+  (senão o MentoCoach travado seguiria dizendo "Foco Atual" pelos 33% que herda da Análise, e a
+  Gestora não veria a Fase C funcionar); caso novo "Disponível" para a etapa acessível fora da fila
+  (era o "Não Liberado" mentiroso do Posicionamento). Regra extraída para `stage-beacon.ts` — a
+  ordem das regras **é** a regra, já errou duas vezes e estava inline no JSX. 9 testes + mutação.
+- **PR #107 (`d121158`) — a regra.** Modo `apos_contratadas` no dado; o **adaptador** expande em
+  runtime; o **motor não muda** (segue puro, 3 modos). A fronteira é **enforced pelo compilador**: o
+  tipo do dado tem 4 modos, o do motor tem 3 — o `tsc` reprovou a 1ª versão, como projetado.
+  Conjunto de espera derivado **sem nenhum serviceCode hardcoded** (Lição 26); a exclusão "etapa que
+  cita um paralelo no próprio pré-requisito" remove o Offboarding **automaticamente**. Também
+  extraído `isStageEntitled` do `useJourney` (a regra precisa do entitlement de todas as etapas).
+  15 testes; mutação das 3 exclusões quebra exatamente os testes de cada uma.
+- **Sync de produção** executado (backup `products_backup_20260716191318`), 12 produtos, 0 arquivados.
+- **Consequência surfaçada ANTES de mergear:** `BP-002-PF-260331` estava com **10 paradas concluídas**
+  no Posicionamento e a regra o expulsaria. Não é bug — é a regra literal. Levado à Gestora, que
+  decidiu **manter a regra e conceder a dispensa** de BPL-001 a ele. Aplicada via
+  `dispensaPreRequisito` (o mesmo campo do admin), com `update()` de campo único.
+- **Verificação final contra a produção já sincronizada** (Lição 16 + 18), com o adaptador de
+  produção compilado: `BP-002` → BPL-001 **LIBERADO** (dispensa funcionou), MentoCoach travado
+  (correto); `BP-005`/`BP-011` → os dois paralelos em `SEQUENCE_LOCK`, `pendentes: [BPL-003,
+  BPL-004]` — o "aguardando etapa anterior" pedido. Ninguém em deadlock; trilha principal inalterada.
+- Validado: test **112/112**, type-check, build exit 0, eslint 0 nos arquivos tocados.
+- Itens atualizados: `BUGS.md` (BUG-079 → Corrigido, +BUG-080), `ACCESS-MODEL-DESIGN.md` (§10 →
+  Concluída), `DASHBOARD.md`, `RETROSPECTIVE.md` (Lições 27-28), este LOG.
+- Conferência visual em **produção** pela Gestora (BUG-030).
+
+---
+
 ## [2026-07-16] Chat de execução — ids de parada colapsados + nomes dos cards (PR #104 + sync)
 
 - Chat/sessão: mesmo chat de execução, após os PRs #102/#103 serem **validados e aprovados em

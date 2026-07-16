@@ -215,6 +215,21 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
     se o remendo sequer surte efeito.** Substituído por uma regra geral + trava que falha alto.
     _(Caso real: `BUG-077`.)_
 
+27. **Quando a regra nova depende de um dado, verifique se o sistema LÊ esse dado — antes de
+    desenhar a regra.** A Fase C dependia de "etapa concluída". Ao desenhar, descobri que a leitura
+    de conclusão era crua e a escrita normalizada (`BUG-079`): duas contas reais tinham a chave
+    legada `plano_de_Carreira`. A regra teria sido implementada, testada, aprovada — e **nunca
+    destravaria**, porque esperava por uma conclusão que o sistema não enxerga. **O insumo da regra
+    é parte do escopo da regra.** _(Caso real: PRs #105/#107, 2026-07-16.)_
+
+28. **Antes de mergear uma regra de acesso, rode-a contra TODOS os usuários reais — não só contra o
+    que motivou o pedido.** A Fase C foi pedida por causa do `BP-005`. Simular contra os 4 usuários
+    com progresso revelou que o `BP-002` estava com **10 paradas concluídas** no Posicionamento e
+    seria expulso — efeito literal da regra aprovada, mas certamente não imaginado por quem a pediu.
+    Levado à Gestora ANTES do merge, ela escolheu manter a regra e conceder a dispensa. **Regra de
+    acesso não se valida no caso que a motivou; valida-se na população inteira**, e o caso
+    surpreendente é o que merece a decisão dela, não a sua. _(Caso real: PR #107.)_
+
 ---
 
 ## Melhorias sugeridas para o PLANO (para o chat de planejamento refinar)
@@ -280,6 +295,9 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
   — extraia a fonte única), 22 (teste que falha pode estar certo; cheque a regra
   antes de corrigir o teste) e 23 (action compartilhada: mapeie os chamadores,
   um deles pode ser receita) adicionadas, a partir do `BUG-076` (PRs #102/#103).
+- 2026-07-16 — Lições 27 (o insumo da regra é parte do escopo da regra) e 28
+  (rode a regra de acesso contra a população inteira antes de mergear, não só
+  contra o caso que a motivou) adicionadas, a partir da Fase C (PRs #105-#107).
 - 2026-07-16 — Lições 24 (uma dúvida da Gestora vale uma investigação inteira),
   25 (dado ruim se disfarça de bug de código) e 26 (remendo com nome de serviço
   hardcoded é bug geral mal diagnosticado — e pode ser inócuo) adicionadas, a

@@ -389,9 +389,25 @@ Observação registrada: os arquivos de `portfolio/` (preços/config comercial) 
 
 ## 10. Fase C — liberação relativa ao pacote (Posicionamento e MentoCoach)
 
-**Status: PLANO — aguarda aprovação da Gestora para implementar** (área sensível:
-gating de jornada). Desenhado em 2026-07-16 a partir do pedido dela, com as 4
-decisões de escopo já respondidas (deadlock, procedência, posicionamento, escopo).
+**Status: CONCLUÍDA — 2026-07-16** (PRs #105, #106, #107 + sync de produção).
+Desenhada e implementada no mesmo dia, com as 4 decisões de escopo da Gestora
+(deadlock, procedência, posicionamento, escopo). Conferência visual em produção
+pendente (BUG-030). Backup do sync: `products_backup_20260716191318`.
+
+**Entrega:**
+- **PR #105** — `BUG-079` (leitura tolerante de chave legada), o bloqueador.
+- **PR #106** — `BUG-080` (rótulos do farol), sem o qual a regra seria invisível.
+- **PR #107** — o modo `apos_contratadas` + planilha + sync.
+- **Exceção aplicada:** `BP-002-PF-260331` estava com **10 paradas concluídas** no
+  Posicionamento e a regra o travaria. Por decisão da Gestora, a regra foi mantida
+  e concedida a ele a **dispensa de BPL-001** (`dispensaPreRequisito`) — o
+  mecanismo de exceção previsto. Verificado pós-sync: `BPL-001 → LIBERADO` para
+  ele, MentoCoach segue travado (correto, não iniciado).
+
+**Verificação final contra a produção já sincronizada**, com o adaptador de
+produção compilado (não uma cópia): `BP-005`/`BP-011` → BPL-001 e BPL-005 em
+`SEQUENCE_LOCK` com `pendentes: [BPL-003, BPL-004]`; ninguém em deadlock; trilha
+principal inalterada.
 
 ### 10.1 A regra (como entendida e confirmada)
 
