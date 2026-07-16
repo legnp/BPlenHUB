@@ -3402,6 +3402,59 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   trocar o texto globalmente, o `Calendar` ganhou a prop opcional **`policyNote`** (omitida = política
   padrão intacta, nenhum outro consumidor muda) e o modal 1 to 1 passa a sua (sem a nota de Onboarding,
   com a regra de 24h). Rodapé voltou a ter só a nota de débito de crédito.
+## [2026-07-16] Chat de execução — ids de parada colapsados + nomes dos cards (PR #104 + sync)
+
+- Chat/sessão: mesmo chat de execução, após os PRs #102/#103 serem **validados e aprovados em
+  produção** pela Gestora.
+- **Origem:** uma **dúvida**, não um pedido de correção. A Gestora perguntou de onde vinham os nomes
+  dos cards da `visao_geral` (os 10 do MentoCoach saíam idênticos) e informou que tinha atualizado a
+  coluna Description da planilha do portfólio. Investigar a dúvida expôs um **Alto fora do escopo**.
+- **BUG-078 (Baixo, corrigido no DADO):** a `visao_geral` monta o nome com `description || title`
+  (`getActivityName`, com comentário explícito "Fonte única de verdade: descrição vinda do
+  Excel/banco"). As 10 sessões tinham a mesma descrição. **Decisão consciente de NÃO trocar o código
+  para usar o `title`:** as 5 primeiras paradas do MentoCoach têm o **título** idêntico ("Análise
+  Comportamental") e são as **descrições** que as distinguem — usar o título quebraria essas 5. A
+  precedência da descrição está certa; a duplicidade era do dado, e a Gestora corrigiu na fonte.
+- **BUG-077 (Alto, corrigido):** o `journey.ts` **descartava** o `deliverySteps[].id` do dado e
+  recalculava `ss-{type}-{referenceId}`. Serviços que repetem o mesmo `referenceId` (MentoCoach: 10x
+  `sessao-mentocoach`; GDC: 10x `orientacao-em-grupo`) recebiam **o mesmo id**. Como a conclusão é
+  gravada por id, **simulação contra o dado real provou**: concluir só a 1ª sessão marcava **as 10**
+  como concluídas, e clicar na 5ª abria a 1ª. O serviço ficava inconcluível corretamente.
+- **Causa-raiz do remendo anterior:** o parser já tentava resolver com sufixo de ordem, mas **só
+  para `BPL-004`** (hardcode) — e mesmo esse era **inócuo**, porque o `journey.ts` recalculava o id
+  e descartava o sufixo. O dado tinha a informação certa; o motor jogava fora.
+- **A simulação pagou o próprio custo:** ela mostrou que o fix no `journey.ts` **sozinho não
+  resolvia nada** (o `step.id` no banco também era duplicado). Sem ela, eu teria entregue meio fix.
+- **Entrega: PR #104 mergeado (`a16c5cd`, squash)** — `journey.ts` honra `step.id` (com fallback
+  para legado); parser aplica o sufixo sempre que `(serviço, tipo, referenceId)` se repete, no lugar
+  do hardcode; **trava nova no parser** falha alto se id duplicado voltar (mutação testada: pegou e
+  abortou); payload regenerado; 5 testes de regressão.
+- **Sync executado na PRODUÇÃO** (aprovado pela Gestora), com backup automático
+  `products_backup_20260716180234`. 12 produtos, 0 arquivados.
+- **Verificações que embasaram a decisão (todas read-only, antes de agir):**
+  1. **Zero migração necessária** — 6 usuários, 4 com progresso, **nenhum** com conclusão gravada
+     nos ids duplicados. A janela existia só porque ninguém tinha concluído uma 1ª sessão; se
+     tivesse, seria preciso migrar.
+  2. **Pré-voo do `sync_live_db.js`** (que usa `set()` **sem merge**, sobrescrevendo o doc inteiro):
+     payload x banco comparado produto a produto — nenhuma divergência real (só ordem de chaves no
+     `preRequisitos`, artefato do comparador). Confirmou que ninguém editou produtos pelo admin
+     desde 2026-07-08 e que o sync não reverteria nada.
+  3. **Diff do payload cirúrgico** — só `mentocoach.deliverySteps` mudou. **GDC não mudou**: o
+     hardcode antigo já produzia o mesmo id da regra geral (sem regressão); ele é corrigido só pelo
+     lado do `journey.ts`.
+  4. Sufixo **condicionado à repetição** de propósito: ids já em uso (`ss-survey-disc`) ficam
+     estáveis, o que é o que torna a migração desnecessária.
+- **Inventário read-only reexecutado APÓS o sync (Lição 16 — não confiar no "SUCCESS" do log):**
+  todos os 7 produtos de jornada com ids únicos; modelo de acesso (`escopo`/`concedeSelo`/
+  `preRequisitos`) intacto nos 12; os 15 nomes de card do MentoCoach agora distintos; simulação
+  contra a base já sincronizada devolve **1 de 10** e cada parada abrindo a si mesma.
+- Validado: test **84/84** (5 novos), type-check, build exit 0, eslint 0.
+- Itens atualizados: `BUGS.md` (+BUG-077/078), `00-PLAN.md` (F1-03/F1-04), `DASHBOARD.md`,
+  `RETROSPECTIVE.md` (Lições 24-26), este LOG.
+- Conferência final em **produção** pela Gestora (BUG-030).
+
+---
+
 ## [2026-07-16] Chat de execução — política de agendamento: texto, regras e layout (PRs #102/#103)
 
 - Chat/sessão: mesmo chat de execução, após o **PR #101 ser validado e aprovado em produção** pela

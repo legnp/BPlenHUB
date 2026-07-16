@@ -12,7 +12,24 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-16 (chat de execução — **Política de agendamento: texto, regras e
+> **Última atualização:** 2026-07-16 (chat de execução — **IDs de parada colapsados + nomes dos
+> cards (PR #104 + sync de produção)**. PRs #102/#103 **validados e aprovados em produção**. Uma
+> **dúvida** da Gestora sobre o nome dos cards da `visao_geral` expôs um **Alto fora do escopo**:
+> **BUG-077** — o `journey.ts` descartava o `deliverySteps[].id` do dado e recalculava
+> `ss-{type}-{referenceId}`, colapsando num id só todas as paradas que repetem o mesmo
+> `referenceId`. Como a conclusão é gravada por id, **simulação contra o dado real provou que
+> concluir só a 1ª Sessão de MentoCoach marcava as 10**, e clicar na 5ª abria a 1ª — o serviço
+> ficava inconcluível. O parser já remendava isso, mas **só para BPL-004** (hardcode) e de forma
+> **inócua**, pois o motor descartava o sufixo. **BUG-078** (Baixo): cards repetidos — corrigido no
+> **dado** (planilha), não no código: as 5 primeiras paradas têm título idêntico e só a descrição as
+> distingue, então usar o título quebraria 5. **PR #104:** `journey.ts` honra o id do dado; parser
+> generaliza o sufixo + trava que falha alto; payload regenerado; 5 testes. **Sync rodado na
+> produção** (backup `products_backup_20260716180234`). **Zero migração** (verificado: nenhum
+> usuário tinha conclusão nos ids duplicados). Inventário read-only **reexecutado pós-sync** (Lição
+> 16): 7/7 produtos com ids únicos, modelo de acesso intacto, simulação devolvendo 1 de 10.
+> Validado: test **84/84**, type-check, build, eslint 0. Conferência em produção (BUG-030).
+>
+> _(entrada anterior)_ 2026-07-16 (chat de execução — **Política de agendamento: texto, regras e
 > layout (PRs #102/#103)**. PR #101 **validado e aprovado em produção**. A Gestora pediu para
 > reescrever o card "Política de Agendamento" — auditar antes de redigir revelou que **nenhuma das 4
 > regras anunciadas era cumprida** (**BUG-076**, Alto): a janela de 20 dias só valia para

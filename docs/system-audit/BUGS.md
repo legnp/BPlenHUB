@@ -1962,6 +1962,63 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   crédito ao agendar nunca foi ligado (`BUG-013`). Este PR deixa o rastro pronto, mas não liga.
 - Commit/PR: PR #103
 
+### BUG-077 Concluir uma parada marca todas as paradas irmãs como concluídas (id colapsado)
+
+- Severidade: **Alto** (adequação funcional; o serviço fica inconcluível corretamente — a jornada
+  do membro pula de 1/10 para 10/10 sozinha)
+- Área/fase onde foi achado: F1-03 / jornada — achado colateral ao responder uma dúvida da Gestora
+  sobre o nome dos cards da `visao_geral` (2026-07-16). Não estava no escopo da pergunta.
+- Arquivo(s) afetado(s): `src/actions/journey.ts` (montagem dos substeps),
+  `scripts/portfolio_parser.py` (geração do id), `portfolio/portfolio_payload.json` (dado)
+- Cenário de falha: **[CONFIRMADO]** por simulação da cadeia real contra `products/mentocoach`.
+  O `journey.ts` **descartava** o `deliverySteps[].id` do dado e recalculava
+  `ss-{type}-{referenceId}`. Serviços que repetem o mesmo `referenceId` em várias paradas
+  (MentoCoach: 10x `sessao-mentocoach`; GDC: 10x `orientacao-em-grupo`) recebiam **o mesmo id**.
+  Como a conclusão é gravada por id (`completedSubSteps`), a simulação provou:
+  - concluir **só** a 1ª Sessão de MentoCoach marcava **as 10** como concluídas;
+  - clicar na 5ª Sessão abria a **1ª** (`substeps.find(ss => ss.id === ...)` devolve a 1ª ocorrência).
+  Causa-raiz do remendo anterior: o parser já tentava resolver com um sufixo de ordem, mas **só para
+  `BPL-004`** (hardcode) — e mesmo esse era **inócuo**, porque o `journey.ts` recalculava o id e
+  descartava o sufixo. Ninguém tinha visto porque nenhum membro havia concluído uma 1ª sessão ainda.
+- Status: **Corrigido** — 2026-07-16 (PR #104). `journey.ts` honra o `step.id` do dado (com fallback
+  para produto legado sem id); parser aplica o sufixo de ordem sempre que `(serviço, tipo,
+  referenceId)` se repete, em vez do hardcode do BPL-004; trava nova no parser falha alto se um id
+  duplicado voltar. Payload regenerado.
+- Decisão de execução: plano apresentado e **aprovado pela Gestora** ("dado + código, tudo agora" +
+  "simular contra o dado real antes"). Verificações que embasaram a decisão:
+  - **Zero migração necessária**: levantamento read-only mostrou 6 usuários, 4 com progresso e
+    **nenhum** com conclusão gravada nos ids duplicados. A janela existia só porque ninguém tinha
+    concluído uma sessão ainda.
+  - **Só os ids duplicados mudam** (`ss-meeting-sessao-mentocoach` → `...-2..-11`); ids já em uso
+    (`ss-survey-disc` etc.) permanecem estáveis, por isso o sufixo é condicionado à repetição.
+  - **GDC não mudou no payload** — o hardcode antigo já produzia o mesmo id que a regra geral
+    (nenhuma regressão nele); ele é corrigido só pelo lado do `journey.ts`.
+  - Pré-voo do `sync_live_db.js` (que usa `set()` **sem merge**): payload x banco comparado produto
+    a produto — nenhuma divergência real (só ordem de chaves no `preRequisitos`), confirmando que
+    ninguém editou produtos pelo admin desde 2026-07-08 e que o sync não reverteria nada.
+  - 5 testes de regressão + mutação da trava do parser (que falhou alto, como esperado).
+- Commit/PR: PR #104
+
+### BUG-078 Cards da Visão Geral repetiam o mesmo nome (descrição genérica no dado)
+
+- Severidade: Baixo (usabilidade; impressão de tarefas repetidas)
+- Área/fase onde foi achado: F1-04 / `visao_geral` — dúvida da Gestora (2026-07-16)
+- Arquivo(s) afetado(s): `portfolio/portfolio_bplen.xlsx` (aba Checkpoints, coluna Description),
+  `portfolio/portfolio_payload.json`
+- Cenário de falha: **[CONFIRMADO]** a `visao_geral` monta o nome do card com
+  `sub.description || sub.title` (`getActivityName`, comentário explícito: "Fonte única de verdade:
+  descrição vinda do Excel/banco"). As 10 sessões de MentoCoach tinham a **mesma** descrição
+  ("Sessão de MentoCoach"), então os 10 cards saíam idênticos.
+- Status: **Corrigido** — 2026-07-16 (PR #104). Correção foi de **dado**, feita pela Gestora na
+  planilha (Description agora é única por linha: "1ª Sessão de MentoCoach"...); payload regenerado
+  e sincronizado.
+- Decisão de execução: **não trocar o código para usar o `title`** — decisão consciente. As 5
+  primeiras paradas do MentoCoach têm o **título** idêntico ("Análise Comportamental") e são as
+  **descrições** que as distinguem ("Avaliação de Perfil Comportamental (DISC)", "Mapa de
+  preferências..."). Usar o título quebraria essas 5. A precedência da descrição está correta; a
+  duplicidade era do dado, corrigida na fonte.
+- Commit/PR: PR #104
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em

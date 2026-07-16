@@ -193,6 +193,28 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
     teria quebrado o funil silenciosamente. A trava foi escopar as regras a quando há matrícula.
     _(Caso real: PR #103; mesma família da Lição 9 — cheque quem mais chama antes de guardar.)_
 
+24. **Uma dúvida da Gestora vale uma investigação inteira — o Alto costuma estar ao lado da
+    pergunta.** A pergunta era inócua ("de onde vem o nome dos cards?"). Puxar o fio até a fonte
+    revelou que concluir uma parada marcava **todas as irmãs** (`BUG-077`, Alto): o serviço inteiro
+    ficava inconcluível. Mesma família da Lição 10 (o lote trivial escondia o Crítico) e da 17
+    (tela aprovada ≠ fluxo exercido). **Responder a pergunta literal e parar ali teria deixado o
+    bug em produção.** _(Caso real: 2026-07-16, PR #104.)_
+
+25. **Antes de "corrigir" o código, pergunte se o defeito não é do dado — e se o código não está
+    certo.** O reflexo era trocar `description || title` por `title` na `visao_geral`. Olhar o dado
+    real mostrou que isso **quebraria 5 paradas**, cujos títulos são idênticos ("Análise
+    Comportamental") e que só se distinguem pela descrição. O código estava certo; o dado é que
+    estava genérico, e a correção certa foi na planilha. **Dado ruim se disfarça de bug de código.**
+    _(Caso real: `BUG-078`.)_
+
+26. **Remendo com nome de serviço hardcoded é sinal de bug geral mal diagnosticado.** O parser
+    tinha `if service_code == "BPL-004"` para gerar id único — alguém bateu no problema num serviço
+    e remendou só ali, em vez de perguntar por que o id colidia. Pior: o remendo era **inócuo**,
+    porque o consumidor (`journey.ts`) recalculava o id e descartava o sufixo. **Quando achar um
+    `if X == "<id específico>"` numa regra genérica, trate como bug não diagnosticado — e verifique
+    se o remendo sequer surte efeito.** Substituído por uma regra geral + trava que falha alto.
+    _(Caso real: `BUG-077`.)_
+
 ---
 
 ## Melhorias sugeridas para o PLANO (para o chat de planejamento refinar)
@@ -258,3 +280,7 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
   — extraia a fonte única), 22 (teste que falha pode estar certo; cheque a regra
   antes de corrigir o teste) e 23 (action compartilhada: mapeie os chamadores,
   um deles pode ser receita) adicionadas, a partir do `BUG-076` (PRs #102/#103).
+- 2026-07-16 — Lições 24 (uma dúvida da Gestora vale uma investigação inteira),
+  25 (dado ruim se disfarça de bug de código) e 26 (remendo com nome de serviço
+  hardcoded é bug geral mal diagnosticado — e pode ser inócuo) adicionadas, a
+  partir do `BUG-077`/`BUG-078` (PR #104).

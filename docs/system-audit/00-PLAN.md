@@ -525,7 +525,9 @@ sem copy hardcoded fora do que o guia permitir).
   `step-journey`, não bloqueia esta página.)
 - Bug(s) vinculado(s): BUG-015 (Aberto — tratado no F2-01), BUG-059 (Corrigido, PR #72),
   BUG-060 (Corrigido, PR #72), BUG-061 (Corrigido, PR #72), **BUG-073 (Corrigido, PR #101)**,
-  **BUG-074 (Corrigido, PR #101)**, **BUG-075 (Aberto — dado/typo "Bloquado", Baixo)**
+  **BUG-074 (Corrigido, PR #101)**, **BUG-075 (Aberto — dado/typo "Bloquado", Baixo)**,
+  **BUG-077 (Corrigido, PR #104 — ids de parada colapsados; concluir uma marcava todas as irmas)**,
+  **BUG-078 (Corrigido, PR #104 — cards repetidos na visao_geral; corrigido no dado)**
 - Log: [2026-07-11] validação da Gestora (itens 1-4 + os 3 ajustes aprovados); modais
   BUG-059/060/061 (PR #72) — **F1-03 fechada** — ver `LOG.md`
   [2026-07-16] **F1-03 reaberta pontualmente e refechada no mesmo dia** — a Gestora reportou que as
