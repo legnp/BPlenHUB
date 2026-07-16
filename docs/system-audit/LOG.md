@@ -3377,6 +3377,12 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
 - Validado (todos): eslint dos arquivos tocados 0 erros, test 52/52, type-check, build exit 0.
   Telas logadas não autenticam no preview (BUG-030) → validação funcional em produção pela Gestora.
 - Itens atualizados: `BUGS.md` (+BUG-070/071/072), `DASHBOARD.md` (entrada nova), este LOG.
+- **Ajustes finos (mesma data) — PR #95 (`3525d8a`):** validados os 3 pontos (PRs A/B/C) pela Gestora.
+  Follow-up: `FileField` ganhou prop `disabled` (bloqueia só upload/remoção — o "Ver documento anexado"
+  fica **sempre clicável**, mesmo fora do modo edição) + **botão de lixeira** para remover o arquivo (só
+  em edição, persiste ao salvar); rótulo "Currículo (PDF)"→"Currículo"; tooltips dos ícones de CV/portfólio
+  no Networking → textos padrão "Visualizar Currículo"/"Visualizar Portfólio". eslint 0 erros, test 52/52,
+  type-check, build exit 0.
 
 ## [2026-07-14] Chat de execução — Pacote 5 validado + redesign do menu sanduíche do hub (PR #87)
 
