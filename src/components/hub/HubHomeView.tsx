@@ -366,7 +366,7 @@ export function HubHomeView() {
                     <MessageSquare size={12} /> Pulso da Comunidade
                  </span>
                  <h3 className="text-3xl md:text-4xl font-bold tracking-tight text-[var(--text-primary)] leading-[1.1]">
-                    O hub evolui com a <span className="italic text-[var(--text-secondary)]">sua participação.</span>
+                    A BPlen evolui com a <span className="italic text-[var(--text-secondary)]">sua participação.</span>
                  </h3>
               </div>
 
@@ -379,17 +379,17 @@ export function HubHomeView() {
                        <Zap size={28} className="text-[var(--accent-start)]" />
                     </div>
                     <p className="text-xl font-bold text-[var(--text-primary)] leading-tight">
-                       O BPlen HUB está em <br /> <span className="text-[var(--accent-start)] italic">Evolução Constante.</span>
+                       A BPlen está em <br /> <span className="text-[var(--accent-start)] italic">constante melhoria contínua.</span>
                     </p>
                     <p className="text-[10px] md:text-xs text-[var(--text-muted)] font-black uppercase tracking-[0.2em] max-w-xs mx-auto leading-relaxed">
-                       No momento, não há enquetes abertas. Fique atento às notificações para participar das próximas decisões.
+                       No momento não há enquetes abertas. Te avisaremos para participar das próximas evoluções.
                     </p>
                  </div>
 
                  <div className="pt-6 relative z-10">
                     <div className="inline-flex items-center gap-3 px-6 py-3 rounded-2xl bg-white/5 border border-white/10 text-[9px] font-black uppercase tracking-widest text-gray-500">
                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                       Monitoramento Ativo
+                       Desenvolvimento Ativo
                     </div>
                  </div>
               </div>
