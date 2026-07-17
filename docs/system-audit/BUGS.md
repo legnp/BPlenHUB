@@ -2339,6 +2339,54 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   dizer "não foi possível carregar a agenda" em vez de inventar disponibilidade. Entra com a Etapa 1.
 - Commit/PR: —
 
+### BUG-090 Dashboard do admin: 2 dos 6 atalhos apontam para rotas inexistentes (404)
+
+- Severidade: Médio (funcional; a porta de entrada do admin tem 33% dos atalhos quebrados)
+- Área/fase onde foi achado: **F1-06 / lote A** — leitura de `src/app/admin/page.tsx` (2026-07-17)
+- Arquivo(s) afetado(s): `src/app/admin/page.tsx:143,145`
+- Cenário de falha: **[CONFIRMADO]** por checagem das rotas existentes:
+  - **"Novo Portfólio"** → `/admin/portfolio` — **não existe**. A rota real é `/admin/products`
+    ("Portfolio Command Center").
+  - **"Ver Formulários"** → `/admin/forms` — **não existe**. A rota real é `/admin/fs/forms`.
+  Os outros 4 atalhos (`/admin/social`, `/admin/partners`, `/admin/fs`, `/admin/agenda`) estão OK.
+- Status: **Aberto** — F1-06 lote A.
+- Decisão de execução: correção trivial de href; entra no PR do lote A.
+- Commit/PR: —
+
+### BUG-091 Dashboard do admin: card "AGENDA / sincronização ok" é hardcoded e mente
+
+- Severidade: Médio (o indicador de saúde é decorativo — afirma um estado que nunca verificou)
+- Área/fase onde foi achado: **F1-06 / lote A** (2026-07-17)
+- Arquivo(s) afetado(s): `src/app/admin/page.tsx:55-62` (e o ponto verde pulsante do header, `:86`)
+- Cenário de falha: **[CONFIRMADO]** o card exibe `value: "Ativa"` e `label: "sincronização ok"` como
+  **strings fixas** — nenhuma verificação por trás. Ele diz "sincronização ok" **sempre**: com a
+  cota do Firestore estourada (apagão de 2026-07-16/17), com o sync sem rodar há semanas, ou com o
+  teto de 250 truncando (`BUG-088`). O mesmo vale para o ponto verde pulsante do cabeçalho, que
+  sugere "sistema saudável" sem ler nada. **Um indicador que não pode dizer "não" não é indicador.**
+  Família da Lição 20 (texto de regra é contrato — audite a execução antes de anunciar) e da 30
+  (resposta plausível esconde a falha).
+- Status: **Aberto** — F1-06 lote A.
+- Decisão de execução: duas saídas — (a) tornar real (ler o `lastSync` mais recente e mostrar a
+  idade do dado: "sincronizado há 2h"), ou (b) remover o card. **Decisão da Gestora.** A opção (a)
+  é a que ela de fato usaria, e casa com a Etapa 1 do `AGENDA-SYNC-DESIGN.md` (leitura barata: 1 doc).
+- Commit/PR: —
+
+### BUG-092 Dashboard do admin: métrica "1:1 nesta semana" não é da semana — conta tudo, desde sempre
+
+- Severidade: Médio (a métrica anunciada não é a métrica calculada; o número só cresce)
+- Área/fase onde foi achado: **F1-06 / lote A** (2026-07-17)
+- Arquivo(s) afetado(s): `src/app/admin/page.tsx:27-33,47`
+- Cenário de falha: **[CONFIRMADO]** o rótulo diz **"cliques diretos nesta semana"**, mas o cálculo
+  filtra `summary.includes("1 to 1") && registeredCount > 0` sobre **a coleção inteira** — sem
+  nenhum filtro de data. Conta eventos de maio, de agosto, passados e futuros, indiscriminadamente.
+  Como `Calendar_Events` acumula o passado para sempre (`BUG-085`), o número **só sobe** e nunca
+  reflete "esta semana". A Gestora toma decisão olhando um número que não é o que o rótulo promete.
+- Nota: é também o pior caso do `BUG-087` — **590 leituras para exibir 1 número**.
+- Status: **Aberto** — F1-06 lote A.
+- Decisão de execução: corrigir o cálculo (filtro por semana) **ou** o rótulo — a Gestora decide qual
+  é a métrica que ela quer. Casa com a Etapa 1 (consulta por intervalo em vez de full scan).
+- Commit/PR: —
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em
