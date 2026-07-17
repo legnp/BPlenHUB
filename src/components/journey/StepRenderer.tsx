@@ -22,7 +22,7 @@ import { format, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
 import Calendar from "@/components/ui/Calendar";
 import UserBookings from "@/components/ui/UserBookings";
-import { getSyncedEvents, getUserBookingsAction, submitEvaluationAction } from "@/actions/calendar";
+import { getUpcomingEvents, getUserBookingsAction, submitEvaluationAction } from "@/actions/calendar";
 import { UserBooking, GoogleCalendarEvent } from "@/types/calendar";
 import { SurveyEngine } from "@/components/forms/SurveyEngine";
 import { getSurveyConfig } from "@/config/surveys";
@@ -91,8 +91,8 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
   const loadData = React.useCallback(async () => {
     setLoadingEvents(true);
     try {
-      const allEvents = await getSyncedEvents();
-      
+      const allEvents = await getUpcomingEvents();
+
       const keyword = normalizeStr(getMeetingFilterKeyword(substep));
       const filteredEvents = allEvents.filter(ev => {
         if (ev.theme) {
