@@ -12,7 +12,16 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-17 (chat de execução — **os 2 Altos da agenda fechados
+> **Última atualização:** 2026-07-17 (chat de execução — **validação da Gestora + BUG-095**. Ela
+> validou em produção: sync **1024** (passou de 250), eventos até 15/10, bloqueios/fins de semana
+> travados, hub mais rápido, Firestore ~22k leituras/dia (sob o teto). **BUG-084/087/088 VALIDADOS
+> EM PRODUÇÃO.** O ponto 5 (não agendava 1 to 1 no 20º dia) virou **BUG-095 (Alto)**: o sync não
+> reconstruía o snapshot `Programacao_Registry`, que o modal do membro lê — estava congelado em 03/07
+> (0 sessões em 06/08 vs 13 no `Calendar_Events` fresco). Serviço pago invisível depois de 29/07.
+> Corrigido no mesmo dia (PR #114): o sync chama o rebuild ao terminar. Registrado que `Tema: "A
+> DEFINIR"` é mecanismo operacional intencional da Gestora, não bug.
+>
+> _(entrada anterior)_ 2026-07-17 (chat de execução — **os 2 Altos da agenda fechados
 > (PRs #112/#113)**. As Etapas 1 e 2a do `AGENDA-SYNC-DESIGN.md`, ambas em produção.
 > **BUG-087 (Alto, PR #112)** — o full scan que causou o apagão. O multiplicador real era
 > `getUserBookingsAction` (baixava os 590 eventos só para anexar detalhe), chamada por **8 telas do

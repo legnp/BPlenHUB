@@ -218,6 +218,17 @@ recorrente. Opções, a decidir:
 **Nota:** enquanto a Etapa 3 não existir, os 42 eventos com `Tema: "A DEFINIR"`
 seguem sendo ação **de dado** dela, não de código.
 
+**Esclarecimento da Gestora (2026-07-17) — o `Tema:` é intencional, não débito.** O
+campo `Tema:` do evento no Google Calendar é o **mecanismo deliberado** com que a
+Gestora liga cada evento à etapa correspondente do hub, preenchido de forma
+**contínua em produção** (rotina operacional). `"A DEFINIR"` é o estado natural de
+um evento ainda não vinculado — não é dado faltante. **Consequência para a Etapa
+3:** o redesenho **não pode remover** esse fluxo de autoria no Google Calendar; a
+opção (c) híbrida (ela cria no Google, uma tela de admin enriquece com metadado)
+é a única compatível com o Princípio-guia. Substituir o `Tema:` por
+`extendedProperties` só faz sentido se **preservar** a capacidade dela de
+vincular etapa↔evento pela interface do Google que ela já usa.
+
 ---
 
 ## 6. Ordem, dependências e estado

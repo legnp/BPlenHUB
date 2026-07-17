@@ -1901,6 +1901,12 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   ("Autoconhecimento e Aprendizagem" — a única parada de grupo que exibe evento). Preencher o
   `Tema:` no Google Calendar destrava as demais. Também registrado: não existe **nenhum** evento de
   Offboarding na agenda.
+- **ESCLARECIMENTO DA GESTORA (2026-07-17) — `Tema: "A DEFINIR"` NÃO é bug nem dado faltante, é
+  operação intencional.** O campo `Tema:` do evento no Google Calendar é o **mecanismo deliberado**
+  que a Gestora usa para ligar cada evento à etapa correspondente do hub, preenchido de forma
+  **contínua em produção** (faz parte da rotina operacional dela). "A DEFINIR" é o estado natural de
+  um evento ainda não vinculado. **Sessões futuras: não tratar como defeito nem "corrigir" o dado** —
+  é feature. O comportamento correto é: sem `Tema:` casado, a parada não exibe o evento (esperado).
 - Commit/PR: PR #101
 
 ### BUG-075 Filtro de bloqueio de agenda não tolera erro de digitação ("Bloquado")
@@ -2219,13 +2225,9 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   dia fica vazio** (mínimo de 7 num dia). 8 testes novos, suíte 148/148, mutação do radical derruba 4.
 - Decisão de execução: plano + impacto medido aprovados pela Gestora antes de codar (funil de lead
   público = receita, Lição 23).
-- **PASSO OPERACIONAL PENDENTE (Gestora):** o fix está mergeado e **o deploy de produção do `604f9d4`
-  subiu com sucesso** (verificado), mas ele é **inerte até o sync rodar** — quem grava os bloqueios em
-  `Calendar_Events` é o botão **Sincronizar** do `/admin/agenda`, e **não existe cron** (sem
-  `vercel.json`/agendamento; a rota `/api/trigger-sync` foi removida no `BUG-024`). Confirmado por
-  inventário read-only após o deploy: a base segue com **0 bloqueios futuros** (só os 8 fósseis de
-  maio). Enquanto o sync não for rodado, a grade de proposta continua oferecendo os 249 horários.
-  Ver corolário da Lição 31.
+- **VALIDADO EM PRODUÇÃO pela Gestora (2026-07-17):** após rodar o Sincronizar, ela confirmou no
+  `/agendar` (proposta) que os horários bloqueados **somem** e que sábados/domingos seguem travados —
+  "os efeitos de agenda bloqueada estão funcionais". O caso do print original (terça 17:30) fechou.
 - Commit/PR: **PR #110**
 
 ### BUG-085 `Calendar_Events` acumula eventos passados para sempre (limpeza só varre o futuro)
@@ -2312,8 +2314,11 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - **Residual documentado (não é o apagão):** `admin/agenda`, `admin/gestao-agenda` e `admin/page`
   (dashboard) seguem em `getSyncedEvents` — 2-3 admins, baixa frequência. O dashboard sai no PR dele
   (`BUG-091/092`); o `ProgramacaoResumo` já lê o Registry (1 leitura). O apagão era volume de membro.
-- Decisão de execução: plano + impacto medido aprovados pela Gestora. Validação em produção pela
-  Gestora (rodar o Sincronizar; conferir a curva de leituras no console do Firebase).
+- Decisão de execução: plano + impacto medido aprovados pela Gestora. **VALIDADO EM PRODUÇÃO
+  (2026-07-17):** ela navegou o hub sem erro e notou o carregamento **mais rápido** das agendas — o
+  efeito esperado da queda de 590→~5 leituras por tela. No console do Firebase, ~22k leituras no dia
+  (bem abaixo do teto de 50k, mesmo com teste pesado). O pico de ~15k foi ela testando as **telas de
+  admin**, que ainda fazem full scan (o residual documentado) — não é tráfego de membro.
 - Commit/PR: **PR #112**
 
 ### BUG-088 Sync lê 250 dos 795 eventos, sem paginação — e a limpeza apaga o que ele não leu
@@ -2340,12 +2345,10 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   agendável** (`agora .. +MAX_LEAD+1`, ~21 dias), medido em **190** leituras, preservando o ganho do
   `BUG-087`. O teto de 250 antigo já limitava por acidente a visão do membro a ~1 mês; o teto novo
   preserva isso de propósito.
-- Decisão de execução: PROPOSTA + impacto medido aprovados pela Gestora. Validação em produção
-  (rodar o Sincronizar; conferir que o total sincronizado passa de 250 e que a lista mostra eventos
-  de set/out).
-- **Nota operacional:** o efeito só aparece após a Gestora rodar o Sincronizar (não há cron — Etapa
-  2b, ainda a fazer). Após o sync, a base passa de ~590 para ~801+ docs (+ os passados que o
-  `BUG-085` ainda não limpa).
+- Decisão de execução: PROPOSTA + impacto medido aprovados pela Gestora. **VALIDADO EM PRODUÇÃO
+  (2026-07-17):** após rodar o Sincronizar, o total foi a **1024** (passou de 250) e a lista mostra
+  eventos **até 15/10** — ela confirmou os dois sinais. (1024 = ~590 antigos + os ~434 futuros que o
+  teto de 250 escondia + passados.)
 - Commit/PR: **PR #113**
 
 ### BUG-089 Falha muda na agenda pública: erro de cota vira "todos os horários livres"
@@ -2484,6 +2487,37 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Decisão de execução: **exige decisão própria.** Mudar isso altera a semântica de `week`/`year` já
   gravados em `User_Bookings`; a correção precisa considerar os registros existentes, não só o
   cálculo. Não fazer de carona em outro PR.
+- Commit/PR: —
+
+### BUG-095 O sync não reconstrói o `Programacao_Registry` — agenda do membro congela
+
+- Severidade: **Alto** (o agendamento de 1 to 1 — serviço pago — fica inagendável para qualquer data
+  além da última reconstrução do Registry; o membro vê uma agenda parada no tempo)
+- Área/fase onde foi achado: F1-06 / agenda — achado ao investigar o item 5 da validação da Gestora
+  (2026-07-17): ela não conseguiu agendar no 20º dia (06/08). **É código, não dado** (Lição 25).
+- Arquivo(s) afetado(s): `src/actions/calendar-module/sync.ts` (não chama o rebuild);
+  leitores do Registry: `hub/membro/gestao_agenda`, `HubHeader` ("Agendar 1 to 1"),
+  `components/admin/ProgramacaoResumo`, `SurveyEngine`
+- Cenário de falha: **[CONFIRMADO]** por inventário read-only na base real. O modal de 1 to 1 do
+  membro lê `getProgramacaoForMemberAction` → `Datas_Center/Programacao_Registry`, que é um
+  **snapshot** reconstruído **apenas** por `updateGlobalProgramacaoRegistryAction` (chamada em fluxos
+  de booking/post-evento). **O sync NÃO reconstrói o Registry.** Estado real em 2026-07-17, após a
+  Gestora sincronizar (Calendar_Events = 1024, eventos até 15/10):
+  - `Calendar_Events` em 05-07/08: **13 eventos "1 to 1"** (o dado do 20º dia existe).
+  - `Programacao_Registry`: `lastUpdated` de **03/07** (2 semanas atrás), evento mais recente
+    **29/07**, **0 eventos** em 05-07/08. Congelado.
+  Resultado: qualquer sessão depois de 29/07 é invisível para o membro no modal de 1 to 1 (e na
+  `gestao_agenda`, no `ProgramacaoResumo` do admin, e no contexto do `SurveyEngine`).
+- **Pré-existente, exposto pela paginação:** a defasagem do Registry sempre existiu (depende de
+  alguém ter feito booking recentemente). Antes, o `Calendar_Events` também parava em ~14/08 (teto de
+  250), então a diferença era menos visível; com o `BUG-088` levando o `Calendar_Events` a 15/10, o
+  buraco 29/07→15/10 ficou evidente.
+- Status: **Aberto** — investigação concluída; correção proposta à Gestora.
+- Decisão de execução: **Precisa aprovação** (agenda/receita). Proposta: chamar
+  `updateGlobalProgramacaoRegistryAction()` ao final de `syncCalendarToFirestore`, para o Registry
+  refletir o que o sync acabou de gravar. A função já existe (tocada no `BUG-086`, lê Calendar_Events
+  até 2000 e escreve o snapshot); custo = ~1 rebuild por sync (admin, baixa frequência). Correção de
+  1 linha + import. Recomendo **não** deferir: destrava um serviço pago e a validação do `BUG-093`.
 - Commit/PR: —
 
 ---

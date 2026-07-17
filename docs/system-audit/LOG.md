@@ -3438,6 +3438,29 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
 - **Próximo:** validação da Gestora em produção; depois, F1-06 lote A (dashboard do admin —
   BUG-090/091/092, na branch `fix/admin-dashboard-real` com a lógica pura já pronta).
 
+### Validação da Gestora em produção (2026-07-17) + BUG-095
+
+- **Pontos 1-4 aprovados.** Ela rodou o Sincronizar e confirmou: **1024** sincronizados (passou de
+  250), eventos **até 15/10**, bloqueios/sábados/domingos travados no `/agendar`, hub navegando sem
+  erro e **mais rápido** (efeito real da queda 590→~5 no `getUserBookingsAction`). Firestore: ~22k
+  leituras no dia, bem abaixo do teto — o pico de ~15k foi o teste das telas de admin (full scan
+  residual), não tráfego de membro. **BUG-084/087/088 marcados VALIDADOS EM PRODUÇÃO.**
+- **Ponto 5 virou `BUG-095` (Alto) — e era código, não "deixar em alerta".** Ela não conseguiu
+  agendar 1 to 1 no 20º dia (06/08). Investigado antes de aceitar o deferimento (Lição 25): o modal
+  lê o snapshot `Programacao_Registry`, que **o sync não reconstruía** — estava congelado em 03/07
+  (evento mais recente 29/07, **0** em 06/08), enquanto o `Calendar_Events` fresco tinha **13**
+  sessões de 1 to 1 em 06/08. Qualquer 1 to 1 (serviço pago) depois de 29/07 era invisível.
+  Pré-existente, exposto pela paginação (que levou o `Calendar_Events` a 15/10). **Corrigido no
+  mesmo dia (PR #114):** o sync chama `updateGlobalProgramacaoRegistryAction()` ao terminar.
+  Simulação read-only: o Registry reconstruído vai a 15/10 com as 13 sessões de 06/08 visíveis;
+  bloqueios filtrados. Aprovado pela Gestora ("pode corrigir, fez muito bem").
+- **Esclarecimento operacional registrado:** `Tema: "A DEFINIR"` **não é bug nem dado faltante** — é
+  o mecanismo intencional da Gestora para ligar evento↔etapa do hub, preenchido continuamente em
+  produção. Anotado no `BUG-074` e no `AGENDA-SYNC-DESIGN.md` (Etapa 3 tem de **preservar** esse
+  fluxo de autoria no Google Calendar). Sessões futuras: não "corrigir".
+- **Validação do BUG-095 pela Gestora pendente:** após o deploy, rodar o Sincronizar de novo e
+  conferir o 1 to 1 no 20º dia — isso também destrava a validação do `BUG-093` (agendar no 20º dia).
+
 ---
 
 ## [2026-07-17] Chat de execução — apagão de cota, plano da agenda e o fuso da política (PR #111)
