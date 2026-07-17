@@ -44,6 +44,20 @@ describe("isWithinBookingWindow — janela de 3 a 20 dias", () => {
     expect(isWithinBookingWindow(at("2026-07-18T23:59:00-03:00"), NOW)).toBe(false);
   });
 
+  it("a noite de Brasilia nao adianta a janela em um dia (BUG-093)", () => {
+    // 16/07 as 22:00 BRT ja e 17/07 01:00 em UTC. Se "hoje" sair do relogio do
+    // servidor, a janela inteira escorrega UM DIA: o membro que agenda a noite
+    // recebe uma regra diferente da que recebe de manha, no mesmo dia.
+    const NOITE = new Date("2026-07-16T22:00:00-03:00");
+
+    // "Hoje" continua sendo 16/07 em Brasilia -> o 3o dia e 19/07.
+    expect(isWithinBookingWindow(at("2026-07-19T09:00:00-03:00"), NOITE)).toBe(true);
+    expect(isWithinBookingWindow(at("2026-07-18T23:59:00-03:00"), NOITE)).toBe(false);
+    // ... e o 20o dia segue sendo 05/08, nao 06/08.
+    expect(isWithinBookingWindow(at("2026-08-05T23:59:00-03:00"), NOITE)).toBe(true);
+    expect(isWithinBookingWindow(at("2026-08-06T00:00:00-03:00"), NOITE)).toBe(false);
+  });
+
   it("nao depende do nome do evento", () => {
     const dentro = "2026-07-21T19:00:00-03:00";
     expect(isWithinBookingWindow(dentro, NOW)).toBe(true);
@@ -116,6 +130,15 @@ describe("preservesCredit — prazo de 24h", () => {
 describe("resolveEventWeek", () => {
   it("devolve semana ISO e ano do evento", () => {
     expect(resolveEventWeek("2026-07-21T19:55:00-03:00")).toEqual({ week: 30, year: 2026 });
+  });
+
+  it("a semana e a de Brasilia, nao a do servidor (BUG-093)", () => {
+    // Domingo 19/07 as 22:00 BRT ja e segunda 20/07 01:00 em UTC. Avaliada no fuso
+    // do servidor, a sessao cairia na semana 30 (a seguinte) e o membro poderia
+    // agendar duas do mesmo tipo na mesma semana, furando o limite semanal.
+    expect(resolveEventWeek("2026-07-19T22:00:00-03:00")).toEqual({ week: 29, year: 2026 });
+    // Segunda 20/07 00:30 BRT: ai sim, semana 30.
+    expect(resolveEventWeek("2026-07-20T00:30:00-03:00")).toEqual({ week: 30, year: 2026 });
   });
 });
 

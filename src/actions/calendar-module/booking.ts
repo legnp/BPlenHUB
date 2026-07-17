@@ -1,7 +1,7 @@
 import admin, { getAdminDb } from "@/lib/firebase-admin";
 import { requireAuth, requireAdmin, AuthorizationError } from "@/lib/auth-guards";
 import { serverEnv } from "@/env";
-import { format, getISOWeek, getYear, parseISO } from "date-fns";
+import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Resend } from "resend";
 import { CALENDAR_CONFIG } from "@/config/calendarConfig";
@@ -9,7 +9,8 @@ import {
   getBookingWindowError,
   hasReachedWeeklyLimit,
   preservesCredit,
-  resolveEventType
+  resolveEventType,
+  resolveEventWeek
 } from "@/lib/booking/policy";
 import { isBlockerEvent } from "@/lib/booking/blocker";
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
@@ -106,9 +107,7 @@ export async function bookEventAction(
         throw new Error("Não há mais vagas disponíveis para este evento.");
       }
 
-      const evDate = parseISO(eventData.start);
-      const week = getISOWeek(evDate);
-      const year = getYear(evDate);
+      const { week, year } = resolveEventWeek(eventData.start);
       const eventType = resolveEventType(eventData.summary);
 
       // Politica de agendamento do MEMBRO — validada aqui, e nao so escondida na
@@ -381,8 +380,8 @@ export async function adminAddAttendeeAction(
       if (!eventDoc.exists) throw new Error("Evento não encontrado");
       
       const userBookingRef = eventRef.collection("attendees").doc(userUid);
-      const evDate = parseISO(eventDoc.data()?.start);
-      
+      const { week: evWeek, year: evYear } = resolveEventWeek(eventDoc.data()?.start);
+
       transaction.set(userBookingRef, {
         userId: userUid,
         displayName,
@@ -390,8 +389,8 @@ export async function adminAddAttendeeAction(
         matricula,
         bookedAt: admin.firestore.FieldValue.serverTimestamp(),
         attendanceStatus: "present",
-        week: getISOWeek(evDate),
-        year: getYear(evDate),
+        week: evWeek,
+        year: evYear,
         adminInclusion: true
       });
 
@@ -399,8 +398,8 @@ export async function adminAddAttendeeAction(
       transaction.set(userSubLinkRef, {
         eventId,
         bookedAt: admin.firestore.FieldValue.serverTimestamp(),
-        week: getISOWeek(evDate),
-        year: getYear(evDate),
+        week: evWeek,
+        year: evYear,
         category: (eventDoc.data()?.summary || "").toLowerCase().includes("1 to 1") ? "1to1" : "geral",
         attendanceStatus: "present",
         adminInclusion: true
@@ -601,9 +600,7 @@ export async function rescheduleAttendeeAction(
         throw new Error("Não há vagas disponíveis para o novo evento.");
       }
 
-      const newEvDate = parseISO(newEventData.start);
-      const week = getISOWeek(newEvDate);
-      const year = getYear(newEvDate);
+      const { week, year } = resolveEventWeek(newEventData.start);
 
       // Desinscreve do evento antigo
       transaction.delete(oldAttendeeRef);
