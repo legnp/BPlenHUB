@@ -1917,7 +1917,15 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Status: **Aberto** — reportado à Gestora. A correção mais rápida é de **dado** (renomear os 5
   eventos no Google Calendar); endurecer o filtro no código exige cuidado para não capturar títulos
   legítimos por engano.
-- Decisão de execução: aguarda decisão da Gestora (dado vs. código).
+- **Atualização (2026-07-16, F1-06):** a Gestora informou que esses eventos **já não existem no
+  Google Calendar**, e a investigação confirmou — são fósseis de maio/2026. Isso **invalida as duas
+  saídas cogitadas acima**: renomear no Google não remove nada (o sync não varre o passado —
+  `BUG-085`), e endurecer o filtro do sync **não é mais o remédio certo**, porque a investigação
+  mostrou que o sync **não deveria estar filtrando bloqueio nenhum** (`BUG-084`). O typo, aliás,
+  fazia esses 5 eventos agirem como bloqueadores — ou seja, acidentalmente **certo**. Este bug perde
+  o objeto próprio: resolve-se como efeito do `BUG-084` (parar de filtrar no sync) + `BUG-085`
+  (limpar o passado). Manter aberto até os dois decidirem.
+- Decisão de execução: absorvido pela decisão do `BUG-084`/`BUG-085` (mesmo arquivo, `sync.ts`).
 - Commit/PR: —
 
 ### BUG-076 Política de agendamento não era executada pelo sistema (4 regras desalinhadas)
@@ -2152,6 +2160,100 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   Premiações"→"Análise 04", "Aprendizado"→"Preferências de Aprendizado",
   "Reconhecimento"→"Preferências de Reconhecimento".
 - Commit/PR: PR #109
+
+### BUG-084 Sync descarta os eventos "Bloqueado" e a agenda pública oferece horário ocupado
+
+- Severidade: **Médio** (funil de lead público; hoje gera atrito, não agendamento errado — ver
+  "impacto medido". A via de agendamento direto é **latente**: mesma causa, 0 ocorrências hoje)
+- Área/fase onde foi achado: F1-06 / lote C (agenda) — achado ao investigar o `BUG-075` a pedido da
+  Gestora (2026-07-16), que levantou a hipótese "talvez esses eventos estejam aí justo para bloquear
+  os espaços livres para propostas de 1 to 1". **A hipótese estava certa no mecanismo e invertida no
+  diagnóstico**: os bloqueios não estão sujando a base — eles **não chegam** nela, e é a ausência
+  que quebra a regra.
+- Arquivo(s) afetado(s): `src/actions/calendar-module/sync.ts:35-38` (a causa);
+  consumidores afetados: `src/actions/external-booking.ts:43` (`getPublicSlotsAction`) e
+  `:172` (`getPublicAvailableDaysAction`), lidos por `src/components/ui/PublicBookingFlow.tsx:779`
+- Cenário de falha: **[CONFIRMADO]** por inventário read-only na base real + no Google Calendar
+  (2026-07-16). O sync filtra `summary.includes("bloqueado")` **antes de gravar**, então os eventos
+  de bloqueio nunca entram em `Calendar_Events`. A agenda pública (`/agendar`) só considera ocupado
+  o horário que tem um evento sobreposto **dentro de `Calendar_Events`** — logo, ela não enxerga
+  nenhum bloqueio da Gestora.
+  - **Impacto medido (janela pública real, 3..33 dias):** há **116 eventos "Bloqueado"** no Google
+    Calendar nos próximos 90 dias. Na grade de proposta (06:00–21:00, passo 30min), **249 dos 756
+    horários ofertados (32,9%) estão em cima de um bloqueio real**, em **23 dos 31 dias**. O lead
+    propõe um horário que a Gestora tem ocupado.
+  - **Mitigação que segura a severidade em Médio:** a proposta **não agenda** — cai em
+    `Booking_Proposals` com `status:"pending"` e a equipe confirma manualmente. O dano é atrito e
+    renegociação, não reunião em cima de compromisso.
+  - **Latente (não vivo):** o agendamento **direto** (`bookPublicMeetingAction`) marca na hora. Ele
+    só é imune hoje porque **nenhum dos 116 bloqueios sobrepõe nenhum dos 70 slots "1 to 1"
+    ofertados** (verificado: 0 sobreposições) — a Gestora só cria slot onde está livre. É disciplina
+    de curadoria, não trava de sistema: um bloqueio em cima de um slot "1 to 1" vira reunião marcada
+    em horário ocupado, sem revisão humana.
+- Causa-raiz (git): o filtro nasceu em **`fc00c6d` (2026-06-01)**, "adicionar filtro de eventos
+  bloqueados e visualizacao dinamica de inscritos no admin" — o mesmo commit mexe em
+  `ProgramacaoResumo.tsx`, ou seja, a intenção era **não poluir a tela do admin**. O filtro foi
+  aplicado em dois lugares: na **leitura** (`queries.ts` — correto, atende à intenção) e no **sync**
+  (colateral — tirou os bloqueios da base e, com eles, a única fonte de "ocupado" da agenda pública).
+  **Fóssil que comprova:** os 8 docs de bloqueio que sobraram na base têm `lastSync` de
+  **22–25/05/2026**, anterior ao commit — antes de 01/06 os bloqueios **eram** sincronizados.
+- Nota de arquitetura: **todos** os leitores de coleção inteira já se defendem sozinhos de bloqueio
+  na base (`queries.ts:85` no `getSyncedEvents`, `post-event.ts:318` no registro global) — o código
+  já pressupõe que eles vivem lá. Os únicos que os querem são os dois da agenda pública, que tratam
+  todo evento não-"1 to 1" como bloqueador. Isso torna o filtro do `sync.ts` o ponto fora da curva.
+- Status: **Aberto** — investigação concluída, correção **não** iniciada.
+- Decisão de execução: **Precisa plano + aprovação** — mexe no funil de lead público (receita;
+  Lição 23) e muda o que é gravado na base. Levado à Gestora com o impacto medido.
+- Commit/PR: —
+
+### BUG-085 `Calendar_Events` acumula eventos passados para sempre (limpeza só varre o futuro)
+
+- Severidade: Baixo (higiene de dados; sem impacto funcional vivo)
+- Área/fase onde foi achado: F1-06 / lote C — achado no mesmo inventário do `BUG-084` (2026-07-16),
+  respondendo à observação da Gestora de que "esses eventos estão apenas sujando a base"
+- Arquivo(s) afetado(s): `src/actions/calendar-module/sync.ts:41-57`
+- Cenário de falha: **[CONFIRMADO]** a limpeza de "fantasmas" do sync só considera o range
+  `timeMin=agora .. timeMax=agora+90d`. Um doc cujo evento já passou está **fora da varredura** e
+  nunca é removido, mesmo que o evento não exista mais no Google Calendar. Estado real: **340 dos
+  538 docs** de `Calendar_Events` são de eventos passados (05/2026: 51, 06/2026: 165, 07/2026: 124);
+  o mais antigo é de 25/05/2026. Cresce de forma monotônica.
+- Relação com o `BUG-075`: **é esta a razão** de os 5 eventos "Bloquado" (com typo) ainda estarem na
+  base, e não o typo em si. A Gestora informou que eles **já não existem no Google Calendar** — não
+  existem mesmo; são fósseis de maio/2026 que a limpeza nunca alcança. Renomear no Google Calendar
+  (a correção de dado cogitada no `BUG-075`) **não os removeria**, porque o sync não olha para trás.
+- **ATENÇÃO — a correção óbvia é destrutiva.** "Estender a janela de limpeza para o passado" apagaria
+  histórico real, **não lixo**: o doc do evento é o portador da ata, das métricas pós-evento e dos
+  `attendees` (`post-event.ts`), e a `career-module.ts:161-172` lê os eventos passados **por id** para
+  resolver o **título real** das sessões no histórico de carreira do membro. Apagar os 340 passados
+  quebraria a Gestão de Carreira e as atas. Uma limpeza real teria de distinguir doc **com** histórico
+  (preservar) de fóssil sem vínculo (ex.: os 8 bloqueios de maio) — e isso exige levantamento próprio.
+- Status: **Aberto** — **fora** do plano do `BUG-084`, de propósito. O `BUG-084` não depende dele: os
+  8 fósseis não têm impacto vivo, e o `BUG-086` é resolvido sem apagar nada.
+- Decisão de execução: adiado — precisa de plano próprio, com inventário de quais docs passados têm
+  vínculo (ata/attendees/booking) antes de qualquer remoção. Não fazer junto de outra coisa.
+- Commit/PR: —
+
+### BUG-086 Registro global de programação trunca em 500 antes de filtrar (já perde eventos hoje)
+
+- Severidade: Baixo (visibilidade de histórico no admin; nenhum dado é perdido na origem)
+- Área/fase onde foi achado: F1-06 / lote C — achado ao mapear os consumidores de `Calendar_Events`
+  para a correção do `BUG-084` (2026-07-16). **Pré-existente, não é efeito da correção.**
+- Arquivo(s) afetado(s): `src/actions/calendar-module/post-event.ts:310-320`
+- Cenário de falha: **[CONFIRMADO]** `updateGlobalProgramacaoRegistryAction` lê
+  `.orderBy("start","desc").limit(500)` e **só depois** descarta os bloqueados em memória. O
+  `limit` é aplicado pelo Firestore antes de qualquer filtro, então o corte não distingue evento
+  real de evento a descartar. Hoje `Calendar_Events` tem **538 docs** — ou seja, o registro
+  (`Datas_Center/Programacao_Registry`, que alimenta o `ProgramacaoResumo` do admin) **já descarta
+  os 38 eventos mais antigos** de forma silenciosa. Cresce junto com o `BUG-085`.
+- Relação com o `BUG-084`: sincronizar os ~116 bloqueios (a correção aprovada) empurraria ~116
+  eventos **reais** para fora do registro — um efeito colateral que só apareceu porque o mapa de
+  consumidores foi feito antes de codar (Lição 23). Por isso os três se resolvem juntos.
+- Nota: `where("isBlocker","==",false)` **não** serve como remédio isolado — o Firestore não casa
+  documento sem o campo, então a query excluiria todos os docs legados (inclusive os 340 passados,
+  que o sync não reescreve). Qualquer filtro por campo exige backfill antes.
+- Status: **Aberto** — a corrigir junto do `BUG-084`.
+- Decisão de execução: entra no mesmo plano/PR do `BUG-084` (mesmo arquivo-família, mesmo risco).
+- Commit/PR: —
 
 ---
 
