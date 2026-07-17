@@ -278,6 +278,15 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
       comprovada — e dizer "não sei, mas o remédio é X" teria sido mais honesto e igualmente útil.
     _(Caso real: PR #109, 2026-07-16. Resolvido com o commit vazio `65e968a`.)_
 
+    **Corolário (PR #110): deploy também não é EFEITO quando o fix depende de um job manual.** O
+    `sync.ts` foi corrigido e o build de produção subiu — e mesmo assim os 116 bloqueios continuavam
+    fora da base, porque quem os grava é o botão **Sincronizar** do `/admin/agenda`, e não há cron
+    (o projeto não tem `vercel.json` nem agendamento; a rota `/api/trigger-sync` foi removida no
+    `BUG-024`). O código estava no ar e **inerte**. Quando o alvo é um sync/migração/registro,
+    a cadeia é **merge → deploy → execução do job → efeito**, e a verificação read-only da base é a
+    única prova do último elo. Verifique qual passo operacional o fix exige e diga isso a quem vai
+    validar — senão ela testa, não vê mudança, e o fix parece quebrado.
+
 32. **Filtrar na ESCRITA e filtrar na LEITURA não são a mesma decisão — e a intenção "não quero ver
     isso na tela" resolve-se SEMPRE na leitura.** O commit `fc00c6d` queria limpar a tela do admin
     (preocupação de leitura) e aplicou o filtro nos dois lugares: no `queries.ts` (certo) **e no

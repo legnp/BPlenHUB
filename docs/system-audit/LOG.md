@@ -3447,8 +3447,14 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   positivo, **0 slots ofertados perdidos**, nenhum dia da grade fica vazio (756→507, mínimo 7/dia);
   eslint dos arquivos tocados com **contagem idêntica à `main`** (conferido por checkout comparativo,
   16 warnings legados, 0 novos); type-check limpo; build exit 0 com `.next` limpo.
-- **Deploy de produção confirmado** (Lição 31): a Vercel gerou build para o `604f9d4` — checado pela
-  API do GitHub (status do commit), não por suposição.
+- **Deploy de produção confirmado** (Lição 31): a Vercel gerou build para o `604f9d4` e ele completou
+  com **success** — checado pela API do GitHub (status do commit), não por suposição. `GET /agendar`
+  responde 200 em produção.
+- **MAS deploy não é efeito, e este fix ainda está inerte** (corolário novo da Lição 31): quem grava
+  os bloqueios em `Calendar_Events` é o botão **Sincronizar** do `/admin/agenda`, e **não há cron**
+  (o projeto não tem `vercel.json`; a `/api/trigger-sync` foi removida no `BUG-024`). Inventário
+  read-only **depois** do deploy confirma: a base segue com **0 bloqueios futuros**. **Ação da
+  Gestora:** rodar o sync uma vez. Só então os 249 horários somem da grade.
 - Itens atualizados: `BUGS.md` (+BUG-084/085/086, BUG-075 resolvido como efeito), `00-PLAN.md`
   (F1-06 iniciada), `DASHBOARD.md`, este LOG.
 - **Nota para a Gestora, não é código:** a grade de proposta oferece **sábados e domingos** (06:00–21:00,

@@ -2219,6 +2219,13 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   dia fica vazio** (mínimo de 7 num dia). 8 testes novos, suíte 148/148, mutação do radical derruba 4.
 - Decisão de execução: plano + impacto medido aprovados pela Gestora antes de codar (funil de lead
   público = receita, Lição 23).
+- **PASSO OPERACIONAL PENDENTE (Gestora):** o fix está mergeado e **o deploy de produção do `604f9d4`
+  subiu com sucesso** (verificado), mas ele é **inerte até o sync rodar** — quem grava os bloqueios em
+  `Calendar_Events` é o botão **Sincronizar** do `/admin/agenda`, e **não existe cron** (sem
+  `vercel.json`/agendamento; a rota `/api/trigger-sync` foi removida no `BUG-024`). Confirmado por
+  inventário read-only após o deploy: a base segue com **0 bloqueios futuros** (só os 8 fósseis de
+  maio). Enquanto o sync não for rodado, a grade de proposta continua oferecendo os 249 horários.
+  Ver corolário da Lição 31.
 - Commit/PR: **PR #110**
 
 ### BUG-085 `Calendar_Events` acumula eventos passados para sempre (limpeza só varre o futuro)
