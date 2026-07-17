@@ -12,7 +12,32 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-16 (chat de execução — **Card Perfil & Assessments: Tríade 0%,
+> **Última atualização:** 2026-07-16 (chat de execução — **F1-06 INICIADA: bloqueios de agenda não
+> sincronizados (PR #110)**. Plano da fase aprovado pela Gestora: **funcional primeiro, design
+> depois**; lotes **A** (users+dashboard) → B (F&S) → C (agenda) → D (produtos) → E (CRUDs) → F
+> (ferramentas). O lote C foi **antecipado em parte** por severidade: ela pediu para verificar se os
+> eventos "Bloqueado" precisavam ser sincronizados ("se a falta de sincronização não afetar nada, nem
+> precisam"). **A hipótese dela estava certa no mecanismo e invertida no diagnóstico** — eles não
+> estavam sujando a base, **não chegavam nela**, e a ausência quebrava a agenda pública.
+> **BUG-084** (Médio): o sync descartava os bloqueios antes de gravar, e a agenda pública só marca
+> ocupado o horário com evento sobreposto em `Calendar_Events`. Medido contra a agenda real: **116
+> bloqueios** descartados; **249 dos 756 horários** ofertados na grade de proposta (**32,9%**), em
+> **23 de 31 dias**, estavam em cima de um bloqueio. Contido em Médio porque a proposta **não
+> agenda** (confirmação manual). Causa-raiz no `fc00c6d` (2026-06-01), que quis limpar a tela do
+> admin e aplicou o filtro na leitura (correto) **e no sync** (colateral) — fóssil: os 8 docs de
+> bloqueio na base têm `lastSync` **anterior** ao commit. Fix: fonte única
+> `src/lib/booking/blocker.ts` (radical normalizado — **fecha o BUG-075**, o typo "Bloquado"),
+> campo `isBlocker` gravado no sync, leitores filtrando por campo. **0 dos 70 slots "1 to 1" dela
+> são perdidos.** Horário ocupado agora **desaparece** da grade (decisão dela); nenhum dia fica
+> vazio (756→507, mínimo 7/dia). **2 colaterais do mapa de consumidores** (Lição 23): **BUG-086**
+> (registro global truncava em 500 **antes** de filtrar, com 538 docs) corrigido, e guard no
+> `bookEventAction` (`totalCapacity: 0` significava **ilimitado**). **BUG-085** (340 docs passados)
+> **adiado com aviso**: a limpeza óbvia é destrutiva — apagaria atas e o título real das sessões no
+> histórico de carreira. Validado: **148/148** testes (8 novos; mutação derruba 4), verificação com
+> a **função de produção** contra a agenda real, eslint idêntico à `main`, type-check, build.
+> Conferência em produção (BUG-030).
+>
+> _(entrada anterior)_ 2026-07-16 (chat de execução — **Card Perfil & Assessments: Tríade 0%,
 > headers e documentos (PR #109)**. PR #108 **validado em produção**. A Gestora reportou que o
 > gráfico de Gestão do Tempo do BP-005 plotava **0%** em círculos com valor maior registrado.
 > **BUG-082** (Alto): o dado está **correto** (41/29/29) e a action lê o doc certo — o defeito era

@@ -3402,6 +3402,62 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   trocar o texto globalmente, o `Calendar` ganhou a prop opcional **`policyNote`** (omitida = política
   padrão intacta, nenhum outro consumidor muda) e o modal 1 to 1 passa a sua (sem a nota de Onboarding,
   com a regra de 24h). Rodapé voltou a ter só a nota de débito de crédito.
+## [2026-07-16] Chat de execução — F1-06 iniciada: bloqueios de agenda não sincronizados (PR #110)
+
+- Chat/sessão: chat de execução (Opus 4.8), retomando o HANDOFF abaixo. **F1-06 começou.**
+- **Plano da F1-06 apresentado e aprovado pela Gestora**, com 3 decisões dela: (1) **funcional
+  primeiro, design depois** — a fase valida render/guard/dado/copy, e o redesign do admin vira passada
+  separada com PROPOSTA por tela; (2) começar pelo **lote A** (`users` + dashboard) depois das etapas
+  0-1; (3) o `BUG-075` virou **investigação** em vez de escolha ("verifique: se a falta de
+  sincronização desses eventos não afetar nada, nem precisam ser sincronizados").
+- **A investigação do `BUG-075` achou um defeito vivo e a hipótese dela estava certa no mecanismo,
+  invertida no diagnóstico.** Ela supôs que os eventos "Bloqueado" estavam "sujando a base" e
+  perguntou se serviam para bloquear a agenda pública. **Serviam — e não estavam lá.** O sync
+  descartava todos antes de gravar, e a agenda pública só marca ocupado o horário com evento
+  sobreposto em `Calendar_Events`.
+- **`BUG-084` (Médio) — impacto medido**, não estimado: **116 eventos "Bloqueado"** na agenda (90d),
+  todos descartados; na grade de proposta do `/agendar`, **249 dos 756 horários ofertados (32,9%)**,
+  em **23 de 31 dias**, estavam em cima de um bloqueio real. Severidade contida em Médio porque a
+  proposta **não agenda** (vai para `Booking_Proposals` como `pending`, com confirmação manual) — o
+  dano é atrito. O agendamento **direto** é imune só por disciplina de curadoria (nenhum bloqueio
+  sobrepõe nenhum slot "1 to 1"), não por trava de sistema.
+- **Causa-raiz achada no git:** `fc00c6d` (2026-06-01), "filtro de eventos bloqueados ... no admin".
+  A intenção era limpar a **tela do admin**; o filtro foi aplicado na leitura (correto) **e no sync**
+  (colateral). Fóssil que comprova: os 8 docs de bloqueio que sobraram têm `lastSync` de 22–25/05,
+  **anterior** ao commit — antes de 01/06 os bloqueios eram sincronizados.
+- **Entrega: PR #110 mergeado (`604f9d4`, squash).** `src/lib/booking/blocker.ts` (fonte única, ao
+  lado do `policy.ts`) substitui **3 cópias** de `summary.includes("bloqueado")`; casa o radical
+  normalizado `bloqu`, então tolera acento e o typo "Bloquado" — **resolve o `BUG-075` de graça**. O
+  sync grava tudo e classifica com o campo `isBlocker`; os leitores filtram pelo campo (identificador
+  sobre rótulo, Lição 19), com fallback ao título para os 340 docs legados que o sync nunca reescreve.
+  Admin e membro seguem sem ver bloqueio. **Decisão da Gestora:** o horário ocupado **desaparece** da
+  grade, em vez de ficar esmaecido como "OCUPADO".
+- **2 achados colaterais do mapa de consumidores** (Lição 23 — feito ANTES de codar, e valeu):
+  1. **`BUG-086`** — o registro global fazia `limit(500)` **antes** do filtro em memória, e a coleção
+     já tem **538 docs**: já truncava calado, e passaria a descartar evento **real** assim que os
+     bloqueios entrassem. Corrigido no mesmo PR, com aviso ao encostar no teto.
+  2. **`bookEventAction` tratava `totalCapacity: 0` como ILIMITADO**, e bloqueio entra com 0 (não tem
+     "Vagas:"). Sincronizá-los sem guard criaria superfície nova. Guard adicionado.
+- **`BUG-085` deixado fora de propósito, com aviso:** a limpeza "óbvia" dos 340 docs passados **é
+  destrutiva** — o doc do evento carrega ata/métricas/`attendees`, e a `career-module.ts` lê eventos
+  passados **por id** para resolver o título real das sessões no histórico de carreira. Precisa de
+  plano próprio.
+- Validado: 8 testes novos, suíte **148/148** (era 140), **mutação** do radical derruba 4; verificação
+  com a **função de produção** contra a agenda real (Lição 18) — 116 bloqueios classificados, 0 falso-
+  positivo, **0 slots ofertados perdidos**, nenhum dia da grade fica vazio (756→507, mínimo 7/dia);
+  eslint dos arquivos tocados com **contagem idêntica à `main`** (conferido por checkout comparativo,
+  16 warnings legados, 0 novos); type-check limpo; build exit 0 com `.next` limpo.
+- **Deploy de produção confirmado** (Lição 31): a Vercel gerou build para o `604f9d4` — checado pela
+  API do GitHub (status do commit), não por suposição.
+- Itens atualizados: `BUGS.md` (+BUG-084/085/086, BUG-075 resolvido como efeito), `00-PLAN.md`
+  (F1-06 iniciada), `DASHBOARD.md`, este LOG.
+- **Nota para a Gestora, não é código:** a grade de proposta oferece **sábados e domingos** (06:00–21:00,
+  via `PROPOSAL_SETTINGS`), dias em que ela não tem bloqueio nenhum — por isso aparecem com 27–31
+  horários livres. Se não for intencional, é ajuste de config, não de código.
+- Conferência visual em **produção** pela Gestora (BUG-030).
+
+---
+
 ## [2026-07-16] HANDOFF — continuação em outro chat (limite de contexto)
 
 - **Estado:** `main` == `origin/main` no commit **`65e968a`**. Árvore limpa. **Produção validada e

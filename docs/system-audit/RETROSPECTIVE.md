@@ -278,6 +278,38 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
       comprovada — e dizer "não sei, mas o remédio é X" teria sido mais honesto e igualmente útil.
     _(Caso real: PR #109, 2026-07-16. Resolvido com o commit vazio `65e968a`.)_
 
+32. **Filtrar na ESCRITA e filtrar na LEITURA não são a mesma decisão — e a intenção "não quero ver
+    isso na tela" resolve-se SEMPRE na leitura.** O commit `fc00c6d` queria limpar a tela do admin
+    (preocupação de leitura) e aplicou o filtro nos dois lugares: no `queries.ts` (certo) **e no
+    `sync.ts`** (colateral). O de leitura afeta um consumidor; o de escrita **apaga o dado para todos
+    os consumidores** — inclusive os que ninguém mapeou. Aqui o dano ficou escondido por 6 semanas:
+    a agenda pública dependia daqueles eventos para saber o que estava ocupado, e passou a oferecer
+    ao lead **249 dos 756 horários (32,9%)** em cima de um bloqueio real. **Antes de filtrar na
+    gravação, pergunte quem mais lê essa coleção** — se a resposta não for "ninguém", filtre na
+    leitura. Sintoma diagnóstico: se os leitores já se defendem sozinhos do que você quer filtrar
+    (aqui os 3 já faziam `includes("bloqueado")`), o filtro da escrita é o ponto fora da curva.
+    _(Caso real: `BUG-084`, PR #110, 2026-07-16.)_
+
+33. **A hipótese de quem reporta pode estar certa no mecanismo e invertida no diagnóstico — teste o
+    mecanismo, não a conclusão.** A Gestora disse: "esses eventos estão apenas sujando a base... ou
+    talvez estejam aí justo para bloquear os espaços livres; verifique: se a falta de sincronização
+    não afetar nada, nem precisam ser sincronizados." As duas metades apontavam para lados opostos, e
+    a **segunda** era a certa: os bloqueios não estavam sujando a base — **não chegavam nela**, e a
+    ausência é que quebrava a regra. Executar o pedido literal ("não sincronize") teria **aprofundado**
+    o bug com aval dela. Mesma família da Lição 24 (a dúvida vale uma investigação) e da 25 (o
+    reflexo de correção costuma ser o errado). **O fóssil que provou a causa foi um `lastSync`
+    anterior ao commit do filtro** — quando o dado tem carimbo de tempo, ele conta a história sozinho.
+    _(Caso real: `BUG-084`, 2026-07-16.)_
+
+34. **Ao mudar o que entra numa coleção, releia os `limit()` de quem a consome.** Sincronizar +116
+    bloqueios era inócuo até se notar que o registro global fazia `.limit(500)` **antes** do filtro em
+    memória — com 538 docs ele **já truncava calado**, e passaria a descartar evento **real**. O
+    `limit` é aplicado pelo banco antes de qualquer filtro seu: `limit` + filtro em memória é sempre
+    um corte que não distingue o que você queria manter. E `where("campo","==",false)` não é o
+    remédio automático: o Firestore **não casa documento sem o campo**, então a query engole os
+    legados. _(Caso real: `BUG-086`, achado pelo mapa de consumidores da Lição 23, feito ANTES de
+    codar — foi o mapa que pagou por si.)_
+
 ---
 
 ## Melhorias sugeridas para o PLANO (para o chat de planejamento refinar)
@@ -343,6 +375,12 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
   — extraia a fonte única), 22 (teste que falha pode estar certo; cheque a regra
   antes de corrigir o teste) e 23 (action compartilhada: mapeie os chamadores,
   um deles pode ser receita) adicionadas, a partir do `BUG-076` (PRs #102/#103).
+- 2026-07-16 — Lições 32 (filtrar na escrita apaga o dado para todos os
+  consumidores; intenção de exibição resolve-se na leitura), 33 (a hipótese de
+  quem reporta pode estar certa no mecanismo e invertida no diagnóstico — o
+  pedido literal aprofundaria o bug) e 34 (`limit()` é aplicado antes do filtro
+  em memória; `where` por campo não casa doc sem o campo) adicionadas, a partir
+  do `BUG-084`/`BUG-086` (PR #110).
 - 2026-07-16 — Lição 31 (merge na main não é entrega: confirme o deploy de
   produção; o Redeploy da Vercel reconstrói o mesmo commit; não afirme causa de
   falha de infra sem o dado) adicionada, a partir do incidente do PR #109.

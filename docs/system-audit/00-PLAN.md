@@ -612,9 +612,18 @@ sem copy hardcoded fora do que o guia permitir).
 - Categoria(s) de qualidade: Adequação funcional / Segurança
 - Critério de aceite: ver critério comum (Mapa 2 já detalha entrega/componentes/
   actions de todas as 19 páginas — validação pode começar direto)
-- Modo de validação: PENDENTE
-- Decisão: —
-- Execução: Não iniciada — nota: os 4 bugs de segurança vinculados abaixo já
+- Modo de validação: **Automatizado** (leitura de código + inventário read-only na base real) +
+  **Requer execução humana** (validação visual em produção — admin é 100% logado, BUG-030)
+- Decisão: **Escopo definido pela Gestora (2026-07-16)** — **funcional primeiro, design depois**: a
+  fase valida render/guard/dado/copy e registra o que destoar; o redesign do admin vira uma passada
+  separada, com PROPOSTA por tela. **Ordem dos lotes:** A (`users` + dashboard) → B (F&S/devolutiva)
+  → C (agenda) → D (produtos) → E (CRUDs) → F (ferramentas).
+- Execução: **Em andamento** — plano aprovado; **lote C antecipado em parte** por triagem de
+  severidade (Protocolo item 6): a investigação do `BUG-075`, pedida pela Gestora, achou um defeito
+  vivo no funil de lead público (`BUG-084`, PR #110) e 2 colaterais (`BUG-086` corrigido; `BUG-085`
+  adiado com aviso de que a correção óbvia é destrutiva). Etapas 0 (inventário read-only) e 1
+  (varredura transversal das 19 páginas) e o **lote A** seguem pendentes.
+  Nota: os 4 bugs de segurança vinculados abaixo já
   foram corrigidos (via T-02), mas a validação de UI/responsivo/copy das
   páginas em si ainda não começou; não confundir uma coisa com a outra.
   **Pendência acumulada para esta fase (Gestora, 2026-07-04):** investigar a
@@ -627,9 +636,21 @@ sem copy hardcoded fora do que o guia permitir).
   `F1-03` (`SequenceLock`/`Upsell`/`NonMemberOffboarding`) e `F1-05`
   (`CouponTerms`) — nenhum deles é uma página admin; corrigido nesta
   reconciliação, estavam todos bundlados aqui por engano.)*
-- Resultado: —
-- Bug(s) vinculado(s): BUG-003 (Corrigido), BUG-007 (Corrigido), BUG-023 (Corrigido), BUG-024 (Corrigido), BUG-035 (**Corrigido, PR #37** — via reestruturação do modelo de acesso, ver `ACCESS-MODEL-DESIGN.md`)
-- Log: —
+- Resultado: **1ª entrega da fase — PR #110** (lote C, antecipado por severidade). O sync voltou a
+  gravar os eventos de bloqueio, que ele descartava desde `fc00c6d` (2026-06-01): a agenda pública
+  oferecia ao lead **249 dos 756 horários (32,9%)**, em 23 de 31 dias, em cima de um bloqueio real
+  da Gestora. Nenhum horário agendável dela foi perdido (0 dos 70 slots "1 to 1" afetados —
+  verificado com a função de produção contra a agenda real). Fonte única de "o que é bloqueio"
+  extraída (`src/lib/booking/blocker.ts`), fechando junto o `BUG-075` e 2 colaterais do mapa de
+  consumidores (`BUG-086`; e o guard de bloqueio no `bookEventAction`, onde `totalCapacity: 0`
+  significava ilimitado). Validação visual em produção pendente (BUG-030).
+- Bug(s) vinculado(s): BUG-003 (Corrigido), BUG-007 (Corrigido), BUG-023 (Corrigido), BUG-024 (Corrigido),
+  BUG-035 (**Corrigido, PR #37** — via reestruturação do modelo de acesso, ver `ACCESS-MODEL-DESIGN.md`),
+  **BUG-084 (Corrigido, PR #110)**, **BUG-086 (Corrigido, PR #110)**, **BUG-075 (Corrigido, PR #110 —
+  como efeito do BUG-084)**, **BUG-085 (Aberto — adiado, correção óbvia é destrutiva)**,
+  BUG-072 (Aberto — na fila do lote B), BUG-047 (Aberto — na fila do lote D)
+- Log: [2026-07-16] plano da F1-06 aprovado (funcional primeiro; lotes A→F) + PR #110 (BUG-084/086/075)
+  — ver `LOG.md`
 
 ---
 
@@ -1009,6 +1030,11 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-053 | Médio | Aberto | F1-02 — painel de contratos básico (status pagamento, sem assinatura/doc/NF, link morto); CT-4 |
 | BUG-054 | Médio | Corrigido parte IP (PR #50) | F1-02 — IP real capturado na assinatura (CT-1); reforços jurídicos extras → CT-5 |
 | BUG-055 | Médio | Aberto | F1-02 — gate lê subcoleção morta `User/{uid}/Orders`; CT-0 |
+| BUG-072 | Baixo | Aberto | F1-06 — `[object Object]` nos benefícios da devolutiva do admin; lote B |
+| BUG-075 | Baixo | Corrigido (PR #110) | F1-06 — typo "Bloquado"; resolvido como efeito do BUG-084 (radical normalizado) |
+| BUG-084 | Médio | Corrigido (PR #110) | F1-06 — sync descartava os bloqueios e a agenda pública oferecia horário ocupado (249 de 756) |
+| BUG-085 | Baixo | Aberto (adiado) | F1-06/T-03 — 340 docs de eventos passados nunca removidos; **a correção óbvia é destrutiva** (ata/attendees/histórico de carreira) |
+| BUG-086 | Baixo | Corrigido (PR #110) | F1-06 — registro global truncava em 500 antes de filtrar |
 
 ---
 

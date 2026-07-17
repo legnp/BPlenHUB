@@ -1925,8 +1925,12 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   fazia esses 5 eventos agirem como bloqueadores — ou seja, acidentalmente **certo**. Este bug perde
   o objeto próprio: resolve-se como efeito do `BUG-084` (parar de filtrar no sync) + `BUG-085`
   (limpar o passado). Manter aberto até os dois decidirem.
-- Decisão de execução: absorvido pela decisão do `BUG-084`/`BUG-085` (mesmo arquivo, `sync.ts`).
-- Commit/PR: —
+- Status final: **Corrigido no código** — 2026-07-16 (PR #110), como efeito do `BUG-084`. O novo
+  `isBlockerSummary` casa o radical normalizado `bloqu`, então "Bloquado" passa a ser reconhecido
+  como bloqueio; um typo futuro não reabre o buraco. Os 5 docs fósseis de maio/2026 seguem na base
+  (`BUG-085`), agora inertes: são passados e o filtro os reconhece.
+- Decisão de execução: absorvido pela correção do `BUG-084` (mesmo arquivo, `sync.ts`).
+- Commit/PR: **PR #110**
 
 ### BUG-076 Política de agendamento não era executada pelo sistema (4 regras desalinhadas)
 
@@ -2201,10 +2205,21 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   na base (`queries.ts:85` no `getSyncedEvents`, `post-event.ts:318` no registro global) — o código
   já pressupõe que eles vivem lá. Os únicos que os querem são os dois da agenda pública, que tratam
   todo evento não-"1 to 1" como bloqueador. Isso torna o filtro do `sync.ts` o ponto fora da curva.
-- Status: **Aberto** — investigação concluída, correção **não** iniciada.
-- Decisão de execução: **Precisa plano + aprovação** — mexe no funil de lead público (receita;
-  Lição 23) e muda o que é gravado na base. Levado à Gestora com o impacto medido.
-- Commit/PR: —
+- Status: **Corrigido** — 2026-07-16 (PR #110). O sync grava todos os eventos e os classifica com o
+  campo `isBlocker`; os leitores de exibição (admin/membro) filtram pelo campo, então a tela do admin
+  segue limpa — a intenção original do `fc00c6d` é preservada. Fonte única em
+  `src/lib/booking/blocker.ts` (radical normalizado, tolerante a acento e ao typo do `BUG-075`),
+  substituindo as 3 cópias do casamento de texto. `bookEventAction` passa a recusar bloqueio
+  (necessário: `totalCapacity: 0` significa **ilimitado** na checagem de vaga).
+  **Decisão da Gestora:** o horário ocupado **desaparece** da grade de proposta, em vez de ficar
+  esmaecido com o rótulo "OCUPADO".
+- Verificação com a **função de produção** contra a agenda real (Lição 18): 116 bloqueios
+  classificados, **0** sessões reais capturadas por engano, **0** dos 70 slots "1 to 1" ofertados
+  invalidados (nenhum horário agendável é perdido). Grade de proposta: 756 → 507 horários, **nenhum
+  dia fica vazio** (mínimo de 7 num dia). 8 testes novos, suíte 148/148, mutação do radical derruba 4.
+- Decisão de execução: plano + impacto medido aprovados pela Gestora antes de codar (funil de lead
+  público = receita, Lição 23).
+- Commit/PR: **PR #110**
 
 ### BUG-085 `Calendar_Events` acumula eventos passados para sempre (limpeza só varre o futuro)
 
@@ -2251,9 +2266,10 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Nota: `where("isBlocker","==",false)` **não** serve como remédio isolado — o Firestore não casa
   documento sem o campo, então a query excluiria todos os docs legados (inclusive os 340 passados,
   que o sync não reescreve). Qualquer filtro por campo exige backfill antes.
-- Status: **Aberto** — a corrigir junto do `BUG-084`.
-- Decisão de execução: entra no mesmo plano/PR do `BUG-084` (mesmo arquivo-família, mesmo risco).
-- Commit/PR: —
+- Status: **Corrigido** — 2026-07-16 (PR #110). Teto elevado para 2000 (folga sobre os ~654 reais) e,
+  principalmente, **deixa de truncar calado**: emite aviso ao encostar no teto, apontando o `BUG-085`.
+- Decisão de execução: corrigido junto do `BUG-084` (mesmo arquivo).
+- Commit/PR: **PR #110**
 
 ---
 
