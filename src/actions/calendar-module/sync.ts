@@ -7,6 +7,7 @@ import { GoogleCalendarEvent } from "@/types/calendar";
 import { CALENDAR_CONFIG } from "@/config/calendarConfig";
 import { calendar_v3 } from "googleapis";
 import { getEventStandardSlug } from "@/lib/utils";
+import { isBlockerSummary } from "@/lib/booking/blocker";
 
 /**
  * Sincronização de 90 Dias (Firestore 🛡️)
@@ -31,11 +32,13 @@ export async function syncCalendarToFirestore(idToken?: string) {
       orderBy: "startTime",
     });
 
-    const rawGoogleItems = response.data.items || [];
-    const googleItems = rawGoogleItems.filter(item => {
-      const summary = item.summary || "";
-      return !summary.toLowerCase().includes("bloqueado");
-    });
+    // Os eventos de bloqueio SAO sincronizados, e de proposito: a agenda publica
+    // (`getPublicSlotsAction`) so trata um horario como ocupado se houver evento
+    // sobreposto aqui em `Calendar_Events`. Filtra-los na gravacao — o que este
+    // sync fazia desde `fc00c6d` — deixava a grade de proposta oferecer ao lead
+    // horarios que a Gestora tem bloqueados (BUG-084). Quem nao deve exibi-los
+    // filtra na LEITURA, pelo campo `isBlocker` gravado abaixo.
+    const googleItems = response.data.items || [];
     const googleIds = new Set(googleItems.map(item => item.id).filter(Boolean));
 
     // Cleanup: Buscar eventos no Firestore nesse período
@@ -78,6 +81,9 @@ export async function syncCalendarToFirestore(idToken?: string) {
         mentor: mentorMatch ? mentorMatch[1].trim() : "",
         theme: themeMatch ? themeMatch[1].trim() : undefined,
         slug: getEventStandardSlug(item.summary || "", item.start?.dateTime || item.start?.date || "", item.id),
+        // Classificado na gravacao para que os leitores filtrem por identificador,
+        // e nao refazendo cada um o seu casamento de texto no titulo.
+        isBlocker: isBlockerSummary(item.summary),
         lastSync: new Date().toISOString()
       }, { merge: true });
       syncedCount++;

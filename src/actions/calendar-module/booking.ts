@@ -11,6 +11,7 @@ import {
   preservesCredit,
   resolveEventType
 } from "@/lib/booking/policy";
+import { isBlockerEvent } from "@/lib/booking/blocker";
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 import { GoogleCalendarEvent, AttendeeData } from "@/types/calendar";
 import { updateGlobalProgramacaoRegistryAction, recalculateEventMetrics } from "./post-event";
@@ -82,6 +83,15 @@ export async function bookEventAction(
       const eventDoc = await transaction.get(eventRef);
       if (!eventDoc.exists) throw new Error("Evento não encontrado");
       const eventData = eventDoc.data() as GoogleCalendarEvent;
+
+      // Bloqueio de agenda nao e evento agendavel: existe so para ocupar o horario
+      // na agenda publica. Nenhuma tela expoe o id de um bloqueio, mas a checagem
+      // de vaga abaixo trata `totalCapacity: 0` como ILIMITADO — e bloqueio nao tem
+      // "Vagas:" na descricao, entao entra com 0. Sem esta trava, quem descobrisse
+      // o id agendaria em cima de um horario bloqueado.
+      if (isBlockerEvent(eventData)) {
+        throw new Error("Evento não encontrado");
+      }
 
       const attendeesCol = eventRef.collection("attendees");
       const userBookingRef = attendeesCol.doc(userId);

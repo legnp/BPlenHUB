@@ -6,6 +6,7 @@ import { createSpreadsheet, getEventDriveFolder, syncDataToSheet } from "@/lib/d
 import { GoogleCalendarEvent, EventLifecycleStatus, AttendanceStatus, ProgramacaoEntry } from "@/types/calendar";
 import { getEventAttendees } from "./queries";
 import { sendAttendanceRegisteredEmail, sendAbsenceRegisteredEmail } from "@/lib/attendance-emails";
+import { isBlockerEvent } from "@/lib/booking/blocker";
 
 
 export interface CloseEventData {
@@ -302,20 +303,41 @@ export async function baixarEventoAction(eventId: string, idToken: string) {
 }
 
 /**
+ * Teto de leitura do registro global. Dimensionado com folga sobre o tamanho real
+ * da colecao (538 docs + ~116 bloqueios em 2026-07-16, ~654) para que o corte nao
+ * volte a atingir evento real. A colecao cresce de forma monotonica enquanto o
+ * BUG-085 (docs de eventos passados nunca removidos) nao for tratado — por isso o
+ * aviso abaixo quando o teto for encostado, em vez de truncar calado.
+ */
+const REGISTRY_MAX_EVENTS = 2000;
+
+/**
  * Snapshot de Alta Performance: Datas_Center 🛰️
  */
 export async function updateGlobalProgramacaoRegistryAction() {
   try {
     const db = getAdminDb();
+    // O `limit` e aplicado pelo Firestore ANTES do filtro em memoria abaixo, entao
+    // ele corta sem distinguir evento real de bloqueio a descartar (BUG-086). Com
+    // 538 docs, o teto antigo de 500 ja truncava o registro de forma silenciosa —
+    // e passaria a descartar evento real assim que os bloqueios entrassem na base.
+    // Filtrar por `where("isBlocker","==",false)` NAO resolve: o Firestore nao casa
+    // documento sem o campo, e o sync so reescreve a janela futura (os docs
+    // passados nunca o ganham).
     const eventsSnap = await db.collection("Calendar_Events")
       .orderBy("start", "desc")
-      .limit(500)
+      .limit(REGISTRY_MAX_EVENTS)
       .get();
-      
+
+    if (eventsSnap.size === REGISTRY_MAX_EVENTS) {
+      console.warn(
+        `[Programacao_Registry] Teto de ${REGISTRY_MAX_EVENTS} eventos atingido — o registro pode estar omitindo os mais antigos. Ver BUG-085.`
+      );
+    }
+
     const eventsRegistry = eventsSnap.docs.map(doc => {
       const data = doc.data() as GoogleCalendarEvent;
-      const summary = data.summary || "";
-      if (summary.toLowerCase().includes("bloqueado")) {
+      if (isBlockerEvent(data)) {
         return null;
       }
       const evDate = parseISO(data.start);
