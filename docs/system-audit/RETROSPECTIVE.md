@@ -260,6 +260,24 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
     funcionou — foi o que manteve o bug invisível, com dois códigos lendo o mesmo dado e
     divergindo; ver Lição 21.)_
 
+31. **Mergeou? Confirme que o DEPLOY de produção subiu — merge na `main` não é entrega.** O PR #109
+    foi mergeado e a `main` recebeu o código, mas a Vercel **não gerou deployment nenhum** (nem
+    enfileirado); o último Production continuou sendo o PR anterior. A Gestora descobriu, não eu.
+    Como este projeto mergeia **pela REST API** (o `gh` não existe na máquina), qualquer instabilidade
+    do GitHub pode fazer o merge suceder e o evento de deploy se perder — o pior dos mundos, porque
+    o `git log` diz que está tudo certo. **Checklist novo: depois do merge, confirmar o deployment de
+    produção do commit certo antes de dizer "está em produção".**
+
+    **Dois detalhes operacionais que custaram tempo real:**
+    - **O "Redeploy" da Vercel reconstrói o MESMO commit** do deployment escolhido — ele **não** puxa
+      o topo da `main`. Eu afirmei o contrário para a Gestora e a instrução era inútil: redeployar o
+      deployment anterior só reconstruiria o estado anterior. Para publicar código novo é preciso um
+      **evento de push novo** (commit vazio resolve), um Deploy Hook, ou `vercel --prod` autenticado.
+    - **Não afirme causa de falha de infra sem o dado.** Eu disse "webhook descartado"; o painel do
+      GitHub marcava **Webhooks operacional** e o incidente era só da REST API. A causa segue não
+      comprovada — e dizer "não sei, mas o remédio é X" teria sido mais honesto e igualmente útil.
+    _(Caso real: PR #109, 2026-07-16. Resolvido com o commit vazio `65e968a`.)_
+
 ---
 
 ## Melhorias sugeridas para o PLANO (para o chat de planejamento refinar)
@@ -325,6 +343,9 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
   — extraia a fonte única), 22 (teste que falha pode estar certo; cheque a regra
   antes de corrigir o teste) e 23 (action compartilhada: mapeie os chamadores,
   um deles pode ser receita) adicionadas, a partir do `BUG-076` (PRs #102/#103).
+- 2026-07-16 — Lição 31 (merge na main não é entrega: confirme o deploy de
+  produção; o Redeploy da Vercel reconstrói o mesmo commit; não afirme causa de
+  falha de infra sem o dado) adicionada, a partir do incidente do PR #109.
 - 2026-07-16 — Lição 30 (casar string por `includes` quebra com acento; o
   fallback mudo disfarça a falha de resposta plausível; e normalizar na
   exibição em vez da comparação é regressão de copy) adicionada, a partir do

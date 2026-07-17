@@ -3402,6 +3402,45 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   trocar o texto globalmente, o `Calendar` ganhou a prop opcional **`policyNote`** (omitida = política
   padrão intacta, nenhum outro consumidor muda) e o modal 1 to 1 passa a sua (sem a nota de Onboarding,
   com a regra de 24h). Rodapé voltou a ter só a nota de débito de crédito.
+## [2026-07-16] HANDOFF — continuação em outro chat (limite de contexto)
+
+- **Estado:** `main` == `origin/main` no commit **`65e968a`**. Árvore limpa. **Produção validada e
+  aprovada pela Gestora** — tudo que segue já está no ar.
+- **Entregue e VALIDADO EM PRODUÇÃO nesta sessão** (11 PRs, #99 → #109):
+  - **#100** design da home do hub; **#101** MentoCoach invisível na agenda (`BUG-073`) + paradas
+    listando serviço errado (`BUG-074`); **#102** cards de horário; **#103** política de agendamento
+    única, validada no servidor (`BUG-076`); **#104** ids de parada colapsados (`BUG-077`) + nomes
+    dos cards (`BUG-078`); **#105** conclusão em chave legada (`BUG-079`); **#106** rótulos do farol
+    (`BUG-080`); **#107** Fase C — liberação relativa ao pacote; **#108** clique mudo na 1ª etapa
+    (`BUG-081`); **#109** Tríade plotando 0% (`BUG-082`) + card do DISC (`BUG-083`).
+  - **Fase C concluída** (`ACCESS-MODEL-DESIGN.md` §10) + **2 syncs de produção** (backups
+    `products_backup_20260716180234` e `products_backup_20260716191318`).
+  - **Exceção viva:** `BP-002-PF-260331` tem `dispensaPreRequisito: ["BPL-001"]` — concedida de
+    propósito (estava com 10 paradas feitas no Posicionamento e a Fase C o travaria).
+- **Suíte:** 140 testes passando. Baseline de lint da `main` segue vermelho por ~190 erros legados
+  (não é seu; só não deixe erros NOVOS).
+- **PRÓXIMA TAREFA: F1-06 — validação das 19 páginas de admin.** É o maior item aberto do processo e
+  nunca foi iniciado. A lista de rotas está em `02-map-pages.md`. Já há bugs na fila dela:
+  - **`BUG-072`** — `[object Object]` nos benefícios da devolutiva do admin (adiado para a F1-06 por
+    decisão da Gestora).
+  - **`BUG-075`** (Baixo, aberto) — 5 eventos escritos "Bloquado" (sem o "e") escapam do filtro de
+    bloqueio da agenda. Correção mais rápida é de **dado** (renomear no Google Calendar); aguarda
+    decisão dela (dado x código).
+  - Validar na F1-06 se o toggle de `dispensaPreRequisito` em `admin/users` lista BPL-001/BPL-005 e
+    se o rótulo explica o efeito (a Fase C depende dele como mecanismo de exceção).
+- **Aberto e não bloqueante:** `BUG-013` (débito de crédito ao agendar nunca foi ligado) — a
+  política publicada diz "cancelar com menos de 24h não preserva o crédito"; a regra está
+  implementada e deixa o rastro (`lateCancellation` em `User_Booking_History`), mas o débito é
+  **manual/operacional** até o BUG-013 ser feito. 42 dos 43 eventos de "Orientação em Grupo" seguem
+  com `Tema: "A DEFINIR"`, o que mantém 7 paradas de grupo sem sessão (ação de dado da Gestora).
+- **Lições novas desta sessão (leia no `RETROSPECTIVE.md`):** 24 a 31. Destaques: **24** (uma dúvida
+  da Gestora vale uma investigação inteira), **28** (rode a regra de acesso contra a população
+  inteira antes de mergear), **30** (casar string por `includes` quebra com acento; fallback mudo
+  disfarça a falha) e **31** (**merge na `main` não é entrega — confirme o deploy de produção**;
+  o Redeploy da Vercel reconstrói o mesmo commit).
+
+---
+
 ## [2026-07-16] Chat de execução — card Perfil & Assessments: Tríade 0%, headers e documentos (PR #109)
 
 - Chat/sessão: mesmo chat, após a Gestora **validar o PR #108 em produção**.
@@ -3433,10 +3472,23 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
 - **Nota de honestidade:** a normalização de acento em `devolutiva-docs` é **defensiva** — a mutação
   dela **não quebra teste nenhum**, porque os termos buscados ("devolutiva"/"comportamental") não
   têm acento. Documentei como tal, em vez de fingir cobertura.
-- **Interrupção de infra:** a API REST do GitHub ficou **503** por alguns minutos (GitHub Status:
-  "Partially Degraded Service"). O protocolo git seguia funcionando, então o commit estava seguro no
-  remoto; só o abrir/mergear do PR ficou bloqueado. Confirmado que não era token nem código antes de
-  reportar; voltou sozinha.
+- **Interrupção de infra (com consequência real no deploy):** a API REST do GitHub ficou **503**
+  por alguns minutos (incidente oficial "Degraded REST API Availability"). O protocolo git seguia
+  funcionando, então o commit estava seguro no remoto; só o abrir/mergear do PR ficou bloqueado.
+  Confirmado que não era token nem código antes de reportar; a API voltou sozinha e o PR foi
+  mergeado.
+  **Porém o deploy de produção NÃO disparou.** O merge (`80566cc`) e o commit de docs (`5ef57d9`)
+  chegaram na `main` do GitHub (verificado por conteúdo, não só por log), mas a Vercel não gerou
+  deployment de nenhum dos dois — o último Production seguia sendo o `e416c61` (PR #108, mergeado
+  ANTES do incidente). **Causa não comprovada:** a janela coincide com o incidente da REST API, mas
+  o painel do GitHub marca **Webhooks como `operational`**, o que contradiz a hipótese de "webhook
+  descartado" que eu cheguei a afirmar à Gestora — retratada aqui.
+  **Erro meu, com custo para a Gestora:** orientei "Redeploy na Vercel, que puxa o topo da main".
+  **Falso** — o Redeploy da Vercel reconstrói o **mesmo commit** do deployment escolhido; ele não
+  busca commits novos. Redeployar o `e416c61` só reconstruiria o PR #108. Ver Lição 31.
+  **Resolução:** commit vazio na `main` (`65e968a`) para emitir um evento de push novo — o build de
+  produção subiu e a Gestora validou. O commit vazio não altera código: entrega o conteúdo do
+  `80566cc`/`5ef57d9`.
 - Validado: 18 testes novos + mutação; test **140/140**; type-check; build exit 0; eslint sem
   warning novo (idêntico à `main`, conferido por checkout comparativo).
 - Itens atualizados: `BUGS.md` (+BUG-082/083), `DASHBOARD.md`, `RETROSPECTIVE.md` (Lição 30), este LOG.
