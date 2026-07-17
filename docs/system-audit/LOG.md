@@ -3402,6 +3402,44 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   trocar o texto globalmente, o `Calendar` ganhou a prop opcional **`policyNote`** (omitida = política
   padrão intacta, nenhum outro consumidor muda) e o modal 1 to 1 passa a sua (sem a nota de Onboarding,
   com a regra de 24h). Rodapé voltou a ter só a nota de débito de crédito.
+## [2026-07-17] Chat de execução — os 2 Altos da agenda fechados (PRs #112/#113)
+
+- Chat/sessão: continuação da mesma sessão, a pedido da Gestora ("vamos resolver os altos e depois
+  avançamos no admin"). As Etapas 1 e 2a do `AGENDA-SYNC-DESIGN.md`.
+- **`BUG-087` (Alto, PR #112) — o full scan que causou o apagão.** Mapeando os chamadores (Lição 23),
+  o multiplicador real **não** era o `getSyncedEvents` direto: era `getUserBookingsAction`, que
+  baixava os 590 eventos só para anexar detalhe a uns poucos agendamentos — chamada por **8 telas do
+  membro**, com o `MemberDashboardView` chamando **3×**. Abrir o dashboard custava ~1770 leituras.
+  Corrigido para buscar os eventos **por ID** (`db.getAll`, padrão do `career-module.ts`), saída
+  idêntica. **Medido na base real:** BP-005 590→4, BP-011 590→2, BP-012 590→5; dashboard ~1770→~15.
+  `getUpcomingEvents` (novo) atende a parada por janela de data; a fronteira sai no formato da chave
+  (`-03:00`) via `src/lib/calendar/window.ts`, com teste + mutação (a mesma armadilha do `BUG-093`).
+- **Residual honesto:** as 3 telas de admin seguem no full scan — 2-3 pessoas, baixa frequência; o
+  dashboard sai no PR dele. O apagão era volume de membro, e é esse que o #112 resolve.
+- **`BUG-088` (Alto, PR #113) — o sync via 250 de 801.** `events.list` sem `maxResults` e sem seguir
+  o `nextPageToken`. Verificado contra a agenda real: **250→801**, último de 15/10 (antes ~14/08),
+  115 bloqueios. **Dois acoplamentos tratados no mesmo PR (Lição 23):** (1) ~801 escritas estouram o
+  teto de 500 do `db.batch()` → blocos de 450 (o `BUG-086` era o inverso); (2) com a base completa,
+  `getUpcomingEvents` cresceria 241→801 → **teto de janela agendável** (~21 dias), medido 801→190, o
+  que preserva o ganho do #112. O teto de 250 antigo já limitava por acidente a visão do membro a ~1
+  mês; o novo preserva isso de propósito.
+- **Deploy de produção confirmado** para os dois (`649afeb` e `3a5c81d`, ambos `success`).
+- **Validação da Gestora (protocolo entregue):** rodar o **Sincronizar** no `/admin/agenda` (o efeito
+  é inerte sem isso — não há cron); sinal de sucesso = total sincronizado **passa de 250** (~800) e a
+  lista mostra eventos de set/out; o `/agendar` (proposta) não oferece mais o 17:30 de terça (bloqueio);
+  hub do membro carrega normal e a curva de leituras do Firebase fica muito abaixo do dia do apagão.
+- **Fila de triagem por severidade esvaziada de novo** — nenhum Crítico/Alto aberto.
+- **Explicação para leiga entregue à Gestora** ("anexar detalhes"): a ficha do agendamento guarda só
+  o número do evento; para mostrar nome/data, buscava-se na "gaveta" de eventos. O erro era despejar
+  a gaveta inteira (590) a cada abertura de tela, em vez de pegar as poucas fichas por número. Era
+  por **entrada na tela**, não por agendamento.
+- Itens atualizados: `BUGS.md` (087/088 Corrigidos), `00-PLAN.md` (índice + triagem vazia),
+  `AGENDA-SYNC-DESIGN.md` (Etapas 1/2a concluídas), `DASHBOARD.md`, este LOG.
+- **Próximo:** validação da Gestora em produção; depois, F1-06 lote A (dashboard do admin —
+  BUG-090/091/092, na branch `fix/admin-dashboard-real` com a lógica pura já pronta).
+
+---
+
 ## [2026-07-17] Chat de execução — apagão de cota, plano da agenda e o fuso da política (PR #111)
 
 - Chat/sessão: continuação da sessão do PR #110.

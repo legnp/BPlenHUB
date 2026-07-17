@@ -224,10 +224,18 @@ seguem sendo ação **de dado** dela, não de código.
 
 | Etapa | Estado | Depende de | Paga o quê |
 |---|---|---|---|
-| 1 — parar o full scan | **Aprovada, a fazer** | — | evita o próximo apagão; barateia o Blaze |
-| 2a — paginação | **Aprovada, a fazer** | — | eventos depois de 14/08 passam a existir |
+| 1 — parar o full scan | **Concluída — PR #112** | — | evita o próximo apagão; barateia o Blaze |
+| 2a — paginação | **Concluída — PR #113** | — | eventos depois de 14/08 passam a existir |
 | 2b — `syncToken` + automação | **Aprovada, a fazer** | 2a | acaba o botão manual e a defasagem |
 | 3 — metadado estruturado | **Aprovada, a desenhar** | decisão (a/b/c) | mata os bugs de texto livre |
+
+**Progresso (2026-07-17):** Etapas 1 e 2a entregues e em produção. A Etapa 1 (PR #112) achou que o
+multiplicador real do apagão era `getUserBookingsAction` (8 telas do membro, dashboard 3×), não o
+full scan direto; corrigido para leitura por ID (medido: 590→2-5 por membro). A Etapa 2a (PR #113)
+paginou o sync (250→801) e, no mesmo PR, tratou os dois acoplamentos que a paginação expôs: o teto
+de 500 do `db.batch()` (blocos de 450) e o crescimento da leitura da parada (teto de janela
+agendável, 801→190). Falta a Etapa 2b (automação — hoje o sync é manual) e a Etapa 3 (metadado
+estruturado, que é o reducer real da leitura da parada e mata os bugs de texto livre).
 
 **Cada etapa entra em PR próprio**, com PROPOSTA antes de codar (área sensível:
 agenda/booking toca receita — Lição 23). O `BUG-085` (docs passados acumulados)

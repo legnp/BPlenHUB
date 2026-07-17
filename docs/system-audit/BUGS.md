@@ -2298,10 +2298,23 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Nota de honestidade: os inventários read-only desta sessão leram a coleção inteira 3-4 vezes
   (~2.400 leituras) e **contribuíram** para estourar a cota naquele dia — mas não são a causa: o
   padrão torna qualquer dia de uso normal capaz de derrubar o sistema.
-- Status: **Aberto** — Etapa 1 de `AGENDA-SYNC-DESIGN.md`, **aprovada pela Gestora** (2026-07-17).
-- Decisão de execução: plano aprovado; PR próprio, com PROPOSTA antes de codar (agenda/booking toca
-  receita). Migrar chamador a chamador (a assinatura é compartilhada por 4 telas — Lição 23).
-- Commit/PR: —
+- **Refinamento na implementação (o multiplicador real):** o pior chamador não era o full scan
+  direto, e sim `getUserBookingsAction` (`queries.ts`), que **baixava os 590 só para anexar detalhe**
+  a uns poucos agendamentos — e é chamada por **8 telas do membro**, com o `MemberDashboardView`
+  chamando **3×**. Abrir o dashboard custava **~1770** leituras; abrir uma parada, **~1180** (o
+  `StepRenderer` chamava o full scan direto **e** via `getUserBookingsAction`).
+- Status: **Corrigido** — 2026-07-17 (PR #112), Etapa 1 de `AGENDA-SYNC-DESIGN.md`. `getUserBookingsAction`
+  busca os eventos **por ID** (`db.getAll`, mesmo padrão de `career-module.ts`), com saída idêntica;
+  `getUpcomingEvents` (novo) atende a parada da jornada por janela de data. **Medido na base real:**
+  BP-005 590→4, BP-011 590→2, BP-012 590→5; dashboard do membro ~1770→~15. A fronteira da query sai
+  no formato da chave (`-03:00`) via `src/lib/calendar/window.ts`, com teste + mutação, para não
+  repetir a armadilha de fuso do `BUG-093`.
+- **Residual documentado (não é o apagão):** `admin/agenda`, `admin/gestao-agenda` e `admin/page`
+  (dashboard) seguem em `getSyncedEvents` — 2-3 admins, baixa frequência. O dashboard sai no PR dele
+  (`BUG-091/092`); o `ProgramacaoResumo` já lê o Registry (1 leitura). O apagão era volume de membro.
+- Decisão de execução: plano + impacto medido aprovados pela Gestora. Validação em produção pela
+  Gestora (rodar o Sincronizar; conferir a curva de leituras no console do Firebase).
+- Commit/PR: **PR #112**
 
 ### BUG-088 Sync lê 250 dos 795 eventos, sem paginação — e a limpeza apaga o que ele não leu
 
@@ -2317,10 +2330,23 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   então o sync **remove ativamente** da base os eventos mais distantes.
 - Impacto colateral no `BUG-084`: a correção dos bloqueios entrega **36**, não os 116 medidos — o
   resto está fora do teto. *(Correção de uma afirmação minha à Gestora, que prometia 116.)*
-- Status: **Aberto** — Etapa 2a de `AGENDA-SYNC-DESIGN.md`, **aprovada pela Gestora** (2026-07-17).
-  É a correção mínima e independente das demais; pode ir sozinha.
-- Decisão de execução: PR próprio com PROPOSTA (agenda/booking = receita).
-- Commit/PR: —
+- Status: **Corrigido** — 2026-07-17 (PR #113), Etapa 2a de `AGENDA-SYNC-DESIGN.md`. Loop de
+  paginação (`maxResults: 2500` + `nextPageToken`) com trava de 20 páginas que **falha alto** em vez
+  de sincronizar pela metade. **Verificado contra a agenda real: 250 → 801** eventos, último de 15/10
+  (antes ~14/08); 115 bloqueios capturados. **Dois efeitos acoplados tratados no mesmo PR (Lição 23):**
+  (1) ~801 escritas numa rodada estouram o teto de **500 operações** por `db.batch()` — passa a
+  comitar em blocos de 450 (o `BUG-086` era o sintoma inverso: truncar em silêncio); (2) com a base
+  agora completa, `getUpcomingEvents` cresceria de 241 para ~801 leituras — recebeu **teto de janela
+  agendável** (`agora .. +MAX_LEAD+1`, ~21 dias), medido em **190** leituras, preservando o ganho do
+  `BUG-087`. O teto de 250 antigo já limitava por acidente a visão do membro a ~1 mês; o teto novo
+  preserva isso de propósito.
+- Decisão de execução: PROPOSTA + impacto medido aprovados pela Gestora. Validação em produção
+  (rodar o Sincronizar; conferir que o total sincronizado passa de 250 e que a lista mostra eventos
+  de set/out).
+- **Nota operacional:** o efeito só aparece após a Gestora rodar o Sincronizar (não há cron — Etapa
+  2b, ainda a fazer). Após o sync, a base passa de ~590 para ~801+ docs (+ os passados que o
+  `BUG-085` ainda não limpa).
+- Commit/PR: **PR #113**
 
 ### BUG-089 Falha muda na agenda pública: erro de cota vira "todos os horários livres"
 

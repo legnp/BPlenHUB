@@ -12,7 +12,21 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-17 (chat de execução — **apagão de cota + o fuso da política
+> **Última atualização:** 2026-07-17 (chat de execução — **os 2 Altos da agenda fechados
+> (PRs #112/#113)**. As Etapas 1 e 2a do `AGENDA-SYNC-DESIGN.md`, ambas em produção.
+> **BUG-087 (Alto, PR #112)** — o full scan que causou o apagão. O multiplicador real era
+> `getUserBookingsAction` (baixava os 590 eventos só para anexar detalhe), chamada por **8 telas do
+> membro**, com o dashboard chamando **3×** (~1770 leituras por abertura). Corrigido para busca por
+> ID; medido na base real: BP-005 **590→4**, dashboard **~1770→~15**. **BUG-088 (Alto, PR #113)** — o
+> sync via **250 de 801** eventos (sem paginação); nada depois de ~14/08 sincronizava e a limpeza
+> apagava o que não lera. Paginado (**250→801**, último 15/10), com dois acoplamentos tratados junto
+> (Lição 23): batch em blocos de 450 (teto de 500 do Firestore) e teto de janela agendável no
+> `getUpcomingEvents` (**801→190**, preservando o ganho do #112). Fila de triagem por severidade
+> **vazia de novo**. Validação da Gestora em produção: rodar o Sincronizar (sinal: total passa de
+> 250) e conferir o `/agendar`. Residual: as 3 telas de admin seguem no full scan (2-3 pessoas,
+> baixa freq; o dashboard sai no PR dele).
+>
+> _(entrada anterior)_ 2026-07-17 (chat de execução — **apagão de cota + o fuso da política
 > (PR #111)**. **O Firestore recusou leituras e a produção ficou degradada**: plano **Spark**, limite
 > diário estourado (confirmado pela Gestora no console). Causa medida: **`getSyncedEvents` baixa a
 > coleção inteira (590 docs) a cada chamada**, em 4 telas — incluindo a jornada do membro, onde
