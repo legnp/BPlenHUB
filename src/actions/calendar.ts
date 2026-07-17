@@ -37,6 +37,10 @@ export async function getSyncedEvents(idToken?: string) {
   return Queries.getSyncedEvents(idToken);
 }
 
+export async function getUpcomingEvents(idToken?: string) {
+  return Queries.getUpcomingEvents(idToken);
+}
+
 export async function getUserBookingsAction(matricula: string) {
   return Queries.getUserBookingsAction(matricula);
 }
