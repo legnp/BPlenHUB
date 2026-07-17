@@ -231,9 +231,13 @@ ativa furando a ordem das fases.
 
 | Bug | Severidade | Onde se conecta | Por que ainda não fechou |
 |---|---|---|---|
-| _(vazia)_ | — | — | Nenhum `Crítico`/`Alto` com Status `Aberto` |
+| `BUG-087` | **Alto** | F1-06 / T-01 — Etapa 1 do `AGENDA-SYNC-DESIGN.md` | **Causou o apagão de cota de 2026-07-16/17** (produção fora do ar). Plano aprovado pela Gestora em 2026-07-17; PROPOSTA + PR pendentes. Reclassificação do `BUG-017`, que estava como Médio |
+| `BUG-088` | **Alto** | F1-06 — Etapa 2a do `AGENDA-SYNC-DESIGN.md` | Sync lê 250 de 795 eventos: nada depois de 14/08 sincroniza, e a limpeza apaga da base o que não leu. Plano aprovado; PROPOSTA + PR pendentes |
 
-**Fila vazia (2026-07-16):** dois `Alto` novos entraram e saíram no mesmo dia —
+**Fila reaberta (2026-07-17)** com 2 `Alto` do subsistema de agenda, ambos com plano aprovado
+(`AGENDA-SYNC-DESIGN.md`) e nenhum codado ainda. O `BUG-087` tem precedência: é a causa do apagão.
+
+_(anterior, fila vazia em 2026-07-16):_ dois `Alto` novos entraram e saíram no mesmo dia —
 `BUG-073` (sessões de MentoCoach invisíveis para o membro) e `BUG-074` (paradas
 listando sessões de outro serviço, agendáveis), ambos corrigidos no PR #101. O
 `BUG-075` (typo "Bloquado" escapando do filtro de bloqueio) fica `Aberto` mas é
@@ -1035,6 +1039,9 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-084 | Médio | Corrigido (PR #110) | F1-06 — sync descartava os bloqueios e a agenda pública oferecia horário ocupado (249 de 756) |
 | BUG-085 | Baixo | Aberto (adiado) | F1-06/T-03 — 340 docs de eventos passados nunca removidos; **a correção óbvia é destrutiva** (ata/attendees/histórico de carreira) |
 | BUG-086 | Baixo | Corrigido (PR #110) | F1-06 — registro global truncava em 500 antes de filtrar |
+| BUG-087 | ~~Médio~~ **Alto** | Aberto | F1-06/T-01 — full scan em `getSyncedEvents` (4 chamadores); **causa do apagão de cota**; reclassificação do `BUG-017`; Etapa 1 do `AGENDA-SYNC-DESIGN.md` |
+| BUG-088 | **Alto** | Aberto | F1-06 — sync lê 250 de 795 eventos; nada depois de 14/08 sincroniza e a limpeza apaga o que não leu; Etapa 2a |
+| BUG-089 | Médio | Aberto | F1-06 — falha muda: erro de cota vira "tudo livre" no `/agendar`; transversal às etapas |
 
 ---
 

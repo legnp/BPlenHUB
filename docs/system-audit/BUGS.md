@@ -2278,6 +2278,67 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Decisão de execução: corrigido junto do `BUG-084` (mesmo arquivo).
 - Commit/PR: **PR #110**
 
+### BUG-087 `getSyncedEvents` baixa a coleção inteira a cada chamada (causa do apagão de cota)
+
+- Severidade: **Alto** — *reclassificação do `BUG-017` ("full scans sem paginação", registrado como
+  Médio no mapeamento inicial). **Estava subestimado:** é o item que tira a produção do ar.*
+- Área/fase onde foi achado: F1-06 / agenda — diagnosticado em 2026-07-16/17, durante o **apagão de
+  cota do Firestore** (a Gestora confirmou por print do console: plano **Spark**, "Você ultrapassou
+  seus limites diários de uso").
+- Arquivo(s) afetado(s): `src/actions/calendar-module/queries.ts:79` (a causa); chamadores:
+  `src/app/admin/page.tsx:27`, `src/app/admin/agenda/page.tsx:57,79`,
+  `src/app/admin/gestao-agenda/page.tsx:34`, **`src/components/journey/StepRenderer.tsx:94`**
+- Cenário de falha: **[CONFIRMADO]** `getSyncedEvents` faz `collection("Calendar_Events").get()` — a
+  coleção **inteira (590 docs)** — e filtra em JavaScript. Cada chamada custa **590 leituras**. O
+  Spark dá **50.000 leituras/dia**, ou seja **~85 aberturas de tela por dia para o produto inteiro**.
+  O pior chamador é o `StepRenderer`: **todo membro que abre uma parada da jornada baixa os 590
+  eventos** para exibir algumas sessões. O dashboard do admin faz o mesmo para exibir **um número**.
+  Em 2026-07-16/17 a cota estourou e o Firestore passou a recusar **até leitura de 1 documento**,
+  derrubando a produção.
+- Nota de honestidade: os inventários read-only desta sessão leram a coleção inteira 3-4 vezes
+  (~2.400 leituras) e **contribuíram** para estourar a cota naquele dia — mas não são a causa: o
+  padrão torna qualquer dia de uso normal capaz de derrubar o sistema.
+- Status: **Aberto** — Etapa 1 de `AGENDA-SYNC-DESIGN.md`, **aprovada pela Gestora** (2026-07-17).
+- Decisão de execução: plano aprovado; PR próprio, com PROPOSTA antes de codar (agenda/booking toca
+  receita). Migrar chamador a chamador (a assinatura é compartilhada por 4 telas — Lição 23).
+- Commit/PR: —
+
+### BUG-088 Sync lê 250 dos 795 eventos, sem paginação — e a limpeza apaga o que ele não leu
+
+- Severidade: **Alto** (funcional; eventos reais nunca chegam à base e são removidos dela)
+- Área/fase onde foi achado: F1-06 / agenda — achado em 2026-07-17 ao investigar por que só **39**
+  bloqueios entraram na base quando a agenda tem **116** (após o PR #110)
+- Arquivo(s) afetado(s): `src/actions/calendar-module/sync.ts:26-39`
+- Cenário de falha: **[CONFIRMADO]** contra a agenda real, reproduzindo a chamada exata do sync. O
+  `calendar.events.list` **não passa `maxResults`** (o padrão da API é **250**) e o código **nunca
+  segue o `nextPageToken`**, que existe. Resultado: o sync enxerga **250 de 795** eventos da janela
+  de 90 dias; o último é de **14/08/2026** — **nada depois disso jamais é sincronizado**. Pior: o
+  cleanup monta `googleIds` só com os 250 lidos e **deleta** todo doc da janela fora desse conjunto,
+  então o sync **remove ativamente** da base os eventos mais distantes.
+- Impacto colateral no `BUG-084`: a correção dos bloqueios entrega **36**, não os 116 medidos — o
+  resto está fora do teto. *(Correção de uma afirmação minha à Gestora, que prometia 116.)*
+- Status: **Aberto** — Etapa 2a de `AGENDA-SYNC-DESIGN.md`, **aprovada pela Gestora** (2026-07-17).
+  É a correção mínima e independente das demais; pode ir sozinha.
+- Decisão de execução: PR próprio com PROPOSTA (agenda/booking = receita).
+- Commit/PR: —
+
+### BUG-089 Falha muda na agenda pública: erro de cota vira "todos os horários livres"
+
+- Severidade: Médio (o defeito é a **invisibilidade** da falha, que produz resposta errada plausível)
+- Área/fase onde foi achado: F1-06 / agenda — observado **ao vivo** no apagão de 2026-07-17
+- Arquivo(s) afetado(s): `src/actions/external-booking.ts:117-120`, `:246-249`;
+  `src/actions/calendar-module/queries.ts:93-96`
+- Cenário de falha: **[CONFIRMADO]** todo `catch` devolve `[]`. No apagão, o `getPublicSlotsAction`
+  falhou por cota e devolveu `{slots: [], blockers: []}` — **zero bloqueadores** — e a grade de
+  proposta do `/agendar` exibiu **todos os horários como livres**, inclusive os bloqueados (a Gestora
+  reportou exatamente isso: terça 21/07 17:30, que está bloqueado no Google). Sem erro na tela, sem
+  aviso. É a Lição 30 na forma mais cara: a falha se disfarça de resposta plausível, e o lead pode
+  propor horário ocupado **por indisponibilidade do banco**.
+- Status: **Aberto** — tratado junto das etapas de `AGENDA-SYNC-DESIGN.md` (transversal).
+- Decisão de execução: a correção não é "logar o erro" — é **devolver o erro ao chamador** e a tela
+  dizer "não foi possível carregar a agenda" em vez de inventar disponibilidade. Entra com a Etapa 1.
+- Commit/PR: —
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em
