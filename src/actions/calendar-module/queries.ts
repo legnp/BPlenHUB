@@ -9,6 +9,7 @@ import { calendar_v3 } from "googleapis";
 import { safeSerialize } from "@/lib/utils/firestore";
 import { GoogleCalendarEvent, AttendeeData, UserBooking, ProgramacaoEntry } from "@/types/calendar";
 import { toISOSafe } from "@/lib/date-utils";
+import { isBlockerSummary, isBlockerEvent } from "@/lib/booking/blocker";
 
 /**
  * Busca eventos do Google Calendar para visualização rápida no Front.
@@ -30,10 +31,8 @@ export async function fetchCalendarEvents(dateReference: Date): Promise<GoogleCa
     });
 
     const items = response.data.items || [];
-    const filteredItems = items.filter(item => {
-      const summary = item.summary || "";
-      return !summary.toLowerCase().includes("bloqueado");
-    });
+    // Le direto do Google, entao classifica pelo titulo (nao ha campo gravado).
+    const filteredItems = items.filter(item => !isBlockerSummary(item.summary));
 
     return filteredItems.map((item: calendar_v3.Schema$Event) => {
       const rawDescription = item.description || "";
@@ -79,10 +78,11 @@ export async function getSyncedEvents(idToken?: string): Promise<GoogleCalendarE
       const db = getAdminDb();
       const snap = await db.collection("Calendar_Events").get();
       
+      // Os bloqueios vivem em `Calendar_Events` (a agenda publica depende deles),
+      // mas nao sao entregaveis: nem o admin nem o membro os veem.
       return snap.docs.map(doc => {
         const data = doc.data();
-        const summary = data.summary || "";
-        if (summary.toLowerCase().includes("bloqueado")) {
+        if (isBlockerEvent(data)) {
           return null;
         }
         return safeSerialize<GoogleCalendarEvent>({

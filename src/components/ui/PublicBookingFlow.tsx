@@ -306,6 +306,32 @@ export function PublicBookingFlow({ variant = "section" }: { variant?: "section"
     return result;
   }, []);
 
+  /**
+   * Horarios que o lead pode propor: a grade menos o que esta ocupado na agenda.
+   * Horario ocupado nao e exibido (decisao da Gestora, 2026-07-16) — antes ficava
+   * na tela esmaecido com o rotulo "OCUPADO".
+   */
+  const availableProposalSlots = useMemo(() => {
+    const dateStr = format(selectedDate, "yyyy-MM-dd");
+    const durationMs = CALENDAR_CONFIG.PUBLIC_BOOKING_SETTINGS.defaultDuration * 60 * 1000;
+
+    // Evento de dia inteiro chega como "YYYY-MM-DD" (10 chars) e cobre o dia todo.
+    const toMs = (iso: string, isEnd = false) => {
+      if (iso.length === 10) {
+        const d = parseISO(iso);
+        return startOfDay(d).getTime() + (isEnd ? (24 * 60 * 60 * 1000) - 1 : 0);
+      }
+      return parseISO(iso).getTime();
+    };
+
+    return proposalSlots.filter((time) => {
+      const startMs = parseISO(`${dateStr}T${time}:00`).getTime();
+      const endMs = startMs + durationMs;
+      // Sobreposicao: (InicioA < FimB) && (InicioB < FimA)
+      return !currentDayBlockers.some(b => startMs < toMs(b.end, true) && toMs(b.start) < endMs);
+    });
+  }, [proposalSlots, currentDayBlockers, selectedDate]);
+
   const toggleProposalOption = (time: string) => {
     const dateStr = format(selectedDate, "yyyy-MM-dd");
     const exists = proposalOptions.find(o => o.date === dateStr && o.time === time);
@@ -760,7 +786,7 @@ export function PublicBookingFlow({ variant = "section" }: { variant?: "section"
                         <Loader2 className="w-8 h-8 animate-spin text-[var(--text-primary)]" />
                         <span className="text-[9px] font-black uppercase tracking-widest text-[var(--text-primary)]">Buscando horários</span>
                       </div>
-                    ) : (isProposalMode ? proposalSlots : slots).length === 0 ? (
+                    ) : (isProposalMode ? availableProposalSlots : slots).length === 0 ? (
                       <div className="h-full flex flex-col items-center justify-center text-center py-20">
                         <CalendarIcon className="w-6 h-6 text-[var(--text-muted)] opacity-20 mb-4" />
                         <p className="text-[10px] font-bold text-[var(--text-muted)] opacity-30 uppercase tracking-widest">Nenhum horário livre.</p>
@@ -768,44 +794,20 @@ export function PublicBookingFlow({ variant = "section" }: { variant?: "section"
                     ) : (
                       <div className="grid grid-cols-2 gap-2">
                         {isProposalMode ? (
-                          proposalSlots.map((time) => {
+                          availableProposalSlots.map((time) => {
                             const dateStr = format(selectedDate, "yyyy-MM-dd");
                             const isSelectedOption = proposalOptions.some(o => o.date === dateStr && o.time === time);
-                            
-                            // Check conflict with blockers using absolute timestamps (Blindagem 🛡️)
-                            const propStartTime = parseISO(`${dateStr}T${time}:00`).getTime();
-                            const propEndTime = propStartTime + (45 * 60 * 1000); // 45 min fixo
-                            
-                            const hasConflict = currentDayBlockers.some(b => {
-                              const parseSafe = (iso: string, isEnd = false) => {
-                                // Tratar Eventos de Dia Inteiro (YYYY-MM-DD - 10 chars)
-                                if (iso.length === 10) {
-                                  const d = parseISO(iso);
-                                  return startOfDay(d).getTime() + (isEnd ? (24 * 60 * 60 * 1000) - 1 : 0);
-                                }
-                                return parseISO(iso).getTime();
-                              };
-
-                              const bStart = parseSafe(b.start);
-                              const bEnd = parseSafe(b.end, true);
-
-                              // Overlap Absoluto: (InicioA < FimB) && (InicioB < FimA)
-                              return propStartTime < bEnd && bStart < propEndTime;
-                            });
 
                             return (
                               <button
                                 key={time}
-                                disabled={hasConflict}
                                 onClick={() => toggleProposalOption(time)}
-                                className={`py-2 rounded-xl text-xs font-black transition-all border flex flex-col items-center justify-center
-                                           ${hasConflict ? "opacity-10 cursor-not-allowed grayscale" : "cursor-pointer"}
+                                className={`py-2 rounded-xl text-xs font-black transition-all border flex flex-col items-center justify-center cursor-pointer
                                            ${isSelectedOption
                                     ? "bg-[var(--accent-start)] border-[var(--accent-start)] text-white shadow-lg"
-                                    : hasConflict ? "bg-[var(--input-bg)]/50 border-transparent" : "bg-[var(--input-bg)] border-[var(--input-border)] text-[var(--text-primary)] hover:bg-[var(--accent-soft)] hover:border-[var(--accent-start)]/30"}`}
+                                    : "bg-[var(--input-bg)] border-[var(--input-border)] text-[var(--text-primary)] hover:bg-[var(--accent-soft)] hover:border-[var(--accent-start)]/30"}`}
                               >
                                 {time}
-                                {hasConflict && <span className="text-[7px] mt-0.5 opacity-50">OCUPADO</span>}
                               </button>
                             );
                           })
