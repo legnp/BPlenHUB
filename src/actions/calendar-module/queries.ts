@@ -4,7 +4,8 @@ import { getAdminDb } from "@/lib/firebase-admin";
 import { requireAdmin, requireAuth, AuthorizationError } from "@/lib/auth-guards";
 import { getCalendarClient } from "@/lib/google-auth";
 import { serverEnv } from "@/env";
-import { formatISO, parseISO, isBefore } from "date-fns";
+import { formatISO, parseISO, isBefore, addDays } from "date-fns";
+import { CALENDAR_CONFIG } from "@/config/calendarConfig";
 import { calendar_v3 } from "googleapis";
 import { safeSerialize } from "@/lib/utils/firestore";
 import { GoogleCalendarEvent, AttendeeData, UserBooking, ProgramacaoEntry } from "@/types/calendar";
@@ -101,18 +102,24 @@ export async function getSyncedEvents(idToken?: string): Promise<GoogleCalendarE
  * Eventos a partir de agora — para telas que so mostram sessoes agendaveis
  * (a jornada do membro), sem baixar a colecao inteira (BUG-087).
  *
- * A parada da jornada oferece slots FUTUROS; eventos passados nunca sao
- * agendaveis e nao apareciam para o membro. Consultar por intervalo em vez de
- * `getSyncedEvents` (~590 docs) corta o passado acumulado (BUG-085) e reduz a
- * leitura ao que a tela usa. O filtro fino da parada (tema/palavra-chave) segue
- * no cliente — o Firestore nao faz casamento por substring.
+ * A parada da jornada oferece slots FUTUROS e AGENDAVEIS; o membro so pode
+ * agendar ate `MAX_LEAD_TIME_DAYS` (20) dias a frente, entao a janela e
+ * [agora, agora + MAX + 1). Isso corta o passado acumulado (BUG-085) e tambem o
+ * futuro distante — sem o teto, a paginacao do sync (BUG-088, ~801 eventos)
+ * faria esta leitura crescer para a janela inteira de 90 dias. O teto de 250 do
+ * sync antigo ja limitava, por acidente, o que o membro via a ~1 mes; este teto
+ * preserva esse comportamento de forma intencional. O filtro fino da parada
+ * (tema/palavra-chave) segue no cliente — o Firestore nao casa substring.
  */
 export async function getUpcomingEvents(idToken?: string): Promise<GoogleCalendarEvent[]> {
   try {
     await requireAuth(idToken);
     const db = getAdminDb();
+    const now = new Date();
+    const upperBound = addDays(now, CALENDAR_CONFIG.MAX_LEAD_TIME_DAYS + 1);
     const snap = await db.collection("Calendar_Events")
-      .where("start", ">=", eventStartKey(new Date()))
+      .where("start", ">=", eventStartKey(now))
+      .where("start", "<=", eventStartKey(upperBound))
       .get();
 
     return snap.docs.map(doc => {
