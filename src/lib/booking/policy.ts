@@ -1,5 +1,12 @@
 import { addDays, addHours, isBefore, parseISO, startOfDay, getISOWeek, getYear } from "date-fns";
+import { toZonedTime, fromZonedTime } from "date-fns-tz";
 import { CALENDAR_CONFIG } from "@/config/calendarConfig";
+
+/**
+ * A politica e comunicada e vivida no fuso de Brasilia; o servidor roda em UTC.
+ * Mesmo fuso canonico de `src/lib/timezone.ts`.
+ */
+const TIMEZONE = "America/Sao_Paulo";
 
 /**
  * Politica de agendamento do membro — fonte unica compartilhada entre a tela
@@ -23,10 +30,16 @@ export function resolveEventType(summary: string | undefined | null): string {
     .toLowerCase();
 }
 
-/** Semana ISO + ano de uma data de evento — a chave do limite semanal. */
+/**
+ * Semana ISO + ano de uma data de evento — a chave do limite semanal.
+ *
+ * Avaliada no fuso de Brasilia, e nao no do servidor: a Vercel roda em UTC, onde
+ * um evento de domingo as 22:00 BRT ja e segunda 01:00 — ele cairia na semana
+ * SEGUINTE e o membro poderia furar o limite semanal (BUG-093).
+ */
 export function resolveEventWeek(startISO: string): { week: number; year: number } {
-  const date = parseISO(startISO);
-  return { week: getISOWeek(date), year: getYear(date) };
+  const dateInBR = toZonedTime(parseISO(startISO), TIMEZONE);
+  return { week: getISOWeek(dateInBR), year: getYear(dateInBR) };
 }
 
 /**
@@ -38,11 +51,20 @@ export function resolveEventWeek(startISO: string): { week: number; year: number
  * valido, entao o dia (hoje + MAX) cabe inteiro. A regra legada do Onboarding
  * fechava no inicio do dia (hoje + MAX), o que na pratica excluia o 20o dia e
  * contradiria o texto publicado; a fronteira agora e simetrica a do minimo.
+ *
+ * "Dia" e o dia de Brasilia, nao o do servidor. A Vercel roda em UTC, onde
+ * `startOfDay` cai as 21:00 BRT do dia ANTERIOR — as duas fronteiras escorregavam
+ * 3 horas em producao (BUG-093): o 20o dia era cortado as 21:00, e o 2o dia
+ * passava a aceitar agendamento depois das 21:00, com menos de 3 dias de
+ * antecedencia. Os limites saem daqui como instantes reais (UTC), entao a
+ * comparacao com a data do evento continua sendo entre instantes.
  */
 function getWindowBounds(now: Date) {
+  const startOfTodayInBR = startOfDay(toZonedTime(now, TIMEZONE));
+
   return {
-    opensAt: addDays(startOfDay(now), CALENDAR_CONFIG.MIN_LEAD_TIME_DAYS),
-    closesAt: addDays(startOfDay(now), CALENDAR_CONFIG.MAX_LEAD_TIME_DAYS + 1)
+    opensAt: fromZonedTime(addDays(startOfTodayInBR, CALENDAR_CONFIG.MIN_LEAD_TIME_DAYS), TIMEZONE),
+    closesAt: fromZonedTime(addDays(startOfTodayInBR, CALENDAR_CONFIG.MAX_LEAD_TIME_DAYS + 1), TIMEZONE)
   };
 }
 
