@@ -8,6 +8,7 @@ import { CALENDAR_CONFIG } from "@/config/calendarConfig";
 import { calendar_v3 } from "googleapis";
 import { getEventStandardSlug } from "@/lib/utils";
 import { isBlockerSummary } from "@/lib/booking/blocker";
+import { updateGlobalProgramacaoRegistryAction } from "./post-event";
 
 /**
  * Sincronização de 90 Dias (Firestore 🛡️)
@@ -125,6 +126,19 @@ export async function syncCalendarToFirestore(idToken?: string) {
         else batch.set(op.ref, op.data, { merge: true });
       }
       await batch.commit();
+    }
+
+    // Reconstroi o snapshot `Programacao_Registry` a partir do que acabamos de
+    // gravar. As telas do membro (modal de 1 to 1, gestao_agenda) e o admin
+    // (ProgramacaoResumo) leem esse snapshot, nao o `Calendar_Events` fresco — e
+    // o snapshot so era refeito por acoes de booking/post-evento, entao a agenda
+    // do membro congelava entre sincronizacoes (BUG-095). Sem isto, os eventos
+    // recem-sincronizados sao invisiveis para o membro ate alguem agendar algo.
+    // Falha do rebuild nao invalida o sync em si: registra e segue.
+    try {
+      await updateGlobalProgramacaoRegistryAction();
+    } catch (registryErr) {
+      console.error("[Sync] Sincronizacao ok, mas o rebuild do Programacao_Registry falhou:", registryErr);
     }
 
     return { success: true, count: googleItems.length, synced: syncedCount, deleted: deletedCount };
