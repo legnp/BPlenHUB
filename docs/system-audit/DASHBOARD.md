@@ -12,7 +12,30 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-16 (chat de execução — **F1-06 INICIADA: bloqueios de agenda não
+> **Última atualização:** 2026-07-17 (chat de execução — **apagão de cota + o fuso da política
+> (PR #111)**. **O Firestore recusou leituras e a produção ficou degradada**: plano **Spark**, limite
+> diário estourado (confirmado pela Gestora no console). Causa medida: **`getSyncedEvents` baixa a
+> coleção inteira (590 docs) a cada chamada**, em 4 telas — incluindo a jornada do membro, onde
+> **cada parada aberta custa 590 leituras**. São ~85 aberturas de tela por dia para o produto
+> inteiro. Registrado como **BUG-087** (reclassificação do BUG-017, que estava como Médio e era a
+> causa). Também: **BUG-088** (o sync lê **250 de 795** eventos, sem paginação — nada depois de 14/08
+> sincroniza, e a limpeza apaga o que ele não leu; **corrige uma afirmação minha**: o PR #110 entrega
+> 36 bloqueios, não 116) e **BUG-089** (o `catch → []` fez o erro de cota virar "todos os horários
+> livres" — foi o que a Gestora viu no print das 17:30; o PR #110 está correto, verificado na base).
+> **`AGENDA-SYNC-DESIGN.md`** criado com as **etapas 1/2/3 aprovadas**: o formato da arquitetura
+> (Calendar como autoria + Firestore como read model) **está certo e não deve ser reescrito** — e
+> **migrar para o Blaze sem a Etapa 1 é levar o desperdício junto e pagar por ele**.
+> **F1-06 lote A** começou pelo dashboard: **BUG-090** (2 dos 6 atalhos são 404 — o bloco inteiro
+> duplica a sidebar, e a duplicata é que apodreceu), **BUG-091** (card "sincronização ok" é string
+> fixa: dizia "ok" durante o apagão) e **BUG-092** (métrica "desta semana" conta tudo, sem filtro de
+> data). **BUG-093 (PR #111, mergeado e no ar)** — achado por acidente: a suíte rodava no fuso da
+> máquina (BRT) e nunca no da produção (UTC), então **2 testes do PR #103 falhavam em produção havia
+> semanas**, verdes aqui. A política publicada não era cumprida nas bordas, e das **21:00 às 23:59 a
+> janela escorregava um dia inteiro**. Corrigido + **`TZ: 'UTC'` fixado na suíte**; a fonte única do
+> PR #103 estava pela metade (o servidor tinha a própria cópia). Suíte **152/152**, mutação de cada
+> metade do fix derruba o teste respectivo. **BUG-094** registrado e adiado de propósito.
+>
+> _(entrada anterior)_ 2026-07-16 (chat de execução — **F1-06 INICIADA: bloqueios de agenda não
 > sincronizados (PR #110)**. Plano da fase aprovado pela Gestora: **funcional primeiro, design
 > depois**; lotes **A** (users+dashboard) → B (F&S) → C (agenda) → D (produtos) → E (CRUDs) → F
 > (ferramentas). O lote C foi **antecipado em parte** por severidade: ela pediu para verificar se os

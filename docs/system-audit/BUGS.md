@@ -2412,13 +2412,52 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   um portão.
 - Relação com o `BUG-076`/PR #103: aquele PR corrigiu a **lógica** da política (e acertou); este é o
   **fuso** em que a lógica é avaliada. A promessa ao membro segue não sendo cumprida nas bordas.
-- Status: **Aberto** — não corrigido de propósito: `policy.ts` é fonte única de regra de agendamento
-  (área sensível/receita, Lição 23) e a correção precisa vir junto do `TZ=UTC` no `vitest.config.ts`,
-  senão a suíte fica vermelha na `main`.
-- Decisão de execução: **Precisa plano + aprovação.** Proposta: (1) fixar `TZ: 'UTC'` no
-  `vitest.config` para a suíte exercer o ambiente de produção; (2) corrigir `getWindowBounds` (e
-  auditar `resolveEventWeek`) para calcular as fronteiras no fuso de Brasília, reaproveitando o
-  padrão de `src/lib/timezone.ts`/`date-fns-tz`; (3) os 2 testes que já falham viram a prova do fix.
+- **3º defeito, achado pela mutação e pior que os outros dois:** entre **21:00 e 23:59 BRT** o
+  servidor UTC já virou a data, então `startOfDay(now)` aponta para o dia seguinte e a janela inteira
+  escorrega **um dia** — quem agenda à noite recebe uma regra diferente de quem agenda de manhã, no
+  mesmo dia. A primeira versão dos testes **não pegava isto** (o relógio de teste era 10:00, quando
+  servidor e Brasília concordam sobre "hoje"); só apareceu ao mutar `toZonedTime(now)` e ver que
+  nenhum teste caía (Lição 15).
+- **`resolveEventWeek` também estava errado** (mesma família): `getISOWeek` no fuso local fazia um
+  evento de domingo 22:00 BRT (= segunda 01:00 UTC) cair na **semana seguinte**, deixando o membro
+  furar o limite semanal.
+- **A fonte única do PR #103 estava pela metade:** `booking.ts` — **o servidor, que é quem aplica a
+  regra** — não usava `resolveEventWeek`; recalculava `getISOWeek`/`getYear` inline em **4 pontos**.
+  Corrigir só o `policy.ts` teria consertado a tela e deixado a regra errada (Lição 21).
+- Status: **Corrigido** — 2026-07-17 (PR #111). `getWindowBounds` e `resolveEventWeek` avaliam no fuso
+  de Brasília (`toZonedTime`/`fromZonedTime`, mesmo `date-fns-tz` de `src/lib/timezone.ts`) e devolvem
+  instantes reais; `booking.ts` passa a usar a fonte única; **`vitest.config.ts` fixa `TZ: 'UTC'`**,
+  para a suíte exercer o ambiente de produção.
+- Decisão de execução: plano + ressalvas aprovados pela Gestora antes do merge (regra de negócio
+  publicada = área sensível). Validado: suíte **152/152** sob UTC (os 2 testes que falhavam são a
+  prova do fix; +2 novos para as fronteiras que faltavam), **mutação de cada metade do fix derruba o
+  teste correspondente**, eslint idêntico à `main`, type-check e build limpos.
+- **Ressalva declarada à Gestora:** registros de `User_Bookings` já gravados guardam `week`/`year`
+  calculados pelo modo antigo. Para sessões na fronteira do fuso (domingo à noite), a chave antiga
+  diverge da nova e o limite semanal pode ficar inconsistente **para esses casos legados**, até
+  saírem da janela. Impacto restrito; aceito conscientemente.
+- **Achado deixado aberto de propósito (`BUG-094`):** `resolveEventWeek` devolve `year` via `getYear`
+  e não `getISOWeekYear` — divergem na virada do ano (01/01/2027 pertence à semana ISO **53 de
+  2026**), produzindo chave `week/year` inconsistente. Pré-existente, restrito ao réveillon, e mexer
+  nisso muda a semântica de chaves já gravadas: merece decisão própria, não um fix silencioso.
+- Commit/PR: **PR #111**
+
+### BUG-094 `resolveEventWeek` mistura semana ISO com ano civil (chave inconsistente na virada do ano)
+
+- Severidade: Baixo (janela de alguns dias por ano; nenhum impacto fora da virada)
+- Área/fase onde foi achado: F1-06 — achado ao corrigir o `BUG-093` (2026-07-17), **não corrigido de
+  propósito**
+- Arquivo(s) afetado(s): `src/lib/booking/policy.ts:33-36` (`resolveEventWeek`)
+- Cenário de falha: **[CONFIRMADO]** por leitura. A função devolve `{ week: getISOWeek(d), year:
+  getYear(d) }` — mistura **semana ISO** com **ano civil**. Eles divergem na virada: 01/01/2027 está
+  na semana ISO **53 de 2026**, mas `getYear` devolve **2027**. A chave do limite semanal vira
+  `{week: 53, year: 2027}`, que não casa com `{week: 53, year: 2026}` de um evento de 31/12/2026 —
+  a mesma semana ISO conta como duas, e o membro pode agendar 2 sessões do mesmo tipo. O correto é
+  `getISOWeekYear`.
+- Status: **Aberto** — adiado conscientemente.
+- Decisão de execução: **exige decisão própria.** Mudar isso altera a semântica de `week`/`year` já
+  gravados em `User_Bookings`; a correção precisa considerar os registros existentes, não só o
+  cálculo. Não fazer de carona em outro PR.
 - Commit/PR: —
 
 ---

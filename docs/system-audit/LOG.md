@@ -3402,6 +3402,71 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   trocar o texto globalmente, o `Calendar` ganhou a prop opcional **`policyNote`** (omitida = política
   padrão intacta, nenhum outro consumidor muda) e o modal 1 to 1 passa a sua (sem a nota de Onboarding,
   com a regra de 24h). Rodapé voltou a ter só a nota de débito de crédito.
+## [2026-07-17] Chat de execução — apagão de cota, plano da agenda e o fuso da política (PR #111)
+
+- Chat/sessão: continuação da sessão do PR #110.
+- **Apagão de cota do Firestore.** Uma leitura de **1 documento** passou a devolver
+  `RESOURCE_EXHAUSTED`. A Gestora confirmou pelo console: plano **Spark**, limite diário de leitura
+  estourado — produção degradada. **Causa medida, não suposta:** `getSyncedEvents` **baixa a coleção
+  inteira** (590 docs) a cada chamada, em 4 telas, incluindo o `StepRenderer` — **todo membro que
+  abre uma parada da jornada baixa os 590 eventos**. 50k leituras/dia ÷ 590 = **~85 aberturas de tela
+  por dia para o produto inteiro**. Registrado como **`BUG-087`** (reclassificação do `BUG-017`, que
+  estava como Médio e era a causa do apagão). Declarado à Gestora que meus inventários read-only
+  (~2.400 leituras) **contribuíram** naquele dia, sem serem a causa.
+- **`BUG-088` (Alto):** o sync lê **250 de 795** eventos — `events.list` sem `maxResults` (o padrão da
+  API é 250) e sem seguir o `nextPageToken`. Nada depois de **14/08** sincroniza, e a limpeza **apaga
+  da base** o que ele não leu. Isso **corrige uma afirmação minha à Gestora**: o PR #110 entrega 36
+  bloqueios, não os 116 que prometi.
+- **`BUG-089` (Médio):** `catch → []` fez o erro de cota virar "todos os horários livres" no
+  `/agendar` — foi exatamente o que ela viu no print das 17:30. A falha se disfarçou de resposta
+  plausível (Lição 30). **O PR #110 está correto**: verificado na base, o bloqueio de 21/07 17:30 está
+  gravado com `isBlocker=true` e as sessões reais com `false`.
+- **Análise de arquitetura pedida pela Gestora** ("essa arquitetura ficou um monstro complexo?").
+  Resposta embasada: **o formato está certo** — Google Calendar como autoria + Firestore como read
+  model é padrão legítimo, e reescrever a agenda dentro do HUB seria pior. O que virou monstro foi o
+  encanamento. Consolidado em **`AGENDA-SYNC-DESIGN.md`**, com as etapas 1/2/3 **aprovadas** e a
+  projeção de migrar para o **Blaze** num futuro próximo. Conclusão registrada:
+  **migrar para o Blaze sem a Etapa 1 é levar o desperdício junto e passar a pagar por ele** — o
+  Blaze não resolve o full scan, só troca indisponibilidade por custo.
+- **F1-06 lote A iniciado pelo dashboard** (161 linhas). Três defeitos achados **antes** de qualquer
+  redesign: **`BUG-090`** (2 dos 6 atalhos são 404 — e o bloco inteiro é uma cópia da sidebar, que
+  aponta certo: a duplicata é que apodreceu), **`BUG-091`** (o card "sincronização ok" é string fixa:
+  diz "ok" inclusive durante o apagão) e **`BUG-092`** (a métrica diz "nesta semana" e conta a
+  coleção inteira, sem filtro de data). Decisões da Gestora: card de agenda **tornar real**; métrica
+  = **agendamentos da semana**; e preencher o espaço liberado com a lista de próximas sessões.
+- **`BUG-093` — achado por acidente, e é o mais importante do dia.** Escrevendo o teste do dashboard,
+  a mutação de praxe **não quebrou nada**: a máquina roda em `America/Sao_Paulo` e a produção em
+  **UTC**, então o teste não provava nada. Ao fixar `TZ=UTC`, **2 testes escritos no PR #103
+  falharam** — eles codificavam o comportamento correto e **falhavam em produção havia semanas**, sem
+  ninguém ver. **O teste estava certo; a produção é que estava errada** (Lição 22).
+  - Em produção a política publicada não era cumprida: 20º dia após as 21:00 **recusado**; 2º dia após
+    as 21:00 **aceito** (agendamento com menos de 3 dias); e — o pior, achado só pela mutação — das
+    **21:00 às 23:59 a janela escorregava um dia inteiro**, porque o servidor já virara a data: quem
+    agendava à noite recebia regra diferente de quem agendava de manhã.
+  - `resolveEventWeek` tinha o mesmo defeito: domingo 22:00 BRT caía na semana seguinte, furando o
+    limite semanal.
+  - **A fonte única do PR #103 estava pela metade:** só o `Calendar.tsx` a usava; o `booking.ts` — o
+    servidor, que aplica a regra — recalculava inline em 4 pontos (Lição 21). Corrigir só o
+    `policy.ts` teria consertado a tela e deixado a regra errada.
+- **Entrega: PR #111 mergeado (`226183f`, squash).** `policy.ts` no fuso de Brasília, `booking.ts`
+  usando a fonte única, e **`vitest.config.ts` com `TZ: 'UTC'`** — o portão passa a exercer o ambiente
+  de produção. Suíte **152/152**; os 2 testes que falhavam são a prova do fix; +2 novos para as
+  fronteiras que faltavam; **mutação de cada metade do fix derruba o teste correspondente**; eslint
+  idêntico à `main`; type-check e build limpos.
+- **Ressalvas declaradas à Gestora antes do merge:** (1) `User_Bookings` já gravados guardam
+  `week`/`year` do modo antigo — para sessões na fronteira do fuso a chave diverge e o limite semanal
+  pode ficar inconsistente nesses legados, até saírem da janela; (2) **`BUG-094`** registrado e
+  **não corrigido**: `resolveEventWeek` usa `getYear` em vez de `getISOWeekYear` (divergem na virada
+  do ano), e mexer nisso muda a semântica de chaves já gravadas.
+- Lições novas: **35** (a suíte tem de rodar no ambiente da produção), **36** (mute cada metade do fix
+  separadamente) e **37** ("fonte única" só é única depois de contar os chamadores).
+- Itens atualizados: `BUGS.md` (+BUG-087..094), `AGENDA-SYNC-DESIGN.md` (novo), `00-PLAN.md`,
+  `DASHBOARD.md`, `RETROSPECTIVE.md`, este LOG.
+- **Em andamento:** branch `fix/admin-dashboard-real` com a lógica pura do dashboard (11 testes) já
+  commitada — falta ligar a action e reescrever a tela.
+
+---
+
 ## [2026-07-16] Chat de execução — F1-06 iniciada: bloqueios de agenda não sincronizados (PR #110)
 
 - Chat/sessão: chat de execução (Opus 4.8), retomando o HANDOFF abaixo. **F1-06 começou.**

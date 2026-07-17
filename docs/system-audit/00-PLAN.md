@@ -1042,6 +1042,11 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-087 | ~~Médio~~ **Alto** | Aberto | F1-06/T-01 — full scan em `getSyncedEvents` (4 chamadores); **causa do apagão de cota**; reclassificação do `BUG-017`; Etapa 1 do `AGENDA-SYNC-DESIGN.md` |
 | BUG-088 | **Alto** | Aberto | F1-06 — sync lê 250 de 795 eventos; nada depois de 14/08 sincroniza e a limpeza apaga o que não leu; Etapa 2a |
 | BUG-089 | Médio | Aberto | F1-06 — falha muda: erro de cota vira "tudo livre" no `/agendar`; transversal às etapas |
+| BUG-090 | Médio | Aberto | F1-06 lote A — 2 dos 6 atalhos do dashboard são 404 |
+| BUG-091 | Médio | Aberto | F1-06 lote A — card "sincronização ok" é hardcoded e mente |
+| BUG-092 | Médio | Aberto | F1-06 lote A — métrica "desta semana" conta a coleção inteira, sem filtro de data |
+| BUG-093 | Médio | Corrigido (PR #111) | F1-06/F2-04 — política de agendamento avaliada no fuso do servidor; suíte agora roda em `TZ=UTC` |
+| BUG-094 | Baixo | Aberto (adiado) | F2-04 — `resolveEventWeek` mistura semana ISO com ano civil; muda semântica de chave já gravada |
 
 ---
 
