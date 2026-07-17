@@ -1047,7 +1047,7 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-087 | ~~Médio~~ **Alto** | Corrigido (PR #112) | F1-06/T-01 — full scan (o multiplicador real era `getUserBookingsAction`, 8 telas); **causa do apagão**; Etapa 1 do `AGENDA-SYNC-DESIGN.md` |
 | BUG-088 | **Alto** | Corrigido (PR #113) | F1-06 — sync paginado (250→801) + batch em blocos + teto de janela na leitura; Etapa 2a |
 | BUG-089 | Médio | Aberto | F1-06 — falha muda: erro de cota vira "tudo livre" no `/agendar`; transversal às etapas |
-| BUG-095 | **Alto** | Corrigido (PR #114) | F1-06 — sync não reconstruía o `Programacao_Registry`; agenda do membro (1 to 1) congelava. Achado na validação da Gestora |
+| BUG-095 | **Alto** | Corrigido (PR #114) | F1-06 — sync não reconstruía o `Programacao_Registry`; agenda do membro (1 to 1) congelava. **Validado em produção** |
 | BUG-090 | Médio | Aberto | F1-06 lote A — 2 dos 6 atalhos do dashboard são 404 |
 | BUG-091 | Médio | Aberto | F1-06 lote A — card "sincronização ok" é hardcoded e mente |
 | BUG-092 | Médio | Aberto | F1-06 lote A — métrica "desta semana" conta a coleção inteira, sem filtro de data |

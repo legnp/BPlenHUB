@@ -2469,6 +2469,9 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   e não `getISOWeekYear` — divergem na virada do ano (01/01/2027 pertence à semana ISO **53 de
   2026**), produzindo chave `week/year` inconsistente. Pré-existente, restrito ao réveillon, e mexer
   nisso muda a semântica de chaves já gravadas: merece decisão própria, não um fix silencioso.
+- **VALIDADO EM PRODUÇÃO (2026-07-17):** a Gestora agendou uma sessão de 1 to 1 no **20º dia (06/08)
+  às 22:00h** — depois das 21h, exatamente o horário em que a janela escorregava e recusava antes.
+  Aceitou. Fecha o bug.
 - Commit/PR: **PR #111**
 
 ### BUG-094 `resolveEventWeek` mistura semana ISO com ano civil (chave inconsistente na virada do ano)
@@ -2518,7 +2521,12 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   refletir o que o sync acabou de gravar. A função já existe (tocada no `BUG-086`, lê Calendar_Events
   até 2000 e escreve o snapshot); custo = ~1 rebuild por sync (admin, baixa frequência). Correção de
   1 linha + import. Recomendo **não** deferir: destrava um serviço pago e a validação do `BUG-093`.
-- Commit/PR: —
+- Status: **Corrigido** — 2026-07-17 (PR #114). O sync chama `updateGlobalProgramacaoRegistryAction()`
+  ao terminar; o rebuild filtra bloqueio (`post-event.ts:340`) e falha do rebuild não invalida o sync.
+- **VALIDADO EM PRODUÇÃO (2026-07-17):** após rodar o Sincronizar, a Gestora viu as sessões de 1 to 1
+  no **20º dia (06/08)** e **agendou** uma (22:00h) — antes o modal mostrava vazio para qualquer data
+  depois de 29/07. Fecha o bug (e destravou a validação do `BUG-093` junto).
+- Commit/PR: **PR #114**
 
 ---
 

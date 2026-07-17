@@ -3458,8 +3458,13 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   o mecanismo intencional da Gestora para ligar evento↔etapa do hub, preenchido continuamente em
   produção. Anotado no `BUG-074` e no `AGENDA-SYNC-DESIGN.md` (Etapa 3 tem de **preservar** esse
   fluxo de autoria no Google Calendar). Sessões futuras: não "corrigir".
-- **Validação do BUG-095 pela Gestora pendente:** após o deploy, rodar o Sincronizar de novo e
-  conferir o 1 to 1 no 20º dia — isso também destrava a validação do `BUG-093` (agendar no 20º dia).
+- **BUG-095 e BUG-093 VALIDADOS EM PRODUÇÃO (2026-07-17):** após rodar o Sincronizar, a Gestora
+  conseguiu **agendar** uma sessão de 1 to 1 no **20º dia (06/08) às 22:00h** (print). Isso fecha os
+  dois de uma vez: a sessão apareceu no 20º dia (BUG-095, registry reconstruído) **e** o agendamento
+  às 22h — depois das 21h — foi aceito (BUG-093, o fuso não escorrega mais). **Agenda fechada de ponta
+  a ponta.** Fila de triagem por severidade vazia; nenhum Crítico/Alto aberto.
+- **Próximo (a pedido da Gestora, "avancemos na auditoria"):** F1-06 lote A — dashboard do admin
+  (BUG-090/091/092), branch `fix/admin-dashboard-real` com a lógica pura pronta e testada.
 
 ---
 
