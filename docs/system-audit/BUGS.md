@@ -2387,6 +2387,40 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   é a métrica que ela quer. Casa com a Etapa 1 (consulta por intervalo em vez de full scan).
 - Commit/PR: —
 
+### BUG-093 Política de agendamento escorrega 3h em produção (janela calculada no fuso do servidor)
+
+- Severidade: **Médio** (a política publicada ao membro não é cumprida nas bordas; permite agendar
+  com **menos de 3 dias** de antecedência numa janela de 3h/dia)
+- Área/fase onde foi achado: F1-06 / lote A — achado **por acidente** em 2026-07-17, ao rodar a
+  suíte com `TZ=UTC` (o fuso da Vercel) enquanto se escrevia o teste do dashboard
+- Arquivo(s) afetado(s): `src/lib/booking/policy.ts:42-46` (`getWindowBounds`); provável mesma
+  família em `resolveEventWeek` (`getISOWeek` também usa o fuso local)
+- Cenário de falha: **[CONFIRMADO]** por 2 testes que **já existem** (`booking-policy.test.ts:33,42`,
+  escritos no PR #103) e que **falham sob `TZ=UTC`** — passam apenas porque a máquina de
+  desenvolvimento está em `America/Sao_Paulo`. `getWindowBounds` faz `startOfDay(now)` no fuso do
+  **servidor**; a Vercel roda em **UTC**, onde `startOfDay` = 00:00 UTC = **21:00 BRT do dia
+  anterior**. As duas fronteiras escorregam 3 horas:
+  - **Máximo:** sessão no 20º dia após as 21:00 BRT é **recusada**, embora o texto publicado prometa
+    "de 20 a 3 dias" (o dia inteiro). Teste: `2026-08-05T23:59:00-03:00` deveria ser `true`, dá
+    `false` em UTC.
+  - **Mínimo (mais grave):** sessão no 2º dia após as 21:00 BRT é **aceita** — o sistema permite
+    agendar com **menos de 3 dias** de antecedência. Teste: `2026-07-18T23:59:00-03:00` deveria ser
+    `false`, dá `true` em UTC.
+- **O teste estava certo; a produção é que está errada** (Lição 22). E a suíte **não podia** acusar:
+  ela roda no fuso da máquina (BRT), não no da produção (UTC) — `vitest.config.ts` não fixa `TZ`.
+  É a mesma falha de fundo do `BUG-045` (Lição 14): um portão que não exerce o ambiente real não é
+  um portão.
+- Relação com o `BUG-076`/PR #103: aquele PR corrigiu a **lógica** da política (e acertou); este é o
+  **fuso** em que a lógica é avaliada. A promessa ao membro segue não sendo cumprida nas bordas.
+- Status: **Aberto** — não corrigido de propósito: `policy.ts` é fonte única de regra de agendamento
+  (área sensível/receita, Lição 23) e a correção precisa vir junto do `TZ=UTC` no `vitest.config.ts`,
+  senão a suíte fica vermelha na `main`.
+- Decisão de execução: **Precisa plano + aprovação.** Proposta: (1) fixar `TZ: 'UTC'` no
+  `vitest.config` para a suíte exercer o ambiente de produção; (2) corrigir `getWindowBounds` (e
+  auditar `resolveEventWeek`) para calcular as fronteiras no fuso de Brasília, reaproveitando o
+  padrão de `src/lib/timezone.ts`/`date-fns-tz`; (3) os 2 testes que já falham viram a prova do fix.
+- Commit/PR: —
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em
