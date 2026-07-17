@@ -1901,6 +1901,12 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   ("Autoconhecimento e Aprendizagem" — a única parada de grupo que exibe evento). Preencher o
   `Tema:` no Google Calendar destrava as demais. Também registrado: não existe **nenhum** evento de
   Offboarding na agenda.
+- **ESCLARECIMENTO DA GESTORA (2026-07-17) — `Tema: "A DEFINIR"` NÃO é bug nem dado faltante, é
+  operação intencional.** O campo `Tema:` do evento no Google Calendar é o **mecanismo deliberado**
+  que a Gestora usa para ligar cada evento à etapa correspondente do hub, preenchido de forma
+  **contínua em produção** (faz parte da rotina operacional dela). "A DEFINIR" é o estado natural de
+  um evento ainda não vinculado. **Sessões futuras: não tratar como defeito nem "corrigir" o dado** —
+  é feature. O comportamento correto é: sem `Tema:` casado, a parada não exibe o evento (esperado).
 - Commit/PR: PR #101
 
 ### BUG-075 Filtro de bloqueio de agenda não tolera erro de digitação ("Bloquado")
@@ -2219,13 +2225,9 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   dia fica vazio** (mínimo de 7 num dia). 8 testes novos, suíte 148/148, mutação do radical derruba 4.
 - Decisão de execução: plano + impacto medido aprovados pela Gestora antes de codar (funil de lead
   público = receita, Lição 23).
-- **PASSO OPERACIONAL PENDENTE (Gestora):** o fix está mergeado e **o deploy de produção do `604f9d4`
-  subiu com sucesso** (verificado), mas ele é **inerte até o sync rodar** — quem grava os bloqueios em
-  `Calendar_Events` é o botão **Sincronizar** do `/admin/agenda`, e **não existe cron** (sem
-  `vercel.json`/agendamento; a rota `/api/trigger-sync` foi removida no `BUG-024`). Confirmado por
-  inventário read-only após o deploy: a base segue com **0 bloqueios futuros** (só os 8 fósseis de
-  maio). Enquanto o sync não for rodado, a grade de proposta continua oferecendo os 249 horários.
-  Ver corolário da Lição 31.
+- **VALIDADO EM PRODUÇÃO pela Gestora (2026-07-17):** após rodar o Sincronizar, ela confirmou no
+  `/agendar` (proposta) que os horários bloqueados **somem** e que sábados/domingos seguem travados —
+  "os efeitos de agenda bloqueada estão funcionais". O caso do print original (terça 17:30) fechou.
 - Commit/PR: **PR #110**
 
 ### BUG-085 `Calendar_Events` acumula eventos passados para sempre (limpeza só varre o futuro)
@@ -2298,10 +2300,26 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Nota de honestidade: os inventários read-only desta sessão leram a coleção inteira 3-4 vezes
   (~2.400 leituras) e **contribuíram** para estourar a cota naquele dia — mas não são a causa: o
   padrão torna qualquer dia de uso normal capaz de derrubar o sistema.
-- Status: **Aberto** — Etapa 1 de `AGENDA-SYNC-DESIGN.md`, **aprovada pela Gestora** (2026-07-17).
-- Decisão de execução: plano aprovado; PR próprio, com PROPOSTA antes de codar (agenda/booking toca
-  receita). Migrar chamador a chamador (a assinatura é compartilhada por 4 telas — Lição 23).
-- Commit/PR: —
+- **Refinamento na implementação (o multiplicador real):** o pior chamador não era o full scan
+  direto, e sim `getUserBookingsAction` (`queries.ts`), que **baixava os 590 só para anexar detalhe**
+  a uns poucos agendamentos — e é chamada por **8 telas do membro**, com o `MemberDashboardView`
+  chamando **3×**. Abrir o dashboard custava **~1770** leituras; abrir uma parada, **~1180** (o
+  `StepRenderer` chamava o full scan direto **e** via `getUserBookingsAction`).
+- Status: **Corrigido** — 2026-07-17 (PR #112), Etapa 1 de `AGENDA-SYNC-DESIGN.md`. `getUserBookingsAction`
+  busca os eventos **por ID** (`db.getAll`, mesmo padrão de `career-module.ts`), com saída idêntica;
+  `getUpcomingEvents` (novo) atende a parada da jornada por janela de data. **Medido na base real:**
+  BP-005 590→4, BP-011 590→2, BP-012 590→5; dashboard do membro ~1770→~15. A fronteira da query sai
+  no formato da chave (`-03:00`) via `src/lib/calendar/window.ts`, com teste + mutação, para não
+  repetir a armadilha de fuso do `BUG-093`.
+- **Residual documentado (não é o apagão):** `admin/agenda`, `admin/gestao-agenda` e `admin/page`
+  (dashboard) seguem em `getSyncedEvents` — 2-3 admins, baixa frequência. O dashboard sai no PR dele
+  (`BUG-091/092`); o `ProgramacaoResumo` já lê o Registry (1 leitura). O apagão era volume de membro.
+- Decisão de execução: plano + impacto medido aprovados pela Gestora. **VALIDADO EM PRODUÇÃO
+  (2026-07-17):** ela navegou o hub sem erro e notou o carregamento **mais rápido** das agendas — o
+  efeito esperado da queda de 590→~5 leituras por tela. No console do Firebase, ~22k leituras no dia
+  (bem abaixo do teto de 50k, mesmo com teste pesado). O pico de ~15k foi ela testando as **telas de
+  admin**, que ainda fazem full scan (o residual documentado) — não é tráfego de membro.
+- Commit/PR: **PR #112**
 
 ### BUG-088 Sync lê 250 dos 795 eventos, sem paginação — e a limpeza apaga o que ele não leu
 
@@ -2317,10 +2335,21 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   então o sync **remove ativamente** da base os eventos mais distantes.
 - Impacto colateral no `BUG-084`: a correção dos bloqueios entrega **36**, não os 116 medidos — o
   resto está fora do teto. *(Correção de uma afirmação minha à Gestora, que prometia 116.)*
-- Status: **Aberto** — Etapa 2a de `AGENDA-SYNC-DESIGN.md`, **aprovada pela Gestora** (2026-07-17).
-  É a correção mínima e independente das demais; pode ir sozinha.
-- Decisão de execução: PR próprio com PROPOSTA (agenda/booking = receita).
-- Commit/PR: —
+- Status: **Corrigido** — 2026-07-17 (PR #113), Etapa 2a de `AGENDA-SYNC-DESIGN.md`. Loop de
+  paginação (`maxResults: 2500` + `nextPageToken`) com trava de 20 páginas que **falha alto** em vez
+  de sincronizar pela metade. **Verificado contra a agenda real: 250 → 801** eventos, último de 15/10
+  (antes ~14/08); 115 bloqueios capturados. **Dois efeitos acoplados tratados no mesmo PR (Lição 23):**
+  (1) ~801 escritas numa rodada estouram o teto de **500 operações** por `db.batch()` — passa a
+  comitar em blocos de 450 (o `BUG-086` era o sintoma inverso: truncar em silêncio); (2) com a base
+  agora completa, `getUpcomingEvents` cresceria de 241 para ~801 leituras — recebeu **teto de janela
+  agendável** (`agora .. +MAX_LEAD+1`, ~21 dias), medido em **190** leituras, preservando o ganho do
+  `BUG-087`. O teto de 250 antigo já limitava por acidente a visão do membro a ~1 mês; o teto novo
+  preserva isso de propósito.
+- Decisão de execução: PROPOSTA + impacto medido aprovados pela Gestora. **VALIDADO EM PRODUÇÃO
+  (2026-07-17):** após rodar o Sincronizar, o total foi a **1024** (passou de 250) e a lista mostra
+  eventos **até 15/10** — ela confirmou os dois sinais. (1024 = ~590 antigos + os ~434 futuros que o
+  teto de 250 escondia + passados.)
+- Commit/PR: **PR #113**
 
 ### BUG-089 Falha muda na agenda pública: erro de cota vira "todos os horários livres"
 
@@ -2386,6 +2415,118 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Decisão de execução: corrigir o cálculo (filtro por semana) **ou** o rótulo — a Gestora decide qual
   é a métrica que ela quer. Casa com a Etapa 1 (consulta por intervalo em vez de full scan).
 - Commit/PR: —
+
+### BUG-093 Política de agendamento escorrega 3h em produção (janela calculada no fuso do servidor)
+
+- Severidade: **Médio** (a política publicada ao membro não é cumprida nas bordas; permite agendar
+  com **menos de 3 dias** de antecedência numa janela de 3h/dia)
+- Área/fase onde foi achado: F1-06 / lote A — achado **por acidente** em 2026-07-17, ao rodar a
+  suíte com `TZ=UTC` (o fuso da Vercel) enquanto se escrevia o teste do dashboard
+- Arquivo(s) afetado(s): `src/lib/booking/policy.ts:42-46` (`getWindowBounds`); provável mesma
+  família em `resolveEventWeek` (`getISOWeek` também usa o fuso local)
+- Cenário de falha: **[CONFIRMADO]** por 2 testes que **já existem** (`booking-policy.test.ts:33,42`,
+  escritos no PR #103) e que **falham sob `TZ=UTC`** — passam apenas porque a máquina de
+  desenvolvimento está em `America/Sao_Paulo`. `getWindowBounds` faz `startOfDay(now)` no fuso do
+  **servidor**; a Vercel roda em **UTC**, onde `startOfDay` = 00:00 UTC = **21:00 BRT do dia
+  anterior**. As duas fronteiras escorregam 3 horas:
+  - **Máximo:** sessão no 20º dia após as 21:00 BRT é **recusada**, embora o texto publicado prometa
+    "de 20 a 3 dias" (o dia inteiro). Teste: `2026-08-05T23:59:00-03:00` deveria ser `true`, dá
+    `false` em UTC.
+  - **Mínimo (mais grave):** sessão no 2º dia após as 21:00 BRT é **aceita** — o sistema permite
+    agendar com **menos de 3 dias** de antecedência. Teste: `2026-07-18T23:59:00-03:00` deveria ser
+    `false`, dá `true` em UTC.
+- **O teste estava certo; a produção é que está errada** (Lição 22). E a suíte **não podia** acusar:
+  ela roda no fuso da máquina (BRT), não no da produção (UTC) — `vitest.config.ts` não fixa `TZ`.
+  É a mesma falha de fundo do `BUG-045` (Lição 14): um portão que não exerce o ambiente real não é
+  um portão.
+- Relação com o `BUG-076`/PR #103: aquele PR corrigiu a **lógica** da política (e acertou); este é o
+  **fuso** em que a lógica é avaliada. A promessa ao membro segue não sendo cumprida nas bordas.
+- **3º defeito, achado pela mutação e pior que os outros dois:** entre **21:00 e 23:59 BRT** o
+  servidor UTC já virou a data, então `startOfDay(now)` aponta para o dia seguinte e a janela inteira
+  escorrega **um dia** — quem agenda à noite recebe uma regra diferente de quem agenda de manhã, no
+  mesmo dia. A primeira versão dos testes **não pegava isto** (o relógio de teste era 10:00, quando
+  servidor e Brasília concordam sobre "hoje"); só apareceu ao mutar `toZonedTime(now)` e ver que
+  nenhum teste caía (Lição 15).
+- **`resolveEventWeek` também estava errado** (mesma família): `getISOWeek` no fuso local fazia um
+  evento de domingo 22:00 BRT (= segunda 01:00 UTC) cair na **semana seguinte**, deixando o membro
+  furar o limite semanal.
+- **A fonte única do PR #103 estava pela metade:** `booking.ts` — **o servidor, que é quem aplica a
+  regra** — não usava `resolveEventWeek`; recalculava `getISOWeek`/`getYear` inline em **4 pontos**.
+  Corrigir só o `policy.ts` teria consertado a tela e deixado a regra errada (Lição 21).
+- Status: **Corrigido** — 2026-07-17 (PR #111). `getWindowBounds` e `resolveEventWeek` avaliam no fuso
+  de Brasília (`toZonedTime`/`fromZonedTime`, mesmo `date-fns-tz` de `src/lib/timezone.ts`) e devolvem
+  instantes reais; `booking.ts` passa a usar a fonte única; **`vitest.config.ts` fixa `TZ: 'UTC'`**,
+  para a suíte exercer o ambiente de produção.
+- Decisão de execução: plano + ressalvas aprovados pela Gestora antes do merge (regra de negócio
+  publicada = área sensível). Validado: suíte **152/152** sob UTC (os 2 testes que falhavam são a
+  prova do fix; +2 novos para as fronteiras que faltavam), **mutação de cada metade do fix derruba o
+  teste correspondente**, eslint idêntico à `main`, type-check e build limpos.
+- **Ressalva declarada à Gestora:** registros de `User_Bookings` já gravados guardam `week`/`year`
+  calculados pelo modo antigo. Para sessões na fronteira do fuso (domingo à noite), a chave antiga
+  diverge da nova e o limite semanal pode ficar inconsistente **para esses casos legados**, até
+  saírem da janela. Impacto restrito; aceito conscientemente.
+- **Achado deixado aberto de propósito (`BUG-094`):** `resolveEventWeek` devolve `year` via `getYear`
+  e não `getISOWeekYear` — divergem na virada do ano (01/01/2027 pertence à semana ISO **53 de
+  2026**), produzindo chave `week/year` inconsistente. Pré-existente, restrito ao réveillon, e mexer
+  nisso muda a semântica de chaves já gravadas: merece decisão própria, não um fix silencioso.
+- **VALIDADO EM PRODUÇÃO (2026-07-17):** a Gestora agendou uma sessão de 1 to 1 no **20º dia (06/08)
+  às 22:00h** — depois das 21h, exatamente o horário em que a janela escorregava e recusava antes.
+  Aceitou. Fecha o bug.
+- Commit/PR: **PR #111**
+
+### BUG-094 `resolveEventWeek` mistura semana ISO com ano civil (chave inconsistente na virada do ano)
+
+- Severidade: Baixo (janela de alguns dias por ano; nenhum impacto fora da virada)
+- Área/fase onde foi achado: F1-06 — achado ao corrigir o `BUG-093` (2026-07-17), **não corrigido de
+  propósito**
+- Arquivo(s) afetado(s): `src/lib/booking/policy.ts:33-36` (`resolveEventWeek`)
+- Cenário de falha: **[CONFIRMADO]** por leitura. A função devolve `{ week: getISOWeek(d), year:
+  getYear(d) }` — mistura **semana ISO** com **ano civil**. Eles divergem na virada: 01/01/2027 está
+  na semana ISO **53 de 2026**, mas `getYear` devolve **2027**. A chave do limite semanal vira
+  `{week: 53, year: 2027}`, que não casa com `{week: 53, year: 2026}` de um evento de 31/12/2026 —
+  a mesma semana ISO conta como duas, e o membro pode agendar 2 sessões do mesmo tipo. O correto é
+  `getISOWeekYear`.
+- Status: **Aberto** — adiado conscientemente.
+- Decisão de execução: **exige decisão própria.** Mudar isso altera a semântica de `week`/`year` já
+  gravados em `User_Bookings`; a correção precisa considerar os registros existentes, não só o
+  cálculo. Não fazer de carona em outro PR.
+- Commit/PR: —
+
+### BUG-095 O sync não reconstrói o `Programacao_Registry` — agenda do membro congela
+
+- Severidade: **Alto** (o agendamento de 1 to 1 — serviço pago — fica inagendável para qualquer data
+  além da última reconstrução do Registry; o membro vê uma agenda parada no tempo)
+- Área/fase onde foi achado: F1-06 / agenda — achado ao investigar o item 5 da validação da Gestora
+  (2026-07-17): ela não conseguiu agendar no 20º dia (06/08). **É código, não dado** (Lição 25).
+- Arquivo(s) afetado(s): `src/actions/calendar-module/sync.ts` (não chama o rebuild);
+  leitores do Registry: `hub/membro/gestao_agenda`, `HubHeader` ("Agendar 1 to 1"),
+  `components/admin/ProgramacaoResumo`, `SurveyEngine`
+- Cenário de falha: **[CONFIRMADO]** por inventário read-only na base real. O modal de 1 to 1 do
+  membro lê `getProgramacaoForMemberAction` → `Datas_Center/Programacao_Registry`, que é um
+  **snapshot** reconstruído **apenas** por `updateGlobalProgramacaoRegistryAction` (chamada em fluxos
+  de booking/post-evento). **O sync NÃO reconstrói o Registry.** Estado real em 2026-07-17, após a
+  Gestora sincronizar (Calendar_Events = 1024, eventos até 15/10):
+  - `Calendar_Events` em 05-07/08: **13 eventos "1 to 1"** (o dado do 20º dia existe).
+  - `Programacao_Registry`: `lastUpdated` de **03/07** (2 semanas atrás), evento mais recente
+    **29/07**, **0 eventos** em 05-07/08. Congelado.
+  Resultado: qualquer sessão depois de 29/07 é invisível para o membro no modal de 1 to 1 (e na
+  `gestao_agenda`, no `ProgramacaoResumo` do admin, e no contexto do `SurveyEngine`).
+- **Pré-existente, exposto pela paginação:** a defasagem do Registry sempre existiu (depende de
+  alguém ter feito booking recentemente). Antes, o `Calendar_Events` também parava em ~14/08 (teto de
+  250), então a diferença era menos visível; com o `BUG-088` levando o `Calendar_Events` a 15/10, o
+  buraco 29/07→15/10 ficou evidente.
+- Status: **Aberto** — investigação concluída; correção proposta à Gestora.
+- Decisão de execução: **Precisa aprovação** (agenda/receita). Proposta: chamar
+  `updateGlobalProgramacaoRegistryAction()` ao final de `syncCalendarToFirestore`, para o Registry
+  refletir o que o sync acabou de gravar. A função já existe (tocada no `BUG-086`, lê Calendar_Events
+  até 2000 e escreve o snapshot); custo = ~1 rebuild por sync (admin, baixa frequência). Correção de
+  1 linha + import. Recomendo **não** deferir: destrava um serviço pago e a validação do `BUG-093`.
+- Status: **Corrigido** — 2026-07-17 (PR #114). O sync chama `updateGlobalProgramacaoRegistryAction()`
+  ao terminar; o rebuild filtra bloqueio (`post-event.ts:340`) e falha do rebuild não invalida o sync.
+- **VALIDADO EM PRODUÇÃO (2026-07-17):** após rodar o Sincronizar, a Gestora viu as sessões de 1 to 1
+  no **20º dia (06/08)** e **agendou** uma (22:00h) — antes o modal mostrava vazio para qualquer data
+  depois de 29/07. Fecha o bug (e destravou a validação do `BUG-093` junto).
+- Commit/PR: **PR #114**
 
 ---
 

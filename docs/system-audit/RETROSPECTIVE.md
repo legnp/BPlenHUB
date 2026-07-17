@@ -319,6 +319,34 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
     legados. _(Caso real: `BUG-086`, achado pelo mapa de consumidores da Lição 23, feito ANTES de
     codar — foi o mapa que pagou por si.)_
 
+35. **A suíte tem de rodar no AMBIENTE da produção, não no da sua máquina — senão ela mente com cara
+    de verde.** O `vitest` não fixava `TZ`, então a suíte rodava em `America/Sao_Paulo` (a máquina da
+    equipe) e a produção roda em **UTC** (Vercel). Resultado: **2 testes escritos no PR #103 falhavam
+    em produção havia semanas**, verdes aqui o tempo todo. Eles já codificavam o comportamento certo —
+    ninguém nunca os viu falhar. Corrigido com `env: { TZ: 'UTC' }` no `vitest.config.ts`.
+    **Generalize:** fuso é só o caso mais fácil de esquecer. Pergunte de que mais o teste depende que
+    a produção não garante — locale, ordenação, precisão de relógio, sistema de arquivos. É a Lição 14
+    um nível acima: lá o portão não era **executado**; aqui ele era executado **no ambiente errado**,
+    que é pior, porque produz confiança falsa. _(Caso real: `BUG-093`, PR #111, 2026-07-17.)_
+
+36. **A mutação não serve só para saber se o teste pega — serve para descobrir QUAL metade do fix ele
+    não cobre.** Ao corrigir o fuso da política, mutei o fix inteiro e **1 dos 3 testes caiu**; os
+    dois da janela seguiram verdes. Motivo: o relógio do teste era 10:00, horário em que servidor e
+    Brasília concordam sobre "hoje" — a divergência só existe das **21:00 às 23:59**. Foi a mutação
+    que escreveu o teste que faltava, e ele revelou um defeito **maior** que o procurado: à noite a
+    janela não escorregava 3h, escorregava **um dia inteiro** — quem agendava à noite recebia uma
+    regra diferente de quem agendava de manhã. **Mute cada metade do fix separadamente; a metade que
+    nenhum teste derruba é a que você não entendeu.** _(Caso real: `BUG-093`.)_
+
+37. **"Fonte única" só é única depois que você conta os chamadores — a metade que sobrou é sempre a
+    que decide.** O PR #103 criou `policy.ts` para acabar com a regra duplicada entre cliente e
+    servidor (Lição 21) e **parou no meio**: só o `Calendar.tsx` (a tela) passou a usar
+    `resolveEventWeek`; o `booking.ts` — **o servidor, que é quem de fato aplica a regra** — seguiu
+    recalculando `getISOWeek`/`getYear` inline em 4 pontos. Um ano depois o fix de fuso no `policy.ts`
+    teria consertado **a tela** e deixado a regra errada, com a suíte verde. **Ao extrair uma fonte
+    única, grepe o nome da função e confirme que o LADO QUE DECIDE a usa** — não o lado que exibe.
+    _(Caso real: `BUG-093`, herdado do PR #103.)_
+
 ---
 
 ## Melhorias sugeridas para o PLANO (para o chat de planejamento refinar)
@@ -384,6 +412,13 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
   — extraia a fonte única), 22 (teste que falha pode estar certo; cheque a regra
   antes de corrigir o teste) e 23 (action compartilhada: mapeie os chamadores,
   um deles pode ser receita) adicionadas, a partir do `BUG-076` (PRs #102/#103).
+- 2026-07-17 — Lições 35 (a suíte tem de rodar no ambiente da produção: o
+  `vitest` sem `TZ` fixo rodava em BRT e escondia 2 testes que falhavam em UTC
+  havia semanas), 36 (mute cada metade do fix separadamente — a metade que
+  nenhum teste derruba é a que você não entendeu; foi assim que apareceu o
+  escorregão de um dia inteiro) e 37 ("fonte única" só é única depois de contar
+  os chamadores — o PR #103 extraiu a regra e o servidor seguiu com a cópia)
+  adicionadas, a partir do `BUG-093` (PR #111).
 - 2026-07-16 — Lições 32 (filtrar na escrita apaga o dado para todos os
   consumidores; intenção de exibição resolve-se na leitura), 33 (a hipótese de
   quem reporta pode estar certa no mecanismo e invertida no diagnóstico — o

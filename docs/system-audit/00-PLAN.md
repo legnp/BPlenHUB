@@ -231,11 +231,16 @@ ativa furando a ordem das fases.
 
 | Bug | Severidade | Onde se conecta | Por que ainda não fechou |
 |---|---|---|---|
-| `BUG-087` | **Alto** | F1-06 / T-01 — Etapa 1 do `AGENDA-SYNC-DESIGN.md` | **Causou o apagão de cota de 2026-07-16/17** (produção fora do ar). Plano aprovado pela Gestora em 2026-07-17; PROPOSTA + PR pendentes. Reclassificação do `BUG-017`, que estava como Médio |
-| `BUG-088` | **Alto** | F1-06 — Etapa 2a do `AGENDA-SYNC-DESIGN.md` | Sync lê 250 de 795 eventos: nada depois de 14/08 sincroniza, e a limpeza apaga da base o que não leu. Plano aprovado; PROPOSTA + PR pendentes |
+| _(vazia)_ | — | — | Nenhum `Crítico`/`Alto` com Status `Aberto` |
 
-**Fila reaberta (2026-07-17)** com 2 `Alto` do subsistema de agenda, ambos com plano aprovado
-(`AGENDA-SYNC-DESIGN.md`) e nenhum codado ainda. O `BUG-087` tem precedência: é a causa do apagão.
+**Fila esvaziada de novo (2026-07-17):** os 2 `Alto` do subsistema de agenda foram corrigidos e
+mergeados no mesmo dia — `BUG-087` (full scan, causa do apagão, PR #112) e `BUG-088` (sync truncando
+em 250, PR #113), ambos deploy de produção confirmado. Restam abertos apenas `Médio`/`Baixo` do
+`AGENDA-SYNC-DESIGN.md` (`BUG-089` falha muda; `BUG-085` docs passados; Etapas 2b/3) e do dashboard
+do admin (`BUG-090/091/092`), nenhum furando a ordem das fases.
+
+_(anterior, reaberta 2026-07-17):_ os mesmos 2 `Alto` entraram pela manhã, com plano aprovado
+(`AGENDA-SYNC-DESIGN.md`), e saíram à tarde.
 
 _(anterior, fila vazia em 2026-07-16):_ dois `Alto` novos entraram e saíram no mesmo dia —
 `BUG-073` (sessões de MentoCoach invisíveis para o membro) e `BUG-074` (paradas
@@ -1039,9 +1044,15 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-084 | Médio | Corrigido (PR #110) | F1-06 — sync descartava os bloqueios e a agenda pública oferecia horário ocupado (249 de 756) |
 | BUG-085 | Baixo | Aberto (adiado) | F1-06/T-03 — 340 docs de eventos passados nunca removidos; **a correção óbvia é destrutiva** (ata/attendees/histórico de carreira) |
 | BUG-086 | Baixo | Corrigido (PR #110) | F1-06 — registro global truncava em 500 antes de filtrar |
-| BUG-087 | ~~Médio~~ **Alto** | Aberto | F1-06/T-01 — full scan em `getSyncedEvents` (4 chamadores); **causa do apagão de cota**; reclassificação do `BUG-017`; Etapa 1 do `AGENDA-SYNC-DESIGN.md` |
-| BUG-088 | **Alto** | Aberto | F1-06 — sync lê 250 de 795 eventos; nada depois de 14/08 sincroniza e a limpeza apaga o que não leu; Etapa 2a |
+| BUG-087 | ~~Médio~~ **Alto** | Corrigido (PR #112) | F1-06/T-01 — full scan (o multiplicador real era `getUserBookingsAction`, 8 telas); **causa do apagão**; Etapa 1 do `AGENDA-SYNC-DESIGN.md` |
+| BUG-088 | **Alto** | Corrigido (PR #113) | F1-06 — sync paginado (250→801) + batch em blocos + teto de janela na leitura; Etapa 2a |
 | BUG-089 | Médio | Aberto | F1-06 — falha muda: erro de cota vira "tudo livre" no `/agendar`; transversal às etapas |
+| BUG-095 | **Alto** | Corrigido (PR #114) | F1-06 — sync não reconstruía o `Programacao_Registry`; agenda do membro (1 to 1) congelava. **Validado em produção** |
+| BUG-090 | Médio | Aberto | F1-06 lote A — 2 dos 6 atalhos do dashboard são 404 |
+| BUG-091 | Médio | Aberto | F1-06 lote A — card "sincronização ok" é hardcoded e mente |
+| BUG-092 | Médio | Aberto | F1-06 lote A — métrica "desta semana" conta a coleção inteira, sem filtro de data |
+| BUG-093 | Médio | Corrigido (PR #111) | F1-06/F2-04 — política de agendamento avaliada no fuso do servidor; suíte agora roda em `TZ=UTC` |
+| BUG-094 | Baixo | Aberto (adiado) | F2-04 — `resolveEventWeek` mistura semana ISO com ano civil; muda semântica de chave já gravada |
 
 ---
 

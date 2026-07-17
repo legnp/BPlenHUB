@@ -4,12 +4,14 @@ import { getAdminDb } from "@/lib/firebase-admin";
 import { requireAdmin, requireAuth, AuthorizationError } from "@/lib/auth-guards";
 import { getCalendarClient } from "@/lib/google-auth";
 import { serverEnv } from "@/env";
-import { formatISO, parseISO, isBefore } from "date-fns";
+import { formatISO, parseISO, isBefore, addDays } from "date-fns";
+import { CALENDAR_CONFIG } from "@/config/calendarConfig";
 import { calendar_v3 } from "googleapis";
 import { safeSerialize } from "@/lib/utils/firestore";
 import { GoogleCalendarEvent, AttendeeData, UserBooking, ProgramacaoEntry } from "@/types/calendar";
 import { toISOSafe } from "@/lib/date-utils";
 import { isBlockerSummary, isBlockerEvent } from "@/lib/booking/blocker";
+import { eventStartKey } from "@/lib/calendar/window";
 
 /**
  * Busca eventos do Google Calendar para visualização rápida no Front.
@@ -97,6 +99,41 @@ export async function getSyncedEvents(idToken?: string): Promise<GoogleCalendarE
 }
 
 /**
+ * Eventos a partir de agora — para telas que so mostram sessoes agendaveis
+ * (a jornada do membro), sem baixar a colecao inteira (BUG-087).
+ *
+ * A parada da jornada oferece slots FUTUROS e AGENDAVEIS; o membro so pode
+ * agendar ate `MAX_LEAD_TIME_DAYS` (20) dias a frente, entao a janela e
+ * [agora, agora + MAX + 1). Isso corta o passado acumulado (BUG-085) e tambem o
+ * futuro distante — sem o teto, a paginacao do sync (BUG-088, ~801 eventos)
+ * faria esta leitura crescer para a janela inteira de 90 dias. O teto de 250 do
+ * sync antigo ja limitava, por acidente, o que o membro via a ~1 mes; este teto
+ * preserva esse comportamento de forma intencional. O filtro fino da parada
+ * (tema/palavra-chave) segue no cliente — o Firestore nao casa substring.
+ */
+export async function getUpcomingEvents(idToken?: string): Promise<GoogleCalendarEvent[]> {
+  try {
+    await requireAuth(idToken);
+    const db = getAdminDb();
+    const now = new Date();
+    const upperBound = addDays(now, CALENDAR_CONFIG.MAX_LEAD_TIME_DAYS + 1);
+    const snap = await db.collection("Calendar_Events")
+      .where("start", ">=", eventStartKey(now))
+      .where("start", "<=", eventStartKey(upperBound))
+      .get();
+
+    return snap.docs.map(doc => {
+      const data = doc.data();
+      if (isBlockerEvent(data)) return null;
+      return safeSerialize<GoogleCalendarEvent>({ id: doc.id, ...data });
+    }).filter(Boolean) as GoogleCalendarEvent[];
+  } catch (error) {
+    console.error("Erro ao buscar eventos futuros do Firestore:", error);
+    return [];
+  }
+}
+
+/**
  * Busca agendamentos do usuário diretamente de sua subcoleção dedicada.
  */
 export async function getUserBookingsAction(matricula: string): Promise<UserBooking[]> {
@@ -107,14 +144,34 @@ export async function getUserBookingsAction(matricula: string): Promise<UserBook
     }
     const db = getAdminDb();
     const bookingsSnap = await db.collection("User").doc(matricula).collection("User_Bookings").get();
-    
-    const allEvents = await getSyncedEvents();
-    const eventsMap = new Map(allEvents.map(e => [e.id, e]));
+
+    // Detalhe do evento buscado POR ID (uns poucos agendamentos), nao mais pela
+    // colecao inteira (`getSyncedEvents`, ~590 docs). Esta funcao e chamada por 8
+    // telas do membro — o `MemberDashboardView` a chama 3x — e o full scan interno
+    // era o principal multiplicador do apagao de cota (BUG-087). Mesmo padrao de
+    // `career-module.ts` (getAll de refs por id).
+    const eventIds = Array.from(new Set(
+      bookingsSnap.docs.map(d => d.data().eventId || d.id).filter(Boolean)
+    ));
+    const eventsMap = new Map<string, GoogleCalendarEvent>();
+    if (eventIds.length > 0) {
+      const refs = eventIds.map(id => db.collection("Calendar_Events").doc(id));
+      const eventSnaps = await db.getAll(...refs);
+      eventSnaps.forEach(snap => {
+        const data = snap.data();
+        // Preserva o comportamento antigo: bloqueio nunca vira eventDetail (o
+        // `getSyncedEvents` os filtrava, entao um booking legado que apontasse
+        // para um bloqueio ficava com eventDetail null).
+        if (snap.exists && data && !isBlockerEvent(data)) {
+          eventsMap.set(snap.id, safeSerialize<GoogleCalendarEvent>({ id: snap.id, ...data }));
+        }
+      });
+    }
 
     return bookingsSnap.docs.map(docSnap => {
       const data = docSnap.data();
-      const eventDetail = eventsMap.get(data.eventId);
-      
+      const eventDetail = eventsMap.get(data.eventId || docSnap.id);
+
       return {
         id: docSnap.id,
         eventId: data.eventId,
