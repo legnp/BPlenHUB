@@ -23,6 +23,9 @@ import {
   Loader2
 } from "lucide-react";
 import { getOneToOneTypes, updateOneToOneTypes } from "@/actions/OneToOneActions";
+import { getCalendarEventTypes, updateCalendarEventTypes } from "@/actions/calendar-event-types";
+import { getAdminProducts } from "@/actions/products";
+import { CalendarEventType } from "@/types/calendar-event-types";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, addDays, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -47,6 +50,9 @@ export default function AgendaManagementPage() {
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
   const [oneToOneTypes, setOneToOneTypes] = useState<string[]>([]);
   const [newType, setNewType] = useState("");
+  // Tipos de evento (Etapa 3.1): o significado do slot mora aqui, nao no titulo.
+  const [eventTypes, setEventTypes] = useState<CalendarEventType[]>([]);
+  const [servicos, setServicos] = useState<{ serviceCode: string; title: string }[]>([]);
   const [isSaving, setIsSaving] = useState(false);
 
   // Carregar preview dos eventos já sincronizados
@@ -57,9 +63,22 @@ export default function AgendaManagementPage() {
         const events = await getSyncedEvents();
         setSyncedEvents(events);
 
-        // Carrega tipos 1-to-1
+        // Carrega tipos 1-to-1 (as razoes seguem na sua fonte original)
         const types = await getOneToOneTypes();
         setOneToOneTypes(types);
+
+        // Tipos de evento + catalogo de servicos para o campo "atende"
+        const [tiposEvento, produtos] = await Promise.all([
+          getCalendarEventTypes(),
+          getAdminProducts(),
+        ]);
+        setEventTypes(tiposEvento);
+        setServicos(
+          produtos
+            .filter(p => p.serviceCode)
+            .map(p => ({ serviceCode: p.serviceCode as string, title: p.title }))
+            .sort((a, b) => a.serviceCode.localeCompare(b.serviceCode))
+        );
       } catch (err: unknown) {
         console.error("Erro ao carregar preview:", err);
       } finally {
@@ -89,13 +108,43 @@ export default function AgendaManagementPage() {
 
   const handleSave = async () => {
     setIsSaving(true);
-    const res = await updateOneToOneTypes(oneToOneTypes);
-    if (res.success) {
+    // Duas fontes distintas de proposito (Licao 21): as razoes do 1 to 1 seguem
+    // em Settings/OneToOne (ja alimentam o dropdown do membro) e a configuracao
+    // dos tipos vai para Settings/CalendarEventTypes.
+    const [resRazoes, resTipos] = await Promise.all([
+      updateOneToOneTypes(oneToOneTypes),
+      updateCalendarEventTypes(eventTypes),
+    ]);
+    if (resRazoes.success && resTipos.success) {
       setIsConfigModalOpen(false);
     } else {
-      alert("Erro ao salvar configurações.");
+      alert(resTipos.message || "Erro ao salvar configuracoes.");
     }
     setIsSaving(false);
+  };
+
+  const updateTipo = (id: string, patch: Partial<CalendarEventType>) => {
+    setEventTypes(prev => prev.map(t => (t.id === id ? { ...t, ...patch } : t)));
+  };
+
+  const toggleAtende = (id: string, serviceCode: string) => {
+    setEventTypes(prev =>
+      prev.map(t => {
+        if (t.id !== id) return t;
+        const atende = t.atende.includes(serviceCode)
+          ? t.atende.filter(c => c !== serviceCode)
+          : [...t.atende, serviceCode];
+        return { ...t, atende };
+      })
+    );
+  };
+
+  /** Quantos eventos ja sincronizados casam com este tipo — feedback imediato. */
+  const contarEventosDoTipo = (googleTitle: string) => {
+    const alvo = googleTitle.normalize("NFD").replace(/[̀-ͯ]/g, "").trim().toLowerCase();
+    return syncedEvents.filter(
+      ev => (ev.summary || "").normalize("NFD").replace(/[̀-ͯ]/g, "").trim().toLowerCase() === alvo
+    ).length;
   };
 
   const handleAddType = () => {
@@ -197,7 +246,7 @@ export default function AgendaManagementPage() {
             className="flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-[10px] uppercase tracking-widest bg-[var(--input-bg)] border border-[var(--input-border)] text-[var(--text-muted)] transition-all hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)] active:scale-[0.98]"
           >
             <Settings2 className="w-4 h-4" />
-            Configurar 1 to 1
+            Configurar Tipos de Evento
           </button>
 
           <button
@@ -431,53 +480,119 @@ export default function AgendaManagementPage() {
       <GlassModal
         isOpen={isConfigModalOpen}
         onClose={() => setIsConfigModalOpen(false)}
-        title="Configuração de 1-to-1"
-        subtitle="Gerencie os tipos de reunião disponíveis na plataforma."
+        title="Tipos de Evento"
+        subtitle="O horário vem do Google; o significado é configurado aqui."
       >
-        <div className="space-y-6 p-2">
-          <div className="flex gap-3">
-            <input
-              type="text"
-              value={newType}
-              onChange={(e) => setNewType(e.target.value)}
-              placeholder="Ex: Alinhamento Estratégico"
-              className="flex-1 px-6 py-4.5 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-2xl text-sm font-bold text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-start)]/50 transition-all placeholder:text-[var(--text-muted)] placeholder:opacity-40"
-              onKeyDown={(e) => e.key === "Enter" && handleAddType()}
-            />
-            <button
-              onClick={handleAddType}
-              className="px-6 py-4 bg-[var(--accent-start)] text-white rounded-2xl font-bold text-[10px] uppercase tracking-widest hover:bg-[var(--accent-end)] transition-all shadow-xl shadow-[var(--accent-start)]/20"
-            >
-              Adicionar
-            </button>
-          </div>
+        <div className="space-y-5 p-2 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar text-left">
+          {eventTypes.map((tipo) => {
+            const casados = contarEventosDoTipo(tipo.googleTitle);
+            return (
+              <div key={tipo.id} className="p-5 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-2xl space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <h3 className="text-sm font-black text-[var(--text-primary)]">{tipo.label}</h3>
+                    <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">
+                      casa com: {tipo.googleTitle}
+                    </p>
+                  </div>
+                  <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${casados > 0 ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-amber-500/10 border-amber-500/20 text-amber-400"}`}>
+                    {casados > 0 ? `${casados} eventos na agenda` : "nenhum evento com este titulo"}
+                  </span>
+                </div>
 
-          <div className="space-y-3 max-h-[350px] overflow-y-auto pr-3 custom-scrollbar text-left">
-            {oneToOneTypes.length === 0 ? (
-              <div className="py-16 text-center space-y-3 opacity-20">
-                 <Settings2 size={32} className="mx-auto" />
-                 <p className="text-[10px] font-bold uppercase tracking-widest">Nenhum tipo cadastrado</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <label className="space-y-1.5 block">
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Consultor padrao</span>
+                    <input
+                      type="text"
+                      value={tipo.consultorPadrao}
+                      onChange={(e) => updateTipo(tipo.id, { consultorPadrao: e.target.value })}
+                      className="w-full px-4 py-3 bg-[var(--bg-primary)]/50 border border-[var(--input-border)] rounded-xl text-sm font-bold text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-start)]/50"
+                    />
+                  </label>
+                  <label className="space-y-1.5 block">
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Vagas padrao</span>
+                    <input
+                      type="number"
+                      min={0}
+                      value={tipo.vagasPadrao}
+                      onChange={(e) => updateTipo(tipo.id, { vagasPadrao: Number(e.target.value) })}
+                      className="w-full px-4 py-3 bg-[var(--bg-primary)]/50 border border-[var(--input-border)] rounded-xl text-sm font-bold text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-start)]/50"
+                    />
+                  </label>
+                </div>
+
+                <div className="space-y-2">
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Atende os servicos</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                    {servicos.map((sv) => (
+                      <label key={sv.serviceCode} className="flex items-center gap-2 p-2 rounded-xl hover:bg-[var(--accent-soft)] cursor-pointer transition-colors">
+                        <input
+                          type="checkbox"
+                          checked={tipo.atende.includes(sv.serviceCode)}
+                          onChange={() => toggleAtende(tipo.id, sv.serviceCode)}
+                          className="accent-[var(--accent-start)]"
+                        />
+                        <span className="text-[11px] font-medium text-[var(--text-primary)] truncate">{sv.title}</span>
+                        <span className="text-[9px] font-mono text-[var(--text-muted)] opacity-60 shrink-0">{sv.serviceCode}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {tipo.id === "1-to-1" && (
+                  <div className="space-y-2 pt-3 border-t border-[var(--border-primary)]">
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
+                      Razoes (viram o tema do agendamento)
+                    </span>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={newType}
+                        onChange={(e) => setNewType(e.target.value)}
+                        placeholder="Ex: Alinhamento Estrategico"
+                        className="flex-1 px-4 py-3 bg-[var(--bg-primary)]/50 border border-[var(--input-border)] rounded-xl text-sm font-bold text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-start)]/50 placeholder:text-[var(--text-muted)] placeholder:opacity-40"
+                        onKeyDown={(e) => e.key === "Enter" && handleAddType()}
+                      />
+                      <button
+                        onClick={handleAddType}
+                        className="px-5 py-3 bg-[var(--accent-start)] text-white rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-[var(--accent-end)] transition-all"
+                      >
+                        Adicionar
+                      </button>
+                    </div>
+                    <div className="space-y-1.5">
+                      {oneToOneTypes.length === 0 ? (
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-40 py-3">
+                          Nenhuma razao cadastrada
+                        </p>
+                      ) : (
+                        oneToOneTypes.map((razao, index) => (
+                          <div key={index} className="flex justify-between items-center px-4 py-2.5 bg-[var(--bg-primary)]/50 border border-[var(--border-primary)] rounded-xl group">
+                            <span className="text-[11px] font-bold text-[var(--text-primary)]">{razao}</span>
+                            <button
+                              onClick={() => handleRemoveType(razao)}
+                              className="p-1.5 opacity-0 group-hover:opacity-100 bg-red-500/10 text-red-500 rounded-lg transition-all hover:bg-red-500 hover:text-white"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
-            ) : (
-              oneToOneTypes.map((type, index) => (
-                <motion.div 
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  key={index} 
-                  className="flex justify-between items-center p-5 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-2xl group hover:border-[var(--accent-start)]/30 transition-all"
-                >
-                  <span className="text-sm font-bold text-[var(--text-primary)]">{type}</span>
-                  <button
-                    onClick={() => handleRemoveType(type)}
-                    className="p-2.5 opacity-0 group-hover:opacity-100 bg-red-500/10 text-red-500 rounded-xl transition-all hover:bg-red-500 hover:text-white"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </motion.div>
-              ))
-            )}
-          </div>
+            );
+          })}
 
+          <p className="text-[10px] font-medium text-[var(--text-muted)] opacity-70 px-1">
+            Nesta fase a configuracao e apenas registrada: o agendamento do membro segue
+            funcionando pelo mecanismo atual, sem alteracao.
+          </p>
+        </div>
+
+        <div className="p-2">
           <div className="pt-6 border-t border-[var(--border-primary)] flex justify-end">
             <button
               onClick={handleSave}
