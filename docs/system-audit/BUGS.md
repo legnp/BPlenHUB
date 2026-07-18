@@ -2573,6 +2573,32 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - **VALIDADO — deploy de produção confirmado (2026-07-17, `e4af5f3`, success).**
 - Commit/PR: **PR #117**
 
+### BUG-097 Apagar/editar evento no Google deixa o agendamento do membro órfão (fantasma)
+
+- Severidade: **Médio** (o membro perde a sessão sem aviso; já ocorreu em produção)
+- Área/fase onde foi achado: agenda — achado ao analisar a proposta de arquitetura da Gestora
+  (2026-07-18), respondendo "o que acontece se o evento for apagado do Google?"
+- Arquivo(s) afetado(s): `src/actions/calendar-module/sync.ts` (cleanup);
+  `src/actions/calendar-module/queries.ts` (`getUserBookingsAction` → `eventDetail: null`)
+- Cenário de falha: **[CONFIRMADO]** por inventário read-only. A limpeza do sync deleta **todo doc da
+  janela que não veio na resposta do Google — sem checar se há inscritos**. O agendamento do membro
+  (`User_Bookings`) sobrevive, mas aponta para um evento que não existe mais: `eventDetail` vira
+  `null` e a sessão vira um fantasma na agenda dele. A subcoleção `attendees` do evento **também
+  sobrevive órfã** (o Firestore não apaga subcoleção junto do doc pai).
+  **Ocorrência real encontrada:** `BP-012-PF-260526` tem agendamento para
+  `3k5l62a2lnpfjgk9ei4emro3s6_20260623T183500Z`, inexistente na coleção (1 de 12 agendamentos
+  verificados).
+- **Agravante — recorrência:** o id acima é de **instância de evento recorrente** (`base_AAAAMMDDT...`).
+  Editar a **série** no Google pode regenerar instâncias com ids novos; as antigas somem da resposta,
+  o cleanup as apaga, e todo agendamento sobre elas vira fantasma. É o "efeito cascata" que a Gestora
+  intuiu ao propor parar de editar eventos direto no Google.
+- Status: **Aberto** — registrado; correção entra no desenho da nova arquitetura de agenda (ver
+  proposta da Gestora, 2026-07-18), porque a resposta certa depende do modelo escolhido.
+- Decisão de execução: **Precisa decisão de modelo.** Saída provável: o cleanup deixa de apagar
+  evento **com inscritos** — marca como órfão (`sourceDeleted: true`), preserva o vínculo, e o admin
+  mostra "sumiu do Google" para a Gestora decidir (remarcar/cancelar/avisar o membro).
+- Commit/PR: —
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em
