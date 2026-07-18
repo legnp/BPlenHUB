@@ -796,6 +796,33 @@ function ProductItem({ product }: { product: Product }) {
             {product.serviceCode && <span className="opacity-60">{product.serviceCode}</span>}
             <span className="opacity-80">R$ {product.price?.toFixed(2)} (Cartao) | R$ {product.pricePix?.toFixed(2)} (PIX)</span>
           </div>
+
+          {/* Atributos do modelo de acesso (BUG-047) — leitura apenas, a fonte e a
+              planilha via Sync. So aparece o que esta configurado, para nao poluir. */}
+          {(product.escopo || product.concedeSelo || (product.preRequisitos && product.preRequisitos.modo !== "nenhum") || (product.libera && product.libera.length > 0)) && (
+            <div className="flex flex-wrap items-center gap-1.5 pt-1">
+              {product.escopo && (
+                <span className="px-2 py-0.5 rounded-full bg-[var(--input-bg)] border border-[var(--border-primary)] text-[var(--text-muted)] text-[7px] font-bold uppercase tracking-widest">
+                  Escopo: {product.escopo === "member" ? "Membro" : "Publico"}
+                </span>
+              )}
+              {product.concedeSelo && (
+                <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[7px] font-bold uppercase tracking-widest">
+                  Concede Selo
+                </span>
+              )}
+              {product.preRequisitos && product.preRequisitos.modo !== "nenhum" && (
+                <span className="px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[7px] font-bold uppercase tracking-widest">
+                  Pre-req: {product.preRequisitos.modo}{product.preRequisitos.etapas?.length ? ` (${product.preRequisitos.etapas.join(", ")})` : ""}
+                </span>
+              )}
+              {product.libera && product.libera.length > 0 && (
+                <span className="px-2 py-0.5 rounded-full bg-[var(--accent-start)]/10 border border-[var(--accent-start)]/20 text-[var(--accent-start)] text-[7px] font-bold uppercase tracking-widest">
+                  Libera: {product.libera.join(", ")}
+                </span>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
