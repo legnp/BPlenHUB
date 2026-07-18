@@ -627,14 +627,27 @@ sem copy hardcoded fora do que o guia permitir).
   fase valida render/guard/dado/copy e registra o que destoar; o redesign do admin vira uma passada
   separada, com PROPOSTA por tela. **Ordem dos lotes:** A (`users` + dashboard) → B (F&S/devolutiva)
   → C (agenda) → D (produtos) → E (CRUDs) → F (ferramentas).
-- Execução: **Em andamento.** **Lote A (`/admin` dashboard) concluído — PR #115** (BUG-090 atalhos
-  404/duplicados removidos, BUG-091 status de sync real, BUG-092 métrica da semana; tudo com leitura
-  bounded ~53 vs 590). **Lote C antecipado por severidade** (Protocolo item 6): a investigação do
-  `BUG-075` achou um defeito vivo no funil de lead (`BUG-084`, PR #110) + o subsistema de agenda
-  inteiro (Etapas 1/2a do `AGENDA-SYNC-DESIGN.md`: `BUG-087` full scan/apagão PR #112, `BUG-088` sync
-  paginado PR #113, `BUG-095` registry PR #114) e o fuso da política (`BUG-093`, PR #111) — todos
-  corrigidos e validados em produção. Faltam: os **lotes B/D/E/F** e a validação visual do lote A em
-  produção. `BUG-072` (devolutiva `[object Object]`) segue na fila do lote B.
+- Execução: **Substancialmente concluída** — as 19 páginas de admin varridas nos 6 lotes:
+  - **Lote A (`/admin` dashboard) — PR #115:** BUG-090 (atalhos 404/duplicados removidos), BUG-091
+    (status de sync real), BUG-092 (métrica da semana); leitura bounded ~53 vs 590. **Validado em
+    produção pela Gestora.**
+  - **Lote B (F&S/devolutiva) — PRs #116/#117:** BUG-072 (`[object Object]` dos benefícios, **validado
+    e aprovado**) + BUG-096 (analytics F&S mostravam zeros no erro → banner). Previews de forms/surveys
+    tratam id inválido — sem bug.
+  - **Lote C (agenda) — antecipado por severidade:** a investigação do `BUG-075` destravou o
+    subsistema de agenda inteiro (Etapas 1/2a do `AGENDA-SYNC-DESIGN.md`: `BUG-084` PR #110, `BUG-087`
+    PR #112, `BUG-088` PR #113, `BUG-095` PR #114) + o fuso da política (`BUG-093`, PR #111). Todos
+    **validados em produção**.
+  - **Lote D (produtos) — PR #118:** BUG-047 (painel exibe os atributos do modelo de acesso,
+    display-only). Scan: `products/[id]` lê Firestore direto do client mas produto é público (não é
+    escalação); sem serviceCode hardcoded.
+  - **Lote E (CRUDs: partners/marketing/social/qrcodes) — LIMPO, nenhum bug novo.** Guards de mutação
+    confirmados dentro de cada action (T-02); sem rotas mortas, sem render de objeto cru, sem includes
+    acentuado; default do gerador de cupons (`posicionamento-profissional`) é slug válido.
+  - **Lote F (sandbox/migrate-welcome) — LIMPO.** Sandbox só navega (query params); `migrate-welcome`
+    é `requireAdmin` + idempotente (`merge` + ids fixos, pula quem não tem legado), one-shot controlado.
+  - **Pendente:** validação visual da Gestora em produção dos lotes B(devolutiva)/D (produtos) — a do
+    dashboard e da agenda já foi feita.
   Nota: os 4 bugs de segurança vinculados abaixo já
   foram corrigidos (via T-02), mas a validação de UI/responsivo/copy das
   páginas em si ainda não começou; não confundir uma coisa com a outra.

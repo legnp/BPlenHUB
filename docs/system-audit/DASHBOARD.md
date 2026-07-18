@@ -12,7 +12,17 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-17 (chat de execução — **F1-06 lote A: dashboard do admin
+> **Última atualização:** 2026-07-17 (chat de execução — **F1-06 CONCLUÍDA: as 19 páginas de admin
+> validadas**. O maior item aberto do processo, que nunca tinha sido iniciado, está fechado. 6 lotes:
+> **A** dashboard (PR #115, BUG-090/091/092 — validado por ela), **B** F&S/devolutiva (PRs #116/#117,
+> BUG-072 **aprovado em produção** + BUG-096), **C** agenda (antecipado por severidade — o subsistema
+> inteiro: BUG-084/087/088/095 + o fuso 093, todos validados), **D** produtos (PR #118, BUG-047 —
+> atributos do modelo de acesso agora visíveis no painel), **E** CRUDs e **F** ferramentas —
+> **ambos limpos, nenhum bug novo** (guards de mutação confirmados dentro de cada action, herança do
+> T-02; sandbox sem action destrutiva; migrate-welcome idempotente). **9 bugs corrigidos na fase**,
+> todos com deploy confirmado. Fila de severidade **vazia**. Pendente: validação visual do lote D.
+>
+> _(entrada anterior)_ 2026-07-17 (chat de execução — **F1-06 lote A: dashboard do admin
 > (PR #115)**, no ar. Reescrito com dados reais e leitura bounded (~53 vs 590 do full scan).
 > **BUG-090** (bloco de atalhos era cópia da sidebar com 2 links 404 — removido; card "LEADS" e ponto
 > verde decorativo também), **BUG-091** (card de agenda lê o `lastSync` real, 1 leitura, cor por

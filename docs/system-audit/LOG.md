@@ -3484,9 +3484,33 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
   serão exibidos. Desbloqueia a Gestora validar a config de acesso (base da Fase C) pelo painel.
   Scan do lote: sem serviceCode hardcoded; `products/[id]` lê Firestore direto do client, mas produto
   é lido publicamente (não é escalação) — nota do mapa mantida.
-- Suíte 166/166; type-check, build, eslint idêntico à `main` nos três. Deploys `f8da309` (072) e
-  `e4af5f3` (096) confirmados success; #118 em deploy.
-- **Próximo:** lotes E (CRUDs: partners/marketing/social/qrcodes) e F (sandbox/migrate-welcome).
+- Suíte 166/166; type-check, build, eslint idêntico à `main` nos três. Deploys `f8da309` (072),
+  `e4af5f3` (096) e `7153cd4` (047) todos confirmados **success**.
+
+### F1-06 lotes E e F — varredura limpa (nenhum bug novo)
+
+- **Lote E (CRUDs: partners/marketing/social/qrcodes):** **nenhum bug novo.** Guards de mutação
+  confirmados **dentro** de cada action (`upsertPartnerAction`, `deletePartnerAction`,
+  `saveCouponAction`, `deleteSocialPost`, `togglePostStatus`, `deleteQRCodeAction` — todos com
+  `requireAdmin`, herança do T-02); sem rotas mortas (padrão do `BUG-090`); sem render de objeto cru;
+  sem `includes` acentuado. O default do gerador de cupons V2 (`posicionamento-profissional`) foi
+  **verificado contra a base** — é slug válido, não um default obsoleto.
+- **Lote F (sandbox/migrate-welcome):** **nenhum bug novo.** `sandbox` só faz `router.push` com query
+  params (sem action destrutiva — relevante dado o histórico da Lição 1). `migrate-welcome` tem
+  `requireAdmin`, pula quem não tem dado legado, e é idempotente (`set(...,{merge:true})` com ids
+  fixos — re-rodar não duplica nem corrompe).
+- **Resultado honesto:** dois lotes sem achados é um desfecho legítimo — as CRUDs já tinham sido
+  endurecidas no T-02, e a varredura confirma isso em vez de inventar problema.
+
+### F1-06 — FASE CONCLUÍDA (validação das 19 páginas de admin)
+
+- **Todas as 19 páginas varridas** nos 6 lotes (A dashboard, B F&S/devolutiva, C agenda, D produtos,
+  E CRUDs, F ferramentas). **9 bugs corrigidos na fase** (`BUG-047/072/090/091/092/096` + os de
+  agenda `084/087/088/095`), todos mergeados com deploy de produção confirmado.
+- **O maior item aberto do processo, que nunca tinha sido iniciado, está fechado.**
+- **Pendente:** validação visual da Gestora dos lotes B (devolutiva — **já validada**) e D (produtos
+  — pendente). Dashboard e agenda já validados por ela.
+- **Fila de triagem por severidade: vazia.** Nenhum Crítico/Alto aberto.
 
 ### F1-06 lote A — dashboard do admin (PR #115)
 
