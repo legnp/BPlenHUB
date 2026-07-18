@@ -1852,6 +1852,8 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   "Salário (enabled: Sim | value: 5000 | currency: BRL) | ...". Casos de borda preservados (arquivo
   `url` → link; array → lista; null → "—").
 - Decisão de execução: corrigido no lote B; validação visual em produção.
+- **VALIDADO — deploy de produção confirmado (2026-07-17, `f8da309`, success).** Conferência visual
+  da Gestora na devolutiva de um membro com benefícios preenchidos (protocolo entregue).
 - Commit/PR: **PR #116**
 
 ### BUG-073 Sessões de MentoCoach nunca aparecem para o membro (agenda sempre vazia)
@@ -2550,12 +2552,14 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   Firestore estourada, como no apagão de 2026-07-16/17), o admin vê **"0 respostas / 0 ativos"** —
   indistinguível de "não há dados". É a Lição 30/família do `BUG-089`: a falha vira uma resposta
   plausível. (O `admin-fs.ts` faz **certo**: devolve `{ success:false, error }`.)
-- Status: **Aberto** — registrado no lote B; correção separada (muda a forma de retorno, exige a
-  página F&S tratar o estado de erro — não é one-liner). Não incluído no PR do `BUG-072` para mantê-lo
-  focado.
-- Decisão de execução: propor à Gestora junto do fechamento do lote B. Baixo impacto, mas é a mesma
-  classe de bug que já custou caro no apagão.
-- Commit/PR: —
+- Status: **Corrigido** — 2026-07-17 (PR #117), lote B. As duas actions ganham um campo `error?`
+  (opcional, compatível com o consumidor) preenchido no `catch` via `getErrorMessage`; as páginas
+  `admin/fs/forms` e `admin/fs/surveys` mostram um **banner vermelho** ("Não foi possível carregar as
+  estatísticas... os números abaixo não refletem a base") quando `error` está presente — o admin
+  distingue "sem dados" de "não consegui ler". O `admin-fs.ts` já fazia certo (não tocado).
+- Decisão de execução: aprovado pela Gestora ("pode seguir com a correção do bug-096"). Validação
+  visual em produção.
+- Commit/PR: **PR #117**
 
 ---
 
