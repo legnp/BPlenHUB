@@ -1840,14 +1840,19 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 
 - Severidade: Baixo (exibição admin)
 - Área/fase onde foi achado: F1-05 (2026-07-15) — reportado pela Gestora; **adiado para F1-06**
-- Arquivo(s) afetado(s): painel `admin/fs/devolutiva` (a confirmar no arquivo exato)
-- Cenário de falha: a devolutiva do admin renderiza `beneficios_pacote` (um `Record<string,
-  {enabled, value, currency}>`) por concatenação de string → "Salário: [object Object] | Seguro
-  Médico: [object Object] | ...". Os dados de remuneração não aparecem legíveis para o admin.
-- Status: **Aberto** — adiado para a **F1-06** (validação das páginas de admin), por decisão da
-  Gestora ("anote para corrigirmos quando validando as páginas do admin").
-- Decisão de execução: corrigir na F1-06 (formatar o objeto de benefícios de forma legível).
-- Commit/PR: —
+- Arquivo(s) afetado(s): `src/components/admin/DevolutivaComportamentalView.tsx:641` (`formatAnswerValue`)
+- Cenário de falha: **[CONFIRMADO]** a linha `.map(([k, v]) => \`${k}: ${v}\`)` interpolava o valor
+  cru; quando `v` era um objeto (o benefício `{enabled, value, currency, ...}`), `${v}` virava
+  `[object Object]`. A função não recursava para o nível aninhado.
+- Status: **Corrigido** — 2026-07-17 (PR #116), **lote B da F1-06**. `formatAnswerValue` passa a
+  recursar no objeto aninhado, entre parênteses (para o separador não colidir com o nível de cima), e
+  omite só campo **vazio** — `false` é preservado, senão um benefício desabilitado (`enabled:false`)
+  apareceria como ativo. **Correção geral** (Lição 26): vale para qualquer resposta com objeto
+  aninhado, não só benefícios. Verificado por simulação com o dado real de `beneficios_pacote`:
+  "Salário (enabled: Sim | value: 5000 | currency: BRL) | ...". Casos de borda preservados (arquivo
+  `url` → link; array → lista; null → "—").
+- Decisão de execução: corrigido no lote B; validação visual em produção.
+- Commit/PR: **PR #116**
 
 ### BUG-073 Sessões de MentoCoach nunca aparecem para o membro (agenda sempre vazia)
 
@@ -2534,6 +2539,23 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   no **20º dia (06/08)** e **agendou** uma (22:00h) — antes o modal mostrava vazio para qualquer data
   depois de 29/07. Fecha o bug (e destravou a validação do `BUG-093` junto).
 - Commit/PR: **PR #114**
+
+### BUG-096 Analytics de Forms/Surveys do admin retornam zeros no erro (fallback mudo)
+
+- Severidade: Baixo (admin-only; engana, mas não corrompe — o dado real está intacto)
+- Área/fase onde foi achado: **F1-06 / lote B** — varredura transversal das páginas F&S (2026-07-17)
+- Arquivo(s) afetado(s): `src/actions/admin-forms.ts:87-92`, `src/actions/admin-surveys.ts:87-93`
+- Cenário de falha: **[CONFIRMADO]** por leitura. Ambos os `catch` devolvem
+  `{ forms/surveys: [], stats: { total: 0, active: 0, last24h: 0 } }`. Num erro real (ex.: cota do
+  Firestore estourada, como no apagão de 2026-07-16/17), o admin vê **"0 respostas / 0 ativos"** —
+  indistinguível de "não há dados". É a Lição 30/família do `BUG-089`: a falha vira uma resposta
+  plausível. (O `admin-fs.ts` faz **certo**: devolve `{ success:false, error }`.)
+- Status: **Aberto** — registrado no lote B; correção separada (muda a forma de retorno, exige a
+  página F&S tratar o estado de erro — não é one-liner). Não incluído no PR do `BUG-072` para mantê-lo
+  focado.
+- Decisão de execução: propor à Gestora junto do fechamento do lote B. Baixo impacto, mas é a mesma
+  classe de bug que já custou caro no apagão.
+- Commit/PR: —
 
 ---
 
