@@ -645,8 +645,23 @@ export function DevolutivaComportamentalView({
     if (typeof val === "object") {
       const obj = val as Record<string, unknown>;
       if (obj.url) return String(obj.url); // File links
+      // Objetos aninhados (ex.: `beneficios_pacote`, um Record de benefícios
+      // `{enabled, value, currency, ...}`) eram interpolados crus com `${v}` e
+      // viravam "[object Object]" (BUG-072). Recursão + parênteses para o nível
+      // aninhado não colidir com o separador de cima. Só campo VAZIO (nulo/""/
+      // undefined) é omitido — `false` é preservado, senão um benefício
+      // desabilitado (`enabled:false`) apareceria como se estivesse ativo, o que
+      // enganaria o admin. Correção geral: vale para qualquer resposta com objeto
+      // aninhado, não só benefícios.
       return Object.entries(obj)
-        .map(([k, v]) => `${k.replace(/_/g, " ")}: ${v}`)
+        .filter(([, v]) => v !== null && v !== undefined && v !== "")
+        .map(([k, v]) => {
+          const label = k.replace(/_/g, " ");
+          if (v && typeof v === "object" && !Array.isArray(v)) {
+            return `${label} (${formatAnswerValue(v)})`;
+          }
+          return `${label}: ${formatAnswerValue(v)}`;
+        })
         .join(" | ");
     }
     return String(val);
