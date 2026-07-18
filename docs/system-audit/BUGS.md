@@ -1413,11 +1413,16 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   todos os campos (verificado por leitura — a serialização não corta nada); a tela é
   que não renderiza os campos novos. Impacto: a Gestora não consegue validar a
   configuração de acesso pelo painel.
-- Status: Aberto — corrigir na validação da tela admin de produtos (Fase 1/F1-06) ou
-  quando o painel for tocado: exibir os atributos por produto (leitura apenas — a
-  fonte é a planilha, via Sync; não criar edição paralela).
-- Decisão de execução: display-only, baixo risco; aguarda a fase da tela.
-- Commit/PR: —
+- Status: **Corrigido** — 2026-07-17 (PR #118), **lote D da F1-06**. O `ProductItem` em
+  `admin/products/page.tsx` passa a exibir uma linha de badges com os atributos do modelo de acesso
+  (`escopo`, `concedeSelo`, `preRequisitos` com modo+etapas, `libera` com serviceCodes), **leitura
+  apenas** — a fonte é a planilha via Sync, sem edição paralela. Só renderiza o que está configurado.
+  Verificado read-only contra a base: **os 12 produtos** têm atributos e serão exibidos (ex.:
+  `BPL-002: Escopo Membro | Concede Selo | Pré-req todos (BPL-000)`; `BPL-PAC-EB: ... | Libera:
+  BPL-000..BPL-005`). Desbloqueia a Gestora validar a config de acesso pelo painel, sem abrir o
+  Firestore.
+- Decisão de execução: display-only, baixo risco; corrigido no lote D. Validação visual em produção.
+- Commit/PR: **PR #118**
 
 ### BUG-048 Nav pública: "Nossos serviços" mantém realce de ativo em páginas que não são a dele
 
@@ -1852,8 +1857,8 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   "Salário (enabled: Sim | value: 5000 | currency: BRL) | ...". Casos de borda preservados (arquivo
   `url` → link; array → lista; null → "—").
 - Decisão de execução: corrigido no lote B; validação visual em produção.
-- **VALIDADO — deploy de produção confirmado (2026-07-17, `f8da309`, success).** Conferência visual
-  da Gestora na devolutiva de um membro com benefícios preenchidos (protocolo entregue).
+- **VALIDADO E APROVADO EM PRODUÇÃO pela Gestora (2026-07-17):** "funcionando corretamente" — os
+  benefícios da devolutiva aparecem legíveis, sem `[object Object]`. Deploy `f8da309`, success.
 - Commit/PR: **PR #116**
 
 ### BUG-073 Sessões de MentoCoach nunca aparecem para o membro (agenda sempre vazia)
@@ -2559,6 +2564,13 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   distingue "sem dados" de "não consegui ler". O `admin-fs.ts` já fazia certo (não tocado).
 - Decisão de execução: aprovado pela Gestora ("pode seguir com a correção do bug-096"). Validação
   visual em produção.
+- **Nota — o padrão é SISTÊMICO, não só F&S:** o `catch → []`/`null` mudo existe em vários outros
+  actions (`products.ts` — `getAdminProducts` devolve `[]` no erro, `delivery.ts`, `queries.ts`,
+  `external-booking.ts`/`BUG-089`, etc.). Corrigidos aqui só os 2 de F&S (onde o achado apareceu).
+  Um sweep sistêmico do padrão fica como débito registrado — endereçar cada um quando a tela/fluxo
+  correspondente for tocado, elevando a `error?` explícito onde a UI se beneficiar. Não abrir bug por
+  arquivo; esta nota é o marcador.
+- **VALIDADO — deploy de produção confirmado (2026-07-17, `e4af5f3`, success).**
 - Commit/PR: **PR #117**
 
 ---

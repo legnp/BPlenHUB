@@ -1033,7 +1033,7 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-044 | Médio | Parcial (PR #28) | Fase A/A0 — parser: paths + slug BPL-003 + travas feitos; leituras de preço por coordenada seguem (mitigadas); campos novos via aba resiliente (A1) |
 | BUG-045 | Médio | Corrigido (PR #32) | Fase B — suíte de testes vermelha na baseline desde PR #19 (mock sem `requireMatricula`) |
 | BUG-046 | Baixo | Aberto | T-05/booking — links de e-mail p/ rota inexistente `/hub/membro/dashboard` |
-| BUG-047 | Baixo | Aberto | F1-06 — painel admin não exibe atributos do modelo de acesso |
+| BUG-047 | Baixo | Corrigido (PR #118) | F1-06 lote D — painel admin exibe os atributos do modelo de acesso (display-only) |
 | BUG-048 | Baixo | Corrigido (PR #44) | F1-01 — realce de nav pública por rota |
 | BUG-049 | Baixo | Corrigido (PR #44) | F1-01 — footer /conteudo adaptado ao tema claro |
 | BUG-050 | Baixo | Corrigido (PR #44/#47) | F1-01 — backdrop do FAQ; resolvido de fato na regra global de tema dos modais (PR #47) |
@@ -1042,7 +1042,7 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-053 | Médio | Aberto | F1-02 — painel de contratos básico (status pagamento, sem assinatura/doc/NF, link morto); CT-4 |
 | BUG-054 | Médio | Corrigido parte IP (PR #50) | F1-02 — IP real capturado na assinatura (CT-1); reforços jurídicos extras → CT-5 |
 | BUG-055 | Médio | Aberto | F1-02 — gate lê subcoleção morta `User/{uid}/Orders`; CT-0 |
-| BUG-072 | Baixo | Aberto | F1-06 — `[object Object]` nos benefícios da devolutiva do admin; lote B |
+| BUG-072 | Baixo | Corrigido (PR #116) | F1-06 lote B — benefícios legíveis na devolutiva; validado em produção |
 | BUG-075 | Baixo | Corrigido (PR #110) | F1-06 — typo "Bloquado"; resolvido como efeito do BUG-084 (radical normalizado) |
 | BUG-084 | Médio | Corrigido (PR #110) | F1-06 — sync descartava os bloqueios e a agenda pública oferecia horário ocupado (249 de 756) |
 | BUG-085 | Baixo | Aberto (adiado) | F1-06/T-03 — 340 docs de eventos passados nunca removidos; **a correção óbvia é destrutiva** (ata/attendees/histórico de carreira) |
@@ -1051,6 +1051,7 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-088 | **Alto** | Corrigido (PR #113) | F1-06 — sync paginado (250→801) + batch em blocos + teto de janela na leitura; Etapa 2a |
 | BUG-089 | Médio | Aberto | F1-06 — falha muda: erro de cota vira "tudo livre" no `/agendar`; transversal às etapas |
 | BUG-095 | **Alto** | Corrigido (PR #114) | F1-06 — sync não reconstruía o `Programacao_Registry`; agenda do membro (1 to 1) congelava. **Validado em produção** |
+| BUG-096 | Baixo | Corrigido (PR #117) | F1-06 lote B — analytics de F&S mostravam zeros no erro (fallback mudo); banner de erro. Padrão sistêmico anotado |
 | BUG-090 | Médio | Corrigido (PR #115) | F1-06 lote A — bloco de atalhos (cópia da sidebar, 2×404) removido |
 | BUG-091 | Médio | Corrigido (PR #115) | F1-06 lote A — card de agenda agora lê o `lastSync` real (1 leitura) |
 | BUG-092 | Médio | Corrigido (PR #115) | F1-06 lote A — métrica da semana ISO (fuso BR), 52 leituras vs 590 |

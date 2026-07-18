@@ -3466,6 +3466,28 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
 - **Próximo (a pedido da Gestora, "avancemos na auditoria"):** F1-06 lote A — dashboard do admin
   (BUG-090/091/092), branch `fix/admin-dashboard-real` com a lógica pura pronta e testada.
 
+### F1-06 lotes B e D — devolutiva, F&S e produtos (PRs #116/#117/#118)
+
+- **Lote B (F&S/devolutiva):** **BUG-072** (PR #116) — o `[object Object]` dos benefícios da
+  devolutiva era `formatAnswerValue` interpolando `${v}` cru sem recursar; corrigido com recursão +
+  parênteses, omitindo só campo vazio (`false` preservado, senão benefício desabilitado pareceria
+  ativo). Correção geral (Lição 26). **Validado e aprovado em produção pela Gestora** ("funcionando
+  corretamente"). Varredura transversal do lote achou **BUG-096** (PR #117): `admin-forms`/
+  `admin-surveys` devolviam zeros no `catch` — num erro real o admin veria "0 respostas" achando que
+  está vazio (fallback mudo, família BUG-089). Campo `error?` + banner. **Nota registrada: o padrão
+  `catch → []` é sistêmico** (products/delivery/queries/external-booking) — sweep como débito, não
+  bug por arquivo. Previews de forms/surveys tratam id inválido bem (sem bug).
+- **Lote D (produtos):** **BUG-047** (PR #118) — o painel de produtos não exibia os atributos do
+  modelo de acesso (`escopo`/`concedeSelo`/`preRequisitos`/`libera`); só conferíveis no Firestore. O
+  dado já vinha (`getAdminProducts`+`safeSerialize`), a tela é que não renderizava. Adicionada linha
+  de badges no `ProductItem`, display-only. Verificado read-only: os **12 produtos** têm atributos e
+  serão exibidos. Desbloqueia a Gestora validar a config de acesso (base da Fase C) pelo painel.
+  Scan do lote: sem serviceCode hardcoded; `products/[id]` lê Firestore direto do client, mas produto
+  é lido publicamente (não é escalação) — nota do mapa mantida.
+- Suíte 166/166; type-check, build, eslint idêntico à `main` nos três. Deploys `f8da309` (072) e
+  `e4af5f3` (096) confirmados success; #118 em deploy.
+- **Próximo:** lotes E (CRUDs: partners/marketing/social/qrcodes) e F (sandbox/migrate-welcome).
+
 ### F1-06 lote A — dashboard do admin (PR #115)
 
 - **Escopo:** o dashboard exibia 3 ficções e fazia full scan (~590 leituras). Reescrito com dados
