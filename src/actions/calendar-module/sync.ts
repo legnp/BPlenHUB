@@ -9,6 +9,16 @@ import { calendar_v3 } from "googleapis";
 import { getEventStandardSlug } from "@/lib/utils";
 import { isBlockerSummary } from "@/lib/booking/blocker";
 import { updateGlobalProgramacaoRegistryAction } from "./post-event";
+import { getCalendarEventTypes } from "@/actions/calendar-event-types";
+
+/** Casa o titulo do Google com o `googleTitle` do tipo, sem depender de acento/caixa. */
+function normalizeEventTitle(value: string | undefined | null): string {
+  return (value || "")
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .trim()
+    .toLowerCase();
+}
 
 /**
  * Sincronização de 90 Dias (Firestore 🛡️)
@@ -107,6 +117,16 @@ export async function runCalendarSync(options: { guardMassDeletion?: boolean } =
       }
     });
 
+    // Tipos de evento (Etapa 3.1): resolvem o SIGNIFICADO do slot a partir do
+    // titulo generico do Google. Nesta fase o `tipoId` e apenas GRAVADO — ninguem
+    // le para decidir nada, e o casamento atual (palavra-chave + `Tema:`) segue
+    // intocado. A virada acontece na Fase 3.3, depois de validada. Evento que nao
+    // casa com nenhum tipo fica sem `tipoId` e aparece no admin como "sem tipo".
+    const eventTypes = await getCalendarEventTypes();
+    const tipoPorTitulo = new Map(
+      eventTypes.map(t => [normalizeEventTitle(t.googleTitle), t])
+    );
+
     // Upsert dos vindos do Google
     const syncStamp = new Date().toISOString();
     googleItems.forEach((item: calendar_v3.Schema$Event) => {
@@ -119,8 +139,12 @@ export async function runCalendarSync(options: { guardMassDeletion?: boolean } =
       const mentorMatch = plainDescription.match(/Orientador:\s*([^\n;]+)/i);
       const themeMatch = plainDescription.match(/Tema:\s*([^\n;]+)/i);
 
+      const tipo = tipoPorTitulo.get(normalizeEventTitle(item.summary));
+
       ops.push({ kind: "set", ref, data: {
         summary: item.summary,
+        // Etapa 3.1 — so classifica; nenhum consumidor le isto ainda.
+        tipoId: tipo?.id ?? null,
         start: item.start?.dateTime || item.start?.date,
         end: item.end?.dateTime || item.end?.date,
         location: item.location || "",
