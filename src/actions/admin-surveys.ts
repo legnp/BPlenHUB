@@ -4,6 +4,7 @@ import { getAdminDb } from "@/lib/firebase-admin";
 import { SURVEY_REGISTRY } from "@/config/surveys";
 import { SurveyResponse, SurveyStatus } from "@/types/survey";
 import { requireAdmin } from "@/lib/auth-guards";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 export interface SurveyAnalyticsSummary {
   id: string;
@@ -28,6 +29,7 @@ import { toSafeDate } from "@/lib/date-utils";
 export async function getAdminSurveysAnalytics(): Promise<{
   surveys: SurveyAnalyticsSummary[];
   stats: GlobalSurveyStats;
+  error?: string;
 }> {
   try {
     await requireAdmin();
@@ -86,9 +88,12 @@ export async function getAdminSurveysAnalytics(): Promise<{
     };
   } catch (err: unknown) {
     console.error("❌ [getAdminSurveysAnalytics] Erro crítico:", err);
+    // Falha não vira "0 respostas" mudo (BUG-096): devolve `error` para a página
+    // distinguir "sem dados" de "não consegui ler" (ex.: cota do Firestore).
     return {
       surveys: [],
-      stats: { totalGlobalResponses: 0, activeSurveysCount: 0, responsesLast24h: 0 }
+      stats: { totalGlobalResponses: 0, activeSurveysCount: 0, responsesLast24h: 0 },
+      error: getErrorMessage(err, "Falha ao carregar as estatísticas de pesquisas.")
     };
   }
 }
