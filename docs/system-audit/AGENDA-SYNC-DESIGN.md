@@ -319,9 +319,16 @@ Decisão da Gestora (confirmada): **atribui-se ao tipo**, não a cada evento.
 - **Padrão do tipo** — "Consultoria Individual → Consultor Y, 1 vaga, atende
   [Devolutiva Comportamental, Devolutiva Plano de Carreira]". Toda ocorrência
   herda, **inclusive as futuras**, sem trabalho manual.
-- **Exceção por ocorrência** — só onde varia de fato: o **tema** da Consultoria em
-  Grupo (cada data tem assunto próprio) e, eventualmente, um **consultor
-  substituto** numa data específica.
+- **Atribuição por ocorrência** — quando aquela data tem consultor ou tema próprio.
+
+> **Vocabulário (correção da Gestora, 2026-07-18):** nunca chamar de "consultor
+> **substituto**". Internamente é sobrescrita de um padrão, mas conceitual e
+> operacionalmente é **atribuição** — não há ninguém substituindo ninguém. O
+> documento e a UI usam **atribuir/atribuição**.
+
+**Consultor começa em "a definir".** Decisão da Gestora: em vez de forçar um
+padrão que pode não existir ainda, o campo nasce como `"a definir"` — o que cria
+**a mesma fila de trabalho visível do tema** (ver 8.7), em vez de um silêncio.
 
 Por que isso e não por instância: o `BUG-097` provou que **id de instância de
 recorrente muda** quando a série é editada. Atribuição por instância evaporaria
@@ -398,3 +405,64 @@ vivo como fallback** até a 3.3 estar validada em produção. Nenhuma virada de 
    criado antes da lista suspensa. Na **Fase 1 o consultor é texto livre**.
 3. **`BUG-097`** (agendamento fantasma) é **pré-requisito conceitual** da 3.4 — a
    resposta certa depende deste modelo, por isso ficou aberto aguardando.
+
+### 8.7 Ciclo de vida do slot polivalente (ponto de atenção da Gestora)
+
+**O caso:** um slot `Consultoria Individual` atende *Devolutiva de Análise
+Comportamental* **e** *Devolutiva de Plano de Carreira*. O cliente A agenda a
+Comportamental → o slot é consumido e some para os demais. Se essa reunião for
+**cancelada ou remarcada**, o slot **volta a ficar disponível** — e volta
+**polivalente**, aberto de novo aos dois serviços.
+
+**Isto já funciona hoje, e o modelo novo preserva** (verificado no código):
+
+| Ação | O que acontece com a vaga |
+|---|---|
+| Agendar | `registeredCount +1`; ao atingir `totalCapacity`, o slot some da oferta |
+| Cancelar (`cancelBookingAction`) | `registeredCount -1` → **slot volta à oferta** |
+| Remarcar (`rescheduleBookingAction`) | `-1` no evento antigo, `+1` no novo → **o antigo volta à oferta** |
+
+**Por que a polivalência sobrevive ao cancelamento:** porque o rótulo do serviço
+vive no **agendamento**, não no evento (8.3). O evento nunca é "carimbado" como
+Comportamental — quem tem esse rótulo é a sessão do cliente A. Cancelou, o
+agendamento some e o slot volta a ser um `Consultoria Individual` genérico.
+**Se o rótulo morasse no evento, ele ficaria preso ao serviço do primeiro que
+agendasse** — exatamente o bug que este desenho evita.
+
+### 8.8 Normalização do tema — todo evento tem tema, muda só a ORIGEM
+
+Recomendação da Gestora (2026-07-18), incorporada: em vez de tratar tema como um
+campo que só o grupo usa, **todo evento tem tema** — o que se configura por tipo é
+**de onde o dado vem**.
+
+| Tipo | Origem do tema | Quem preenche |
+|---|---|---|
+| **Consultoria em Grupo** | **atribuição no admin** (antes do agendamento) | Gestora |
+| **1 to 1** | a **razão/objetivo** que o membro já escolhe ao agendar | membro (automático) |
+| **Consultoria Individual** (devolutivas) | a **trilha de onde o agendamento partiu** | ninguém — o sistema deduz |
+
+Exemplo dela: se o membro agenda pela trilha de Análise Comportamental, o sistema
+entende o contexto e grava o tema como *"Devolutiva de Análise Comportamental"* —
+**sem pedir nada a ele**.
+
+**O dado do 1 to 1 já existe:** `bookEventAction` recebe
+`oneToOneData: { type, expectations }`, e `type` é justamente a razão escolhida.
+Hoje ela é gravada e não vira tema — é só ligar.
+
+**Distinção que precisa ficar explícita (senão uma implementação quebra a outra):**
+
+- **Tema como OFERTA** (grupo) — existe **antes** do agendamento e é o que faz o
+  membro decidir se quer participar.
+- **Tema como REGISTRO** (1 to 1, devolutivas) — nasce **no** agendamento e
+  descreve o que a sessão foi.
+
+São o mesmo campo com papéis temporais opostos. Quem implementar precisa saber
+disso, ou vai tratar os dois como "preencher antes" (e travar o 1 to 1) ou como
+"preencher no booking" (e deixar o grupo sem oferta).
+
+**Refinamento sobre o casamento do grupo:** hoje o tema do grupo é **texto livre**
+que precisa bater **exatamente** com o título da parada — o silêncio da Lição 30.
+No modelo novo, a atribuição por ocorrência do grupo deve ser **escolher a parada
+numa lista** (identificador), não digitar texto. O tema exibido deriva dessa
+escolha. Assim o casamento por texto **deixa de existir** em vez de ficar mais
+bonito.
