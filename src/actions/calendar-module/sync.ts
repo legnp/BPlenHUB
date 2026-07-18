@@ -15,8 +15,29 @@ import { updateGlobalProgramacaoRegistryAction } from "./post-event";
  * Identifica novos eventos, atualiza existentes e remove "fantasmas".
  */
 export async function syncCalendarToFirestore(idToken?: string) {
+  await requireAdmin(idToken);
+  // Disparo humano: a Gestora ve o resultado na tela, entao uma remocao grande
+  // (ex.: limpeza legitima de muitos eventos) nao e barrada.
+  return runCalendarSync({ guardMassDeletion: false });
+}
+
+/**
+ * O sync em si, SEM guard — resolvedor cru.
+ *
+ * Existe separado porque o cron nao tem sessao de admin: pôr `requireAdmin` aqui
+ * dentro impediria o disparo automatico. Padrao do Protocolo item 8 / Licao 9:
+ * separar o resolvedor cru (interno, chamado por quem ja verificou a identidade)
+ * do action exposto na rede (`syncCalendarToFirestore`, com `requireAdmin`).
+ * **Nao exportar isto pelo dispatcher `calendar.ts`** — quem chama de fora tem de
+ * passar pelo action guarded ou pela rota de cron (que valida o `CRON_SECRET`).
+ *
+ * `guardMassDeletion`: trava anti-apagao para execucao NAO ASSISTIDA. Se a
+ * resposta do Google vier drasticamente menor que a base, aborta em vez de
+ * apagar — uma resposta parcial as 3h sumiria com eventos reais em silencio, e
+ * so se descobriria quando um membro nao conseguisse agendar.
+ */
+export async function runCalendarSync(options: { guardMassDeletion?: boolean } = {}) {
   try {
-    await requireAdmin(idToken);
     const calendar = await getCalendarClient();
     const db = getAdminDb();
     const now = new Date();
@@ -116,6 +137,19 @@ export async function syncCalendarToFirestore(idToken?: string) {
       } });
       syncedCount++;
     });
+
+    // Trava anti-apagao (execucao nao assistida). Se a resposta do Google veio
+    // parcial, o cleanup acima marcaria para delecao os eventos que ele nao viu —
+    // e ninguem esta olhando as 3h. Aborta ANTES de qualquer escrita.
+    if (options.guardMassDeletion && firestoreEventsSnap.size > 0) {
+      const ratio = deletedCount / firestoreEventsSnap.size;
+      if (ratio > 0.5) {
+        const pct = (ratio * 100).toFixed(0);
+        const msg = `Abortado por seguranca: o sync apagaria ${deletedCount} de ${firestoreEventsSnap.size} eventos da janela (${pct}%). A resposta do Google veio com ${googleItems.length} eventos e pode estar incompleta. Nada foi alterado. Rode o Sincronizar manual para revisar.`;
+        console.error(`[Sync] ${msg}`);
+        return { success: false, message: msg };
+      }
+    }
 
     // Comita em blocos de 450 (margem sob o teto de 500 do Firestore).
     const BATCH_LIMIT = 450;
