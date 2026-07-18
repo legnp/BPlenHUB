@@ -5,6 +5,7 @@ import { FORMS_REGISTRY } from "@/config/forms";
 import { FormRecord } from "@/types/forms";
 import { toSafeDate } from "@/lib/date-utils";
 import { requireAdmin } from "@/lib/auth-guards";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 export interface FormAnalyticsSummary {
   id: string;
@@ -28,6 +29,7 @@ export interface GlobalFormStats {
 export async function getAdminFormsAnalytics(): Promise<{
   forms: FormAnalyticsSummary[];
   stats: GlobalFormStats;
+  error?: string;
 }> {
   try {
     await requireAdmin();
@@ -86,9 +88,12 @@ export async function getAdminFormsAnalytics(): Promise<{
     };
   } catch (err: unknown) {
     console.error("❌ [getAdminFormsAnalytics] Erro crítico:", err);
+    // Falha não vira "0 respostas" mudo (BUG-096): devolve `error` para a página
+    // distinguir "sem dados" de "não consegui ler" (ex.: cota do Firestore).
     return {
       forms: [],
-      stats: { totalGlobalResponses: 0, activeFormsCount: 0, responsesLast24h: 0 }
+      stats: { totalGlobalResponses: 0, activeFormsCount: 0, responsesLast24h: 0 },
+      error: getErrorMessage(err, "Falha ao carregar as estatísticas de formulários.")
     };
   }
 }

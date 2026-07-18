@@ -21,11 +21,21 @@ export const metadata: Metadata = {
 };
 
 export default async function FormsManagementPage() {
-  const { forms, stats } = await getAdminFormsAnalytics();
+  const { forms, stats, error } = await getAdminFormsAnalytics();
 
   return (
     <div className="space-y-10 animate-fade-in-up">
       <FSTabs />
+
+      {error && (
+        <div className="flex items-center gap-3 p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400">
+          <Activity size={18} className="shrink-0" />
+          <div className="text-left">
+            <p className="text-sm font-bold">Não foi possível carregar as estatísticas.</p>
+            <p className="text-[11px] opacity-80">Os números abaixo não refletem a base — tente recarregar. ({error})</p>
+          </div>
+        </div>
+      )}
       
       {/* Header Admin */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
