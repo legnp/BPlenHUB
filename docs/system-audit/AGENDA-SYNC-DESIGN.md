@@ -283,3 +283,118 @@ carrega ata, métricas e `attendees`, e a carreira lê eventos passados por id).
 | `BUG-088` | **Alto** | sync lê 250 de 795 eventos, sem paginação; nada depois de 14/08 sincroniza, e a limpeza apaga o que não leu |
 | `BUG-089` | Médio | falha muda: `catch → []` faz erro de cota virar "tudo livre" no `/agendar` |
 | `BUG-085` | Baixo | docs passados acumulados — **fora** deste plano (correção óbvia é destrutiva) |
+
+---
+
+## 8. Etapa 3 REDESENHADA — slot genérico + significado no HUB
+
+**Origem:** proposta da **Gestora** (2026-07-18). **Substitui** a Etapa 3 original
+(seção 5, `extendedProperties`), que foi descartada: ela exigia enriquecer evento
+a evento e não resolvia a fragilidade das recorrências. Decisões dela registradas
+ao longo desta seção.
+
+### 8.1 Princípio
+
+**Separar o SLOT (quando) do SIGNIFICADO (o quê).**
+
+| Dono | O que ele decide |
+|---|---|
+| **Google Calendar** | existência do horário, data/hora, duração, cancelamento, recorrência |
+| **HUB (admin/Firestore)** | consultor, vagas, temas, quais serviços aquele slot atende |
+
+No Google passam a existir apenas eventos com **títulos genéricos**. Lista fechada
+aprovada pela Gestora: **`1 to 1`**, **`Consultoria em Grupo`**, **`Consultoria
+Individual`**. O que o membro vê ("Devolutiva de Análise Comportamental") é
+resolvido pelo HUB, não digitado no Google.
+
+**Consequência direta:** acaba o parsing de `Vagas:` / `Orientador:` / `Tema:` da
+descrição — a classe de bug das Lições 19/30 morre na origem. E a Gestora deixa de
+editar eventos recorrentes no Google só para preencher campo, que é o efeito
+cascata que ela queria evitar (e que o `BUG-097` comprova ser real).
+
+### 8.2 Regra de atribuição: padrão no TIPO, exceção na OCORRÊNCIA
+
+Decisão da Gestora (confirmada): **atribui-se ao tipo**, não a cada evento.
+
+- **Padrão do tipo** — "Consultoria Individual → Consultor Y, 1 vaga, atende
+  [Devolutiva Comportamental, Devolutiva Plano de Carreira]". Toda ocorrência
+  herda, **inclusive as futuras**, sem trabalho manual.
+- **Exceção por ocorrência** — só onde varia de fato: o **tema** da Consultoria em
+  Grupo (cada data tem assunto próprio) e, eventualmente, um **consultor
+  substituto** numa data específica.
+
+Por que isso e não por instância: o `BUG-097` provou que **id de instância de
+recorrente muda** quando a série é editada. Atribuição por instância evaporaria
+junto; atribuição por tipo é imune.
+
+### 8.3 Modelo de dados
+
+**`Calendar_Event_Types`** (coleção nova — a configuração):
+```
+{
+  id: "consultoria-individual",
+  googleTitle: "Consultoria Individual",   // casa com o titulo generico no Google
+  consultorPadrao: string,                  // Fase 1: texto livre | Fase 2: matricula
+  vagasPadrao: number,
+  atende: string[]                          // serviceCodes que este slot pode servir
+}
+```
+
+**`Calendar_Events`** (existente — ganha overrides e o marcador de órfão):
+```
+  tipoId?: string          // resolvido no sync pelo googleTitle
+  overrideConsultor?: string
+  overrideVagas?: number
+  overrideTema?: string    // o "Tema:" de hoje, agora preenchido no admin
+  sourceDeleted?: boolean  // sumiu do Google mas tem inscrito (ver 8.4)
+```
+
+**`User_Bookings`** (existente — passa a carregar o rótulo visível):
+```
+  serviceCode: string      // de qual trilha o membro agendou
+  serviceLabel: string     // "Devolutiva de Analise Comportamental"
+```
+
+**Por que o rótulo vive no AGENDAMENTO e não no evento:** um slot de grupo tem
+mais de uma vaga; dois membros podem agendar por trilhas diferentes, e o evento não
+pode ter dois nomes. O nome é uma propriedade da sessão **daquele membro**.
+
+### 8.4 Cenários de falha (as perguntas da Gestora, respondidas)
+
+| Cenário | Hoje | No modelo novo |
+|---|---|---|
+| **Evento apagado no Google, SEM inscrito** | doc apagado pela limpeza | igual — apaga (correto) |
+| **Evento apagado no Google, COM inscrito** | doc apagado; **o agendamento do membro vira fantasma** (`BUG-097`, já ocorreu com o `BP-012`) | **não apaga**: marca `sourceDeleted: true`, preserva o vínculo, e o admin mostra "sumiu do Google" para a Gestora decidir (remarcar / cancelar / avisar) |
+| **Série recorrente editada** | ids de instância mudam → antigas somem → cleanup apaga → fantasmas | atribuição vive no **tipo**, não na instância: nada se perde. Instâncias com inscrito caem na regra acima |
+| **Data/hora do evento muda** | já funciona: o sync atualiza, e o agendamento aponta por **id**, então acompanha sozinho | igual, **+ e-mail para quem já está inscrito** (decisão da Gestora) |
+| **Título genérico não casa com nenhum tipo** | — | evento entra sem `tipoId`; admin lista como "sem tipo atribuído" (fila de trabalho, não silêncio) |
+
+### 8.5 Fases
+
+| Fase | Escopo | Depende de |
+|---|---|---|
+| **3.1** | `Calendar_Event_Types` + tela de admin (CRUD dos 3 tipos) + `tipoId` resolvido no sync | — |
+| **3.2** | Overrides por ocorrência (tema/consultor) na tela de admin | 3.1 |
+| **3.3** | Booking passa a gravar `serviceCode`/`serviceLabel`; filtros da jornada param de casar texto | 3.1 |
+| **3.4** | `sourceDeleted` + painel de órfãos (fecha o `BUG-097`) + e-mail de mudança de horário | 3.1 |
+| **3.5** | Rótulo visível "Orientador" → **"Consultor"** (17 ocorrências, camada visual) | — (independente) |
+
+**Transição:** o mecanismo atual (`meeting-keyword` + `Tema:` parseado) **continua
+vivo como fallback** até a 3.3 estar validada em produção. Nenhuma virada de chave
+única — os 683 eventos atuais seguem funcionando durante toda a migração.
+
+### 8.6 Pendências registradas (decisões da Gestora)
+
+1. **`BUG-098` — renomear o campo de dado `mentor` → `consultor` + migração.**
+   Só o **rótulo visível** vira "Consultor" agora (baixo risco); o campo gravado
+   fica, porque renomear exige migrar produção e o histórico de carreira lê
+   `mentor`. A Gestora pediu que ficasse **explicitamente no radar da auditoria**.
+2. **Fase 2 do Consultor — exige usuário autenticado.** Decisão da Gestora: o
+   Consultor **será um usuário da plataforma como os demais** (login/matrícula), e o
+   papel é **concedido via admin**. Hoje **não existe** área de consultor — é
+   expansão futura do sistema; por ora, **poder atribuir pelo admin basta**.
+   Implicação técnica: `UserRole` hoje é `visitor | member | admin | suspended` e o
+   único selo é `isProfessional` — o papel "consultor" **não existe** e precisa ser
+   criado antes da lista suspensa. Na **Fase 1 o consultor é texto livre**.
+3. **`BUG-097`** (agendamento fantasma) é **pré-requisito conceitual** da 3.4 — a
+   resposta certa depende deste modelo, por isso ficou aberto aguardando.

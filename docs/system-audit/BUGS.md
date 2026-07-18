@@ -2599,6 +2599,28 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   mostra "sumiu do Google" para a Gestora decidir (remarcar/cancelar/avisar o membro).
 - Commit/PR: —
 
+### BUG-098 Campo de dado `mentor` mantém a nomenclatura antiga (rótulo já é "Consultor")
+
+- Severidade: Baixo (débito de nomenclatura; sem impacto funcional)
+- Área/fase onde foi achado: agenda / Etapa 3 — decisão da Gestora em 2026-07-18
+- Arquivo(s) afetado(s): campo `mentor` em `Calendar_Events` e leitores — **49 ocorrências em 12
+  arquivos** (`calendar-module/{sync,queries,booking,post-event}.ts`, `career-module.ts`,
+  `ProgramacaoResumo.tsx`, `Calendar.tsx`, `UserBookings.tsx`, `MemberDashboardView.tsx`,
+  `gestao_carreira`, `SurveyEngine.tsx`, `seed-products.ts`)
+- Cenário de falha: não há falha — é **desalinhamento de nomenclatura**. A Gestora renomeou o rótulo
+  visível de "Orientador" para **"Consultor"** (camada visual, 17 ocorrências, baixo risco), mas o
+  campo gravado segue `mentor`. Quem ler o código depois encontra dois nomes para a mesma coisa.
+- **Por que NÃO foi feito junto (decisão consciente da Gestora):** renomear o campo exige **migrar o
+  dado já gravado** em todos os eventos e agendamentos de produção, e o histórico de carreira
+  (`career-module.ts`) lê `mentor` para exibir o autor do feedback — um rename cosmético com risco
+  real de quebrar histórico. Custo alto, benefício zero para o usuário final.
+- Status: **Aberto — pendência registrada de propósito** (a Gestora pediu explicitamente que ficasse
+  no radar da auditoria).
+- Decisão de execução: fazer isolado, com script de migração próprio e backup, **nunca de carona**
+  em outro PR. Candidato natural: junto da implementação da Etapa 3, quando `Calendar_Events` já
+  estiver sendo reescrito.
+- Commit/PR: —
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em
