@@ -380,7 +380,7 @@ pode ter dois nomes. O nome é uma propriedade da sessão **daquele membro**.
 
 | Fase | Escopo | Depende de |
 |---|---|---|
-| **3.1** | `Calendar_Event_Types` + tela de admin (CRUD dos 3 tipos) + `tipoId` resolvido no sync | — |
+| **3.1** | ~~`Calendar_Event_Types` + tela de admin + `tipoId` no sync~~ **CONCLUÍDA — PR #120** | — |
 | **3.2** | Overrides por ocorrência (tema/consultor) na tela de admin | 3.1 |
 | **3.3** | Booking passa a gravar `serviceCode`/`serviceLabel`; filtros da jornada param de casar texto | 3.1 |
 | **3.4** | `sourceDeleted` + painel de órfãos (fecha o `BUG-097`) + e-mail de mudança de horário | 3.1 |
@@ -466,3 +466,38 @@ No modelo novo, a atribuição por ocorrência do grupo deve ser **escolher a pa
 numa lista** (identificador), não digitar texto. O tema exibido deriva dessa
 escolha. Assim o casamento por texto **deixa de existir** em vez de ficar mais
 bonito.
+
+### 8.9 Fase 3.1 — CONCLUÍDA (PR #120, 2026-07-18)
+
+**Entregue e em produção** (deploy `1e73fea`, success).
+
+- `Settings/CalendarEventTypes` (doc único — 3 itens de config custam 1 leitura,
+  não 3) com os 3 tipos da lista fechada, vagas `1/1/10` e consultor `"a definir"`.
+- Tela: o botão "Configurar 1 to 1" do `/admin/agenda` virou **"Configurar Tipos
+  de Evento"** — mesmo `GlassModal`, **sem página nem item de navegação novos**.
+  As **razões do 1 to 1 seguem em `Settings/OneToOne`** (fonte original que já
+  alimenta o dropdown do membro); a tela edita as duas coisas, cada uma no seu
+  lugar (Lição 21). O campo "atende" é **checkbox de serviço** (identificador),
+  não texto digitado (Lição 19).
+- **Feedback imediato na tela:** cada tipo mostra quantos eventos da agenda
+  casaram com ele — a Gestora vê se o título está batendo **antes** de sincronizar,
+  em vez de descobrir depois que nada apareceu.
+- `sync.ts` resolve e grava `tipoId`. **Só classifica**: nenhum consumidor lê o
+  campo, o casamento atual segue intocado.
+
+**Estado da agenda no momento da entrega** (levantado da fonte real):
+
+| Título no Google | Qtd | Casa com |
+|---|---|---|
+| `1 to 1` | 220 | `1-to-1` |
+| `Consultoria Individual` | 39 | `consultoria-individual` |
+| `Consultoria em Grupo` | 26 | `consultoria-em-grupo` |
+| Devolutiva / Plano de Carreira / MentoCoach / Feedback / Orientação em Grupo / Onboarding | **477** | *(nenhum — modelo antigo, intocado)* |
+
+**Teste de regressão que protege a transição:** garante que os títulos do modelo
+antigo **não casam** com nenhum tipo, e que `Orientação em Grupo` (antigo) não se
+confunde com `Consultoria em Grupo` (novo) — os dois coexistem hoje. Se um dia
+casarem, o teste quebra antes de a sessão errada aparecer para o membro.
+
+**Critério de aceite invertido, de propósito:** nesta fase **nada pode mudar para
+o membro**. Se mudar, é bug.
