@@ -237,8 +237,28 @@ vincular etapa↔evento pela interface do Google que ela já usa.
 |---|---|---|---|
 | 1 — parar o full scan | **Concluída — PR #112** | — | evita o próximo apagão; barateia o Blaze |
 | 2a — paginação | **Concluída — PR #113** | — | eventos depois de 14/08 passam a existir |
-| 2b — `syncToken` + automação | **Aprovada, a fazer** | 2a | acaba o botão manual e a defasagem |
+| 2b — automação (cron diário) | **Concluída — PR #119** | 2a | a agenda deixa de depender do clique manual |
+| 2b — `syncToken` (incremental) | **Adiada — sem necessidade no Hobby** | 2a | só valeria para frequência > 1×/dia |
 | 3 — metadado estruturado | **Aprovada, a desenhar** | decisão (a/b/c) | mata os bugs de texto livre |
+
+**Etapa 2b concluída (2026-07-17, PR #119) — e o `syncToken` foi ADIADO por dado novo.**
+Ao dimensionar a automação, a conta mudou a decisão: o plano da Vercel é **Hobby**, que
+limita cron a **1× por dia** (expressões mais frequentes **falham no deploy** — confirmado
+na doc oficial). A 1×/dia o custo é **1.947 leituras + 798 escritas = 4% da cota** do Spark;
+de hora em hora seria **93%/96%** — outro apagão. Ou seja: **no Hobby o incremental não é
+pré-requisito**, é otimização sem problema para resolver. Recomendação anterior ("incremental
+primeiro") **revista com base no dado**; o `syncToken` só volta à pauta se houver gatilho
+externo (GitHub Actions) ou Vercel Pro.
+
+Entregue: cron `"0 6 * * *"` — **UTC sempre** (doc oficial), logo **03:00 BRT**; escrever
+`"0 3"` dispararia meia-noite no Brasil (mesma armadilha do `BUG-093`, pega antes de subir).
+Rota `/api/cron/sync-agenda` com `CRON_SECRET` (padrão da Vercel) e **falha fechada**;
+alerta por e-mail em falha, porque **a Vercel não repete cron que falhou**. Separado o
+resolvedor cru (`runCalendarSync`) do action guarded (Protocolo item 8 — o cron não tem
+sessão). **Trava anti-apagão** só no caminho não assistido: aborta antes de escrever se a
+deleção passar de 50% da janela. Idempotência verificada (a doc avisa que a entrega pode
+duplicar). **Passo manual pendente da Gestora: criar o `CRON_SECRET` na Vercel** — sem ele a
+rota recusa (503) e o cron não roda.
 
 **Progresso (2026-07-17):** Etapas 1 e 2a entregues e em produção. A Etapa 1 (PR #112) achou que o
 multiplicador real do apagão era `getUserBookingsAction` (8 telas do membro, dashboard 3×), não o

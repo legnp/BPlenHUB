@@ -347,6 +347,33 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
     única, grepe o nome da função e confirme que o LADO QUE DECIDE a usa** — não o lado que exibe.
     _(Caso real: `BUG-093`, herdado do PR #103.)_
 
+38. **Meça o custo do automatismo ANTES de automatizar — e deixe o dado revisar a sua
+    recomendação.** A Gestora perguntou "haverá efeito colateral?" antes de aprovar o cron, e a
+    medição salvou a operação: cada sync custa **1.947 leituras + 798 escritas**; de hora em hora
+    seriam **93%/96% da cota diária** — outro apagão, agora agendado para todo dia. Automatizar é
+    multiplicar o custo de uma operação pela frequência, e ninguém faz essa conta olhando o código.
+    **Corolário mais importante:** eu havia recomendado "faça o incremental primeiro"; ao descobrir
+    que o plano é **Hobby** (cron no máximo 1×/dia, e expressão mais frequente **falha no deploy**),
+    o custo caiu para 4% e o incremental deixou de ser pré-requisito. **Recomendação baseada em
+    premissa não verificada é chute com sotaque técnico** — verifiquei o limite do plano na doc e
+    inverti minha própria recomendação. Menos código, mesmo resultado. _(Caso real: Etapa 2b, PR #119.)_
+
+39. **Agendador roda em UTC — "3h" no arquivo não é 3h para o usuário.** Ia escrever `"0 3 * * *"`
+    para o sync das 3h da manhã; o cron da Vercel roda **sempre em UTC**, então teria disparado
+    **meia-noite no Brasil**. É a mesma família do `BUG-093` (janela de agendamento no fuso do
+    servidor), mas em infraestrutura — e desta vez pega **antes** de subir, por checar a doc em vez
+    de assumir. **Todo agendamento (cron, job, TTL, expiração) tem um fuso implícito: confirme qual,
+    e converta explicitamente no comentário do código**, senão o próximo leitor "corrige" de volta.
+
+40. **Ao automatizar uma operação destrutiva, o guard tem de valer só para o caminho NÃO ASSISTIDO.**
+    O sync apaga o que não veio do Google — com um humano olhando, uma limpeza em massa legítima é
+    intencional; às 3h, uma resposta parcial do Google apagaria eventos reais em silêncio. A trava
+    (aborta se a deleção passar de 50% da janela) entrou **só no caminho do cron**; o botão manual
+    segue livre. **Automatizar não é só agendar: é reavaliar quais suposições dependiam de ter
+    alguém olhando.** No mesmo pacote: sem retry (a Vercel não repete cron que falhou) o alerta
+    deixa de ser luxo, e a entrega best-effort exige que a operação seja idempotente — o sync é
+    reconciliação, então sobrevive a execução duplicada. _(Caso real: Etapa 2b.)_
+
 ---
 
 ## Melhorias sugeridas para o PLANO (para o chat de planejamento refinar)
@@ -412,6 +439,12 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
   — extraia a fonte única), 22 (teste que falha pode estar certo; cheque a regra
   antes de corrigir o teste) e 23 (action compartilhada: mapeie os chamadores,
   um deles pode ser receita) adicionadas, a partir do `BUG-076` (PRs #102/#103).
+- 2026-07-17 — Lições 38 (meça o custo do automatismo antes de automatizar; e
+  deixe o dado revisar sua recomendação — o plano Hobby dispensou o incremental),
+  39 (agendador roda em UTC: "3h" no arquivo não é 3h para o usuário) e 40 (ao
+  automatizar operação destrutiva, o guard vale só para o caminho não assistido;
+  sem retry o alerta é obrigatório e a operação precisa ser idempotente)
+  adicionadas, a partir da Etapa 2b (PR #119).
 - 2026-07-17 — Lições 35 (a suíte tem de rodar no ambiente da produção: o
   `vitest` sem `TZ` fixo rodava em BRT e escondia 2 testes que falhavam em UTC
   havia semanas), 36 (mute cada metade do fix separadamente — a metade que

@@ -3487,6 +3487,35 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
 - Suíte 166/166; type-check, build, eslint idêntico à `main` nos três. Deploys `f8da309` (072),
   `e4af5f3` (096) e `7153cd4` (047) todos confirmados **success**.
 
+### Etapa 2b — sincronização automática da agenda (PR #119)
+
+- **A Gestora pediu os efeitos colaterais ANTES de aprovar** — e a medição mudou a decisão.
+  Custo real por sync: **1.947 leituras + 798 escritas**. De hora em hora seria **93% das leituras
+  e 96% das escritas** da cota diária do Spark: **outro apagão**. O gargalo são as escritas, porque
+  o sync reescreve os ~798 eventos toda vez, mesmo sem mudança.
+- **Plano Hobby confirmado pela Gestora** → a doc oficial da Vercel diz que Hobby limita cron a
+  **1×/dia** (mais frequente **falha no deploy**), com precisão de ±59min. A 1×/dia o custo é **4%
+  da cota**. **Conclusão que inverteu minha recomendação anterior:** o `syncToken` (incremental)
+  **não é pré-requisito no Hobby** — seria complexidade (e risco, pelo ponto das exclusões) para
+  resolver um problema que o plano dela não tem. Adiado; só volta com gatilho externo ou Pro.
+- **Armadilha de fuso pega antes de subir:** o cron da Vercel roda **sempre em UTC**. Eu ia escrever
+  `"0 3 * * *"` para "3h" — teria disparado **meia-noite no Brasil**. Ficou `"0 6 * * *"` = 03:00
+  BRT. É a mesma classe do `BUG-093`, desta vez evitada por verificar a doc em vez de assumir.
+- **Entregue:** rota `/api/cron/sync-agenda` protegida por `CRON_SECRET` (padrão oficial da Vercel,
+  que envia o segredo no header `Authorization`), com **falha fechada** (sem segredo, 503 — o projeto
+  já foi mordido por rota de sync sem guard, `BUG-024`/Lição 1); **alerta por e-mail** em falha
+  (escolha da Gestora), necessário porque **a Vercel não repete cron que falhou**; **resolvedor cru
+  separado do action guarded** (Protocolo item 8 — o cron não tem sessão de admin); e **trava
+  anti-apagão** só no caminho não assistido (aborta antes de escrever se a deleção passar de 50% da
+  janela — uma resposta parcial do Google às 3h sumiria com eventos em silêncio).
+- **Idempotência verificada:** a doc avisa que a entrega é best-effort e pode **duplicar**. O sync é
+  reconciliação (lê o Google, grava com merge, remove o que sumiu) — rodar duas vezes dá o mesmo
+  resultado.
+- Suíte 166/166, type-check, build (rota registrada), eslint sem warning novo. **Deploy `5d573dc`
+  confirmado success.**
+- **PASSO MANUAL PENDENTE DA GESTORA:** criar a env `CRON_SECRET` na Vercel (Production) e
+  redeployar. **Sem ela o cron não roda** (a rota recusa com 503, de propósito).
+
 ### F1-06 lotes E e F — varredura limpa (nenhum bug novo)
 
 - **Lote E (CRUDs: partners/marketing/social/qrcodes):** **nenhum bug novo.** Guards de mutação
