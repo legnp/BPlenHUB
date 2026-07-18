@@ -3466,6 +3466,28 @@ com IP real no registro (CT-1). (4) Abrir o MESMO link de novo → "já assinado
 - **Próximo (a pedido da Gestora, "avancemos na auditoria"):** F1-06 lote A — dashboard do admin
   (BUG-090/091/092), branch `fix/admin-dashboard-real` com a lógica pura pronta e testada.
 
+### F1-06 lote A — dashboard do admin (PR #115)
+
+- **Escopo:** o dashboard exibia 3 ficções e fazia full scan (~590 leituras). Reescrito com dados
+  reais e leitura bounded (~53), com as decisões da Gestora (card real, métrica da semana, opção a).
+- **BUG-090:** os 2 atalhos 404 ("/admin/portfolio", "/admin/forms") sumiram — mas na correção
+  descobri que o **bloco inteiro era cópia da sidebar** (que aponta certo); a duplicata é que
+  apodreceu (Lição 21). Removi o bloco em vez de consertar hrefs. Card "LEADS" (não era métrica) e o
+  ponto verde decorativo do header também saíram.
+- **BUG-091:** card "Agenda" lê o `lastSync` mais recente (1 leitura) e mostra a idade com cor por
+  faixa; `null`/inválido caem em crítico — o indicador **pode dizer "não"** (`resolveSyncFreshness`).
+- **BUG-092:** métrica "Agendamentos 1:1" agora é da **semana ISO no fuso BR** (`getWeekBounds`),
+  via consulta por intervalo. Medido na base: 52 leituras (era 590+), métrica real 0 nesta semana.
+- **Espaço liberado** → lista "Próximas sessões desta semana" (opção a da Gestora), custo zero de
+  leitura extra (mesma query). Verificação read-only: 4 sessões corretas, ordenadas.
+- **Ação nova:** `src/actions/admin-dashboard.ts` (leitura bounded) sobre a lógica pura já testada
+  (`src/lib/admin/dashboard.ts`, 15 testes com mutação). Type-check, suíte **166/166**, build, eslint
+  0 nos arquivos novos. **Deploy de produção confirmado** (`8028c55`, success).
+- **Nota de arquitetura:** este era o último chamador de alto valor do `getSyncedEvents` no fluxo de
+  membro/admin. Sobram só `admin/agenda` e `admin/gestao-agenda` (baixa frequência) — residual
+  documentado no `AGENDA-SYNC-DESIGN.md`.
+- **Pendente:** validação visual da Gestora em produção (BUG-030); depois, lotes B/D/E/F da F1-06.
+
 ---
 
 ## [2026-07-17] Chat de execução — apagão de cota, plano da agenda e o fuso da política (PR #111)

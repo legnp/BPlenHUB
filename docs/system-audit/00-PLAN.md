@@ -627,11 +627,14 @@ sem copy hardcoded fora do que o guia permitir).
   fase valida render/guard/dado/copy e registra o que destoar; o redesign do admin vira uma passada
   separada, com PROPOSTA por tela. **Ordem dos lotes:** A (`users` + dashboard) → B (F&S/devolutiva)
   → C (agenda) → D (produtos) → E (CRUDs) → F (ferramentas).
-- Execução: **Em andamento** — plano aprovado; **lote C antecipado em parte** por triagem de
-  severidade (Protocolo item 6): a investigação do `BUG-075`, pedida pela Gestora, achou um defeito
-  vivo no funil de lead público (`BUG-084`, PR #110) e 2 colaterais (`BUG-086` corrigido; `BUG-085`
-  adiado com aviso de que a correção óbvia é destrutiva). Etapas 0 (inventário read-only) e 1
-  (varredura transversal das 19 páginas) e o **lote A** seguem pendentes.
+- Execução: **Em andamento.** **Lote A (`/admin` dashboard) concluído — PR #115** (BUG-090 atalhos
+  404/duplicados removidos, BUG-091 status de sync real, BUG-092 métrica da semana; tudo com leitura
+  bounded ~53 vs 590). **Lote C antecipado por severidade** (Protocolo item 6): a investigação do
+  `BUG-075` achou um defeito vivo no funil de lead (`BUG-084`, PR #110) + o subsistema de agenda
+  inteiro (Etapas 1/2a do `AGENDA-SYNC-DESIGN.md`: `BUG-087` full scan/apagão PR #112, `BUG-088` sync
+  paginado PR #113, `BUG-095` registry PR #114) e o fuso da política (`BUG-093`, PR #111) — todos
+  corrigidos e validados em produção. Faltam: os **lotes B/D/E/F** e a validação visual do lote A em
+  produção. `BUG-072` (devolutiva `[object Object]`) segue na fila do lote B.
   Nota: os 4 bugs de segurança vinculados abaixo já
   foram corrigidos (via T-02), mas a validação de UI/responsivo/copy das
   páginas em si ainda não começou; não confundir uma coisa com a outra.
@@ -1048,9 +1051,9 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-088 | **Alto** | Corrigido (PR #113) | F1-06 — sync paginado (250→801) + batch em blocos + teto de janela na leitura; Etapa 2a |
 | BUG-089 | Médio | Aberto | F1-06 — falha muda: erro de cota vira "tudo livre" no `/agendar`; transversal às etapas |
 | BUG-095 | **Alto** | Corrigido (PR #114) | F1-06 — sync não reconstruía o `Programacao_Registry`; agenda do membro (1 to 1) congelava. **Validado em produção** |
-| BUG-090 | Médio | Aberto | F1-06 lote A — 2 dos 6 atalhos do dashboard são 404 |
-| BUG-091 | Médio | Aberto | F1-06 lote A — card "sincronização ok" é hardcoded e mente |
-| BUG-092 | Médio | Aberto | F1-06 lote A — métrica "desta semana" conta a coleção inteira, sem filtro de data |
+| BUG-090 | Médio | Corrigido (PR #115) | F1-06 lote A — bloco de atalhos (cópia da sidebar, 2×404) removido |
+| BUG-091 | Médio | Corrigido (PR #115) | F1-06 lote A — card de agenda agora lê o `lastSync` real (1 leitura) |
+| BUG-092 | Médio | Corrigido (PR #115) | F1-06 lote A — métrica da semana ISO (fuso BR), 52 leituras vs 590 |
 | BUG-093 | Médio | Corrigido (PR #111) | F1-06/F2-04 — política de agendamento avaliada no fuso do servidor; suíte agora roda em `TZ=UTC` |
 | BUG-094 | Baixo | Aberto (adiado) | F2-04 — `resolveEventWeek` mistura semana ISO com ano civil; muda semântica de chave já gravada |
 

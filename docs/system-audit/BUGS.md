@@ -2378,9 +2378,12 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
     ("Portfolio Command Center").
   - **"Ver Formulários"** → `/admin/forms` — **não existe**. A rota real é `/admin/fs/forms`.
   Os outros 4 atalhos (`/admin/social`, `/admin/partners`, `/admin/fs`, `/admin/agenda`) estão OK.
-- Status: **Aberto** — F1-06 lote A.
-- Decisão de execução: correção trivial de href; entra no PR do lote A.
-- Commit/PR: —
+- Status: **Corrigido** — 2026-07-17 (PR #115). Na correção, descoberto que o bloco inteiro de
+  atalhos era uma **cópia da sidebar** (que já leva a todos os destinos, e aponta certo) — a duplicata
+  é que tinha apodrecido (Lição 21). **Bloco removido** em vez de consertar os 2 hrefs: elimina os
+  404 sem perder acesso. Removido junto o card "LEADS" (não era métrica).
+- Decisão de execução: proposta aprovada pela Gestora; validação visual em produção.
+- Commit/PR: **PR #115**
 
 ### BUG-091 Dashboard do admin: card "AGENDA / sincronização ok" é hardcoded e mente
 
@@ -2394,11 +2397,12 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   sugere "sistema saudável" sem ler nada. **Um indicador que não pode dizer "não" não é indicador.**
   Família da Lição 20 (texto de regra é contrato — audite a execução antes de anunciar) e da 30
   (resposta plausível esconde a falha).
-- Status: **Aberto** — F1-06 lote A.
-- Decisão de execução: duas saídas — (a) tornar real (ler o `lastSync` mais recente e mostrar a
-  idade do dado: "sincronizado há 2h"), ou (b) remover o card. **Decisão da Gestora.** A opção (a)
-  é a que ela de fato usaria, e casa com a Etapa 1 do `AGENDA-SYNC-DESIGN.md` (leitura barata: 1 doc).
-- Commit/PR: —
+- Status: **Corrigido** — 2026-07-17 (PR #115), opção (a) escolhida pela Gestora. O card lê o
+  `lastSync` mais recente (**1 leitura**) e mostra a idade do dado com cor por faixa (verde <24h,
+  âmbar <7d, vermelho acima/nunca). `null`/data inválida caem em crítico — o indicador **pode dizer
+  "não"** (`resolveSyncFreshness`, testado com mutação). O ponto verde pulsante do header foi removido.
+- Decisão de execução: opção (a) aprovada pela Gestora; validação visual em produção.
+- Commit/PR: **PR #115**
 
 ### BUG-092 Dashboard do admin: métrica "1:1 nesta semana" não é da semana — conta tudo, desde sempre
 
@@ -2411,10 +2415,13 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   Como `Calendar_Events` acumula o passado para sempre (`BUG-085`), o número **só sobe** e nunca
   reflete "esta semana". A Gestora toma decisão olhando um número que não é o que o rótulo promete.
 - Nota: é também o pior caso do `BUG-087` — **590 leituras para exibir 1 número**.
-- Status: **Aberto** — F1-06 lote A.
-- Decisão de execução: corrigir o cálculo (filtro por semana) **ou** o rótulo — a Gestora decide qual
-  é a métrica que ela quer. Casa com a Etapa 1 (consulta por intervalo em vez de full scan).
-- Commit/PR: —
+- Status: **Corrigido** — 2026-07-17 (PR #115). A métrica passa a contar a **semana ISO no fuso de
+  Brasília** (`getWeekBounds`, testado com mutação), via consulta por intervalo em vez de full scan —
+  medido na base real: **52 leituras** na janela da semana (era 590+), métrica real **0** nesta
+  semana. O espaço liberado no dashboard virou a lista "Próximas sessões desta semana" (escolha da
+  Gestora, opção a), com custo zero de leitura extra (mesma query).
+- Decisão de execução: métrica = "agendamentos da semana" (decisão da Gestora); validação em produção.
+- Commit/PR: **PR #115**
 
 ### BUG-093 Política de agendamento escorrega 3h em produção (janela calculada no fuso do servidor)
 

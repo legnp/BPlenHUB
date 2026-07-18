@@ -12,7 +12,16 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-17 (chat de execução — **validação da Gestora + BUG-095**. Ela
+> **Última atualização:** 2026-07-17 (chat de execução — **F1-06 lote A: dashboard do admin
+> (PR #115)**, no ar. Reescrito com dados reais e leitura bounded (~53 vs 590 do full scan).
+> **BUG-090** (bloco de atalhos era cópia da sidebar com 2 links 404 — removido; card "LEADS" e ponto
+> verde decorativo também), **BUG-091** (card de agenda lê o `lastSync` real, 1 leitura, cor por
+> faixa, pode dizer "não"), **BUG-092** (métrica "1:1" agora é da semana ISO no fuso BR — 52 leituras
+> vs 590, real 0 nesta semana). Espaço liberado → "Próximas sessões desta semana" (opção a). Lógica
+> pura testada com mutação (15 testes); suíte 166/166; deploy `success`. Validação visual da Gestora
+> pendente. Próximo: lotes B/D/E/F da F1-06.
+>
+> _(entrada anterior)_ 2026-07-17 (chat de execução — **validação da Gestora + BUG-095**. Ela
 > validou em produção: sync **1024** (passou de 250), eventos até 15/10, bloqueios/fins de semana
 > travados, hub mais rápido, Firestore ~22k leituras/dia (sob o teto). **BUG-084/087/088 VALIDADOS
 > EM PRODUÇÃO.** O ponto 5 (não agendava 1 to 1 no 20º dia) virou **BUG-095 (Alto)**: o sync não
