@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import { ptBR } from "date-fns/locale";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, isBefore } from "date-fns";
 import { cn } from "@/lib/utils";
 import Calendar from "@/components/ui/Calendar";
 import UserBookings from "@/components/ui/UserBookings";
@@ -26,17 +26,11 @@ import { getUpcomingEvents, getUserBookingsAction, submitEvaluationAction } from
 import { UserBooking, GoogleCalendarEvent } from "@/types/calendar";
 import { SurveyEngine } from "@/components/forms/SurveyEngine";
 import { getSurveyConfig } from "@/config/surveys";
-import { getMeetingFilterKeyword } from "@/lib/journey/meeting-keyword";
+import { eventMatchesSubstep } from "@/lib/journey/booking-match";
 import { useAuthContext } from "@/context/AuthContext";
 import { BPLEN_NOMENCLATURE } from "@/config/nomenclature";
 import { checkSurveyCompletedAction } from "@/actions/submit-survey";
 import { SurveyValue } from "@/types/survey";
-
-/**
- * Helper para remover acentuação e diacríticos de strings para comparação resiliente 🧬
- */
-const normalizeStr = (str: string) => 
-  str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
 
 interface StepRendererProps {
@@ -88,19 +82,24 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
   const [rating, setRating] = React.useState(0);
   const [feedback, setFeedback] = React.useState("");
 
+  // Predicado entregue ao `UserBookings`: a lista de confirmados usa a MESMA
+  // regra do calendario e do cabecalho, em vez de uma propria (BUG-099).
+  //
+  // Deliberadamente uma funcao simples, e nao `useCallback`: este componente
+  // chama todos os seus hooks DEPOIS do early return de `status === "locked"`
+  // (defeito pre-existente, ver BUG-100), entao acrescentar um hook aqui
+  // agravaria a violacao. O custo de recomputar o filtro a cada render e
+  // desprezivel — sao poucos agendamentos por membro.
+  const matchesThisSubstep = (booking: UserBooking) =>
+    eventMatchesSubstep(booking.eventDetail, substep);
+
   const loadData = React.useCallback(async () => {
     setLoadingEvents(true);
     try {
       const allEvents = await getUpcomingEvents();
 
-      const keyword = normalizeStr(getMeetingFilterKeyword(substep));
-      const filteredEvents = allEvents.filter(ev => {
-        if (ev.theme) {
-          return normalizeStr(ev.theme) === normalizeStr(substep.title);
-        }
-        const summaryNorm = normalizeStr(ev.summary || "");
-        return summaryNorm.includes(keyword);
-      });
+      // Mesma regra do cabecalho e da lista de confirmados (BUG-099).
+      const filteredEvents = allEvents.filter(ev => eventMatchesSubstep(ev, substep));
       setEvents(filteredEvents);
 
       if (matricula) {
@@ -564,20 +563,19 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
 
       case "meeting":
         // Identificar se há um agendamento existente para este contexto
-        const keyword = normalizeStr(getMeetingFilterKeyword(substep));
         const activeBooking = userBookings.find(b => {
-           const ev = b.eventDetail;
-           if (!ev) return false;
            if (b.eventLifecycleStatus === "cancelled") return false;
-           
-           if (ev.theme) {
-             return normalizeStr(ev.theme) === normalizeStr(substep.title);
-           }
-           const summaryNorm = normalizeStr(ev.summary || "");
-           return summaryNorm.includes(keyword);
+           return eventMatchesSubstep(b.eventDetail, substep);
         });
 
         const isCompleted = activeBooking?.eventLifecycleStatus === "completed" || activeBooking?.attendanceStatus === "present";
+
+        // Sessao que ja aconteceu mas ainda nao foi fechada pelo consultor: o
+        // cabecalho nao pode seguir dizendo "tudo certo para o encontro" (a
+        // linha da lista abaixo ja a mostra como "Realizada").
+        const sessionStart = activeBooking?.eventDetail?.start;
+        const isAwaitingClosure = !!activeBooking && !isCompleted && !!sessionStart
+           && isBefore(parseISO(sessionStart), new Date());
 
         return (
           <div className="flex-1 flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-6 duration-1000">
@@ -604,16 +602,22 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
                 </div>
 
                 <h2 className="text-3xl font-black tracking-tight">
-                   {isCompleted ? "Histórico da Sessão" : activeBooking ? "Tudo certo para o encontro!" : substep.title}
+                   {isCompleted
+                     ? "Histórico da Sessão"
+                     : isAwaitingClosure
+                        ? "Sessão realizada"
+                        : activeBooking ? "Tudo certo para o encontro!" : substep.title}
                 </h2>
                 <p className="text-[12px] font-medium text-[var(--text-muted)] max-w-xl leading-relaxed">
-                   {isCompleted 
+                   {isCompleted
                      ? "Sua sessão foi concluída com sucesso. Veja abaixo os documentos e avalie sua experiência."
-                     : activeBooking 
-                        ? `Sua ${substep.title} está confirmada. O 100% desta etapa será liberado assim que a sessão for concluída e o consultor emitir sua Ata.`
-                        : (substep.referenceId === "onboarding" 
-                           ? "Escolha um horário para sua sessão de Onboarding." 
-                           : "Selecione o melhor horário para sua sessão com nossos especialistas.")}
+                     : isAwaitingClosure
+                        ? `Sua ${substep.title} já aconteceu. O 100% desta etapa será liberado assim que o consultor emitir a Ata da sessão.`
+                        : activeBooking
+                           ? `Sua ${substep.title} está confirmada. O 100% desta etapa será liberado assim que a sessão for concluída e o consultor emitir sua Ata.`
+                           : (substep.referenceId === "onboarding"
+                              ? "Escolha um horário para sua sessão de Onboarding."
+                              : "Selecione o melhor horário para sua sessão com nossos especialistas.")}
                 </p>
              </div>
              
@@ -638,8 +642,7 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
                    <div className="mt-4">
                       <UserBookings 
                          compact={true} 
-                         filterSummary={getMeetingFilterKeyword(substep)} 
-                         filterTheme={substep.title}
+                         filterMatch={matchesThisSubstep}
                          onRefresh={() => loadData()}
                       />
                    </div>
@@ -661,8 +664,7 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
                 <div className="mt-4">
                    <UserBookings 
                       compact={true} 
-                      filterSummary={getMeetingFilterKeyword(substep)} 
-                      filterTheme={substep.title}
+                      filterMatch={matchesThisSubstep}
                    />
                 </div>
              )}
