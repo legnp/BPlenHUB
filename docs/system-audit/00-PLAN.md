@@ -1070,6 +1070,10 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-092 | Médio | Corrigido (PR #115) | F1-06 lote A — métrica da semana ISO (fuso BR), 52 leituras vs 590 |
 | BUG-093 | Médio | Corrigido (PR #111) | F1-06/F2-04 — política de agendamento avaliada no fuso do servidor; suíte agora roda em `TZ=UTC` |
 | BUG-094 | Baixo | Aberto (adiado) | F2-04 — `resolveEventWeek` mistura semana ISO com ano civil; muda semântica de chave já gravada |
+| BUG-097 | Médio | Aberto | agenda/Etapa 3.4 — agendamento fantasma quando o evento some do Google |
+| BUG-098 | Baixo | Aberto | agenda/Etapa 3 — campo `mentor` com nomenclatura antiga (rótulo já é "Consultor") |
+| BUG-099 | **Alto** | **Corrigido (PR #121)** | F1-03/agenda — bloco "Seu Agendamento Confirmado" **sempre** vazio: `StepRenderer` e `UserBookings` casavam a mesma sessão com regras diferentes (8 de 8 pares reais falhando). Fonte única extraída. **Diagnóstico anterior corrigido**: não era a janela de 21 dias nem regressão do PR #112 |
+| BUG-100 | Médio | Aberto | F1-03 — `StepRenderer` chama todos os hooks depois do early return de `locked`; crash latente. Achado no PR #121 |
 
 ---
 

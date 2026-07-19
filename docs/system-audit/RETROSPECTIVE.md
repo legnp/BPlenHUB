@@ -374,6 +374,39 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
     deixa de ser luxo, e a entrega best-effort exige que a operação seja idempotente — o sync é
     reconciliação, então sobrevive a execução duplicada. _(Caso real: Etapa 2b.)_
 
+41. **O diagnostico herdado de outra sessao e hipotese, nao insumo — reproduza antes de codar em
+    cima dele.** O `BUG-099` chegou com causa, arquivo e correcao prontos no `BUGS.md`, escritos
+    por mim na sessao anterior: "o `StepRenderer` procura o detalhe na lista de disponibilidade,
+    que so devolve [agora, agora+21d]". Estava **errado nas duas pontas**: o bloco que falhava
+    nunca leu aquela lista (ele e o `UserBookings`, que busca por id e ja trazia o passado), e o
+    defeito era de 26/06, nao regressao do PR #112. Ter seguido o registro teria produzido um fix
+    que **nao muda o sintoma** — e "resolver" alargando a janela, apesar do aviso, reabriria o
+    custo do apagao. O que expos a verdade foi abrir o componente e ver que a peca acusada nao
+    participava do caminho. **Um bug bem escrito da a sensacao de trabalho ja feito; o campo
+    "Cenario de falha" merece a mesma desconfianca que um palpite novo — sobretudo quando o autor
+    foi voce.** (Extensao da Licao 18: o inventario read-only vale tambem contra a sua propria
+    teoria de ontem.)
+
+42. **Sintoma reportado e amostra, nao escopo — meca o alcance antes de dimensionar a correcao.**
+    O reporte era "nao aparece quando a sessao **ja passou**", e a hipotese do passado explicava
+    perfeitamente o caso observado. Rodar a regra contra a populacao inteira (Licao 28) mostrou
+    **8 de 8 pares falhando e 0 funcionando**: o bloco nunca funcionou para ninguem, passado **ou
+    futuro**. O recorte temporal do reporte era coincidencia — todos os agendamentos da base sao
+    passados. Um fix escopado ao sintoma teria sido dado como "corrige o caso da Gestora" e
+    deixaria o bug inteiro em pe. **Quando o reporte vem com um qualificador ("quando ja passou",
+    "so no mobile", "so nesse servico"), teste se o qualificador e a causa ou apenas o unico caso
+    que a pessoa teve em maos.**
+
+43. **Ao adicionar codigo a um arquivo com baseline vermelha, compare o numero com a `main` — e
+    prefira nao agravar a violacao existente.** Meu `useCallback` novo era o padrao correto, mas
+    somava o **19o** erro de `rules-of-hooks` a um componente que ja tinha 18, porque ele declara
+    todos os hooks depois de um early return. Trocar por uma funcao simples custou uma
+    recomputacao desprezivel (poucos agendamentos) e manteve a paridade com a baseline. O defeito
+    de fundo virou bug proprio (`BUG-100`) em vez de carona: corrigi-lo faz as paradas **travadas**
+    passarem a ler a agenda — ou seja, a correcao "obvia" tem custo de cota no Spark. **Baseline
+    vermelha nao e licenca para somar mais um; e um numero a bater.**
+
+
 ---
 
 ## Melhorias sugeridas para o PLANO (para o chat de planejamento refinar)
@@ -420,6 +453,10 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
 
 ## Registro de revisões deste documento
 
+- 2026-07-19 — Licoes 41 (diagnostico herdado e hipotese, mesmo o seu — reproduza antes de codar
+  em cima dele), 42 (sintoma reportado e amostra, nao escopo: 8 de 8 pares falhando, nao so os
+  passados) e 43 (baseline vermelha e numero a bater, nao licenca) adicionadas, a partir do
+  `BUG-099` (PR #121).
 - 2026-07-03 — criação, a partir da sessão Fase 0 + início do T-02.
 - 2026-07-04 — Lições 11 (acentos PT-BR) e 12 (GlassModal não é base universal)
   adicionadas, a partir do F0-01 lote A/B.

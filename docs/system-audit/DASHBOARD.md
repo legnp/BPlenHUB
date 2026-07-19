@@ -12,7 +12,20 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-17 (chat de execução — **F1-06 CONCLUÍDA: as 19 páginas de admin
+> **Última atualização:** 2026-07-19 (chat de execução — **BUG-099 corrigido (PR #121)**, deploy
+> `success`. O bloco "Seu Agendamento Confirmado" da parada da jornada estava **sempre vazio**,
+> para todos os membros: o cabeçalho e a lista casavam a mesma sessão com **regras diferentes**
+> (tema OU palavra-chave x palavra-chave E tema, exigindo um tema que nenhum evento tem). Medido
+> na base real: **8 de 8 pares falhando, 0 funcionando** — não era "sessão passada", era tudo.
+> **O diagnóstico anterior era meu e estava errado** (não era a janela de 21 dias nem regressão do
+> PR #112; o defeito é de 26/06). Fonte única extraída em `src/lib/journey/booking-match.ts`,
+> usada pelas 3 telas — é o ponto onde a Fase 3.3 vai encaixar o tema automático. Verificado com a
+> função de produção: 8 divergências -> 0. Suíte 183/183. Filtro de oferta de slots **não tocado**
+> (ponto de atenção da Gestora verificado na agenda real: nenhuma parada oferece sessão de outro
+> tipo). Bug novo registrado sem carona: **BUG-100** (hooks depois de early return no
+> `StepRenderer`, crash latente). Fila de triagem por severidade **vazia**.
+>
+> _(entrada anterior)_ 2026-07-17 (chat de execução — **F1-06 CONCLUÍDA: as 19 páginas de admin
 > validadas**. O maior item aberto do processo, que nunca tinha sido iniciado, está fechado. 6 lotes:
 > **A** dashboard (PR #115, BUG-090/091/092 — validado por ela), **B** F&S/devolutiva (PRs #116/#117,
 > BUG-072 **aprovado em produção** + BUG-096), **C** agenda (antecipado por severidade — o subsistema
