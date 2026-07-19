@@ -47,17 +47,24 @@ type BookingSortDir = "asc" | "desc";
 type StatusFilterKey = "todos" | "agendada" | "realizada" | "concluida" | "cancelada";
 type PresenceFilterKey = "todos" | "presente" | "ausente" | "pendente";
 
-export default function UserBookings({ 
-  refreshCounter = 0, 
+export default function UserBookings({
+  refreshCounter = 0,
   onRefresh = () => {},
-  filterSummary,
-  filterTheme,
+  filterMatch,
   compact = false
-}: { 
-  refreshCounter?: number; 
-  onRefresh?: () => void; 
-  filterSummary?: string;
-  filterTheme?: string;
+}: {
+  refreshCounter?: number;
+  onRefresh?: () => void;
+  /**
+   * Predicado opcional de pertinencia — quem chama decide quais agendamentos
+   * sao "desta parada". Substitui o par `filterSummary`/`filterTheme`, que
+   * duplicava (e divergia de) a regra do `StepRenderer`: o cabecalho anunciava
+   * a sessao como confirmada e esta lista vinha vazia, porque o filtro de tema
+   * exigia um tema que nenhum evento da base tem (BUG-099). A regra agora vive
+   * em `src/lib/journey/booking-match.ts` e este componente nao tem regra
+   * propria. Precisa ser estavel (`useCallback`) — entra na memo abaixo.
+   */
+  filterMatch?: (booking: UserBooking) => boolean;
   compact?: boolean;
 }) {
   const { matricula, user } = useAuthContext();
@@ -150,24 +157,9 @@ export default function UserBookings({
       });
     }
 
-    // Summary filter (Prop-based com normalização de acentos)
-    if (filterSummary) {
-      const normFilter = filterSummary.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-      result = result.filter(b => {
-        const summaryNorm = (b.eventDetail?.summary || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-        return summaryNorm.includes(normFilter);
-      });
-    }
-
-    // Theme filter (Prop-based matching exact normalized checkpoint title)
-    if (filterTheme) {
-      const normTheme = filterTheme.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
-      result = result.filter(b => {
-        const ev = b.eventDetail;
-        if (!ev || !ev.theme) return false;
-        const themeNorm = ev.theme.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
-        return themeNorm === normTheme;
-      });
+    // Pertinencia a parada — regra unica, definida por quem chama (BUG-099).
+    if (filterMatch) {
+      result = result.filter(filterMatch);
     }
 
     // Status filter
@@ -199,7 +191,9 @@ export default function UserBookings({
     });
 
     return result;
-  }, [bookings, searchQuery, statusFilter, presenceFilter, sortField, sortDir]);
+    // `filterMatch` entra nas dependencias: sem ele a lista ficava congelada na
+    // parada anterior ao navegar entre paradas (defeito irmao do BUG-099).
+  }, [bookings, searchQuery, statusFilter, presenceFilter, sortField, sortDir, filterMatch]);
 
   // Counts for filter badges
   const statusCounts = useMemo(() => {
