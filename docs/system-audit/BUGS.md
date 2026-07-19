@@ -2856,6 +2856,36 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Commit/PR: —
 
 
+### BUG-104 Editar cotas no painel do admin SOMA em vez de definir — salvar duas vezes dobra a cota
+
+- Severidade: **Médio** (financeiro: concessao de credito de sessao maior que a contratada; sem
+  perda de dado, mas o saldo do membro fica errado para mais)
+- Area/fase onde foi achado: achado ao desenhar o lote 1 do `BUG-103` (2026-07-19), lendo
+  `quotas.ts` inteiro (Protocolo item 9)
+- Arquivo(s) afetado(s): `src/actions/quotas.ts:updateMemberQuotasAction` (l.81,
+  `total: current.total + amount`); caller de edicao em `src/app/admin/users/page.tsx:268`
+- Cenario de falha: **[CONFIRMADO]** por leitura. A funcao e **somativa** por design. Ela serve dois
+  usos com intencoes opostas:
+  | Uso | Chamador | Intencao correta |
+  |---|---|---|
+  | **Nova aquisicao** de servico (compra, cupom, servico que concede a mesma cota) | `lib/checkout.ts` (webhook/checkout) | **somar** — correto hoje |
+  | **Edicao manual** da ficha do membro | `admin/users/page.tsx` | **definir** — errado hoje |
+  Na edicao, o painel exibe o valor atual no campo e envia esse mesmo valor; a funcao **soma** ao que
+  ja existe. Abrir a ficha e salvar duas vezes **dobra** a cota, sem nenhum aviso.
+- **Confirmacao da Gestora (2026-07-19):** a somatoria e **pedido dela e deve permanecer** para o
+  caso de nova aquisicao (inclusive de servicos diferentes que concedem a mesma cota). O defeito e
+  **especifico da edicao**: "nao duplicar em caso de edicao". Ou seja, **parcialmente intencional** —
+  nao remover a soma, e sim distinguir os dois usos.
+- Status: **Aberto** — registrado; **fora do lote 1** de proposito (o lote 1 e seguranca; misturar
+  mudanca de comportamento de negocio num PR de guard e o antipadrao que este processo evita).
+- Decisao de execucao: **Precisa plano+aprovacao** (financeiro/cotas). Saida provavel: a camada crua
+  expoe **duas** operacoes explicitas — `addMemberQuotas` (somar, para aquisicao) e
+  `setMemberQuotas` (definir, para edicao no painel) — e cada chamador escolhe a sua. O nome da
+  funcao passa a dizer o que ela faz, em vez de a intencao viver na cabeca de quem chama.
+  **Depende do lote 1**, que ja cria a camada crua onde essas duas operacoes vao morar.
+- Commit/PR: —
+
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em
