@@ -2744,6 +2744,46 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Commit/PR: —
 
 
+### BUG-102 `closeEventAction`/`closeAttendeeAction`/`updateGlobalProgramacaoRegistryAction` sem guard — residuo do BUG-020 num track declarado FECHADO
+
+- Severidade: **Alto** (escrita nao autenticada em dado de carreira do membro e no ciclo de vida de
+  qualquer evento)
+- Area/fase onde foi achado: achado ao ler o arquivo inteiro antes de propor o `BUG-101`
+  (Protocolo item 9 / Licao 10 — o "lote trivial" escondendo o achado grave). 2026-07-19.
+- Arquivo(s) afetado(s): `src/actions/calendar-module/post-event.ts` —
+  `closeEventAction` (l.31), `closeAttendeeAction` (l.89),
+  `updateGlobalProgramacaoRegistryAction` (l.317); tambem `recalculateEventMetrics` (l.438)
+- Cenario de falha: **[CONFIRMADO]** por leitura. `src/actions/calendar.ts` e `"use server"` e
+  reexporta as tres funcoes, entao elas sao **endpoints de rede reais**. Nenhuma chama
+  `requireAdmin`/`requireAuth` no corpo — a unica protecao e a UI so expor o botao no admin
+  (`PostEventWizard`), que e exatamente a premissa que o `BUG-020` derrubou. O mesmo arquivo
+  **importa `requireAdmin` na linha 2 e o usa em 3 outras funcoes** (`baixarEventoAction`,
+  `generateEventSummarySheetAction`, `healProgramacaoMasterAction`) — a assimetria dentro do
+  proprio arquivo indica omissao, nao decisao.
+  **Capacidades expostas a um chamador nao autenticado:**
+  - fechar/cancelar/adiar qualquer evento e marcar presenca/ausencia de qualquer membro;
+  - **gravar texto arbitrario na carreira do membro**: `participantFeedback` replica em
+    `User/{matricula}/Feedbacks` e `participantTasks` vira itens de `Career_Backlog`;
+  - anexar documentos arbitrarios a `User/{matricula}/Shared_Documents` e Atas;
+  - reescrever o registro global `Datas_Center/Programacao_Registry` — **a mesma capacidade que o
+    `BUG-024` removeu** quando estava exposta como rota `/api/trigger-sync`, e que segue
+    alcancavel por aqui.
+- **Falha de processo, registrada de proposito:** estas tres funcoes estao **nominalmente listadas
+  no corpo do `BUG-020`** ("Booking (fluxo inteiro)"), mas nenhum dos 7 lotes tocou
+  `post-event.ts` — os lotes cobriram `booking.ts`, CRUD admin, analytics, `queries.ts`,
+  `journey.ts`, upload e `auth-permissions.ts`. O **T-02 foi declarado FECHADO 12/12** com um item
+  da propria lista do bug sem cobertura. Licao a extrair: *criterio de fechamento de track conferido
+  por bug nao prova cobertura por arquivo — a lista interna do bug tambem e checklist.*
+- Status: **Aberto** — achado e registrado antes de qualquer alteracao; nao corrigido.
+- Decisao de execucao: **Precisa plano+aprovacao** (seguranca + agenda/booking). Correcao esperada:
+  `requireAdmin()` como 1a linha das tres (padrao canonico do T-02), sem alterar assinatura. Os
+  callers sao 100% admin (`PostEventWizard`), entao nenhum fluxo legitimo e barrado.
+  `updateGlobalProgramacaoRegistryAction` e chamada **internamente** por `closeEventAction` e pelo
+  sync — atencao para nao criar recursao/duplo-guard (Protocolo item 8): separar resolvedor cru do
+  action exposto, como no lote 7 do `BUG-020`.
+- Commit/PR: —
+
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em
