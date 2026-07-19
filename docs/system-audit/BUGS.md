@@ -2822,7 +2822,7 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   (100%)** e nao estava. O criterio de fechamento conferiu **bug a bug**, mas a lista de arquivos
   **dentro** do `BUG-020` tambem era um checklist, e ninguem a reconferiu por arquivo. **O T-02
   deve ser reaberto.**
-- Status: **Em Progresso** — **lote 1 (cotas) CONCLUIDO** (PR #122, `e03504b`, deploy `success`). Camada crua `src/lib/member-quotas.ts` criada sem guard e sem `"use server"`; `updateMemberQuotasAction` -> `requireAdmin`, `getMemberQuotasAction`/`consumeQuotaAction` -> `requireAuth` + dono-ou-admin; `lib/checkout.ts` passou a chamar a camada crua para o webhook do Mercado Pago seguir concedendo cota sem sessao. 8 testes de arquitetura + mutacao de cada metade (4 regressoes, todas pegas). Restam os lotes 2 (PII), 3 (pos-evento/`BUG-102`), 4 (seeds) e 5 (confirmar os legitimos).
+- Status: **Em Progresso** — **lotes 1 e 2a CONCLUIDOS.** **Lote 2a (PII, PR #123, `76254e1`, deploy `success`):** fechado o IDOR de leitura de DISC/Gestao de Tempo/Aprendizado/Reconhecimento/PDI/respostas de survey (dono-ou-admin); `resolveMatricula` movida para `src/lib/user-matricula.ts` (era endpoint que revelava a matricula de qualquer uid/e-mail, mas e primitivo de infra de 8 modulos que ja autenticaram); getter orfao `getPreAnaliseComportamentalResult` removido (o DADO segue gravado — ver `BUG-105`). `submitSurvey` ficou SEM guard de proposito: serve tambem o feedback publico (lote 2b). **Lote 1 (cotas) CONCLUIDO** (PR #122, `e03504b`, deploy `success`). Camada crua `src/lib/member-quotas.ts` criada sem guard e sem `"use server"`; `updateMemberQuotasAction` -> `requireAdmin`, `getMemberQuotasAction`/`consumeQuotaAction` -> `requireAuth` + dono-ou-admin; `lib/checkout.ts` passou a chamar a camada crua para o webhook do Mercado Pago seguir concedendo cota sem sessao. 8 testes de arquitetura + mutacao de cada metade (4 regressoes, todas pegas). Restam os lotes 2 (PII), 3 (pos-evento/`BUG-102`), 4 (seeds) e 5 (confirmar os legitimos).
 - **DOUBLE-CHECK DE EFEITO COLATERAL (2026-07-19, pedido da Gestora) — a trava ingenua QUEBRARIA
   4 fluxos vivos.** Mapa de chamadores feito ANTES de codar (Licao 23). Achados:
   1. **RECEITA — `updateMemberQuotasAction`.** Cadeia confirmada:
@@ -2883,6 +2883,43 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   `setMemberQuotas` (definir, para edicao no painel) — e cada chamador escolhe a sua. O nome da
   funcao passa a dizer o que ela faz, em vez de a intencao viver na cabeca de quem chama.
   **Depende do lote 1**, que ja cria a camada crua onde essas duas operacoes vao morar.
+- Commit/PR: —
+
+
+### BUG-105 Pre-Analise Comportamental e coletada e nunca entregue — falta a tela de devolutiva
+
+- Severidade: **Baixo** (lacuna de produto, nao defeito de codigo; nada quebra, mas um instrumento
+  respondido pelo membro nao chega a ninguem pela interface)
+- Area/fase onde foi achado: achado ao confirmar, para a Gestora, se a remocao do getter orfao
+  `getPreAnaliseComportamentalResult` quebraria a entrega de resultados (lote 2a do `BUG-103`,
+  2026-07-19)
+- Arquivo(s)/dado envolvido(s): `src/config/surveys/definitions/pre-analise-comportamental.ts`
+  (survey), `src/actions/effects/pre-analise-comportamental.ts` (efeito/gravacao),
+  `User/{matricula}/results/pre_analise_comportamental` (dado)
+- **Onde e coletada [CONFIRMADO na base real]:** produto **`posicionamento-profissional`**, parada
+  **5.1 "Consultoria de Feedback"** (`type: survey`, `referenceId: pre_analise_comportamental`),
+  imediatamente antes da parada **5.2 "Consultoria de Feedback"** (`type: meeting`). O desenho e
+  coerente e **intencional**: a Pre-Analise **prepara a reuniao**. A propria copy do survey confirma
+  ("Nossos especialistas estao analisando seu perfil e entraremos em contato na sua reuniao
+  estrategica") e a descricao interna e "Preparacao para o DISC".
+- Cenario de falha: nao ha falha de execucao. O dado e gravado corretamente no Firestore **e**
+  sincronizado na planilha do Drive do usuario. O que **nao existe** e qualquer tela que exiba esse
+  resultado: o `MemberDashboardView` entrega os outros 4 instrumentos (Gestao de Tempo,
+  Aprendizado, Reconhecimento, DISC) e a `DevolutivaComportamentalView` do admin idem — **nenhuma
+  das duas** mostra a Pre-Analise. Na pratica, para preparar a consultoria a Gestora so consegue ver
+  a resposta abrindo a planilha do Drive.
+- **Estado na base real:** **1 resposta** gravada — `BP-002-PF-260331`, em 2026-06-27, com
+  `isReleased: false` (o mecanismo de liberacao tambem nunca foi acionado para ela).
+- **Correcao de registro:** numa primeira leitura eu classifiquei isto como "dado coletado sem
+  proposito". **Estava errado** — o proposito existe e esta explicito na copy e na ordem das paradas.
+  O que falta e a **entrega**, nao a intencao.
+- Status: **Aberto** — decisao de **produto da Gestora**, nao de engenharia: construir a tela de
+  devolutiva (no hub, no admin, ou nos dois) **ou** aposentar o instrumento. Enquanto nao se decide,
+  a coleta segue viva e o dado acumulando sem consumidor — o que tambem toca a regra de
+  classificacao de coleta de dados do `CLAUDE.md` (`SURVEY_GLOBAL.md`).
+- Decisao de execucao: nenhuma acao de codigo ate a decisao de produto. **Nao confundir com o getter
+  removido no lote 2a**: aquele era codigo morto que nenhuma tela chamava; a coleta e o dado
+  permanecem intactos.
 - Commit/PR: —
 
 

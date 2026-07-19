@@ -1086,6 +1086,8 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-101 | Médio | Aberto | F1-06/agenda — Ata some do agendamento se enviada depois de fechar o participante (1 de 7 afetado) |
 | BUG-102 | **Alto** | Aberto | **T-02 (reaberto)** — `post-event.ts` sem guard; resíduo nominal do `BUG-020` |
 | BUG-103 | **Alto** | Aberto | **T-02 (reaberto)** — varredura de guards: 177 actions expostas, 57 sem guard; subconjunto sensível confirmado (cota, PII de survey/DISC, seeds) |
+| BUG-104 | Médio | Aberto | F2-04 — editar cota no painel soma em vez de definir; salvar 2× dobra o saldo (soma é intencional só para nova aquisição) |
+| BUG-105 | Baixo | Aberto | produto — Pré-Análise Comportamental é coletada (parada 5.1 do Posicionamento) e nunca entregue; falta a tela de devolutiva. Decisão da Gestora |
 
 ---
 

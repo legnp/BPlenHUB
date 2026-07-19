@@ -12,7 +12,20 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-19 (chat de execução — **T-02 lote 1: cotas (PR #122)**, deploy
+> **Última atualização:** 2026-07-19 (chat de execução — **T-02 lote 2a: PII (PR #123)**, deploy
+> `success`. Fechado o IDOR de **leitura do dado mais sensível do sistema**: DISC, Gestão de Tempo,
+> Aprendizado, Reconhecimento, PDI e respostas de survey eram legíveis para **qualquer membro** por
+> quem conhecesse a assinatura — o identificador vinha do cliente sem conferência. Agora
+> dono-ou-admin. `resolveMatricula` movida para `src/lib/user-matricula.ts`: era endpoint que
+> revelava a matrícula de qualquer uid/e-mail, mas guard no lugar não servia (primitivo de infra de
+> 8 módulos que já autenticaram, no caminho quente do checkout). Getter órfão removido — **o dado
+> da Pré-Análise não foi tocado** (ver `BUG-105`). **`submitSurvey` ficou sem guard de propósito:**
+> a Gestora corrigiu a premissa antes de eu codar — ele serve também o feedback **público**
+> (`lead_eval_*`), e travá-lo derrubaria o visitante. Vira o lote 2b. 12 testes + mutação das 4
+> regressões; a 4ª passou verde na 1ª tentativa porque a **mutação** falhou (CRLF), não o teste —
+> investigado e refeito. Suíte 203/203.
+>
+> _(entrada anterior)_ 2026-07-19 (chat de execução — **T-02 lote 1: cotas (PR #122)**, deploy
 > `success`. As 3 server actions de cota não tinham guard: `updateMemberQuotasAction(uid, quotas)`
 > aceitava o `uid` do cliente e concedia crédito arbitrário. **O guard direto quebraria a receita**
 > — a concessão pós-compra vem do **webhook do Mercado Pago**, que autentica por HMAC e não tem
