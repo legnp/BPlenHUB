@@ -145,7 +145,7 @@ export async function applyCouponV2Action(payload: Omit<ValidateCouponPayload, "
     const session = await requireAuth(payload.idToken);
     const db = getAdminDb();
 
-    const { resolveMatricula } = await import("./get-user-results");
+    const { resolveMatricula } = await import("@/lib/user-matricula");
     const matricula = await resolveMatricula(session.uid, session.email || "");
     if (!matricula) {
       return { valid: false, message: "Matricula nao encontrada para o usuario." };

@@ -1,7 +1,8 @@
 "use server";
 
 import { getAdminDb } from "@/lib/firebase-admin";
-import { requireAuth } from "@/lib/auth-guards";
+import { requireAuth, AuthorizationError } from "@/lib/auth-guards";
+import { resolveMatricula } from "@/lib/user-matricula";
 
 interface ScoreEntry {
   percentage: number;
@@ -35,7 +36,6 @@ export type ReconhecimentoResult = AssessmentResult<{
   toque?: ScoreEntry;
 }>;
 
-export type PreAnaliseComportamentalResult = AssessmentResult<Record<string, unknown>>;
 
 export type DiscResult = AssessmentResult<{
   executor?: ScoreEntry;
@@ -44,51 +44,6 @@ export type DiscResult = AssessmentResult<{
   analista?: ScoreEntry;
 }> & { file: string | null };
 
-/**
- * BPlen HUB — Robust Results Connection (🧬🛡️)
- * Este helper garante que o usuário sempre encontre sua matrícula, 
- * mesmo que o mapeamento inicial tenha falhado.
- */
-export async function resolveMatricula(userUid: string, email?: string): Promise<string | null> {
-  const db = getAdminDb();
-  console.log(`🔍 [GetResults:resolveMatricula] Resolvendo para UID: ${userUid}, Email: ${email}`);
-  
-  // 1. Tentar Mapeamento Direto (AuthMap) - Alta Performance
-  const authMapSnap = await db.doc(`_AuthMap/${userUid}`).get();
-  if (authMapSnap.exists && authMapSnap.data()?.matricula) {
-    const mat = authMapSnap.data()?.matricula;
-    console.log(`🔍 [GetResults:resolveMatricula] Matrícula via AuthMap: ${mat}`);
-    return mat;
-  }
-
-  // 2. Fallback: Buscar na base User por ID de Autenticação (UID)
-  const userByUidSnap = await db.collection("User").where("uid", "==", userUid).limit(1).get();
-  if (!userByUidSnap.empty) {
-    const matricula = userByUidSnap.docs[0].id;
-    console.log(`🔍 [GetResults:resolveMatricula] Matrícula via UID Search: ${matricula}`);
-    // Auto-Healing: Grava no AuthMap para a próxima vez
-    await db.doc(`_AuthMap/${userUid}`).set({ matricula, recoveredAt: new Date() }, { merge: true });
-    return matricula;
-  }
-
-  // 3. Last Resort: Buscar por E-mail (Normalizado)
-  if (email) {
-    const normalizedEmail = email.trim().toLowerCase();
-    const userByEmailSnap = await db.collection("User").where("email", "==", normalizedEmail).limit(1).get();
-    if (!userByEmailSnap.empty) {
-      const matricula = userByEmailSnap.docs[0].id;
-      console.log(`🔍 [GetResults:resolveMatricula] Matrícula via Email Search: ${matricula}`);
-      
-      // Auto-Healing: Vincula o UID atual à matrícula e atualiza o AuthMap
-      await userByEmailSnap.docs[0].ref.update({ uid: userUid });
-      await db.doc(`_AuthMap/${userUid}`).set({ matricula, recoveredAt: new Date() }, { merge: true });
-      return matricula;
-    }
-  }
-
-  console.warn(`⚠️ [GetResults:resolveMatricula] Nenhuma matrícula legítima para UID: ${userUid}`);
-  return null;
-}
 
 /**
  * Helper para Serialização Segura (🛡️)
@@ -149,6 +104,14 @@ export async function getOwnCheckinPrefillAction(
  */
 
 export async function getGestaoTempoResult(userUid: string, email?: string): Promise<GestaoTempoResult | null> {
+  // Dono-ou-admin: o dashboard do membro le o proprio resultado; o admin le o de
+  // qualquer um (devolutiva). Ate o BUG-103 nao havia trava e o `userUid` vinha
+  // do cliente — dava para ler o resultado psicometrico de qualquer pessoa.
+  const session = await requireAuth();
+  if (session.uid !== userUid && !session.isAdmin) {
+    throw new AuthorizationError("Voce nao pode acessar os resultados de outro membro.");
+  }
+
   const matricula = await resolveMatricula(userUid, email);
   if (!matricula) {
     console.warn(`⚠️ [GetResults:GestaoTempo] Matrícula não resolvida para UID: ${userUid}`);
@@ -190,6 +153,14 @@ export async function getGestaoTempoResult(userUid: string, email?: string): Pro
 }
 
 export async function getAprendizadoResult(userUid: string, userEmail: string): Promise<AprendizadoResult | null> {
+  // Dono-ou-admin: o dashboard do membro le o proprio resultado; o admin le o de
+  // qualquer um (devolutiva). Ate o BUG-103 nao havia trava e o `userUid` vinha
+  // do cliente — dava para ler o resultado psicometrico de qualquer pessoa.
+  const session = await requireAuth();
+  if (session.uid !== userUid && !session.isAdmin) {
+    throw new AuthorizationError("Voce nao pode acessar os resultados de outro membro.");
+  }
+
   const matricula = await resolveMatricula(userUid, userEmail);
   if (!matricula) {
     console.warn(`⚠️ [GetResults:Aprendizado] Matrícula não resolvida para UID: ${userUid}`);
@@ -231,6 +202,14 @@ export async function getAprendizadoResult(userUid: string, userEmail: string): 
 }
 
 export async function getReconhecimentoResult(userUid: string, userEmail: string): Promise<ReconhecimentoResult | null> {
+  // Dono-ou-admin: o dashboard do membro le o proprio resultado; o admin le o de
+  // qualquer um (devolutiva). Ate o BUG-103 nao havia trava e o `userUid` vinha
+  // do cliente — dava para ler o resultado psicometrico de qualquer pessoa.
+  const session = await requireAuth();
+  if (session.uid !== userUid && !session.isAdmin) {
+    throw new AuthorizationError("Voce nao pode acessar os resultados de outro membro.");
+  }
+
   const matricula = await resolveMatricula(userUid, userEmail);
   if (!matricula) {
     console.warn(`⚠️ [GetResults:Reconhecimento] Matrícula não resolvida para UID: ${userUid}`);
@@ -271,41 +250,15 @@ export async function getReconhecimentoResult(userUid: string, userEmail: string
   }
 }
 
-export async function getPreAnaliseComportamentalResult(userUid: string, email?: string): Promise<PreAnaliseComportamentalResult | null> {
-  const matricula = await resolveMatricula(userUid, email);
-  if (!matricula) {
-    console.warn(`⚠️ [GetResults:PreAnalise] Matrícula não resolvida para UID: ${userUid}`);
-    return null;
-  }
-
-  const db = getAdminDb();
-  const path = `User/${matricula}/results/pre_analise_comportamental`;
-
-  try {
-    const res = await db.doc(path).get();
-    if (!res.exists) {
-      console.log(`ℹ️ [GetResults:PreAnalise] Nenhum documento em ${path}`);
-      return null;
-    }
-
-    const rawData = res.data() || {};
-    const payload = serializeData({
-      surveyId: rawData.surveyId || 'pre_analise_comportamental',
-      scores: rawData.scores || null, // Nota: Este assessment pode ser qualitativo (scores null)
-      isReleased: rawData.isReleased !== false,
-      submittedAt: rawData.submittedAt || null
-    });
-
-    console.log(`✅ [GetResults:PreAnalise] Sucesso para ${matricula}. Chaves:`, Object.keys(payload));
-    return payload;
-  } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
-    console.error(`🚨 [GetResults:PreAnalise] Erro fatal lendo ${path}:`, errorMessage);
-    throw error;
-  }
-}
-
 export async function getDiscResult(userUid: string, email?: string): Promise<DiscResult | null> {
+  // Dono-ou-admin: o dashboard do membro le o proprio resultado; o admin le o de
+  // qualquer um (devolutiva). Ate o BUG-103 nao havia trava e o `userUid` vinha
+  // do cliente — dava para ler o resultado psicometrico de qualquer pessoa.
+  const session = await requireAuth();
+  if (session.uid !== userUid && !session.isAdmin) {
+    throw new AuthorizationError("Voce nao pode acessar os resultados de outro membro.");
+  }
+
   const matricula = await resolveMatricula(userUid, email);
   if (!matricula) {
     console.warn(`⚠️ [GetResults:DISC] Matrícula não resolvida para UID: ${userUid}`);

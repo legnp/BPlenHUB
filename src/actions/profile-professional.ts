@@ -3,7 +3,7 @@
 import { getAdminDb } from "@/lib/firebase-admin";
 import admin from "firebase-admin";
 import { requireAuth } from "@/lib/auth-guards";
-import { resolveMatricula } from "./get-user-results";
+import { resolveMatricula } from "@/lib/user-matricula";
 import { getErrorMessage } from "@/lib/utils/errors";
 import type { BenefitData } from "@/components/forms/SurveyFields/BenefitsPackage";
 
