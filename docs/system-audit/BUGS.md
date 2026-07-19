@@ -2700,6 +2700,50 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Decisao de execucao: PR proprio, com a medicao de leitura antes/depois (Licao 38).
 - Commit/PR: —
 
+### BUG-101 Ata some do agendamento do membro se for enviada DEPOIS de fechar o participante
+
+- Severidade: **Médio** (o membro nao ve a Ata de uma sessao concluida na Gestao de Agenda; o
+  arquivo existe e nao se perdeu, mas fica invisivel para ele naquela tela)
+- Area/fase onde foi achado: reportado pela Gestora em 2026-07-19 ao validar o PR #121
+  (`BP-005-PF-260523`, evento "Devolutiva Analise Comportamental" de 16/06, CONCLUIDA + PRESENTE,
+  coluna ATA vazia). **Nao tem relacao com o PR #121** — e anterior e independente.
+- Arquivo(s) afetado(s): `src/actions/calendar-module/post-event.ts`
+  (`closeEventAction` = Parte 1 / Ata; `closeAttendeeAction` = Parte 2 / participante)
+- Cenario de falha: **[CONFIRMADO]** por inventario read-only. O campo
+  `meetingMinutesFile` do agendamento do membro (`User_Bookings`) e escrito **somente** pela
+  `closeAttendeeAction` (linha ~141), que copia `eventData.meetingMinutesFile` **no instante em que
+  o participante e fechado**. A `closeEventAction`, que e quem recebe a Ata, grava o arquivo no
+  **doc do evento** e no historico de carreira (`User/{matricula}/Atas`) — mas **nunca** volta para
+  os `User_Bookings` ja fechados.
+  **Consequencia:** a ordem das duas partes decide se o membro ve a Ata.
+  | Ordem | Resultado |
+  |---|---|
+  | Ata (Parte 1) **antes** de fechar o participante (Parte 2) | a copia pega a Ata — membro ve |
+  | Ata **depois** de fechar o participante | a copia gravou `null` — membro **nao ve** |
+  Confirmado nos carimbos de tempo reais do `BP-005`:
+  - **Onboarding** — Ata 04/06 12:50, docs/fechamento 12:54 (Ata **antes**) -> `meetingMinutesFile`
+    presente no agendamento, botao ATA aparece.
+  - **Devolutiva Analise Comportamental** — docs/fechamento 16/06 19:45-19:47, Ata 16/06 **20:12**
+    (Ata **depois**) -> `meetingMinutesFile: null` no agendamento, coluna ATA vazia, **apesar de o
+    doc do evento ter a Ata**.
+- **Alcance medido na populacao inteira** (Licao 28): dos 7 agendamentos concluidos cujo evento tem
+  Ata, **6 espelharam corretamente e 1 perdeu** (o `BP-005` acima). Nao e caso isolado de dado: e
+  uma corrida entre duas acoes que a Gestora executa em ordem livre no admin.
+- **O que NAO se perdeu (importante para a validacao):** a Ata esta no historico de carreira
+  (`User/BP-005/Atas`, 2 registros, incluindo a da Devolutiva) e no doc do evento. E os **2
+  documentos do participante** (`participantDocs`: o relatorio da Analise Comportamental e o DISC)
+  **estao** no agendamento e aparecem no **modal de detalhe** (botao do olho), nao na linha da
+  tabela — a linha so tem a coluna ATA.
+- Status: **Aberto** — diagnosticado, aguardando decisao da Gestora sobre corrigir antes ou depois
+  da Fase 3.2.
+- Decisao de execucao: **Precisa plano+aprovacao** (agenda/booking). Correcao proposta: a
+  `closeEventAction` passa a espelhar a Ata para os `User_Bookings` dos participantes ja fechados
+  (mesmo laco que ja percorre os `attendees` para gravar em `Atas`), tornando as duas partes
+  **independentes de ordem**. Precisa de um passo de reconciliacao para o caso ja gravado do
+  `BP-005` (1 doc). Fonte da verdade continua sendo o doc do evento.
+- Commit/PR: —
+
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em
