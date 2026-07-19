@@ -2774,7 +2774,7 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   `journey.ts`, upload e `auth-permissions.ts`. O **T-02 foi declarado FECHADO 12/12** com um item
   da propria lista do bug sem cobertura. Licao a extrair: *criterio de fechamento de track conferido
   por bug nao prova cobertura por arquivo — a lista interna do bug tambem e checklist.*
-- Status: **Aberto** — achado e registrado antes de qualquer alteracao; nao corrigido.
+- Status: **Aberto** — e o **lote 3** do plano do `BUG-103` (o lote 1, cotas, saiu no PR #122).
 - Decisao de execucao: **Precisa plano+aprovacao** (seguranca + agenda/booking). Correcao esperada:
   `requireAdmin()` como 1a linha das tres (padrao canonico do T-02), sem alterar assinatura. Os
   callers sao 100% admin (`PostEventWizard`), entao nenhum fluxo legitimo e barrado.
@@ -2822,7 +2822,7 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   (100%)** e nao estava. O criterio de fechamento conferiu **bug a bug**, mas a lista de arquivos
   **dentro** do `BUG-020` tambem era um checklist, e ninguem a reconferiu por arquivo. **O T-02
   deve ser reaberto.**
-- Status: **Aberto** — varredura feita e registrada; nenhuma correcao aplicada.
+- Status: **Em Progresso** — **lote 1 (cotas) CONCLUIDO** (PR #122, `e03504b`, deploy `success`). Camada crua `src/lib/member-quotas.ts` criada sem guard e sem `"use server"`; `updateMemberQuotasAction` -> `requireAdmin`, `getMemberQuotasAction`/`consumeQuotaAction` -> `requireAuth` + dono-ou-admin; `lib/checkout.ts` passou a chamar a camada crua para o webhook do Mercado Pago seguir concedendo cota sem sessao. 8 testes de arquitetura + mutacao de cada metade (4 regressoes, todas pegas). Restam os lotes 2 (PII), 3 (pos-evento/`BUG-102`), 4 (seeds) e 5 (confirmar os legitimos).
 - **DOUBLE-CHECK DE EFEITO COLATERAL (2026-07-19, pedido da Gestora) — a trava ingenua QUEBRARIA
   4 fluxos vivos.** Mapa de chamadores feito ANTES de codar (Licao 23). Achados:
   1. **RECEITA — `updateMemberQuotasAction`.** Cadeia confirmada:

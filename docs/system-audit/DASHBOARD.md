@@ -12,7 +12,21 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-19 (chat de execução — **T-02 REABERTO**. Ao ler o arquivo
+> **Última atualização:** 2026-07-19 (chat de execução — **T-02 lote 1: cotas (PR #122)**, deploy
+> `success`. As 3 server actions de cota não tinham guard: `updateMemberQuotasAction(uid, quotas)`
+> aceitava o `uid` do cliente e concedia crédito arbitrário. **O guard direto quebraria a receita**
+> — a concessão pós-compra vem do **webhook do Mercado Pago**, que autentica por HMAC e não tem
+> sessão; travar a função faria o cliente pagar e não receber a cota, em silêncio. Solução do lote
+> 7 do `BUG-020`: camada crua (`src/lib/member-quotas.ts`, sem `use server`) + actions só com
+> guard, e o checkout passando a chamar a camada crua. 8 testes de **arquitetura** (o de proteção
+> da receita: `lib/checkout.ts` não pode importar de `@/actions/quotas`) + mutação das 4
+> regressões possíveis, todas pegas. Suíte 191/191. Carteira real conferida antes/depois:
+> inalterada. **Achado registrado sem carona: `BUG-104`** (editar cota no painel soma em vez de
+> definir — salvar 2× dobra o saldo; a soma é intencional só para nova aquisição).
+> **Pendente da Gestora:** validar pelo fluxo grátis + rodar `scripts/normalize-quota-keys.js`
+> (passo manual do `BUG-008` que nunca foi executado — a base ainda tem chaves em MAIÚSCULA).
+>
+> _(entrada anterior)_ 2026-07-19 (chat de execução — **T-02 REABERTO**. Ao ler o arquivo
 > inteiro antes de corrigir o `BUG-101`, apareceu o **`BUG-102` (Alto)**: `post-event.ts` expõe 3
 > server actions sem guard — fechar/cancelar evento, marcar presença e **gravar feedback/tarefas
 > na carreira de qualquer membro**. Elas estavam **listadas no corpo do `BUG-020`** e nenhum dos 7
