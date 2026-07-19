@@ -129,7 +129,7 @@ export async function createPreferenceAction(
     let couponDocRef: FirebaseFirestore.DocumentReference | null = null;
 
     if (couponCode) {
-       const { resolveMatricula } = await import("./get-user-results");
+       const { resolveMatricula } = await import("@/lib/user-matricula");
        const { hashCpf } = await import("@/utils/crypto");
        
        const matricula = await resolveMatricula(session.uid, session.email || "");

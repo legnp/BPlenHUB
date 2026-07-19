@@ -3,6 +3,7 @@
 import { getAdminDb } from "@/lib/firebase-admin";
 import * as admin from "firebase-admin";
 import { SurveyConfig, SurveyResponse, SurveyValue } from "@/types/survey";
+import { requireAuth, AuthorizationError } from "@/lib/auth-guards";
 
 /**
  * BPlen HUB — Submit Institutional Survey (📡)
@@ -55,6 +56,13 @@ export async function submitSurvey(config: SurveyConfig, responses: Record<strin
  */
 export async function checkSurveyCompletedAction(matricula: string, surveyId: string): Promise<boolean> {
   try {
+  // Dono-ou-admin pela MATRICULA da sessao: ate o BUG-103 a matricula vinha do
+  // cliente sem conferencia, entao dava para ler as respostas de qualquer membro.
+  const session = await requireAuth();
+  if (session.matricula !== matricula && !session.isAdmin) {
+    throw new AuthorizationError("Voce nao pode acessar as respostas de outro membro.");
+  }
+
     const db: admin.firestore.Firestore = getAdminDb();
     const doc = await db.doc(`User/${matricula}/Surveys/${surveyId}`).get();
     return doc.exists && doc.data()?.status === "completed";
@@ -66,6 +74,13 @@ export async function checkSurveyCompletedAction(matricula: string, surveyId: st
 
 export async function getPreviousSurveysDataAction(matricula: string): Promise<Record<string, unknown>> {
   try {
+  // Dono-ou-admin pela MATRICULA da sessao: ate o BUG-103 a matricula vinha do
+  // cliente sem conferencia, entao dava para ler as respostas de qualquer membro.
+  const session = await requireAuth();
+  if (session.matricula !== matricula && !session.isAdmin) {
+    throw new AuthorizationError("Voce nao pode acessar as respostas de outro membro.");
+  }
+
     const db: admin.firestore.Firestore = getAdminDb();
     const docRef1 = db.doc(`User/${matricula}/Surveys/survey_plano_fase1`);
     const docRef2 = db.doc(`User/${matricula}/Surveys/survey_plano_fase2`);
@@ -130,6 +145,13 @@ export async function getPreviousSurveysDataAction(matricula: string): Promise<R
  */
 export async function getPdiSurveysDataAction(matricula: string): Promise<Record<string, SurveyValue>> {
   try {
+  // Dono-ou-admin pela MATRICULA da sessao: ate o BUG-103 a matricula vinha do
+  // cliente sem conferencia, entao dava para ler as respostas de qualquer membro.
+  const session = await requireAuth();
+  if (session.matricula !== matricula && !session.isAdmin) {
+    throw new AuthorizationError("Voce nao pode acessar as respostas de outro membro.");
+  }
+
     const db: admin.firestore.Firestore = getAdminDb();
     const docRef1 = db.doc(`User/${matricula}/Surveys/survey_pdi_fase1`);
     const docRef2 = db.doc(`User/${matricula}/Surveys/survey_pdi_fase2`);

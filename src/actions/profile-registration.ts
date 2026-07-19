@@ -2,7 +2,7 @@
 
 import { getAdminDb } from "@/lib/firebase-admin";
 import { requireAuth } from "@/lib/auth-guards";
-import { resolveMatricula } from "./get-user-results";
+import { resolveMatricula } from "@/lib/user-matricula";
 import { handleFormSideEffects } from "./form-effects";
 import { dadosCadastraisForm } from "@/config/forms/definitions/dados-cadastrais";
 

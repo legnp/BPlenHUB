@@ -13,7 +13,7 @@ import { maybeReleaseService } from "@/lib/checkout";
  */
 
 import { validateCouponAction } from "./coupons";
-import { resolveMatricula } from "./get-user-results";
+import { resolveMatricula } from "@/lib/user-matricula";
 import { hashCpf } from "@/utils/crypto";
 
 export async function processServicePurchaseAction(

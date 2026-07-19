@@ -3,7 +3,7 @@
 import { getAdminDb } from "@/lib/firebase-admin";
 import { USER_ORDERS_COLLECTION } from "@/config/collections";
 import { requireAuth } from "@/lib/auth-guards";
-import { resolveMatricula } from "./get-user-results";
+import { resolveMatricula } from "@/lib/user-matricula";
 
 export interface Order {
   id: string;
