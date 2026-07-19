@@ -265,7 +265,7 @@ fechado (7 lotes, PRs #8–#14) e saiu desta fila.
 | Usabilidade | Fase 0 (padrão canônico de design/UX via Mapa 5; tom de voz/copy via F0-06), Fase 1 (critério de aceite de cada página inclui usabilidade e revisão de texto/títulos) |
 | Eficiência de desempenho | Track adicional "Não-funcional / Performance" (full scans sem paginação já achados — `BUG-017`) |
 | Confiabilidade | Track adicional "Concorrência/Transactions" + Fase 4 (regressão e2e); transações do Firestore em booking/quotas já usam `runTransaction` corretamente na maioria dos casos mapeados |
-| Segurança | Track adicional "Segurança sistemática" (matriz de guards do Mapa 4) — **T-02 FECHADA, 12/12 (100%)**: corrigidos `BUG-003/004/005/006/007/019/020/021/023/024/025/032` (inclui o item sistêmico `BUG-020`, fechado em 7 lotes, o Crítico `BUG-032`, o webhook MP com HMAC `BUG-025`, o path de debug `BUG-004`, o guard de networking `BUG-006`, e a matrícula no pagamento `BUG-005`). Nenhum bug de segurança aberto |
+| Segurança | Track adicional "Segurança sistemática" (matriz de guards do Mapa 4) — **T-02 REABERTA em 2026-07-19 (`BUG-103`)**: a varredura por arquivo achou server actions sensíveis sem guard que os 7 lotes do `BUG-020` nunca tocaram (`post-event.ts` estava na lista do próprio bug). Os 12 bugs originais seguem corrigidos, mas o track não estava fechado — ver `BUGS.md#bug-102`/`#bug-103`. _(texto anterior: T-02 FECHADA, 12/12 (100%))_: corrigidos `BUG-003/004/005/006/007/019/020/021/023/024/025/032` (inclui o item sistêmico `BUG-020`, fechado em 7 lotes, o Crítico `BUG-032`, o webhook MP com HMAC `BUG-025`, o path de debug `BUG-004`, o guard de networking `BUG-006`, e a matrícula no pagamento `BUG-005`). **Abertos agora: `BUG-102` e `BUG-103`** |
 | Compatibilidade | Fase 1 — critério de aceite de cada página inclui responsivo (mobile/tablet/desktop) e navegador via preview; integrações externas (Mercado Pago/Google/Resend) verificadas quanto à coexistência sem conflito no track de "Integrações externas" |
 | Manutenibilidade | Track adicional "Integridade e migração de dados" (schema drift, timestamps inconsistentes, coleções órfãs — `BUG-008/009/010/018`), reforçado pela regra "Zero Any" já enforced via ESLint |
 | Portabilidade | Relevância baixa para este tipo de sistema (SaaS web único, deploy Vercel, sem exigência de múltiplas plataformas/instalação). Verificação mínima: configuração via `src/env.ts`/variáveis de ambiente (já é padrão do projeto, não hardcoded) — sem track dedicado além disso |
@@ -898,6 +898,15 @@ O mapeamento das jornadas abaixo é entregável desta fase (não pré-existente)
   `getServerSession`), o padrão é separar o resolvedor cru (sem guard) do
   wrapper exposto (com guard) — ver Protocolo item 8 e Lição 9 do
   `RETROSPECTIVE.md`
+- **REABERTO em 2026-07-19 (`BUG-103`).** A varredura por arquivo (177 server actions expostas,
+  57 sem guard) mostrou que o critério de fechamento foi aplicado **bug a bug**, mas a lista de
+  arquivos **dentro** do `BUG-020` também era checklist e não foi reconferida: `post-event.ts`
+  estava lá e nenhum dos 7 lotes o tocou (`BUG-102`). Confirmados à mão, além dele: escrita de
+  cota a partir de `uid` do cliente, leitura de PDI/survey/DISC de qualquer membro, e seeds de
+  produto/convite sem trava. **Os 12 bugs originais seguem corrigidos** — o que estava errado era
+  declarar o track fechado a partir deles. Plano: lotes por módulo (cotas -> PII -> pós-evento ->
+  seeds -> confirmação dos legítimos), com o double-check de chamadores já feito em `BUG-103`.
+  _(texto anterior mantido abaixo como histórico)_
 - Execução: **Concluída — 12/12 (100%), Track FECHADO** (ver `DASHBOARD.md`). **BUG-020 Corrigido**
   (7 lotes, PRs #8–#14 — todos os módulos do Mapa 4b padronizados com o guard
   canônico). **BUG-021 Corrigido** (PR #13). **BUG-032 Corrigido** (PR #14, novo
@@ -1074,6 +1083,9 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-098 | Baixo | Aberto | agenda/Etapa 3 — campo `mentor` com nomenclatura antiga (rótulo já é "Consultor") |
 | BUG-099 | **Alto** | **Corrigido (PR #121)** | F1-03/agenda — bloco "Seu Agendamento Confirmado" **sempre** vazio: `StepRenderer` e `UserBookings` casavam a mesma sessão com regras diferentes (8 de 8 pares reais falhando). Fonte única extraída. **Diagnóstico anterior corrigido**: não era a janela de 21 dias nem regressão do PR #112 |
 | BUG-100 | Médio | Aberto | F1-03 — `StepRenderer` chama todos os hooks depois do early return de `locked`; crash latente. Achado no PR #121 |
+| BUG-101 | Médio | Aberto | F1-06/agenda — Ata some do agendamento se enviada depois de fechar o participante (1 de 7 afetado) |
+| BUG-102 | **Alto** | Aberto | **T-02 (reaberto)** — `post-event.ts` sem guard; resíduo nominal do `BUG-020` |
+| BUG-103 | **Alto** | Aberto | **T-02 (reaberto)** — varredura de guards: 177 actions expostas, 57 sem guard; subconjunto sensível confirmado (cota, PII de survey/DISC, seeds) |
 
 ---
 

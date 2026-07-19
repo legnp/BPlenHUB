@@ -2823,6 +2823,33 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   **dentro** do `BUG-020` tambem era um checklist, e ninguem a reconferiu por arquivo. **O T-02
   deve ser reaberto.**
 - Status: **Aberto** — varredura feita e registrada; nenhuma correcao aplicada.
+- **DOUBLE-CHECK DE EFEITO COLATERAL (2026-07-19, pedido da Gestora) — a trava ingenua QUEBRARIA
+  4 fluxos vivos.** Mapa de chamadores feito ANTES de codar (Licao 23). Achados:
+  1. **RECEITA — `updateMemberQuotasAction`.** Cadeia confirmada:
+     **webhook do Mercado Pago** (`/api/webhooks/mercadopago`) -> `maybeReleaseService` ->
+     `grantServiceEntitlement` (`lib/checkout.ts:275`) -> `updateMemberQuotasAction`
+     (`lib/checkout.ts:184`). O webhook **nao tem sessao de usuario** (autentica por assinatura
+     HMAC, `BUG-025`). Um `requireAuth`/`requireAdmin` dentro da action faria **o cliente pagar e
+     nao receber a cota**. Alem disso, o caller de UI e `admin/users` concedendo cota a **outro**
+     usuario — uma trava de "dono" tambem barraria a Gestora.
+  2. **CRON + FUNIL PUBLICO — `updateGlobalProgramacaoRegistryAction`.** Chamada por
+     `sync.ts:197` (o **cron diario das 03h**, sem sessao), por `booking.ts:541` (que serve o
+     **funil de lead publico**) e por 4 pontos internos de `post-event.ts`. Guardar direto quebraria
+     o cron e o funil.
+  3. **PAGINA PUBLICA — `seedInvitationEventAndTokens`.** Chamada por
+     `src/app/convites/[slug]/page.tsx:36`, rota **publica**. `requireAdmin` derrubaria a pagina
+     de convite.
+  4. **`seedInitialProductsAction` tem ZERO callers** — e orfa. O tratamento certo e **remover**,
+     nao guardar (precedente do `BUG-039`).
+  **Baixo risco confirmado:** `getPdiSurveysDataAction`, `getPreviousSurveysDataAction`,
+  `checkSurveyCompletedAction` e `getDiscResult` sao chamadas **so** por componentes do membro com
+  a **propria** matricula/uid (`StepRenderer`, `SurveyEngine`, `MemberDashboardView`) — o padrao
+  dono-ou-admin nao barra ninguem. `getMemberQuotasAction` idem, com o admin lendo de outro
+  usuario (dono-ou-admin cobre).
+- **Padrao obrigatorio para os itens 1-3 (Protocolo item 8 / Licao 9):** separar o **resolvedor cru**
+  (lib, sem guard, usado por webhook/cron/funil, que ja verificaram identidade por outro meio) do
+  **action exposto** (wrapper com `requireAdmin`, usado pela UI). Mesmo desenho do lote 7 do
+  `BUG-020`. **Nenhum destes pode receber guard direto.**
 - Decisao de execucao: **Precisa plano+aprovacao**, em **lotes por modulo**, como o `BUG-020`
   (quotas/financeiro -> PII de survey/resultados -> seeds administrativos -> confirmacao dos
   "legitimos"). Nao fazer de carona em PR de outro assunto.

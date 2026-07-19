@@ -12,7 +12,21 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-19 (chat de execução — **BUG-099 corrigido (PR #121)**, deploy
+> **Última atualização:** 2026-07-19 (chat de execução — **T-02 REABERTO**. Ao ler o arquivo
+> inteiro antes de corrigir o `BUG-101`, apareceu o **`BUG-102` (Alto)**: `post-event.ts` expõe 3
+> server actions sem guard — fechar/cancelar evento, marcar presença e **gravar feedback/tarefas
+> na carreira de qualquer membro**. Elas estavam **listadas no corpo do `BUG-020`** e nenhum dos 7
+> lotes as tocou. A varredura sistemática que se seguiu (**`BUG-103`**) achou 177 actions expostas
+> e **57 sem guard**; o subconjunto sensível foi confirmado à mão: escrita de cota por `uid` do
+> cliente, leitura de PDI/survey/DISC de qualquer membro, seeds de produto/convite sem trava.
+> **O T-02 estava declarado FECHADO 12/12 e não estava** — o critério conferiu bug a bug, mas a
+> lista de arquivos dentro do bug também era checklist. **Double-check de efeito colateral feito
+> antes de codar** (a pedido da Gestora) e ele salvou 4 fluxos: a trava ingênua quebraria o
+> **webhook do Mercado Pago** (cliente pagaria e não receberia cota), o **cron diário das 03h**, o
+> **funil de lead público** e a **página pública de convite**. Padrão obrigatório: resolvedor cru
+> separado do action exposto (lote 7 do `BUG-020`). Nenhuma linha de código alterada ainda.
+>
+> _(entrada anterior)_ 2026-07-19 (chat de execução — **BUG-099 corrigido (PR #121)**, deploy
 > `success`. O bloco "Seu Agendamento Confirmado" da parada da jornada estava **sempre vazio**,
 > para todos os membros: o cabeçalho e a lista casavam a mesma sessão com **regras diferentes**
 > (tema OU palavra-chave x palavra-chave E tema, exigindo um tema que nenhum evento tem). Medido
