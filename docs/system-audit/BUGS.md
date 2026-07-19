@@ -2784,6 +2784,51 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Commit/PR: —
 
 
+### BUG-103 Varredura de guards: server actions sensiveis sem trava — o T-02 nao estava fechado
+
+- Severidade: **Alto** (agrega IDOR de leitura de PII, escrita nao autenticada em cota financeira e
+  seed de catalogo sem trava; itens individuais variam de Alto a Baixo)
+- Area/fase onde foi achado: varredura sistematica pedida pela Gestora em 2026-07-19, apos o
+  `BUG-102` revelar que `post-event.ts` escapou dos 7 lotes do `BUG-020`
+- Metodo: script de conferencia (`scratch/sweep-guards.js`, leitura de codigo) sobre **todo**
+  arquivo `"use server"` de `src/actions`, resolvendo os wrappers que so delegam (o guard tem de
+  estar no destino, nao no wrapper). **Duas fontes de falso positivo foram corrigidas antes de
+  reportar** (Licao 2): a extracao de corpo confundia `: Promise<{...}>` com o corpo da funcao, e o
+  helper local `checkAuthAndGetDb` do `career-module.ts` nao era reconhecido como guard.
+- Resultado: **177 funcoes expostas como server action; 57 sem guard no corpo.** A maioria e
+  legitima (ver abaixo) — o problema esta no subconjunto sensivel, **confirmado a mao**:
+
+  **Confirmados por leitura direta (nao sao falso positivo):**
+  | Action | Assinatura | Risco |
+  |---|---|---|
+  | `quotas.ts:updateMemberQuotasAction` | `(uid, newQuotas)` | **grava cota a partir de `uid` do cliente, sem verificar sessao — concessao arbitraria de cota (financeiro)** |
+  | `quotas.ts:getMemberQuotasAction` / `consumeQuotaAction` | — | leitura/consumo de cota sem trava |
+  | `submit-survey.ts:getPdiSurveysDataAction` | `(matricula)` | **IDOR: le as respostas de PDI de qualquer membro** |
+  | `submit-survey.ts:getPreviousSurveysDataAction` | `(matricula)` | **IDOR: le respostas de survey de qualquer membro** |
+  | `get-user-results.ts:getDiscResult` e irmas | `(userUid, email?)` | **IDOR: le resultado DISC/comportamental de qualquer usuario** |
+  | `seed-products.ts:seedInitialProductsAction` | `()` | escreve catalogo de produtos sem trava (mesma categoria do `BUG-039`, que foi removido por isso) |
+  | `invitations.ts:seedInvitationEventAndTokens` | — | seed administrativo sem trava |
+  | `legal.ts:generateContractPdf` | — | geracao de PDF de contrato sem trava (confirmar escopo) |
+  | `post-event.ts` x3 | — | ja registrado como `BUG-102` |
+
+  **Provavelmente legitimos — a confirmar, nao alarmar:** `auth-session.ts` (primitivos de sessao;
+  guardar recursa — Protocolo item 8), `external-booking.ts` (funil de lead **publico**, ja
+  documentado como intencional no lote 1 do `BUG-020`), `products.ts`/`social.ts`/
+  `OneToOneActions.getOneToOneTypes`/`calendar-event-types.getCalendarEventTypes` (catalogo
+  publico), `invitations.ts` validate/claim (o **token e** a credencial), e a familia
+  `effects/*`/`form-effects`/`survey-effects`/`generic-form` (verificar se resolvem identidade
+  por conta propria antes de classificar).
+- **Consequencia para o processo:** o **T-02 (Seguranca sistematica) foi declarado FECHADO 12/12
+  (100%)** e nao estava. O criterio de fechamento conferiu **bug a bug**, mas a lista de arquivos
+  **dentro** do `BUG-020` tambem era um checklist, e ninguem a reconferiu por arquivo. **O T-02
+  deve ser reaberto.**
+- Status: **Aberto** — varredura feita e registrada; nenhuma correcao aplicada.
+- Decisao de execucao: **Precisa plano+aprovacao**, em **lotes por modulo**, como o `BUG-020`
+  (quotas/financeiro -> PII de survey/resultados -> seeds administrativos -> confirmacao dos
+  "legitimos"). Nao fazer de carona em PR de outro assunto.
+- Commit/PR: —
+
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em
