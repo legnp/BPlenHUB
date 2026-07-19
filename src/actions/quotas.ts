@@ -1,49 +1,39 @@
 "use server";
 
-import { getAdminDb } from "@/lib/firebase-admin";
-import { MemberQuotaWallet, MemberQuota } from "@/types/entitlements";
+import { requireAdmin, requireAuth, AuthorizationError } from "@/lib/auth-guards";
+import { MemberQuotaWallet } from "@/types/entitlements";
 import { getErrorMessage } from "@/lib/utils/errors";
-import { safeSerialize } from "@/lib/utils/firestore";
-import { normalizeQuotaKey, foldQuotaMap } from "@/lib/quota-keys";
-import { getProductBySlug } from "./products"; // Se precisarmos buscar cotas do produto
-
-const QUOTAS_COLLECTION = "Member_Quotas";
+import { addMemberQuotas, readMemberQuotas, consumeMemberQuota } from "@/lib/member-quotas";
 
 /**
- * BPlen HUB — Quota Engine ✨
- * Gestão de saldo e consumo de créditos de serviços.
- * Migrado para Hierarquia V3: User/{matricula}/User_Permissions/quotas
+ * BPlen HUB — Quota Engine (superficie exposta)
+ *
+ * Este arquivo e `"use server"`: tudo que ele exporta e um **endpoint de rede
+ * real**, chamavel por quem conhecer a assinatura. Por isso aqui so moram
+ * guards + delegacao — a logica vive em `@/lib/member-quotas` (camada crua).
+ *
+ * Ate o `BUG-103` estas tres actions nao tinham guard nenhum: um chamador nao
+ * autenticado podia conceder cota arbitraria passando o `uid` de qualquer
+ * pessoa. A protecao era so a UI nao expor o botao — a mesma premissa que o
+ * `BUG-020` derrubou.
+ *
+ * **Nao mova estes guards para a camada crua**: o webhook do Mercado Pago
+ * concede cota apos o pagamento e nao tem sessao de usuario (autentica por HMAC).
+ * Guardar la faria o cliente pagar e nao receber a cota. Ver `member-quotas.ts`.
  */
 
 /**
- * Helper: Resolve a matrícula de um UID via _AuthMap
- */
-async function getMatriculaByUid(uid: string): Promise<string | null> {
-  const db = getAdminDb();
-  const mapSnap = await db.collection("_AuthMap").doc(uid).get();
-  return mapSnap.exists ? mapSnap.data()?.matricula : null;
-}
-
-/**
- * Busca a carteira de cotas de um membro
+ * Busca a carteira de cotas de um membro.
+ * Dono-ou-admin: o membro le a propria (`useJourney`, modal do 1 to 1) e o admin
+ * le a de qualquer um (`admin/users`).
  */
 export async function getMemberQuotasAction(uid: string): Promise<MemberQuotaWallet | null> {
   try {
-    const matricula = await getMatriculaByUid(uid);
-    if (!matricula) throw new Error("Matrícula não vinculada ao UID.");
-
-    const db = getAdminDb();
-    const docPath = `User/${matricula}/User_Permissions/quotas`;
-    const doc = await db.doc(docPath).get();
-
-    if (!doc.exists) return null;
-    const wallet = safeSerialize<MemberQuotaWallet>(doc.data());
-
-    // Normalização canônica de chaves (BUG-008): dobra 1-TO-1/mentoria_1to1 ->
-    // 1-to-1 e mescla duplicatas de case, para todo leitor ver a mesma chave.
-    wallet.quotas = foldQuotaMap(wallet.quotas);
-
-    return wallet;
+    const session = await requireAuth();
+    if (session.uid !== uid && !session.isAdmin) {
+      throw new AuthorizationError("Voce nao pode acessar a carteira de cotas de outro membro.");
+    }
+    return await readMemberQuotas(uid);
   } catch (error) {
     console.error(`Erro ao buscar cotas do membro ${uid}:`, error);
     return null;
@@ -51,50 +41,17 @@ export async function getMemberQuotasAction(uid: string): Promise<MemberQuotaWal
 }
 
 /**
- * Adiciona cotas manualmente a um membro (Uso Administrativo ou Pós-Compra)
+ * Adiciona cotas a um membro (uso administrativo).
+ *
+ * `requireAdmin` e a trava certa: o unico chamador de interface e o painel
+ * `admin/users`, concedendo cota a OUTRA pessoa — uma trava de "dono" barraria a
+ * propria Gestora. A concessao automatica pos-compra NAO passa por aqui: ela
+ * chama `addMemberQuotas` direto da camada crua (ver `lib/checkout.ts`).
  */
 export async function updateMemberQuotasAction(uid: string, newQuotas: Record<string, number>) {
   try {
-    const matricula = await getMatriculaByUid(uid);
-    if (!matricula) throw new Error("Matrícula não vinculada ao UID.");
-
-    const db = getAdminDb();
-    const docPath = `User/${matricula}/User_Permissions/quotas`;
-    const walletRef = db.doc(docPath);
-    
-    await db.runTransaction(async (transaction) => {
-      const doc = await transaction.get(walletRef);
-      const now = new Date().toISOString();
-
-      // Normaliza + mescla as chaves ja existentes antes de somar (auto-cura o
-      // drift de case a cada escrita — BUG-008). Chave canonica = minuscula do
-      // catalogo; nao forcar mais UPPERCASE.
-      const currentQuotas: Record<string, MemberQuota> = doc.exists
-        ? foldQuotaMap((doc.data() as MemberQuotaWallet).quotas)
-        : {};
-
-      // Merge de Cotas
-      for (const [type, amount] of Object.entries(newQuotas)) {
-        const normalizedType = normalizeQuotaKey(type);
-        const current = currentQuotas[normalizedType] || { total: 0, used: 0, lastUpdated: now };
-        currentQuotas[normalizedType] = {
-          total: current.total + amount,
-          used: current.used,
-          lastUpdated: now
-        };
-      }
-
-      // Substitui o campo `quotas` inteiro (remove chaves-lixo de case antigas —
-      // set(merge:true) NUNCA apaga chave de map, ver L16). update() falha se o
-      // doc nao existir, entao usa set completo no primeiro deposito.
-      if (doc.exists) {
-        transaction.update(walletRef, { uid, quotas: currentQuotas, updatedAt: now });
-      } else {
-        transaction.set(walletRef, { uid, quotas: currentQuotas, updatedAt: now });
-      }
-    });
-
-    return { success: true };
+    await requireAdmin();
+    return await addMemberQuotas(uid, newQuotas);
   } catch (error) {
     console.error(`Erro ao atualizar cotas do membro ${uid}:`, error);
     throw new Error("Falha ao atualizar carteira de cotas.");
@@ -102,45 +59,16 @@ export async function updateMemberQuotasAction(uid: string, newQuotas: Record<st
 }
 
 /**
- * Consome um crédito de serviço (ex: ao confirmar agendamento)
+ * Consome um credito de servico (ex.: ao confirmar agendamento).
+ * Sem chamadores hoje — o consumo ainda nao esta ligado ao booking (`BUG-013`).
  */
 export async function consumeQuotaAction(uid: string, eventTypeId: string) {
   try {
-    const matricula = await getMatriculaByUid(uid);
-    if (!matricula) throw new Error("Matrícula não vinculada ao UID.");
-
-    const db = getAdminDb();
-    const docPath = `User/${matricula}/User_Permissions/quotas`;
-    const walletRef = db.doc(docPath);
-
-    await db.runTransaction(async (transaction) => {
-      const doc = await transaction.get(walletRef);
-      if (!doc.exists) throw new Error("Membro não possui carteira de cotas.");
-
-      const wallet = doc.data() as MemberQuotaWallet;
-      // Normaliza + mescla as chaves (BUG-008) antes de localizar a cota-alvo.
-      const quotas = foldQuotaMap(wallet.quotas);
-
-      const targetKey = normalizeQuotaKey(eventTypeId);
-      const quota = quotas[targetKey];
-
-      if (!quota || quota.used >= quota.total) {
-        throw new Error(`Saldo insuficiente para o serviço: ${targetKey}`);
-      }
-
-      const updatedQuotas = {
-        ...quotas,
-        [targetKey]: {
-          ...quota,
-          used: (quota.used || 0) + 1,
-          lastUpdated: new Date().toISOString()
-        }
-      };
-
-      transaction.update(walletRef, { quotas: updatedQuotas });
-    });
-
-    return { success: true };
+    const session = await requireAuth();
+    if (session.uid !== uid && !session.isAdmin) {
+      throw new AuthorizationError("Voce nao pode consumir a cota de outro membro.");
+    }
+    return await consumeMemberQuota(uid, eventTypeId);
   } catch (error: unknown) {
     console.error(`Erro ao consumir cota do membro ${uid}:`, error);
     return { success: false, error: getErrorMessage(error) };
