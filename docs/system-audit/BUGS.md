@@ -2621,6 +2621,31 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   estiver sendo reescrito.
 - Commit/PR: —
 
+### BUG-099 Parada da jornada nao mostra o agendamento confirmado quando a sessao ja passou
+
+- Severidade: **Alto** (o membro ve "sua sessao esta confirmada" e o bloco do agendamento VAZIO —
+  parece que perdeu a sessao). **Regressao introduzida por mim**, nao pela Fase 3.1.
+- Area/fase onde foi achado: reportado pela Gestora em 2026-07-18 ao validar a Fase 3.1
+  (`BP-005-PF-260523` em `/hub/journey/plano-de-carreira`, parada "Devolutiva do Plano")
+- Arquivo(s) afetado(s): `src/components/journey/StepRenderer.tsx` (usa `events` de
+  `getUpcomingEvents`); origem em `src/actions/calendar-module/queries.ts:getUpcomingEvents`
+- Cenario de falha: **[CONFIRMADO]** por inventario read-only. `getUpcomingEvents` (PR #112, com o
+  teto de janela do PR #113) devolve **so `[agora, agora+21d]`**. O `StepRenderer` procura o detalhe
+  do agendamento confirmado **nessa lista** — entao toda sessao **ja realizada** some do bloco
+  "SEU AGENDAMENTO CONFIRMADO", que cai no estado vazio ("aguardando agendamento no calendario
+  acima"). Os **4 agendamentos do BP-005 sao passados** (03/06, 16/06, 30/06, 07/07) e a janela atual
+  e 19/07..09/08 — nenhum aparece.
+  **Antes do PR #112** o `getSyncedEvents` devolvia a colecao inteira (passado incluso), entao o
+  detalhe era encontrado. A `gestao_agenda` continua correta porque le `getUserBookingsAction`, que
+  busca o evento **por id** (funciona para passado) — por isso o historico dela esta perfeito.
+- Status: **Aberto** — diagnosticado, nao corrigido (fim da janela de contexto da sessao).
+- Decisao de execucao: **a correcao NAO e alargar a janela** (isso reabriria o custo de leitura do
+  `BUG-087`/apagao). O caminho certo: o bloco "seu agendamento confirmado" deve usar o
+  **`eventDetail` que ja vem em `userBookings`** (o `getUserBookingsAction` busca por id e ja traz
+  passado), em vez de procurar na lista de disponibilidade. A lista de disponibilidade continua
+  futura, como deve ser.
+- Commit/PR: —
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em
