@@ -180,8 +180,12 @@ export async function grantServiceEntitlement(params: GrantEntitlementParams) {
   try {
     if (productData?.grantedQuotas && Object.keys(productData.grantedQuotas).length > 0) {
       console.log(`[Entitlement] Depositando cotas automaticas para UID: ${uid} | Servico: ${productTitle}`);
-      const { updateMemberQuotasAction } = await import("@/actions/quotas");
-      await updateMemberQuotasAction(uid, productData.grantedQuotas);
+      // Camada CRUA de proposito: este caminho e alcancado pelo webhook do
+      // Mercado Pago, que autentica por HMAC e NAO tem sessao de usuario. Usar
+      // o action guardado (`@/actions/quotas`) faria o cliente pagar e nao
+      // receber a cota. Ha teste de arquitetura travando este import (BUG-103).
+      const { addMemberQuotas } = await import("@/lib/member-quotas");
+      await addMemberQuotas(uid, productData.grantedQuotas);
     }
   } catch (error) {
     console.error("[Entitlement] Erro ao depositar cotas:", error);
