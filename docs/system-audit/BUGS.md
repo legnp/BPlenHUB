@@ -3068,6 +3068,52 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Commit/PR: —
 
 
+### BUG-109 Avaliacao de conteudo chega VAZIA ("N/A") na planilha do Drive
+
+- Severidade: **Medio** (o dado nao se perde — esta integro no Firestore —, mas o espelho no Drive,
+  que e a estrategia de BACKUP independente da plataforma, grava vazio)
+- Area/fase onde foi achado: **reportado pela Gestora em 2026-07-20**, ao validar o `BUG-107` em aba
+  anonima: ela avaliou com 5 estrelas + comentario nas duas telas publicas, e as duas planilhas
+  gravaram `N/A` em "Utilidade (Likert)" e "Comentarios/Feedback".
+- Arquivo(s) afetado(s): `src/actions/effects/misc-surveys.ts:handleContentFeedbackEffect` (l.83-84)
+- Cenario de falha: **[CONFIRMADO]** por leitura + dado. Desencontro puro de nome de campo entre as
+  tres pontas do mesmo contrato:
+  | Ponta | Campos |
+  |---|---|
+  | Config `content_evaluation` | `rating`, `comment` |
+  | `ContentEvaluationModal` (o que o usuario preenche) | `rating`, `comment` |
+  | **O efeito que escreve no Drive** | `utilidade`, `comentarios` — **nunca existiram** |
+  O `|| "N/A"` (fallback mudo, familia da Licao 30) transformou "nao encontrei" numa resposta
+  plausivel: nenhum erro, nenhum log, planilha preenchida com `N/A`.
+- **O dado NAO se perdeu [CONFIRMADO na base]:** o `submitSurvey` grava `data: responses` inteiro no
+  Firestore. As 3 avaliacoes existentes estao integras:
+  ```
+  BP-002-PF-260331 | rating: 5 | comment: ""
+  BP-ANON          | rating: 5 | comment: "teste 2"
+  BP-ANON          | rating: 5 | comment: "teste"
+  ```
+  So o espelho do Drive estava oco.
+- **E PRE-EXISTENTE, nao regressao:** introduzido no commit `8ebf1ab`
+  ("evolucao_bplen_3.1-fase_2"), muito antes desta auditoria. Afetava **tambem membro logado** (o
+  `BP-002` avaliou e a planilha dele tem `N/A`). O que mudou foi a **visibilidade**: a correcao do
+  `BUG-107` fez o caminho anonimo finalmente chegar ao efeito, e a Gestora olhou a planilha.
+- **Varredura do PADRAO (a licao do `BUG-102`), nao so do caso:** cruzados os **57** campos lidos por
+  **todos** os efeitos contra os **450** ids declarados nos configs. Resultado: **9 divergencias, das
+  quais 8 sao falso positivo explicado** — `${field.id}_other` e gerado em RUNTIME pelo `SurveyEngine`
+  (l.883) quando o usuario escolhe "Outro", logo legitimamente nao aparece como `id:` no config.
+  **Este era o unico bug real.**
+- Status: **Corrigido** — 2026-07-20. O efeito passa a ler `rating`/`comment`. Teste novo cruza
+  campos-lidos x campos-declarados para **toda** a familia de efeitos, tolerando a convencao
+  `_other`, para a proxima divergencia falhar alto em vez de virar `N/A`.
+- **Nao alterado de proposito:** o cabecalho "Utilidade (Likert)" das planilhas ja existentes. Mudar
+  criaria inconsistencia com as 3 planilhas ja criadas, e "Likert" descreve razoavelmente uma escala
+  1-5. Se a Gestora preferir "Avaliacao (1-5)", e ajuste de uma linha.
+- **Retroativo:** as 3 linhas ja gravadas com `N/A` **nao sao corrigidas** por este fix (ele so vale
+  para envios novos). O dado esta no Firestore; se a Gestora quiser reescrever as planilhas antigas,
+  e um script proprio.
+- Commit/PR: —
+
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em
