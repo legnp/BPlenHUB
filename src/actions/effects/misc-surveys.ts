@@ -80,8 +80,13 @@ export async function handleContentFeedbackEffect(
       rowData: [
         new Date().toLocaleString("pt-BR"),
         matricula,
-        String(responses.utilidade || "N/A"),
-        String(responses.comentários || "N/A")
+        // BUG-109: lia `utilidade`/`comentarios`, campos que NUNCA existiram neste
+        // survey. O `content_evaluation` declara `rating` e `comment` (e e o que o
+        // modal envia). O `|| "N/A"` engoliu a divergencia por meses: o dado ia
+        // integro para o Firestore e chegava VAZIO na planilha do Drive — que e a
+        // estrategia de backup independente da plataforma. Licao 30 (fallback mudo).
+        String(responses.rating || "N/A"),
+        String(responses.comment || "N/A")
       ]
     });
   } catch (err) {
