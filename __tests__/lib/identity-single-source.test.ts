@@ -6,7 +6,7 @@ import path from "path";
  * Lote 2b.2-A — fonte unica de identidade (`BUG-103`) + feedback publico (`BUG-107`).
  *
  * Por que a fonte unica importa: a resolucao "uid -> matricula" vivia em DUAS
- * copias (`lib/user-matricula.ts` e `actions/survey-effects.ts`). Elas divergiram,
+ * copias (`lib/user-matricula.ts` e a resolucao do survey). Elas divergiram,
  * e foi por isso que o padrao do `BUG-032` foi corrigido em `auth-permissions.ts`
  * e **sobreviveu nas outras duas** ate virar o `BUG-106` (sequestro de conta).
  * Enquanto forem copias, o proximo endurecimento conserta uma e a outra sobrevive.
@@ -30,7 +30,7 @@ describe("a resolucao uid -> matricula existe em UM lugar so", () => {
     // para usuario existente). Agora exige a chamada com argumentos.
     expect(codigoDe("src/lib/user-matricula.ts"))
       .toMatch(/findMatriculaByIdentity\(\s*userUid\s*,\s*verifiedEmail\s*\)/);
-    expect(codigoDe("src/actions/survey-effects.ts"))
+    expect(codigoDe("src/lib/survey/identity.ts"))
       .toMatch(/=\s*await findMatriculaByIdentity\(\s*userUid\s*,\s*verifiedEmail\s*\)/);
   });
 
@@ -58,7 +58,7 @@ describe("a resolucao uid -> matricula existe em UM lugar so", () => {
   });
 
   it("o e-mail continua vindo da sessao, nunca do formulario", () => {
-    const efeitos = codigoDe("src/actions/survey-effects.ts");
+    const efeitos = codigoDe("src/lib/survey/identity.ts");
     expect(efeitos).not.toMatch(/responses\.email/);
     expect(efeitos).toMatch(/getServerSession\s*\(/);
     expect(efeitos).toMatch(/sessionForHealing\?\.uid === userUid/);

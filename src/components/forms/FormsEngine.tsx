@@ -11,7 +11,7 @@ import { TextareaGlass } from "@/components/ui/TextareaGlass";
 import { SelectGlass } from "@/components/ui/SelectGlass";
 import { FileField } from "@/components/forms/SurveyFields/FileField";
 import { submitGenericForm } from "@/actions/generic-form";
-import { resolveUserIdentity } from "@/actions/survey-effects";
+import { resolveOwnIdentityAction } from "@/actions/survey-effects";
 import { Loader2, FileCheck, AlertCircle, Search, Lock, FlaskConical } from "lucide-react";
 import { useAuthContext } from "@/context/AuthContext";
 import { validateCPF, maskCPF, maskCEP, maskPhoneBR, lookupCEP } from "@/utils/validations";
@@ -52,7 +52,7 @@ export function FormsEngine({ config, userUid, matricula: explicitMatricula, onC
       }
 
       if (userUid && !isPreview) {
-        const mat = await resolveUserIdentity(config.id, {}, userUid);
+        const mat = await resolveOwnIdentityAction(config.id);
         if (!explicitMatricula) {
           setMatricula(mat);
         }

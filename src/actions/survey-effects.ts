@@ -1,7 +1,6 @@
 "use server";
 
-import { getAdminDb } from "@/lib/firebase-admin";
-import * as admin from "firebase-admin";
+import { requireAuth } from "@/lib/auth-guards";
 import { SurveyValue } from "@/types/survey";
 
 // Importações dos Módulos Decompostos (Arquitetura Fase 2 🏗️)
@@ -19,80 +18,31 @@ import { handleCheckInEffect, handleContentFeedbackEffect, handleCVReviewEffect,
  */
 
 /**
- * Resolve ou Gera a Matrícula do usuário (🧬 Soberania de Identidade)
+ * Identidade do PROPRIO usuario da sessao.
+ *
+ * Substitui a antiga `resolveUserIdentity(surveyId, responses, userUid)`, que era
+ * exportada daqui — e portanto endpoint de rede recebendo o uid **do cliente**.
+ * Com ela, qualquer requisicao podia **cunhar matricula em serie** (o ramo de
+ * welcome/cadastro incrementa o contador global) dizendo ser outro uid.
+ *
+ * A protecao nao e um guard a mais: e a **assinatura**. Sem parametro de uid, nao
+ * ha como afirmar identidade — ela vem da sessao. Mesmo racional do lote 1
+ * (cotas) e do 2a (PII).
  */
-export async function resolveUserIdentity(surveyId: string, responses: Record<string, SurveyValue>, userUid?: string): Promise<string> {
-  const db: admin.firestore.Firestore = getAdminDb();
-  const authMapRef = db.doc(`_AuthMap/${userUid}`);
-
-  // Acesso anonimo: nao ha identidade a resolver.
-  if (!userUid) {
-    console.log(`[Effects:Identity] Acesso anonimo para survey: ${surveyId}`);
-    return `BP-ANON-${new Date().getTime()}`;
-  }
-
-  // Passos 1-3 (AuthMap -> UID -> e-mail verificado) vivem na FONTE UNICA
-  // `@/lib/identity/find-matricula`. Ate o lote 2b.2 do BUG-103 eram uma copia
-  // desta funcao, irma da de `lib/user-matricula.ts` — e foi essa duplicacao que
-  // deixou o padrao do BUG-032 sobreviver aqui ate virar o BUG-106.
-  //
-  // O e-mail vem da SESSAO VERIFICADA, nunca de `responses.email` (BUG-106,
-  // Critico): o passo 3 reescreve o `uid` do dono da conta, entao ler o e-mail de
-  // um campo de formulario era sequestro de conta. `getServerSession()` devolve
-  // null sem sessao, logo o caminho publico simplesmente nao cura.
-  const { getServerSession } = await import("@/lib/server-session");
-  const { findMatriculaByIdentity } = await import("@/lib/identity/find-matricula");
-  const sessionForHealing = await getServerSession();
-  const verifiedEmail = sessionForHealing?.uid === userUid ? sessionForHealing.email : undefined;
-
-  const existente = await findMatriculaByIdentity(userUid, verifiedEmail);
-  if (existente) return existente;
-
-  if (surveyId === "welcome_survey" || surveyId === "dados_cadastrais") {
-    return await db.runTransaction(async (transaction) => {
-      const counterRef = db.doc("_internal/counters/user/global");
-      const counterSnap = await transaction.get(counterRef);
-      const count = (counterSnap.data()?.count || 0) + 1;
-      transaction.set(counterRef, { count, lastUpdated: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
-      const seq = count.toString().padStart(3, "0");
-      const userTypeRaw = (responses.userType as string) || "PF";
-      const type = userTypeRaw.includes("empresa") || userTypeRaw.includes("PJ") ? "PJ" : "PF";
-      const aammdd = new Date().toISOString().slice(2, 10).replace(/-/g, "");
-      const newMat = `BP-${seq}-${type}-${aammdd}`;
-      transaction.set(authMapRef, { matricula: newMat, createdAt: admin.firestore.FieldValue.serverTimestamp() });
-      return newMat;
-    });
-  }
-
-  throw new Error("Sua identidade BPlen não pôde ser resolvida.");
+export async function resolveOwnIdentityAction(surveyId: string): Promise<string> {
+  const session = await requireAuth();
+  const { resolveUserIdentity } = await import("@/lib/survey/identity");
+  return resolveUserIdentity(surveyId, {}, session.uid);
 }
 
 /**
- * Recupera metadados de permissão do usuário
+ * Metadados (apelido + metadata de permissao) do PROPRIO usuario da sessao.
+ * Substitui `getUserMetadata(userUid)`, que expunha isso para qualquer uid.
  */
-export async function getUserMetadata(userUid: string) {
-  try {
-    const db = getAdminDb();
-    const authMapSnap = await db.doc(`_AuthMap/${userUid}`).get();
-    const matricula = authMapSnap.data()?.matricula;
-    if (!matricula) return {};
-    
-    // Fetch User Nickname (Soberania de Dados v2.0)
-    const userSnap = await db.doc(`User/${matricula}`).get();
-    const userData = userSnap.data() || {};
-    const nickname = userData.User_Nickname || userData.User_Welcome?.User_Nickname || userData.Authentication_Name || userData.User_Name || "Membro";
-
-    const accessSnap = await db.doc(`User/${matricula}/User_Permissions/access`).get();
-    const metadata = accessSnap.data()?.metadata || {};
-
-    return { 
-      ...metadata, 
-      User_Nickname: nickname,
-      name: nickname 
-    };
-  } catch (err) {
-    return {};
-  }
+export async function getOwnMetadataAction(): Promise<Record<string, unknown>> {
+  const session = await requireAuth();
+  const { getUserMetadata } = await import("@/lib/survey/identity");
+  return getUserMetadata(session.uid);
 }
 
 /**

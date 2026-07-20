@@ -36,8 +36,8 @@ const codigoDe = (rel: string) =>
     .replace(/\/\*[\s\S]*?\*\//g, "")
     .replace(/^\s*\/\/.*$/gm, "");
 
-describe("survey-effects: a cura por e-mail nao pode ler o formulario", () => {
-  const fonte = codigoDe("src/actions/survey-effects.ts");
+describe("a cura por e-mail nao pode ler o formulario (lib/survey/identity)", () => {
+  const fonte = codigoDe("src/lib/survey/identity.ts");
 
   it("NAO le `responses.email` para decidir identidade", () => {
     // Esta e a linha que era o Critico.
