@@ -10,7 +10,7 @@ import { requireAuth, AuthorizationError } from "@/lib/auth-guards";
  * Persiste as respostas de uma survey de forma hierárquica por usuário.
  * Aderente à Survey_Global e Soberania de Dados (Server-Authoritative).
  */
-export async function submitSurvey(config: SurveyConfig, responses: Record<string, SurveyValue>, userUid: string) {
+export async function submitSurvey(config: SurveyConfig, responses: Record<string, SurveyValue>, userUid?: string) {
   try {
     const db: admin.firestore.Firestore = getAdminDb();
     

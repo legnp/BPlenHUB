@@ -83,32 +83,9 @@ describe("nenhum chamador repassa e-mail de origem cliente", () => {
   });
 });
 
-describe("o padrao nao pode reaparecer em outro arquivo", () => {
-  it("so os pontos conhecidos casam User por e-mail e escrevem uid do dono", () => {
-    // O BUG-106 nasceu de o BUG-032 ter sido corrigido num arquivo e sobreviver
-    // em outros dois. Se um arquivo novo passar a fazer isso, este teste avisa.
-    const alvos = [
-      "src/actions/survey-effects.ts",
-      "src/lib/user-matricula.ts",
-      "src/actions/auth-permissions.ts",
-      "src/actions/invitations.ts"
-    ];
-    const encontrados: string[] = [];
-    const varrer = (dir: string) => {
-      for (const e of fs.readdirSync(path.join(raiz, dir), { withFileTypes: true })) {
-        const rel = `${dir}/${e.name}`;
-        if (e.isDirectory()) varrer(rel);
-        else if (e.name.endsWith(".ts")) {
-          const t = fs.readFileSync(path.join(raiz, rel), "utf8");
-          if (/where\(\s*["']email["']\s*,\s*["']==["']/.test(t) && /update\(\s*\{\s*uid:/.test(t)) {
-            encontrados.push(rel);
-          }
-        }
-      }
-    };
-    varrer("src");
-    for (const f of encontrados) {
-      expect(alvos, `arquivo novo casando e-mail e reescrevendo uid: ${f}`).toContain(f);
-    }
-  });
-});
+// NOTA: o invariante "so um arquivo escreve identidade a partir de e-mail" vivia
+// tambem aqui, com uma lista de alvos propria. Depois da consolidacao (lote
+// 2b.2) ele passou a existir em `identity-single-source.test.ts`, com a lista
+// correta. Manter as duas copias reproduziria, no teste, exatamente a
+// duplicacao que causou o BUG-106 no codigo — duas versoes da mesma regra que
+// divergem em silencio. Fonte unica tambem para o teste.

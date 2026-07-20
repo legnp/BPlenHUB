@@ -23,46 +23,30 @@ import { handleCheckInEffect, handleContentFeedbackEffect, handleCVReviewEffect,
  */
 export async function resolveUserIdentity(surveyId: string, responses: Record<string, SurveyValue>, userUid?: string): Promise<string> {
   const db: admin.firestore.Firestore = getAdminDb();
-  
-  if (!userUid) {
-     console.log(`⚠️ [Effects:Identity] Acesso anônimo detectado para survey: ${surveyId}`);
-     return `BP-ANON-${new Date().getTime()}`;
-  }
-
   const authMapRef = db.doc(`_AuthMap/${userUid}`);
-  const authMapSnap = await authMapRef.get();
-  if (authMapSnap.exists && authMapSnap.data()?.matricula) {
-    return authMapSnap.data()?.matricula;
+
+  // Acesso anonimo: nao ha identidade a resolver.
+  if (!userUid) {
+    console.log(`[Effects:Identity] Acesso anonimo para survey: ${surveyId}`);
+    return `BP-ANON-${new Date().getTime()}`;
   }
 
-  const userByUidSnap = await db.collection("User").where("uid", "==", userUid).limit(1).get();
-  if (!userByUidSnap.empty) {
-    const matricula = userByUidSnap.docs[0].id;
-    await authMapRef.set({ matricula, recoveredAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
-    return matricula;
-  }
-
-  // Fallback: E-mail — **da SESSAO VERIFICADA, nunca das respostas** (BUG-106).
+  // Passos 1-3 (AuthMap -> UID -> e-mail verificado) vivem na FONTE UNICA
+  // `@/lib/identity/find-matricula`. Ate o lote 2b.2 do BUG-103 eram uma copia
+  // desta funcao, irma da de `lib/user-matricula.ts` — e foi essa duplicacao que
+  // deixou o padrao do BUG-032 sobreviver aqui ate virar o BUG-106.
   //
-  // Este ramo reescreve o `uid` do dono da conta encontrada. Ler o e-mail de
-  // `responses.email` (campo de formulario) tornava isso um sequestro de conta:
-  // bastava digitar o e-mail da vitima numa resposta de survey para o `_AuthMap`
-  // passar a apontar o uid do chamador para a matricula dela. Mesmo padrao do
-  // BUG-032. `getServerSession()` devolve null sem sessao, entao o caminho
-  // publico simplesmente nao cura — que e o comportamento seguro.
+  // O e-mail vem da SESSAO VERIFICADA, nunca de `responses.email` (BUG-106,
+  // Critico): o passo 3 reescreve o `uid` do dono da conta, entao ler o e-mail de
+  // um campo de formulario era sequestro de conta. `getServerSession()` devolve
+  // null sem sessao, logo o caminho publico simplesmente nao cura.
   const { getServerSession } = await import("@/lib/server-session");
+  const { findMatriculaByIdentity } = await import("@/lib/identity/find-matricula");
   const sessionForHealing = await getServerSession();
-  const userEmail = sessionForHealing?.uid === userUid ? (sessionForHealing.email || "") : "";
-  if (userEmail) {
-    const normalizedEmail = userEmail.trim().toLowerCase();
-    const userByEmailSnap = await db.collection("User").where("email", "==", normalizedEmail).limit(1).get();
-    if (!userByEmailSnap.empty) {
-      const matricula = userByEmailSnap.docs[0].id;
-      await userByEmailSnap.docs[0].ref.update({ uid: userUid });
-      await authMapRef.set({ matricula, recoveredAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
-      return matricula;
-    }
-  }
+  const verifiedEmail = sessionForHealing?.uid === userUid ? sessionForHealing.email : undefined;
+
+  const existente = await findMatriculaByIdentity(userUid, verifiedEmail);
+  if (existente) return existente;
 
   if (surveyId === "welcome_survey" || surveyId === "dados_cadastrais") {
     return await db.runTransaction(async (transaction) => {
@@ -115,13 +99,16 @@ export async function getUserMetadata(userUid: string) {
  * DESPACHANTE DE EFEITOS COLATERAIS ⚡
  * Roteia a execução para o módulo responsável por cada Survey.
  */
-export async function handleSurveySideEffects(surveyId: string, responses: Record<string, SurveyValue>, matricula: string, userUid: string) {
+export async function handleSurveySideEffects(surveyId: string, responses: Record<string, SurveyValue>, matricula: string, userUid?: string) {
   console.log(`🔥 [SurveyEffects] Dispatching: "${surveyId}" para ${matricula}`);
 
   try {
     switch (surveyId) {
       case "welcome_survey":
-        await handleWelcomeSurveyEffect(responses, matricula, userUid);
+        // O welcome exige usuario autenticado — e onde a matricula nasce. Sem uid
+        // nao ha identidade a sincronizar, e chegar aqui anonimo seria estado
+        // invalido; a guarda torna isso explicito em vez de alargar o tipo.
+        if (userUid) await handleWelcomeSurveyEffect(responses, matricula, userUid);
         break;
 
       case "check_in":
