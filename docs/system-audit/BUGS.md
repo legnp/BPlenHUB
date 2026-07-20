@@ -3114,6 +3114,49 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Commit/PR: —
 
 
+### BUG-110 Planilha do Drive APAGA a avaliacao anterior em vez de anexar
+
+- Severidade: **Alto** (perda de historico no Drive, que e a estrategia de backup independente da
+  plataforma; na pasta de anonimos, um visitante apaga a avaliacao do outro)
+- Area/fase onde foi achado: **reportado pela Gestora em 2026-07-20**, ao revalidar o `BUG-109`: os
+  dados novos chegaram corretos, mas **sobrescreveram** a linha anterior em vez de criar uma nova.
+- Arquivo(s) afetado(s): `src/lib/drive-utils.ts:syncDataToSheet` (l.250 — `values.clear` em `A:Z`),
+  consumido por `src/lib/drive-sync.ts:syncSurveyToUserDrive` (l.52)
+- Cenario de falha: **[CONFIRMADO]** por leitura. O `syncDataToSheet` **apaga a aba inteira** antes
+  de escrever — e comportamento de **snapshot**, nao de append. O proprio comentario declara a
+  intencao ("Limpar a aba para garantir Snapshot limpo, sem rastros do passado").
+  Para um survey respondido **uma vez por pessoa**, snapshot e defensavel: a planilha reflete o
+  estado atual das respostas. **Mas a avaliacao de conteudo e um EVENTO**, nao um estado — cada
+  avaliacao de cada conteudo e um fato distinto, e o historico e o produto.
+- **O agravante e a pasta unica de anonimos (introduzida por mim no lote 2b.2-B):** o nome da
+  planilha e `${surveyTitle} - ${matricula}`. Como TODO visitante anonimo compartilha a matricula
+  `BP-ANON`, dois visitantes que avaliem o **mesmo artigo** caem na **mesma planilha** — e o segundo
+  **apaga** a avaliacao do primeiro.
+  Eu tratei essa colisao no **Firestore** (id de doc composto, `${surveyId}__${timestamp}`) e **nao
+  percebi que ela existia tambem na camada do Drive**. E o mesmo defeito de metodo da Licao 44:
+  conferi uma camada e assumi a outra. A pasta que a Gestora pediu para servir de **base de analise
+  de personas** estava, na pratica, guardando so a ultima avaliacao de cada artigo.
+- **O codigo JA distingue os dois casos** — o que reforca que isto e omissao, nao decisao:
+  | Funcao | Modo | Semantica |
+  |---|---|---|
+  | `syncOrderToUserDrive` | **append** | pedidos sao eventos |
+  | `syncBacklogToUserDrive` | **append** | itens acumulam |
+  | `syncSurveyToUserDrive` | **snapshot** | <- trata evento como estado |
+  E ja existe `appendDataToSheet` em `drive-utils.ts`, pronta e usada pelas duas de cima.
+- Status: **Aberto**
+- Decisao de execucao: **Precisa plano+aprovacao** (muda semantica de dado no Drive).
+  Proposta minima e segura: `syncSurveyToUserDrive` ganha uma opcao `append` (default `false`,
+  preservando o comportamento atual de todos os demais surveys) e o **feedback de conteudo** passa a
+  usar `append: true`. Nao altera nenhum outro efeito.
+  **Questao aberta para a Gestora:** os demais surveys (check-in, CV, pre-analise, preferencias)
+  devem manter snapshot ou tambem passar a acumular historico? Snapshot perde a resposta anterior
+  quando o membro refaz um survey com `allowReview`. E decisao de backup, dela.
+- **Retroativo:** o que ja foi sobrescrito **nao e recuperavel pelo Drive**, mas **nao se perdeu** —
+  o Firestore guarda cada envio (o `BUG-109` confirmou: 3 avaliacoes integras la). Se a Gestora
+  quiser reconstruir as planilhas a partir do Firestore, e um script proprio.
+- Commit/PR: —
+
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em
