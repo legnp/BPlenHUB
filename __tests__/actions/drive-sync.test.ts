@@ -13,6 +13,7 @@ vi.mock('@/lib/drive-utils', () => ({
   getOrCreateSpreadsheet: vi.fn().mockResolvedValue({ id: 'sheet-id' }),
   getStandardFolderWithHealing: vi.fn().mockResolvedValue('folder-id'),
   syncDataToSheet: vi.fn().mockResolvedValue({ success: true }),
+  appendDataToSheet: vi.fn().mockResolvedValue({ success: true }),
   DRIVE_FOLDERS: {
     CADASTRO: '1.Cadastro',
     SURVEYS: '2.Surveys',
@@ -25,13 +26,23 @@ vi.mock('@/lib/drive-utils', () => ({
   }
 }));
 
+/**
+ * ATUALIZADO no BUG-110. Este teste afirmava que a resposta de survey ia para o
+ * Drive via `syncDataToSheet` — que APAGA a aba antes de escrever. Ele estava
+ * certo sobre o codigo da epoca e passou a estar errado sobre a REGRA: por
+ * decisao da Gestora (2026-07-20), toda resposta de survey acumula historico,
+ * porque o Drive e a estrategia de backup independente da plataforma.
+ *
+ * O teste falhou no momento certo e por motivo certo (Licao 22) — a mudanca aqui
+ * e de contrato deliberada, nao conserto de teste para ficar verde.
+ */
 describe('Drive Sync Helper 🛰️', () => {
-  it('should call syncDataToSheet with correct parameters', async () => {
+  it('anexa a resposta do survey, preservando o historico', async () => {
     const mockSheets = {};
     const mockDrive = {};
-    
-    vi.mocked(getSheetsClient).mockResolvedValue(mockSheets as any);
-    vi.mocked(getDriveClient).mockResolvedValue(mockDrive as any);
+
+    vi.mocked(getSheetsClient).mockResolvedValue(mockSheets as never);
+    vi.mocked(getDriveClient).mockResolvedValue(mockDrive as never);
 
     const config = {
       matricula: 'BP-001-PF-260418',
@@ -40,15 +51,19 @@ describe('Drive Sync Helper 🛰️', () => {
       rowData: ['BP-001-PF-260418', 'Done'],
     };
 
-    const { syncDataToSheet } = await import('@/lib/drive-utils');
+    const { appendDataToSheet, syncDataToSheet } = await import('@/lib/drive-utils');
 
     await syncSurveyToUserDrive(config);
 
-    expect(syncDataToSheet).toHaveBeenCalledWith(
+    // Anexa UMA linha (nao um array de linhas, como fazia o snapshot).
+    expect(appendDataToSheet).toHaveBeenCalledWith(
       mockSheets,
       'sheet-id',
       ['Matricula', 'Status'],
-      [['BP-001-PF-260418', 'Done']]
+      ['BP-001-PF-260418', 'Done']
     );
+
+    // E, sobretudo, NAO apaga a aba: era isso que esvaziava o backup.
+    expect(syncDataToSheet).not.toHaveBeenCalled();
   });
 });

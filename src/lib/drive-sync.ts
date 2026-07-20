@@ -48,8 +48,23 @@ export async function syncSurveyToUserDrive(config: SurveySyncConfig) {
     // 3. Criar/Atualizar Planilha
     const { id: spreadsheetId } = await getOrCreateSpreadsheet(drive, targetFolderId, `${surveyTitle} - ${matricula}`);
 
-    // 4. Sincronizar Dados
-    await syncDataToSheet(sheets, spreadsheetId, headers, [rowData]);
+    // 4. ANEXAR (nao sobrescrever) — BUG-110.
+    //
+    // Ate aqui usava-se `syncDataToSheet`, que APAGA a aba inteira antes de
+    // escrever ("snapshot limpo, sem rastros do passado"). Isso trata resposta de
+    // survey como ESTADO, quando ela e EVENTO: cada envio e um fato distinto, e o
+    // historico e o produto — o Drive e a estrategia de backup independente da
+    // plataforma, entao perder linha antiga esvazia o backup.
+    //
+    // O agravante estava na pasta unica de anonimos: o nome da planilha deriva da
+    // matricula, e TODO visitante compartilha `BP-ANON` — dois visitantes no mesmo
+    // artigo caiam na mesma planilha e o segundo APAGAVA o primeiro. A colisao foi
+    // tratada no Firestore (id de doc composto) e passou despercebida aqui.
+    //
+    // Decisao da Gestora (2026-07-20): TODOS os surveys passam a acumular
+    // historico, nao so o feedback de conteudo. O padrao ja existia no proprio
+    // arquivo — `syncOrderToUserDrive` e `syncBacklogToUserDrive` ja anexavam.
+    await appendDataToSheet(sheets, spreadsheetId, headers, rowData);
 
     console.log(`✅ [DriveSync] Dados sincronizados: ${surveyTitle} -> ${matricula}`);
     return spreadsheetId;
