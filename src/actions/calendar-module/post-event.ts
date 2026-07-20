@@ -33,6 +33,13 @@ export async function closeEventAction(
   data: CloseEventData
 ) {
   try {
+    // BUG-102: esta funcao e reexportada pelo dispatcher `calendar.ts` ("use
+    // server"), logo e endpoint de rede. Sem guard, um chamador nao autenticado
+    // fechava/cancelava qualquer evento, marcava presenca de qualquer membro e
+    // gravava feedback/tarefas/documentos na CARREIRA dele. Estava listada no
+    // corpo do BUG-020, mas nenhum dos 7 lotes tocou este arquivo.
+    // Callers 100% admin (PostEventWizard) — nenhum fluxo legitimo e barrado.
+    await requireAdmin();
     const db = getAdminDb();
     const eventRef = db.collection("Calendar_Events").doc(eventId);
 
@@ -93,6 +100,13 @@ export async function closeAttendeeAction(
   data: CloseAttendeeData
 ) {
   try {
+    // BUG-102: esta funcao e reexportada pelo dispatcher `calendar.ts` ("use
+    // server"), logo e endpoint de rede. Sem guard, um chamador nao autenticado
+    // fechava/cancelava qualquer evento, marcava presenca de qualquer membro e
+    // gravava feedback/tarefas/documentos na CARREIRA dele. Estava listada no
+    // corpo do BUG-020, mas nenhum dos 7 lotes tocou este arquivo.
+    // Callers 100% admin (PostEventWizard) — nenhum fluxo legitimo e barrado.
+    await requireAdmin();
     const db = getAdminDb();
     const userBookingsRef = db.collection("User").doc(matricula).collection("User_Bookings");
     const bookingQuery = await userBookingsRef.where("eventId", "==", eventId).limit(1).get();

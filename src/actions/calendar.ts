@@ -91,9 +91,16 @@ export async function generateEventSummarySheetAction(eventId: string, adminToke
   return PostEvent.generateEventSummarySheetAction(eventId, adminToken);
 }
 
-export async function updateGlobalProgramacaoRegistryAction() {
-  return PostEvent.updateGlobalProgramacaoRegistryAction();
-}
+// `updateGlobalProgramacaoRegistryAction` NAO e reexportada aqui de proposito.
+//
+// Ela reescreve o registro global `Datas_Center/Programacao_Registry` — a mesma
+// capacidade que o BUG-024 removeu quando estava exposta como rota
+// `/api/trigger-sync`, e que seguia alcancavel por este dispatcher (BUG-102).
+// Nenhuma tela a chamava: os consumidores legitimos (o cron das 03h em `sync.ts`,
+// o funil de lead publico em `booking.ts` e o proprio `post-event.ts`) importam
+// direto de `./calendar-module/post-event`, sem passar pela rede. Guardar a
+// funcao no lugar quebraria o cron e o funil, que nao tem sessao — entao a
+// correcao e tirar a porta, nao trancar a sala (Protocolo item 8).
 
 export async function healProgramacaoMasterAction(idToken: string) {
   return PostEvent.healProgramacaoMasterAction(idToken);
