@@ -492,6 +492,14 @@ sem copy hardcoded fora do que o guia permitir).
   usuário de teste** (BUG-030 impede validar telas logadas no preview; nenhum bloqueador de
   código) — e, fora do caminho crítico, CT-3c (área `/hub/legal` + audiências
   empresas/parceiros) e CT-5 (reforços jurídicos sob demanda).
+- **Fila de validação pós-limpeza da base (acumulada — executar junto, quando a base do usuário de
+  teste for limpa):**
+  1. Os 3 fluxos de contrato (grátis / pago / avulso) — item original deste F1-02.
+  2. **[2026-07-19] Concessão de cota após compra (T-02 lote 1, PR #122).** Ativar um serviço
+     **grátis** (preço 0 ou cupom de 100%) e conferir se a cota cai na carteira. Exercita o mesmo
+     `grantServiceEntitlement` do webhook do Mercado Pago — o único caminho que a sessão de
+     execução **não consegue** testar sozinha (não há como disparar pagamento real). Motivo do
+     adiamento: o usuário de teste já está cheio de cotas e serviços, o que mascara o resultado.
 - Resultado: BUG-002 **[CONFIRMADO]** e corrigido — brecha de concessão gratuita de
   produto pago fechada. A investigação do subsistema revelou fragmentação/quebra
   estrutural, endereçada nas fases CT-*: geração de PDF na coleção errada (`BUG-051`,
