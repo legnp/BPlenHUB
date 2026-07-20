@@ -42,8 +42,17 @@ export async function resolveUserIdentity(surveyId: string, responses: Record<st
     return matricula;
   }
 
-  // Fallback: E-mail
-  const userEmail = (responses.email as string) || "";
+  // Fallback: E-mail — **da SESSAO VERIFICADA, nunca das respostas** (BUG-106).
+  //
+  // Este ramo reescreve o `uid` do dono da conta encontrada. Ler o e-mail de
+  // `responses.email` (campo de formulario) tornava isso um sequestro de conta:
+  // bastava digitar o e-mail da vitima numa resposta de survey para o `_AuthMap`
+  // passar a apontar o uid do chamador para a matricula dela. Mesmo padrao do
+  // BUG-032. `getServerSession()` devolve null sem sessao, entao o caminho
+  // publico simplesmente nao cura — que e o comportamento seguro.
+  const { getServerSession } = await import("@/lib/server-session");
+  const sessionForHealing = await getServerSession();
+  const userEmail = sessionForHealing?.uid === userUid ? (sessionForHealing.email || "") : "";
   if (userEmail) {
     const normalizedEmail = userEmail.trim().toLowerCase();
     const userByEmailSnap = await db.collection("User").where("email", "==", normalizedEmail).limit(1).get();

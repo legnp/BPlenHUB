@@ -17,10 +17,21 @@ import { getAdminDb } from "@/lib/firebase-admin";
  *
  * REGRA: quem chama daqui ja verificou identidade. Nao reexportar de um arquivo
  * `"use server"` sem guard proprio.
+ *
+ * **CONTRATO DO `verifiedEmail` (BUG-106, Critico).** O ramo de cura por e-mail
+ * abaixo casa o `User` pelo e-mail e **reescreve o `uid` do dono da conta**. Se
+ * esse e-mail vier do cliente, qualquer um assume a conta de qualquer um — foi
+ * exatamente a brecha do BUG-106, e o mesmo padrao do BUG-032.
+ *
+ * O argumento **so pode** receber e-mail de **sessao verificada**
+ * (`session.email`, do cookie assinado / token do Firebase) e **so quando a
+ * sessao e o DONO do `userUid`** — com um admin agindo sobre outro uid, o e-mail
+ * dele resolveria para a matricula errada. Na duvida, passe `undefined`: sem
+ * e-mail a funcao nao cura, o que e sempre seguro.
  */
-export async function resolveMatricula(userUid: string, email?: string): Promise<string | null> {
+export async function resolveMatricula(userUid: string, verifiedEmail?: string): Promise<string | null> {
   const db = getAdminDb();
-  console.log(`🔍 [GetResults:resolveMatricula] Resolvendo para UID: ${userUid}, Email: ${email}`);
+  console.log(`[resolveMatricula] Resolvendo UID: ${userUid} | e-mail verificado presente: ${Boolean(verifiedEmail)}`);
   
   // 1. Tentar Mapeamento Direto (AuthMap) - Alta Performance
   const authMapSnap = await db.doc(`_AuthMap/${userUid}`).get();
@@ -41,8 +52,8 @@ export async function resolveMatricula(userUid: string, email?: string): Promise
   }
 
   // 3. Last Resort: Buscar por E-mail (Normalizado)
-  if (email) {
-    const normalizedEmail = email.trim().toLowerCase();
+  if (verifiedEmail) {
+    const normalizedEmail = verifiedEmail.trim().toLowerCase();
     const userByEmailSnap = await db.collection("User").where("email", "==", normalizedEmail).limit(1).get();
     if (!userByEmailSnap.empty) {
       const matricula = userByEmailSnap.docs[0].id;

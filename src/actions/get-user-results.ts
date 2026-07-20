@@ -112,7 +112,12 @@ export async function getGestaoTempoResult(userUid: string, email?: string): Pro
     throw new AuthorizationError("Voce nao pode acessar os resultados de outro membro.");
   }
 
-  const matricula = await resolveMatricula(userUid, email);
+  // BUG-106: o e-mail que decide identidade vem da SESSAO VERIFICADA, nunca do
+  // parametro do cliente — `resolveMatricula` cura a conta por e-mail e reescreve
+  // o `uid` do dono. E so quando a sessao E o dono: com o admin lendo o resultado
+  // de outro membro, o e-mail dele resolveria para a matricula errada.
+  const verifiedEmail = session.uid === userUid ? session.email : undefined;
+  const matricula = await resolveMatricula(userUid, verifiedEmail);
   if (!matricula) {
     console.warn(`⚠️ [GetResults:GestaoTempo] Matrícula não resolvida para UID: ${userUid}`);
     return null;
@@ -161,7 +166,12 @@ export async function getAprendizadoResult(userUid: string, userEmail: string): 
     throw new AuthorizationError("Voce nao pode acessar os resultados de outro membro.");
   }
 
-  const matricula = await resolveMatricula(userUid, userEmail);
+  // BUG-106: o e-mail que decide identidade vem da SESSAO VERIFICADA, nunca do
+  // parametro do cliente — `resolveMatricula` cura a conta por e-mail e reescreve
+  // o `uid` do dono. E so quando a sessao E o dono: com o admin lendo o resultado
+  // de outro membro, o e-mail dele resolveria para a matricula errada.
+  const verifiedEmail = session.uid === userUid ? session.email : undefined;
+  const matricula = await resolveMatricula(userUid, verifiedEmail);
   if (!matricula) {
     console.warn(`⚠️ [GetResults:Aprendizado] Matrícula não resolvida para UID: ${userUid}`);
     return null;
@@ -210,7 +220,12 @@ export async function getReconhecimentoResult(userUid: string, userEmail: string
     throw new AuthorizationError("Voce nao pode acessar os resultados de outro membro.");
   }
 
-  const matricula = await resolveMatricula(userUid, userEmail);
+  // BUG-106: o e-mail que decide identidade vem da SESSAO VERIFICADA, nunca do
+  // parametro do cliente — `resolveMatricula` cura a conta por e-mail e reescreve
+  // o `uid` do dono. E so quando a sessao E o dono: com o admin lendo o resultado
+  // de outro membro, o e-mail dele resolveria para a matricula errada.
+  const verifiedEmail = session.uid === userUid ? session.email : undefined;
+  const matricula = await resolveMatricula(userUid, verifiedEmail);
   if (!matricula) {
     console.warn(`⚠️ [GetResults:Reconhecimento] Matrícula não resolvida para UID: ${userUid}`);
     return null;
@@ -259,7 +274,12 @@ export async function getDiscResult(userUid: string, email?: string): Promise<Di
     throw new AuthorizationError("Voce nao pode acessar os resultados de outro membro.");
   }
 
-  const matricula = await resolveMatricula(userUid, email);
+  // BUG-106: o e-mail que decide identidade vem da SESSAO VERIFICADA, nunca do
+  // parametro do cliente — `resolveMatricula` cura a conta por e-mail e reescreve
+  // o `uid` do dono. E so quando a sessao E o dono: com o admin lendo o resultado
+  // de outro membro, o e-mail dele resolveria para a matricula errada.
+  const verifiedEmail = session.uid === userUid ? session.email : undefined;
+  const matricula = await resolveMatricula(userUid, verifiedEmail);
   if (!matricula) {
     console.warn(`⚠️ [GetResults:DISC] Matrícula não resolvida para UID: ${userUid}`);
     return null;
