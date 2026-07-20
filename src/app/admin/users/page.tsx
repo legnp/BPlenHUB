@@ -36,7 +36,7 @@ import { useAuthContext } from "@/context/AuthContext";
 import { DiscDevolutivaModal } from "@/components/admin/DiscDevolutivaModal";
 import { getAdminProducts } from "@/actions/products";
 import { Product } from "@/types/products";
-import { getMemberQuotasAction, updateMemberQuotasAction } from "@/actions/quotas";
+import { getMemberQuotasAction, setMemberQuotasAction } from "@/actions/quotas";
 import { getErrorMessage } from "@/lib/utils/errors";
 import type { UserAssessment } from "@/actions/admin-assessments";
 import type { AdminContractRow } from "@/actions/admin/contract-invoice";
@@ -265,7 +265,9 @@ export default function UsersManagementPage() {
       });
       
       if (Object.keys(finalQuotas).length > 0 && selectedUser.uid) {
-        await updateMemberQuotasAction(selectedUser.uid, finalQuotas);
+        // BUG-104: DEFINE o total (o campo mostra o valor atual). Antes somava, entao
+        // salvar a ficha duas vezes dobrava a cota do membro.
+        await setMemberQuotasAction(selectedUser.uid, finalQuotas);
       }
       
       setUsers(prev => prev.map(u => 
