@@ -2987,7 +2987,7 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   antes de endurecer, senao conserta-se uma copia e a outra sobrevive (exatamente o que aconteceu
   entre o `BUG-032` e este bug).
 
-- Status: **Aberto** — nenhuma linha alterada; registrado antes de decidir (Protocolo item 3).
+- Status: **Corrigido (contencao)** — 2026-07-20 (PR #124, `dfd1241`, deploy de producao `success` confirmado). A invariante entregue: **e-mail que decide identidade vem da sessao verificada, nunca de parametro**. `survey-effects.ts` le `getServerSession()` no lugar de `responses.email` e so cura quando a sessao E o dono do uid; `lib/user-matricula.ts` teve o parametro renomeado para `verifiedEmail` com o contrato documentado; os 4 getters de `get-user-results.ts` passam `session.email` **apenas quando `session.uid === userUid`** (com o admin lendo outro membro, o e-mail dele resolveria para a matricula ERRADA — detalhe que so apareceu ao escrever o fix). De passagem: o log parou de imprimir o e-mail (PII em log). **Resta o lote 2b.2**: consolidar as duas resolucoes numa fonte unica (enquanto forem duas, voltam a divergir), o `BUG-107`, e avaliar guard no `resolveUserIdentity` (endpoint aberto que cunha matricula pelo contador global).
 - Decisao de execucao: **Precisa plano+aprovacao** (identidade/sessao — area sensivel). Direcao
   proposta: **continuar curando, mas so com e-mail PROVADO**. O e-mail sai da **sessao verificada**
   (`getServerSession().email`, vinda do cookie assinado), **nunca** de `responses.email`. Sem sessao,

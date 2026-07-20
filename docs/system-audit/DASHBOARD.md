@@ -12,7 +12,21 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-20 (chat de execução — **`BUG-106`: CRÍTICO aberto, fila de
+> **Última atualização:** 2026-07-20 (chat de execução — **`BUG-106` (CRÍTICO) contido e em
+> produção (PR #124, `dfd1241`, deploy `success`)**. Sequestro de conta: o e-mail **digitado** numa
+> resposta de survey reescrevia o `uid` do dono da matrícula, e um usuário comum autenticado
+> assumia a conta de qualquer membro. Invariante entregue: **e-mail que decide identidade vem da
+> sessão verificada, nunca de parâmetro**. Detalhe que só apareceu ao escrever o fix: com o **admin**
+> lendo o resultado de outro membro, o e-mail dele resolveria para a **matrícula errada** — por isso
+> a condição é "a sessão **é** o dono", não apenas "usar a sessão". 8 testes, um deles varrendo o
+> `src` inteiro para o padrão não reaparecer; 4 mutações, 4 pegas. Suíte 211/211.
+> **Registrado erro próprio:** uma das 2 cópias vulneráveis estava no arquivo que eu criei no lote
+> 2a — as travas daquele lote conferiam o `uid` e passavam com a brecha do e-mail intacta. Virou a
+> **Lição 44**. Fila de triagem: o `Crítico` entrou e saiu em <24h; restam os 2 `Alto` do próprio
+> esforço de varredura. **Próximo: lote 2b.2** (consolidar as 2 resoluções numa fonte única +
+> `BUG-107` + guard no `resolveUserIdentity`, hoje aberto e capaz de cunhar matrícula).
+>
+> _(entrada anterior)_ 2026-07-20 (chat de execução — **`BUG-106`: CRÍTICO aberto, fila de
 > triagem reaberta**. Investigando o lote 2b, apareceu **sequestro de conta**: o e-mail **digitado**
 > numa resposta de survey é aceito como prova de identidade e o sistema **reescreve o `uid` do dono**
 > da matrícula. Um usuário comum autenticado assume a conta de qualquer membro. **Mesmo padrão do
