@@ -406,6 +406,34 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
     passarem a ler a agenda — ou seja, a correcao "obvia" tem custo de cota no Spark. **Baseline
     vermelha nao e licenca para somar mais um; e um numero a bater.**
 
+44. **"Tem guard?" e so METADE da pergunta de seguranca. A outra e: "de onde vem a identidade que
+    esta funcao acredita?"** O lote 2a fechou o IDOR de leitura de PII conferindo, funcao a funcao,
+    se havia `requireAuth` + trava de dono. Passou. E deixou intacta, no mesmo arquivo que eu
+    **acabara de criar e ler inteiro**, uma tomada de conta: `resolveMatricula(uid, email?)` casa o
+    `User` pelo **e-mail recebido do cliente** e reescreve o `uid` do dono. Minha trava conferia
+    `session.uid !== userUid` — e o `email` seguia sendo parametro livre, entao a trava passava e a
+    brecha continuava. **Um guard correto pode conviver com uma brecha de identidade na linha
+    seguinte**, porque ele responde "quem esta chamando?" e nao "no que esta funcao confia?".
+    Checklist minimo para toda action sensivel: (1) tem guard? (2) **todo** identificador que ela usa
+    para decidir — uid, e-mail, matricula — vem da sessao **verificada** ou de um parametro? (3) ela
+    ESCREVE identidade (`uid`, `_AuthMap`, papel) a partir de algum desses parametros?
+    _(Caso real: `BUG-106`. E a mesma familia da Licao 10 e do `BUG-032`, so que desta vez o Critico
+    estava no arquivo que eu mesmo tinha acabado de tocar.)_
+
+    **Corolario — o mesmo defeito de metodo, duas vezes no mesmo dia.** O `BUG-102` nasceu porque o
+    T-02 foi conferido **bug a bug** em vez de **padrao a padrao**; horas depois eu conferi o lote 2a
+    **funcao a funcao** em vez de **pergunta a pergunta**, e produzi um Critico. Diagnosticar uma
+    falha de metodo no trabalho alheio nao imuniza contra ela no proprio. Quando identificar um
+    padrao de erro, **aplique-o retroativamente ao que voce mesmo acabou de entregar** antes de
+    seguir para o proximo lote.
+
+    **Corolario 2 — logica de identidade duplicada e a que sobrevive ao fix.** O `BUG-032` corrigiu
+    esse padrao em `auth-permissions.ts`; as **duas outras copias** (`survey-effects.ts` e
+    `user-matricula.ts`) ficaram. Ao corrigir um Critico de identidade, **consolide numa fonte unica
+    antes de endurecer** — endurecer copias em paralelo e como elas divergiram em primeiro lugar
+    (Licao 21/37).
+
+
 
 ---
 
@@ -453,6 +481,10 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
 
 ## Registro de revisões deste documento
 
+- 2026-07-20 — Licao 44 ("tem guard?" e metade da pergunta: a outra e de onde vem a identidade em
+  que a funcao acredita; + o corolario de que diagnosticar uma falha de metodo nao imuniza contra
+  ela, e o de consolidar identidade numa fonte unica antes de endurecer) adicionada, a partir do
+  `BUG-106` — um Critico que sobreviveu dentro do arquivo criado no lote 2a desta mesma sessao.
 - 2026-07-19 — Licoes 41 (diagnostico herdado e hipotese, mesmo o seu — reproduza antes de codar
   em cima dele), 42 (sintoma reportado e amostra, nao escopo: 8 de 8 pares falhando, nao so os
   passados) e 43 (baseline vermelha e numero a bater, nao licenca) adicionadas, a partir do

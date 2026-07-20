@@ -231,7 +231,18 @@ ativa furando a ordem das fases.
 
 | Bug | Severidade | Onde se conecta | Por que ainda não fechou |
 |---|---|---|---|
-| _(vazia)_ | — | — | Nenhum `Crítico`/`Alto` com Status `Aberto` |
+| `BUG-106` | **Crítico** | T-02 lote 2b / identidade | **Sequestro de conta**: e-mail digitado numa resposta de survey reescreve o dono da matrícula (`resolveUserIdentity`). Mesmo padrão do `BUG-032`, que foi corrigido num arquivo e sobreviveu em outro. Registrado 2026-07-19, plano pendente |
+| `BUG-102` | Alto | T-02 lote 3 | `post-event.ts` expõe 3 actions sem guard (fechar evento, marcar presença, gravar na carreira do membro) |
+| `BUG-103` | Alto | T-02 (reaberto) | varredura de guards: lotes 1 e 2a mergeados; faltam 2b, 3, 4 e 5 |
+
+**Fila REABERTA em 2026-07-19, com um `Crítico`.** Ela estava vazia desde 2026-07-17. O que a
+reabriu não foi um bug novo do produto, e sim a **varredura de guards** (`BUG-103`) que a Gestora
+pediu depois que o `BUG-102` mostrou que o `post-event.ts` escapara dos 7 lotes do `BUG-020`.
+Investigando o lote 2b dessa varredura, apareceu o `BUG-106` (**Crítico**): o mesmo padrão de
+identidade do `BUG-032` sobreviveu em outro arquivo. **Prioridade absoluta** — passa na frente
+dos demais lotes. Dado que orienta a correção: `_AuthMap` tem **0 docs com `recoveredAt`**, ou
+seja, o auto-healing por e-mail **nunca disparou** em produção, então endurecê-lo não quebra
+recuperação legítima de conta.
 
 **Fila esvaziada de novo (2026-07-17):** os 2 `Alto` do subsistema de agenda foram corrigidos e
 mergeados no mesmo dia — `BUG-087` (full scan, causa do apagão, PR #112) e `BUG-088` (sync truncando
@@ -1096,6 +1107,8 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-103 | **Alto** | Aberto | **T-02 (reaberto)** — varredura de guards: 177 actions expostas, 57 sem guard; subconjunto sensível confirmado (cota, PII de survey/DISC, seeds) |
 | BUG-104 | Médio | Aberto | F2-04 — editar cota no painel soma em vez de definir; salvar 2× dobra o saldo (soma é intencional só para nova aquisição) |
 | BUG-105 | Baixo | Aberto | produto — Pré-Análise Comportamental é coletada (parada 5.1 do Posicionamento) e nunca entregue; falta a tela de devolutiva. Decisão da Gestora |
+| BUG-106 | **CRÍTICO** | Aberto | T-02 lote 2b / identidade — sequestro de conta por e-mail digitado; 2 cópias do padrão (`survey-effects.ts`, `lib/user-matricula.ts`); mesmo padrão do `BUG-032` |
+| BUG-107 | Médio | Aberto | T-02 lote 2b — feedback de conteúdo de visitante não logado lança erro; 0 registros anônimos na base confirmam |
 
 ---
 

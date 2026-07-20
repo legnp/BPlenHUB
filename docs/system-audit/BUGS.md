@@ -2932,6 +2932,105 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Commit/PR: —
 
 
+### BUG-106 Sequestro de conta: e-mail DIGITADO numa resposta de survey reescreve o dono da matricula
+
+- Severidade: **CRITICO** (tomada de conta de qualquer membro por um usuario comum autenticado)
+- Area/fase onde foi achado: investigacao do lote 2b do `BUG-103` (2026-07-19), ao mapear por que
+  `submitSurvey` nao podia receber guard cego
+- Arquivo(s) afetado(s): `src/actions/survey-effects.ts:resolveUserIdentity` (l.44-55);
+  alcancavel por `src/actions/submit-survey.ts:submitSurvey` (**sem guard**, `"use server"`)
+- Cenario de falha: **[CONFIRMADO]** por leitura. No ramo "Fallback: E-mail", o sistema procura o
+  usuario pelo e-mail que veio **dentro das respostas do survey** e, ao achar, executa
+  `ref.update({ uid: userUid })` na conta encontrada e grava
+  `_AuthMap/{uid do chamador} -> matricula da vitima`.
+  Ou seja, **o e-mail digitado e aceito como prova de identidade**. Exploracao: um usuario comum
+  autentica-se normalmente (uid proprio legitimo) e chama `submitSurvey` passando o **e-mail de
+  outra pessoa** no corpo das respostas. A partir dai o `_AuthMap` aponta o uid dele para a
+  **matricula da vitima**, e **todo guard que resolve matricula pela sessao passa a trata-lo como a
+  vitima** — area de membro, contratos, cotas, DISC, PDI, agendamentos, carreira. O `submitSurvey`
+  **nao tem guard nenhum**, entao a superficie e ampla.
+- **MESMO PADRAO DO `BUG-032`** (Critico ja corrigido neste processo: e-mail nao verificado aceito
+  como identidade em `syncUserPermissionsOnLogin`). Foi corrigido **num arquivo e sobreviveu em
+  outro** — evidencia direta da tese do `BUG-103`: o T-02 foi conferido **bug a bug**, nao
+  **padrao a padrao**. Licao a extrair: ao fechar um Critico de identidade, grepar o PADRAO
+  (busca por e-mail seguida de escrita de `uid`/`AuthMap`) em todo o `src`, nao so o arquivo do bug.
+- **Dado da base real (decisivo para o desenho da correcao):** `_AuthMap` tem **9 docs e ZERO com
+  `recoveredAt`** — ou seja, **o auto-healing por uid/e-mail nunca disparou em producao**. O receio
+  de que endurecer esse ramo quebraria a recuperacao legitima de conta **nao se sustenta no dado**.
+  Tambem: **0 usuarios `BP-ANON-*`** e **0 `_AuthMap` com id `lead_*`**.
+- **AMPLIACAO (2026-07-20) — o padrao esta em DUAS copias, nao uma.** Aplicando a licao do
+  `BUG-102` (grepar o PADRAO, nao o arquivo), a busca por "casar `User` por e-mail e em seguida
+  escrever `uid`/`_AuthMap`" achou:
+  | Arquivo | Origem do e-mail | Estado |
+  |---|---|---|
+  | `survey-effects.ts:resolveUserIdentity` (l.44-55) | `responses.email` — campo do formulario | **vulneravel** |
+  | `src/lib/user-matricula.ts:resolveMatricula` (l.43-55) | parametro `email?` do cliente | **vulneravel** |
+  | `auth-permissions.ts` (l.45-75) | e-mail do token de login | desenho diferente, tratado no `BUG-032` |
+  As duas primeiras sao **a mesma logica duplicada** (Licao 21) — por isso divergiram do
+  `auth-permissions`, que foi corrigido, e ficaram para tras.
+- **ERRO DE REVISAO DESTA SESSAO, registrado de proposito.** O `src/lib/user-matricula.ts` foi
+  **criado por mim no lote 2a (PR #123)**, movendo `resolveMatricula` para fora da superficie de
+  rede. Eu li a funcao inteira ao move-la, escrevi um cabecalho explicando por que ela nao devia ter
+  guard — e **nao percebi a vulnerabilidade no corpo dela**. Consequencia concreta: **as travas do
+  lote 2a NAO fecham este caminho**, porque conferem `session.uid !== userUid` enquanto o `email`
+  segue sendo parametro livre. Exploracao residual: um usuario recem-cadastrado, ainda sem matricula
+  vinculada, chama `getDiscResult(proprioUid, "vitima@email.com")` — passa pela trava (uid e dele) e
+  cai no ramo de e-mail, que reescreve o `uid` da vitima. **Atenuante:** ao sair de `"use server"` a
+  funcao deixou de ser chamavel direto pela rede, entao a exposicao diminuiu; o caminho pelos
+  getters permanece.
+  **Causa do proprio erro:** o lote 2a foi conferido pela pergunta *"esta funcao tem guard?"*.
+  Nenhuma checagem perguntou *"esta funcao confia em algum dado do cliente como identidade?"* — a
+  pergunta do `BUG-032`. E a mesma falha de metodo que produziu o `BUG-102` (conferir por item da
+  lista, nao por padrao), repetida por mim no mesmo dia em que a diagnostiquei. Ver Licao 44.
+- **Consequencia para a correcao:** nao basta endurecer os dois ramos em paralelo — foi assim que
+  eles divergiram. A correcao precisa **consolidar a resolucao de identidade numa fonte unica**
+  antes de endurecer, senao conserta-se uma copia e a outra sobrevive (exatamente o que aconteceu
+  entre o `BUG-032` e este bug).
+
+- Status: **Aberto** — nenhuma linha alterada; registrado antes de decidir (Protocolo item 3).
+- Decisao de execucao: **Precisa plano+aprovacao** (identidade/sessao — area sensivel). Direcao
+  proposta: **continuar curando, mas so com e-mail PROVADO**. O e-mail sai da **sessao verificada**
+  (`getServerSession().email`, vinda do cookie assinado), **nunca** de `responses.email`. Sem sessao,
+  o ramo nao cura — devolve anonimo em vez de casar por e-mail digitado. Isso preserva o
+  auto-healing `AuthMap -> UID -> Email` documentado no `CLAUDE.md` e fecha a brecha, porque o
+  e-mail deixa de ser um campo de formulario.
+- Commit/PR: —
+
+### BUG-107 Feedback de conteudo de visitante nao logado FALHA (a intencao existe, a execucao nao)
+
+- Severidade: **Medio** (funcionalidade publica que nao funciona; o visitante recebe erro)
+- Area/fase onde foi achado: mesma investigacao do lote 2b (2026-07-19)
+- Arquivo(s) afetado(s): `src/actions/feedback.ts:submitContentFeedback` ->
+  `src/actions/submit-survey.ts:submitSurvey` -> `survey-effects.ts:resolveUserIdentity`
+- Cenario de falha: **[CONFIRMADO]** por leitura + dado. O `FeedbackSection` (com o
+  `ContentEvaluationModal`) e renderizado em **`/conteudo`, rota PUBLICA** — a Gestora esta certa ao
+  dizer que nao-logados devem poder enviar. Mas a cadeia quebra:
+  1. `submitContentFeedback` monta o uid como `data.uid` **ou** um `lead_eval_<timestamp>` —
+     portanto **sempre truthy**;
+  2. `resolveUserIdentity` por isso **nao entra** no ramo anonimo (que exige uid ausente para
+     devolver `BP-ANON-*`);
+  3. `_AuthMap/lead_eval_*` -> miss; busca `User` por esse uid -> miss;
+  4. o fallback por e-mail **nao se aplica**: as respostas do feedback de conteudo sao
+     `{postId, title, platform, publishedAt, rating, comment}` — **nao ha campo `email`**;
+  5. o `surveyId` (`content_evaluation_<postId>`) nao e `welcome_survey` nem `dados_cadastrais`;
+  6. cai no `throw` de "identidade nao pode ser resolvida", que o modal apresenta ao visitante como
+     **"Falha ao registrar sua avaliacao."**
+  **Confirmado pelo dado:** **0 usuarios `BP-ANON-*`** e **0 `_AuthMap` com id `lead_*`** na base —
+  nenhum feedback anonimo jamais foi gravado.
+- **Contraste que prova o diagnostico:** `submitThemeSuggestion` (o outro modal da MESMA secao)
+  **funciona** anonimo, porque delega a `submitGenericForm`, que trata o AuthMap ausente com
+  `BP-ANON-<timestamp>` em vez de lancar. Dois caminhos irmaos com tratamentos opostos — a familia
+  da Licao 21 (regra duplicada diverge por construcao).
+- Status: **Aberto**
+- Decisao de execucao: entra no **lote 2b**, junto do `BUG-106` (mesmo arquivo, mesma funcao).
+  Direcao: o caminho publico precisa de um destino anonimo **explicito** (como o
+  `submitGenericForm` ja faz), em vez de fabricar um `lead_eval_*` que finge ser identidade e depois
+  falha. **Requisito da Gestora (2026-07-19):** manter acessivel a nao-logados **e** garantir
+  rastreabilidade quando a pessoa esta logada — o que reforca a direcao do `BUG-106`: identidade vem
+  da **sessao verificada**, nunca de parametro do cliente.
+- Commit/PR: —
+
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em

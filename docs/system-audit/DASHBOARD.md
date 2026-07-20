@@ -12,7 +12,21 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-19 (chat de execução — **T-02 lote 2a: PII (PR #123)**, deploy
+> **Última atualização:** 2026-07-20 (chat de execução — **`BUG-106`: CRÍTICO aberto, fila de
+> triagem reaberta**. Investigando o lote 2b, apareceu **sequestro de conta**: o e-mail **digitado**
+> numa resposta de survey é aceito como prova de identidade e o sistema **reescreve o `uid` do dono**
+> da matrícula. Um usuário comum autenticado assume a conta de qualquer membro. **Mesmo padrão do
+> `BUG-032`**, que foi corrigido num arquivo e sobreviveu em outros dois. **Registrado também um
+> erro meu:** uma das cópias vulneráveis está em `src/lib/user-matricula.ts`, arquivo que EU criei
+> no lote 2a (PR #123) — li a função inteira ao movê-la e não vi a brecha; as travas do 2a não
+> fecham esse caminho, porque conferem o `uid` e o `email` seguia livre. Vira a **Lição 44**
+> ("tem guard?" é metade da pergunta; a outra é de onde vem a identidade). Dado que orienta a
+> correção: `_AuthMap` tem **0 docs com `recoveredAt`** — o auto-healing por e-mail **nunca
+> disparou** em produção. Também registrado o **`BUG-107`**: o feedback de conteúdo de visitante
+> **não funciona** (lança erro) — 0 `BP-ANON` e 0 `lead_*` na base confirmam. Nenhuma linha de
+> código alterada; plano da correção pendente de aprovação.
+>
+> _(entrada anterior)_ 2026-07-19 (chat de execução — **T-02 lote 2a: PII (PR #123)**, deploy
 > `success`. Fechado o IDOR de **leitura do dado mais sensível do sistema**: DISC, Gestão de Tempo,
 > Aprendizado, Reconhecimento, PDI e respostas de survey eram legíveis para **qualquer membro** por
 > quem conhecesse a assinatura — o identificador vinha do cliente sem conferência. Agora
