@@ -17,22 +17,30 @@ import {
  * Recebe respostas da Plataforma e as persiste de forma hierárquica e operacional.
  * Aderente à Forms_Global e Soberania de Dados (Server-Authoritative) 🛡️.
  */
-export async function submitGenericForm(config: FormConfig, response: FormResponse, userUid: string) {
+export async function submitGenericForm(config: FormConfig, response: FormResponse, userUid?: string) {
   try {
     checkKeySignature();
     const db = getAdminDb();
 
     // 1. Obter Matrícula do Usuário (Lookup no _AuthMap Admin)
-    const authMapRef = db.doc(`_AuthMap/${userUid}`);
-    const authMapSnap = await authMapRef.get();
-    const matricula = authMapSnap.exists ? authMapSnap.data()?.matricula : `BP-ANON-${new Date().getTime()}`;
+    // Sem uid = envio anonimo (rota publica). Explicito, em vez de consultar
+    // `_AuthMap/undefined` e depender do miss (BUG-107).
+    let matricula = `BP-ANON-${new Date().getTime()}`;
+    if (userUid) {
+      const authMapSnap = await db.doc(`_AuthMap/${userUid}`).get();
+      if (authMapSnap.exists && authMapSnap.data()?.matricula) {
+        matricula = authMapSnap.data()?.matricula;
+      }
+    }
 
     // 2. Gravar no Firestore (Persistência Hierárquica Oficial 🛡️)
     const operationalRef = db.doc(`User/${matricula}/Forms/${config.id}`);
     const recordPayload: FormRecord = {
       formId: config.id,
       matricula,
-      userUid,
+      // Anonimo grava string vazia, nao `undefined`: o tipo do registro exige
+      // string e o vazio diz "sem identidade" sem inventar uma (BUG-107).
+      userUid: userUid || "",
       mode: "submitted",
       status: "submitted",
       data: response,
