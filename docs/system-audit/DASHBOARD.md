@@ -12,7 +12,20 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-20 (chat de execução — **`BUG-106` (CRÍTICO) contido e em
+> **Última atualização:** 2026-07-20 (chat de execução — **T-02 lote 2b.2 completo (PRs #125 e
+> #126)**, ambos com deploy confirmado. **#125:** resolução de identidade consolidada numa **fonte
+> única** — era a duplicação que deixara o padrão do `BUG-032` sobreviver até virar o `BUG-106` — e
+> o **`BUG-107`** corrigido: o feedback de visitante não logado **nunca funcionou** (0 `BP-ANON` e 0
+> `lead_*` na base provam), porque um id fabricado fazia o resolvedor pular o ramo anônimo. **#126:**
+> a superfície deixou de aceitar uid do cliente — os actions novos **não têm parâmetro de uid**,
+> fechando a **cunhagem de matrícula em série** pelo contador global; e a **pasta única de anônimos**
+> pedida pela Gestora, com id de doc composto para o anônimo (sem isso dois visitantes avaliando o
+> mesmo artigo se sobrescreveriam — armadilha pega na análise 360 antes de codar). 3 achados sobre os
+> **próprios testes** registrados: uma mutação passou verde (teste procurava o nome, não a chamada),
+> uma regex estreita passava vaziamente, e o mesmo invariante estava duplicado em 2 arquivos de teste
+> — a duplicação que causou o `BUG-106`, reproduzida no teste. Suíte 227/227.
+>
+> _(entrada anterior)_ 2026-07-20 (chat de execução — **`BUG-106` (CRÍTICO) contido e em
 > produção (PR #124, `dfd1241`, deploy `success`)**. Sequestro de conta: o e-mail **digitado** numa
 > resposta de survey reescrevia o `uid` do dono da matrícula, e um usuário comum autenticado
 > assumia a conta de qualquer membro. Invariante entregue: **e-mail que decide identidade vem da
