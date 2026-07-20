@@ -263,8 +263,17 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   Gestora** (2026-07-11, área financeiro/cotas). Corrigido via branch
   `fix/f2-04-bug008-quota-key-case`.
 - Commit/PR: **mergeado** — PR #71 (`72b9985`, squash).
-- Passo manual pendente (Gestora): `node scripts/normalize-quota-keys.js` (dry-run
-  → conferir diff → `--apply` → dry-run de novo para confirmar 0 a normalizar).
+- Passo manual **CONCLUIDO em 2026-07-19** (executado pela sessao de execucao, a pedido da
+  Gestora): `node scripts/normalize-quota-keys.js`. Protocolo seguido a risca — script **lido antes
+  de rodar** (Licao 1: nunca executar mutacao sem ler o que ela faz), dry-run, **prova programatica
+  de que era renomeacao PURA** (conferencia automatica: 0 divergencias de valor, nenhuma chave
+  perdida, nenhuma fusao de duplicatas — so o case mudou), `--apply`, e **reexecucao do inventario**
+  para confirmar o estado real em vez de confiar no "APLICADO" do log (Licao 16).
+  **Resultado: 3 carteiras normalizadas, 1 ja canonica, 4 no total; a reexecucao confirma 0 a
+  normalizar.** Backups do estado original em `scratch/quota-key-backups/`
+  (BP-005/BP-011/BP-012). Leitura independente pos-migracao confirma chaves minusculas com
+  `total`/`used` intactos e `uid`/`updatedAt` preservados.
+  **BUG-008 agora 100% fechado — codigo E dado.**
 
 ### BUG-009 `UserBooking.timestamp` provavelmente sempre nulo
 
