@@ -3,7 +3,7 @@
 import { requireAdmin, requireAuth, AuthorizationError } from "@/lib/auth-guards";
 import { MemberQuotaWallet } from "@/types/entitlements";
 import { getErrorMessage } from "@/lib/utils/errors";
-import { addMemberQuotas, readMemberQuotas, consumeMemberQuota } from "@/lib/member-quotas";
+import { setMemberQuotas, readMemberQuotas, consumeMemberQuota } from "@/lib/member-quotas";
 
 /**
  * BPlen HUB — Quota Engine (superficie exposta)
@@ -41,19 +41,23 @@ export async function getMemberQuotasAction(uid: string): Promise<MemberQuotaWal
 }
 
 /**
- * Adiciona cotas a um membro (uso administrativo).
+ * DEFINE o total das cotas de um membro (uso administrativo).
  *
- * `requireAdmin` e a trava certa: o unico chamador de interface e o painel
- * `admin/users`, concedendo cota a OUTRA pessoa — uma trava de "dono" barraria a
- * propria Gestora. A concessao automatica pos-compra NAO passa por aqui: ela
- * chama `addMemberQuotas` direto da camada crua (ver `lib/checkout.ts`).
+ * Substitui a antiga `updateMemberQuotasAction`, cujo nome nao dizia se somava ou
+ * definia — e ela SOMAVA. O painel exibe o valor atual no campo e reenviava esse
+ * mesmo valor, entao abrir a ficha e salvar duas vezes DOBRAVA a cota (`BUG-104`).
+ *
+ * `requireAdmin` e a trava certa: o unico chamador e o painel `admin/users`,
+ * editando a cota de OUTRA pessoa — uma trava de dono barraria a propria Gestora.
+ * A concessao automatica pos-compra NAO passa por aqui: ela chama
+ * `addMemberQuotas` direto da camada crua, que SOMA (ver `lib/checkout.ts`).
  */
-export async function updateMemberQuotasAction(uid: string, newQuotas: Record<string, number>) {
+export async function setMemberQuotasAction(uid: string, quotas: Record<string, number>) {
   try {
     await requireAdmin();
-    return await addMemberQuotas(uid, newQuotas);
+    return await setMemberQuotas(uid, quotas);
   } catch (error) {
-    console.error(`Erro ao atualizar cotas do membro ${uid}:`, error);
+    console.error(`Erro ao definir cotas do membro ${uid}:`, error);
     throw new Error("Falha ao atualizar carteira de cotas.");
   }
 }

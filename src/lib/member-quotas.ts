@@ -140,3 +140,64 @@ export async function consumeMemberQuota(uid: string, eventTypeId: string) {
 
   return { success: true };
 }
+
+/**
+ * DEFINE o total das cotas informadas (nao soma).
+ *
+ * Irma de `addMemberQuotas`, e a distincao e o `BUG-104`: as duas operacoes eram
+ * a MESMA funcao, e o nome ("update") nao dizia qual delas acontecia. O painel do
+ * admin exibe o valor atual no campo e reenviava esse mesmo valor — que era
+ * SOMADO ao saldo. Abrir a ficha e salvar duas vezes DOBRAVA a cota do membro.
+ *
+ * A soma continua existindo e e intencional (decisao da Gestora): uma nova
+ * aquisicao do mesmo servico — ou de outro que conceda a mesma cota — deve
+ * acumular. O que faltava era o nome da funcao dizer o que ela faz, em vez de a
+ * intencao viver na cabeca de quem chama.
+ *
+ * | Uso | Chamador | Operacao |
+ * |---|---|---|
+ * | Nova aquisicao (compra, cupom) | `lib/checkout.ts` (webhook) | `addMemberQuotas` |
+ * | Edicao manual da ficha | `admin/users` | `setMemberQuotas` |
+ *
+ * **`used` e SEMPRE preservado**: o admin edita o total contratado, nunca o que
+ * ja foi consumido. E chaves que nao vierem no parametro ficam intactas — o
+ * painel envia so as cotas de servicos ativos, e apagar as demais seria uma
+ * mudanca de dado alem da intencao.
+ */
+export async function setMemberQuotas(uid: string, quotas: Record<string, number>) {
+  const matricula = await resolveMatriculaByUid(uid);
+  if (!matricula) throw new Error("Matricula nao vinculada ao UID.");
+
+  const db = getAdminDb();
+  const walletRef = db.doc(`User/${matricula}/User_Permissions/quotas`);
+
+  await db.runTransaction(async (transaction) => {
+    const doc = await transaction.get(walletRef);
+    const now = new Date().toISOString();
+
+    // Normaliza + mescla as chaves ja existentes (auto-cura o drift de case —
+    // BUG-008), igual ao `addMemberQuotas`.
+    const currentQuotas: Record<string, MemberQuota> = doc.exists
+      ? foldQuotaMap((doc.data() as MemberQuotaWallet).quotas)
+      : {};
+
+    for (const [type, amount] of Object.entries(quotas)) {
+      const normalizedType = normalizeQuotaKey(type);
+      const current = currentQuotas[normalizedType];
+      currentQuotas[normalizedType] = {
+        total: amount,
+        // Preserva o consumo: o admin define o CONTRATADO, nao o usado.
+        used: current?.used ?? 0,
+        lastUpdated: now
+      };
+    }
+
+    if (doc.exists) {
+      transaction.update(walletRef, { uid, quotas: currentQuotas, updatedAt: now });
+    } else {
+      transaction.set(walletRef, { uid, quotas: currentQuotas, updatedAt: now });
+    }
+  });
+
+  return { success: true };
+}

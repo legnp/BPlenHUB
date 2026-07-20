@@ -57,12 +57,31 @@ describe("superficie exposta: toda action de cota tem guard", () => {
   it("quotas.ts continua sendo 'use server'", () => {
     expect(actions).toMatch(/^\s*["']use server["']/);
   });
-
-  it("updateMemberQuotasAction exige admin", () => {
+  it("setMemberQuotasAction exige admin", () => {
     // requireAdmin e nao dono-ou-admin: o unico caller de UI e o painel
-    // concedendo cota a OUTRA pessoa; uma trava de dono barraria a Gestora.
-    const corpo = actions.slice(actions.indexOf("export async function updateMemberQuotasAction"));
+    // editando cota de OUTRA pessoa; uma trava de dono barraria a Gestora.
+    const corpo = actions.slice(actions.indexOf("export async function setMemberQuotasAction"));
     expect(corpo).toMatch(/requireAdmin\s*\(/);
+  });
+
+  it("a acao exposta DEFINE; a soma so existe na camada crua (BUG-104)", () => {
+    // As duas operacoes eram a MESMA funcao, e o nome ("update") nao dizia qual.
+    // O painel reenviava o valor exibido e ele era SOMADO — salvar duas vezes
+    // dobrava a cota. Agora o nome carrega a semantica dos dois lados.
+    expect(actions, "a acao exposta nao pode somar").not.toMatch(/addMemberQuotas\s*\(/);
+    expect(actions).toMatch(/setMemberQuotas\s*\(/);
+    expect(actions, "o nome antigo ambiguo nao pode voltar")
+      .not.toMatch(/export async function updateMemberQuotasAction/);
+  });
+
+  it("a aquisicao pos-compra continua SOMANDO, pela camada crua", () => {
+    // Uma nova aquisicao do mesmo servico — ou de outro que conceda a mesma cota
+    // — deve acumular (decisao da Gestora). Se o checkout passar a DEFINIR, a
+    // segunda compra apaga o saldo da primeira.
+    const checkout = fs.readFileSync(path.join(raiz, "src/lib/checkout.ts"), "utf8");
+    expect(checkout).toMatch(/addMemberQuotas\s*\(/);
+    expect(checkout, "o checkout nao pode DEFINIR — apagaria o saldo anterior")
+      .not.toMatch(/setMemberQuotas\s*\(/);
   });
 
   it("getMemberQuotasAction e consumeQuotaAction exigem sessao + dono-ou-admin", () => {
