@@ -1,4 +1,14 @@
-"use server";
+// Handlers de efeito colateral de survey — modulo de servidor, NAO server actions.
+//
+// Ate o lote 5 do BUG-103 este arquivo era `"use server"`, o que tornava cada
+// handler exportado um ENDPOINT DE REDE: qualquer requisicao nao autenticada
+// podia dispara-lo passando a matricula de outra pessoa, gravando resultado de
+// survey e progredindo jornada na conta dela.
+//
+// O unico chamador de cada handler e o dispatcher `lib/survey/effects.ts`, que
+// roda depois de `submitSurvey` ja ter resolvido a identidade pela sessao.
+// Sem `"use server"` nao ha porta na rede — e a correcao e remover a porta, nao
+// trancar a sala (Protocolo item 8).
 
 import * as admin from "firebase-admin";
 import { getAdminDb, getAdminAuth } from "@/lib/firebase-admin";

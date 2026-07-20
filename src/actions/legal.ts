@@ -1,5 +1,14 @@
 "use server";
 
+// NOTA DE BUNDLE (lote 5 do BUG-103): este arquivo PRECISA continuar
+// `"use server"`. A primeira tentativa foi tira-lo da rede removendo a diretiva,
+// como nos handlers de efeito — mas aqui ela nao e so marcacao de action: e
+// FRONTEIRA DE BUNDLE. Sem ela o bundler passa a tracar `pdfkit`/`fs`/`stream`
+// no grafo de quem importa, e o build morre com heap out of memory (exit 134).
+// Confirmado por bisseccao: o build passa na main e falha so com a diretiva
+// removida. Por isso aqui a protecao e GUARD, nao remocao da porta.
+
+import { requireAuth, AuthorizationError } from "@/lib/auth-guards";
 import { getAdminDb } from "@/lib/firebase-admin";
 import { getDriveClient } from "@/lib/google-auth";
 import { ensureFolder, uploadFileToDrive } from "@/lib/drive-utils";
@@ -63,6 +72,16 @@ export async function generateContractPdf(
   paymentId?: string
 ) {
   try {
+    // BUG-103 lote 5: e endpoint de rede (arquivo "use server", e a diretiva nao
+    // pode sair — ver NOTA DE BUNDLE no topo). Sem guard, o `userId` vinha do
+    // CLIENTE e qualquer requisicao gerava/gravava o contrato de outra pessoa.
+    // Dono-ou-admin: os 2 callers (avulso-contract, checkout-contract) ja guardam
+    // com requireMatricula e passam `session.uid`, entao nenhum fluxo e barrado.
+    const session = await requireAuth();
+    if (session.uid !== userId && !session.isAdmin) {
+      throw new AuthorizationError("Voce nao pode gerar o contrato de outro usuario.");
+    }
+
     const db = getAdminDb();
 
     // Resolve a matrícula: os docs de `User` são chaveados por matrícula (BP-xxx), não

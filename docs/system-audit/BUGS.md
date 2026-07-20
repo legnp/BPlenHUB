@@ -3031,6 +3031,43 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Commit/PR: —
 
 
+### BUG-108 Convite: `matricula` do cliente aceita sem vinculo com o token — escrita em subcolecao alheia
+
+- Severidade: **Alto** (escrita nao autenticada na subcolecao privada de qualquer membro + disparo
+  de e-mail em nome dele)
+- Area/fase onde foi achado: varredura final do lote 5 do `BUG-103` (2026-07-20), ao classificar as
+  26 funcoes restantes como legitimas ou nao
+- Arquivo(s) afetado(s): `src/actions/invitations.ts` —
+  `submitInvitationSurveyAction` (l.272) e `sendInvitationRsvpEmailsAction` (l.315)
+- Cenario de falha: **[CONFIRMADO]** por leitura. A assinatura e
+  `submitInvitationSurveyAction(token, eventSlug, answers, matricula)` — recebe **token E matricula
+  como parametros separados do cliente** — e o corpo **nunca valida que o token pertence aquela
+  matricula**. Ele grava direto em:
+  ```
+  User/{matricula}/Surveys/invitation_{eventSlug}
+  ```
+  Ou seja, um chamador nao autenticado escreve respostas de survey na **subcolecao privada de
+  qualquer membro**, so informando a matricula dela. Em seguida a funcao dispara
+  `sendInvitationRsvpEmailsAction(matricula, ...)`, que **tambem** e exportada e aceita `matricula`
+  do cliente — logo e alcancavel direto como **vetor de disparo de e-mail** em nome de terceiros.
+- **Por que o token nao protege:** ele e passado, normalizado (`trim().toUpperCase()`) e **gravado**
+  no documento, mas nao e conferido contra o dono. O token e credencial **do convite**, nao da
+  **matricula** — e o codigo trata os dois como se fossem o mesmo fato.
+- **Mesma familia do `BUG-106`/`BUG-032`:** identidade vinda do cliente aceita sem verificacao. E o
+  terceiro lugar onde esse padrao aparece — reforca a tese do `BUG-103` de que o T-02 precisava ser
+  conferido **por padrao**, nao por lista.
+- Status: **Aberto** — registrado, **nao corrigido de proposito**.
+- Decisao de execucao: **Precisa plano+aprovacao** (identidade + fluxo de convite = F4-02, dominio da
+  Gestora). A correcao exige uma **decisao de modelo** que nao cabe inventar: o vinculo
+  token -> matricula precisa existir e ser a fonte da identidade. Provavel saida: `claimInvitationTokenAction`
+  passa a gravar o dono do token, e `submitInvitationSurveyAction` deriva a matricula **do token**
+  (ou da sessao), deixando de aceita-la como parametro. `sendInvitationRsvpEmailsAction` deixa de ser
+  exportada (so o dispatcher interno a chama).
+- **Consequencia para o T-02:** o track **nao pode ser declarado fechado** enquanto este bug estiver
+  aberto. Fechar com ele em pe repetiria exatamente o erro que originou o `BUG-103`.
+- Commit/PR: —
+
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em

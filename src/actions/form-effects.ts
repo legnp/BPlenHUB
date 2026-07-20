@@ -1,4 +1,12 @@
-"use server";
+// Dispatcher de efeitos colaterais de FORM — modulo de servidor, NAO action.
+//
+// Irmao de `lib/survey/effects.ts`. Ate o lote 5 do BUG-103 era `"use server"`,
+// logo um endpoint de rede que aceitava `matricula` como parametro: uma
+// requisicao nao autenticada podia disparar os efeitos de formulario na conta de
+// QUALQUER membro.
+//
+// Chamadores: `generic-form.ts` e `profile-registration.ts`, ambos server-side e
+// com a identidade ja resolvida. Sem consumidor de cliente.
 
 import { getAdminDb } from "@/lib/firebase-admin";
 import { getDriveClient, getSheetsClient } from "@/lib/google-auth";

@@ -16,7 +16,7 @@ export async function submitSurvey(config: SurveyConfig, responses: Record<strin
     
     // 1. Resolver Matrícula e Identidade (Soberania de Acesso via Effects 🧬)
     const { resolveUserIdentity } = await import("@/lib/survey/identity");
-    const { handleSurveySideEffects } = await import("./survey-effects");
+    const { handleSurveySideEffects } = await import("@/lib/survey/effects");
     console.log(`🔍 [SubmitSurvey] Iniciando resolução para UID: ${userUid}`);
     const matricula = await resolveUserIdentity(config.id, responses, userUid);
     console.log(`🔍 [SubmitSurvey] Matrícula Resolvida: ${matricula}`);
