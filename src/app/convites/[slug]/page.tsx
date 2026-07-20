@@ -1,6 +1,7 @@
 import React from "react";
 import { Metadata } from "next";
-import { getInvitationEventAction, seedInvitationEventAndTokens } from "@/actions/invitations";
+import { getInvitationEventAction } from "@/actions/invitations";
+import { bootstrapPreInauguracaoInvitation } from "@/lib/invitations/seed";
 import { InvitationSurvey } from "@/components/invitations/InvitationSurvey";
 import { BPlenLogo } from "@/components/shared/BPlenLogo";
 
@@ -33,7 +34,7 @@ export default async function InvitationPage({ params }: PageProps) {
     const checkExist = await getInvitationEventAction(slug);
     if (!checkExist.success) {
       console.log("[InvitationPage] Auto-seeding pre_inauguracao event and tokens...");
-      await seedInvitationEventAndTokens();
+      await bootstrapPreInauguracaoInvitation();
     }
   }
 
