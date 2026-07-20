@@ -1,5 +1,6 @@
 "use server";
 
+import { ANON_MATRICULA } from "@/lib/survey/identity";
 import { getAdminDb } from "@/lib/firebase-admin";
 import * as admin from "firebase-admin";
 import { getDriveClient, getSheetsClient } from "@/lib/google-auth";
@@ -25,7 +26,7 @@ export async function submitGenericForm(config: FormConfig, response: FormRespon
     // 1. Obter Matrícula do Usuário (Lookup no _AuthMap Admin)
     // Sem uid = envio anonimo (rota publica). Explicito, em vez de consultar
     // `_AuthMap/undefined` e depender do miss (BUG-107).
-    let matricula = `BP-ANON-${new Date().getTime()}`;
+    let matricula: string = ANON_MATRICULA;
     if (userUid) {
       const authMapSnap = await db.doc(`_AuthMap/${userUid}`).get();
       if (authMapSnap.exists && authMapSnap.data()?.matricula) {
@@ -34,7 +35,10 @@ export async function submitGenericForm(config: FormConfig, response: FormRespon
     }
 
     // 2. Gravar no Firestore (Persistência Hierárquica Oficial 🛡️)
-    const operationalRef = db.doc(`User/${matricula}/Forms/${config.id}`);
+    // Mesma regra do submit-survey: na pasta unica de anonimos o id do doc
+    // precisa ser unico, senao um envio sobrescreve o outro.
+    const docId = matricula === ANON_MATRICULA ? `${config.id}__${Date.now()}` : config.id;
+    const operationalRef = db.doc(`User/${matricula}/Forms/${docId}`);
     const recordPayload: FormRecord = {
       formId: config.id,
       matricula,

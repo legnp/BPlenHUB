@@ -15,13 +15,21 @@ export async function submitSurvey(config: SurveyConfig, responses: Record<strin
     const db: admin.firestore.Firestore = getAdminDb();
     
     // 1. Resolver Matrícula e Identidade (Soberania de Acesso via Effects 🧬)
-    const { resolveUserIdentity, handleSurveySideEffects } = await import("./survey-effects");
+    const { resolveUserIdentity } = await import("@/lib/survey/identity");
+    const { handleSurveySideEffects } = await import("./survey-effects");
     console.log(`🔍 [SubmitSurvey] Iniciando resolução para UID: ${userUid}`);
     const matricula = await resolveUserIdentity(config.id, responses, userUid);
     console.log(`🔍 [SubmitSurvey] Matrícula Resolvida: ${matricula}`);
 
     // 2. Preparar Payload de Resposta (SurveyResponse)
-    const surveyPath = `User/${matricula}/Surveys/${config.id}`;
+    // Id do documento: normalmente E o `surveyId`. Na pasta unica de anonimos
+    // isso colidiria — dois visitantes avaliando o MESMO artigo escreveriam no
+    // mesmo doc e o segundo apagaria o primeiro. Anonimo ganha sufixo de tempo.
+    // O campo `surveyId` do payload continua igual, e e por ele que as duas
+    // analises do admin agrupam (`admin-surveys` e `admin-fs`) — verificado.
+    const { ANON_MATRICULA } = await import("@/lib/survey/identity");
+    const docId = matricula === ANON_MATRICULA ? `${config.id}__${Date.now()}` : config.id;
+    const surveyPath = `User/${matricula}/Surveys/${docId}`;
     const surveyRef = db.doc(surveyPath);
     console.log(`🔍 [SubmitSurvey] Gravando Resposta em: ${surveyPath}`);
     

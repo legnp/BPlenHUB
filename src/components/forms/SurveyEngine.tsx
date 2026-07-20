@@ -42,7 +42,7 @@ import { CvDownloadButton } from "./SurveyFields/CvDownloadButton";
 import { CvVagaDescriptionButton } from "./SurveyFields/CvVagaDescriptionButton";
 import { CvLisContactButton } from "./SurveyFields/CvLisContactButton";
 import { CvBusinessCardGenerator, BusinessCardData } from "./SurveyFields/CvBusinessCardGenerator";
-import { resolveUserIdentity, getUserMetadata } from "@/actions/survey-effects";
+import { resolveOwnIdentityAction, getOwnMetadataAction } from "@/actions/survey-effects";
 import { getPreviousSurveysDataAction } from "@/actions/submit-survey";
 import { getOwnCheckinPrefillAction } from "@/actions/get-user-results";
 import Calendar, { CalendarEvent } from "@/components/ui/Calendar";
@@ -370,9 +370,9 @@ export function SurveyEngine({ config, userUid, onComplete, onSubmitSuccess, onS
   useEffect(() => {
     async function loadMatricula() {
       if (userUid) {
-        const mat = await resolveUserIdentity(config.id, {}, userUid);
+        const mat = await resolveOwnIdentityAction(config.id);
         setMatricula(mat);
-        const meta = await getUserMetadata(userUid);
+        const meta = await getOwnMetadataAction();
         
         let combinedMeta = { ...meta };
         if (config.id && (config.id.startsWith("survey_plano_fase") || config.id === "cv_focado" || config.id === "perfil_profissional_publico" || config.id === "preparacao_entrevistas_networking")) {
