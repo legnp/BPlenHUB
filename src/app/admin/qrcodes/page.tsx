@@ -12,7 +12,7 @@ import {
   QrCode,
   Link as LinkIcon
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { BPlenQRCode } from "@/types/qrcode";
 import { getQRCodesAction, deleteQRCodeAction } from "@/actions/qrcode";
 import GlassModal from "@/components/ui/GlassModal";
@@ -20,6 +20,8 @@ import QRCodeForm from "@/components/admin/QRCodeForm";
 import { auth } from "@/lib/firebase";
 import { QRCodeCanvas } from "qrcode.react";
 import { getErrorMessage } from "@/lib/utils/errors";
+import { FunctionalPageHeader } from "@/components/layout/FunctionalPageHeader";
+import { StatTile } from "@/components/admin/StatTile";
 
 export default function QRCodesManagementPage() {
   const [qrcodes, setQrcodes] = useState<BPlenQRCode[]>([]);
@@ -78,11 +80,11 @@ export default function QRCodesManagementPage() {
   const handleDelete = async (qr: BPlenQRCode) => {
     if (!qr.id) return;
     
-    if (confirm("Tem certeza que deseja excluir este QR Code e remove-lo do Google Drive de forma permanente?")) {
+    if (confirm("Tem certeza que deseja excluir este QR Code de forma permanente?")) {
       try {
         const adminToken = await auth.currentUser?.getIdToken();
         if (!adminToken) {
-          alert("Sessao expirada. Faca login novamente.");
+          alert("Sessão expirada. Faça login novamente.");
           return;
         }
 
@@ -93,7 +95,7 @@ export default function QRCodesManagementPage() {
           alert(res.error || "Erro ao remover QR Code.");
         }
       } catch (err: unknown) {
-        alert(getErrorMessage(err, "Falha na exclusao."));
+        alert(getErrorMessage(err, "Falha na exclusão."));
       }
     }
   };
@@ -121,59 +123,45 @@ export default function QRCodesManagementPage() {
       document.body.removeChild(a);
     } catch (err) {
       console.error("Falha ao baixar imagem:", err);
-      alert("Nao foi possivel baixar o QR Code.");
+      alert("Não foi possível baixar o QR Code.");
     }
   };
 
   return (
     <div className="space-y-8 pb-20">
-      {/* Header da Pagina */}
-      <div className="flex flex-col md:flex-row justify-between items-start gap-4">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight text-[var(--text-primary)] uppercase">
-            MAQUINA DE <span className="text-[var(--accent-start)] italic">QR CODES</span>
-          </h1>
-          <p className="text-[var(--text-muted)] text-sm font-medium opacity-70">
-            Geracao de QR Codes com branding BPlen e sincronizacao direta com o Google Drive corporativo.
-          </p>
-        </div>
+      <FunctionalPageHeader
+        eyebrow="Marketing"
+        title="QR Codes"
+        icon={<QrCode size={24} />}
+        action={
+          <button
+            onClick={() => setIsFormOpen(true)}
+            className="flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] text-white rounded-full font-bold text-xs uppercase tracking-[0.2em] shadow-xl shadow-[var(--accent-start)]/20 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+          >
+            <Plus size={18} />
+            Criar Novo QR
+          </button>
+        }
+      />
 
-        <button
-          onClick={() => setIsFormOpen(true)}
-          className="flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] text-white rounded-2xl font-bold text-xs uppercase tracking-[0.2em] shadow-xl shadow-[var(--accent-start)]/20 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
-        >
-          <Plus size={18} />
-          Criar Novo QR
-        </button>
-      </div>
+      <p className="text-[var(--text-muted)] text-sm font-medium opacity-70 -mt-4">
+        Geração de QR Codes com a marca BPlen e sincronização automática.
+      </p>
 
-      {/* Grid de Metricas Rapidas */}
+      {/* Grid de metricas rapidas */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
-        <div className="p-6 bg-[var(--input-bg)] rounded-3xl border border-[var(--border-primary)] shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-[var(--accent-start)]/5 rounded-full blur-3xl pointer-events-none" />
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-[var(--accent-start)]/10 rounded-xl text-[var(--accent-start)]">
-              <QrCode size={18} />
-            </div>
-            <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest leading-none">Total de QR Codes</span>
-          </div>
-          <div className="text-4xl font-bold text-[var(--text-primary)]">
-            {isLoading ? <Loader2 size={24} className="animate-spin text-[var(--accent-start)]" /> : qrcodes.length}
-          </div>
-        </div>
-
-        <div className="p-6 bg-[var(--input-bg)] rounded-3xl border border-[var(--border-primary)] shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-green-500/5 rounded-full blur-3xl pointer-events-none" />
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-green-500/10 rounded-xl text-green-500">
-              <ExternalLink size={18} />
-            </div>
-            <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest leading-none">Sincronizados no Drive</span>
-          </div>
-          <div className="text-4xl font-bold text-[var(--text-primary)]">
-            {isLoading ? <Loader2 size={24} className="animate-spin text-green-500" /> : qrcodes.filter(q => q.driveFileId).length}
-          </div>
-        </div>
+        <StatTile
+          icon={<QrCode size={20} />}
+          label="Total de QR Codes"
+          value={isLoading ? <Loader2 size={24} className="animate-spin text-[var(--accent-start)]" /> : qrcodes.length}
+          tone="accent"
+        />
+        <StatTile
+          icon={<ExternalLink size={20} />}
+          label="Sincronizados no Drive"
+          value={isLoading ? <Loader2 size={24} className="animate-spin text-green-500" /> : qrcodes.filter(q => q.driveFileId).length}
+          tone="success"
+        />
       </div>
 
       {/* Barra de Filtro e Busca */}
@@ -182,7 +170,7 @@ export default function QRCodesManagementPage() {
           <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] opacity-40" />
           <input
             type="text"
-            placeholder="Buscar por titulo ou link de destino..."
+            placeholder="Buscar por título ou link de destino..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full bg-[var(--bg-primary)]/50 border border-[var(--input-border)] rounded-2xl pl-12 pr-6 py-3.5 text-sm font-medium text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-start)]/50 transition-all"
@@ -200,7 +188,7 @@ export default function QRCodesManagementPage() {
           <div className="col-span-full py-24 text-center border-2 border-dashed border-[var(--border-primary)] rounded-[3rem] bg-[var(--input-bg)]/50">
             <QrCode className="w-16 h-16 text-[var(--text-muted)] opacity-10 mx-auto mb-6" />
             <p className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">Nenhum QR Code encontrado</p>
-            <p className="text-[11px] text-[var(--text-muted)] mt-1 opacity-70">Crie seu primeiro QR Code corporativo clicando no botao acima.</p>
+            <p className="text-[11px] text-[var(--text-muted)] mt-1 opacity-70">Crie seu primeiro QR Code clicando no botão acima.</p>
           </div>
         ) : (
           filteredQRCodes.map((qr) => (

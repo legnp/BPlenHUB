@@ -5,25 +5,22 @@ import { useAuth } from "@/hooks/use-auth";
 import { getAdminCouponsList, saveCouponAction } from "@/actions/coupons";
 import { generateCouponBatchAction, getAdminCouponsV2Action } from "@/actions/coupon-v2";
 import { Coupon, DiscountType } from "@/types/marketing";
-import { 
-  Plus, 
-  Trash2, 
-  Ticket, 
-  Search, 
-  Calendar, 
-  Hash, 
-  CheckCircle2, 
+import {
+  Plus,
+  Ticket,
+  Search,
+  Hash,
+  CheckCircle2,
   AlertCircle,
-  Clock,
   Settings2,
-  Lock,
   Percent,
   Layers,
   Copy,
   Check
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import GlassModal from "@/components/ui/GlassModal";
+import { FunctionalPageHeader } from "@/components/layout/FunctionalPageHeader";
+import { StatTile } from "@/components/admin/StatTile";
 
 interface V2Batch {
   batchId: string;
@@ -67,7 +64,7 @@ export default function MarketingAdminPage() {
   const [v2Quantity, setV2Quantity] = useState(30);
   const [v2ExpiresAfterDays, setV2ExpiresAfterDays] = useState(7);
   const [v2Terms, setV2Terms] = useState(
-    "1. Fase de Teste - Esta funcionalidade esta em periodo beta (V01.01). Voce reconhece que podem ocorrer inconsistencias e que seu papel e reportar eventuais problemas.\n2. Uso Unico e Intransferivel - Cada cupom esta vinculado ao seu CPF. O uso e estritamente pessoal.\n3. Validade - O prazo de validade comeca a contar a partir do momento em que voce aceita estes termos e efetua o resgate."
+    "1. Fase de Teste - Esta funcionalidade está em período beta (V01.01). Você reconhece que podem ocorrer inconsistências e que seu papel é reportar eventuais problemas.\n2. Uso Único e Intransferível - Cada cupom está vinculado ao seu CPF. O uso é estritamente pessoal.\n3. Validade - O prazo de validade começa a contar a partir do momento em que você aceita estes termos e efetua o resgate."
   );
 
   const fetchCoupons = async () => {
@@ -159,33 +156,33 @@ export default function MarketingAdminPage() {
   return (
     <div className="space-y-8 animate-fade-in text-left">
       
-      {/* Header & Main Actions */}
-      <div className="flex flex-col md:flex-row justify-between items-start gap-4">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight text-[var(--text-primary)]">
-            CUPONS E <span className="text-[var(--accent-start)] italic">OFERTAS</span>
-          </h1>
-          <p className="text-[var(--text-muted)] text-sm font-medium opacity-70">
-            Gestao integrada de cupons e lotes de descontos premium.
-          </p>
-        </div>
+      <FunctionalPageHeader
+        eyebrow="Marketing"
+        title="Cupons"
+        titleAccent="e Ofertas"
+        icon={<Ticket size={24} />}
+        action={
+          activeTab === "v1" ? (
+            <button
+              onClick={handleCreateNew}
+              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-tr from-[var(--accent-start)] to-[var(--accent-end)] rounded-full font-bold text-[10px] uppercase tracking-widest text-white transition-all shadow-lg hover:translate-y-[-2px] active:scale-[0.98]"
+            >
+              <Plus size={16} /> Criar Novo Cupom
+            </button>
+          ) : (
+            <button
+              onClick={() => setIsBatchCreatorOpen(true)}
+              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-tr from-[#ff0080] to-[var(--accent-end)] rounded-full font-bold text-[10px] uppercase tracking-widest text-white transition-all shadow-lg hover:translate-y-[-2px] active:scale-[0.98]"
+            >
+              <Plus size={16} /> Gerar Lote Premium (V2)
+            </button>
+          )
+        }
+      />
 
-        {activeTab === "v1" ? (
-          <button 
-            onClick={handleCreateNew}
-            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-tr from-[var(--accent-start)] to-[var(--accent-end)] rounded-2xl font-bold text-[10px] uppercase tracking-widest text-white transition-all shadow-lg hover:translate-y-[-2px] active:scale-[0.98]"
-          >
-            <Plus size={16} /> Criar Novo Cupom
-          </button>
-        ) : (
-          <button 
-            onClick={() => setIsBatchCreatorOpen(true)}
-            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-tr from-[#ff0080] to-[var(--accent-end)] rounded-2xl font-bold text-[10px] uppercase tracking-widest text-white transition-all shadow-lg hover:translate-y-[-2px] active:scale-[0.98]"
-          >
-            <Plus size={16} /> Gerar Lote Premium (V2)
-          </button>
-        )}
-      </div>
+      <p className="text-[var(--text-muted)] text-sm font-medium opacity-70 -mt-4">
+        Gestão integrada de cupons e lotes de descontos premium.
+      </p>
 
       {/* Tabs Menu */}
       <div className="flex border-b border-[var(--border-primary)] gap-8">
@@ -211,22 +208,25 @@ export default function MarketingAdminPage() {
         </button>
       </div>
 
-      {/* Grid de Métricas Rápidas */}
+      {/* Grid de metricas rapidas */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-         <MetricCard 
-           icon={<Hash size={18} />} 
-           label="Cupons V1 Ativos" 
-           value={coupons.filter(c => c.active).length} 
+         <StatTile
+           icon={<Hash size={20} />}
+           label="Cupons V1 Ativos"
+           value={coupons.filter(c => c.active).length}
+           tone="accent"
          />
-         <MetricCard 
-           icon={<Layers size={18} />} 
-           label="Lotes V2 Criados" 
-           value={batches.length} 
+         <StatTile
+           icon={<Layers size={20} />}
+           label="Lotes V2 Criados"
+           value={batches.length}
+           tone="accent"
          />
-         <MetricCard 
-           icon={<Percent size={18} />} 
-           label="Total Resgates V2" 
-           value={v2Coupons.filter(c => c.isRedeemed).length} 
+         <StatTile
+           icon={<Percent size={20} />}
+           label="Total Resgates V2"
+           value={v2Coupons.filter(c => c.isRedeemed).length}
+           tone="accent"
          />
       </div>
 
@@ -238,7 +238,7 @@ export default function MarketingAdminPage() {
               <Search size={16} className="text-[var(--text-muted)] opacity-40" />
               <input 
                  type="text" 
-                 placeholder="Buscar por codigo (ex: BPLEN20)..."
+                 placeholder="Buscar por código (ex: BPLEN20)..."
                  className="bg-transparent outline-none text-xs font-bold uppercase tracking-widest w-full text-[var(--text-primary)] placeholder:text-[var(--text-muted)] placeholder:opacity-40" 
                  value={search}
                  onChange={(e) => setSearch(e.target.value)}
@@ -253,7 +253,7 @@ export default function MarketingAdminPage() {
                        <th className="px-8 py-5 text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-40">Tipo / Valor</th>
                        <th className="px-8 py-5 text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-40">Uso</th>
                        <th className="px-8 py-5 text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-40">Status</th>
-                       <th className="px-8 py-5 text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-40 text-right">Acoes</th>
+                       <th className="px-8 py-5 text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-40 text-right">Ações</th>
                     </tr>
                  </thead>
                  <tbody>
@@ -321,7 +321,7 @@ export default function MarketingAdminPage() {
                       Lote Premium
                     </span>
                     <h3 className="text-lg font-bold text-[var(--text-primary)]">
-                      {batch.service === "pacote-embaixador" ? "Pacote EMBAIXADOR BPLEN" : batch.service === "posicionamento-profissional" ? "Posicionamento de Carreira" : `Servico: ${batch.service}`}
+                      {batch.service === "pacote-embaixador" ? "Pacote EMBAIXADOR BPLEN" : batch.service === "posicionamento-profissional" ? "Posicionamento de Carreira" : `Serviço: ${batch.service}`}
                     </h3>
                     <p className="text-[10px] text-[var(--text-muted)] font-medium">ID do Lote: {batch.batchId}</p>
                   </div>
@@ -340,7 +340,7 @@ export default function MarketingAdminPage() {
                 {/* Codes grid */}
                 <div className="space-y-2">
                   <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-60">
-                    Codigos Gerados ({batch.quantityUsed} / {batch.quantityTotal} Resgatados)
+                    Códigos Gerados ({batch.quantityUsed} / {batch.quantityTotal} Resgatados)
                   </p>
                   <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
                     {batchCoupons.map((coupon) => (
@@ -380,14 +380,14 @@ export default function MarketingAdminPage() {
       <GlassModal
         isOpen={isEditorOpen}
         onClose={() => setIsEditorOpen(false)}
-        title="Configuracao de Oferta"
-        subtitle="Gerencie os parametros estrategicos do cupom de desconto."
+        title="Configuração de Oferta"
+        subtitle="Gerencie os parâmetros do cupom de desconto."
       >
         {selectedCoupon && (
           <div className="space-y-8 p-2 text-left">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                <div className="space-y-2">
-                  <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-40">Codigo do Cupom</label>
+                  <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-40">Código do Cupom</label>
                   <input 
                      type="text" 
                      className="w-full bg-[var(--input-bg)] border border-[var(--input-border)] rounded-2xl p-4.5 text-sm font-bold uppercase outline-none focus:border-[var(--accent-start)] transition-all tracking-widest text-[var(--text-primary)]"
@@ -437,7 +437,7 @@ export default function MarketingAdminPage() {
                  onClick={handleSave}
                  className="flex-[2] p-4.5 bg-gradient-to-tr from-[var(--accent-start)] to-[var(--accent-end)] rounded-2xl text-[9px] font-bold uppercase tracking-widest text-white shadow-xl hover:translate-y-[-2px] active:scale-[0.98] transition-all"
                >
-                  Salvar Configuracoes
+                  Salvar Configurações
                </button>
             </div>
           </div>
@@ -449,11 +449,11 @@ export default function MarketingAdminPage() {
         isOpen={isBatchCreatorOpen}
         onClose={() => setIsBatchCreatorOpen(false)}
         title="Gerar Lote de Cupons Premium"
-        subtitle="Cria cupons com regras de CPF, termos aceitos e Drive integrado."
+        subtitle="Cria cupons com regras de CPF e termos aceitos."
       >
         <div className="space-y-6 text-left p-2">
           <div className="space-y-2">
-            <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-40">Servico Alvo</label>
+            <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-40">Serviço Alvo</label>
             <select
               className="w-full bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-2xl p-4 text-xs font-bold outline-none focus:border-[#ff0080] text-[var(--text-primary)]"
               value={v2Service}
@@ -487,7 +487,7 @@ export default function MarketingAdminPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-40">Validade apos Resgate (em dias)</label>
+            <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-40">Validade após Resgate (em dias)</label>
             <input
               type="number"
               className="w-full bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-2xl p-4 text-xs font-bold outline-none text-[var(--text-primary)] focus:border-[#ff0080]"
@@ -497,7 +497,7 @@ export default function MarketingAdminPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-40">Termos e Condicoes do Lote (V01.01)</label>
+            <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-40">Termos e Condições do Lote (V01.01)</label>
             <textarea
               rows={4}
               className="w-full bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-2xl p-4 text-xs font-bold outline-none text-[var(--text-primary)] focus:border-[#ff0080] leading-relaxed"
@@ -518,16 +518,3 @@ export default function MarketingAdminPage() {
   );
 }
 
-function MetricCard({ icon, label, value }: { icon: React.ReactNode, label: string, value: string | number }) {
-   return (
-      <div className="p-6 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-[2rem] flex items-center justify-between group hover:border-[var(--accent-start)]/30 transition-all shadow-sm">
-         <div className="space-y-1">
-            <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-40">{label}</p>
-            <p className="text-3xl font-bold text-[var(--text-primary)]">{value}</p>
-         </div>
-         <div className="p-3 bg-[var(--accent-start)]/5 rounded-2xl text-[var(--text-muted)] group-hover:text-[var(--accent-start)] transition-colors">
-            {icon}
-         </div>
-      </div>
-   );
-}
