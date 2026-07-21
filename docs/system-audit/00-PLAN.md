@@ -231,10 +231,14 @@ ativa furando a ordem das fases.
 
 | Bug | Severidade | Onde se conecta | Por que ainda não fechou |
 |---|---|---|---|
-| `BUG-102` | Alto | T-02 lote 3 | `post-event.ts` expõe 3 actions sem guard (fechar evento, marcar presença, gravar na carreira do membro) |
-| `BUG-103` | Alto | T-02 (reaberto) | varredura de guards: lotes 1 e 2a mergeados; faltam 2b, 3, 4 e 5 |
+| _(vazia)_ | — | — | nenhum `Crítico`/`Alto` aberto |
 
-**Fila reaberta em 2026-07-19 com um `Crítico`; o `Crítico` foi contido em 2026-07-20.**
+**Fila esvaziada em 2026-07-20 — T-02 re-fechado.** Os dois `Alto` da varredura de guards saíram:
+`BUG-102` (pós-evento, PR #127) e `BUG-103` (os 5 lotes concluídos, PRs #122–#129); e o `BUG-108`
+(Alto) — o **último bloqueador do T-02** — foi corrigido no PR #135 (submit do convite deriva a
+identidade da sessão verificada, não de parâmetro do cliente). Nenhum `Crítico`/`Alto` aberto.
+
+_(histórico)_ **Fila reaberta em 2026-07-19 com um `Crítico`; o `Crítico` foi contido em 2026-07-20.**
 O que a reabriu não foi um bug novo do produto, e sim a **varredura de guards** (`BUG-103`) que a
 Gestora pediu depois que o `BUG-102` mostrou que o `post-event.ts` escapara dos 7 lotes do
 `BUG-020`. Investigando o lote 2b dessa varredura, apareceu o `BUG-106` (**Crítico**): sequestro de
@@ -918,15 +922,19 @@ O mapeamento das jornadas abaixo é entregável desta fase (não pré-existente)
   `getServerSession`), o padrão é separar o resolvedor cru (sem guard) do
   wrapper exposto (com guard) — ver Protocolo item 8 e Lição 9 do
   `RETROSPECTIVE.md`
-- **REABERTO em 2026-07-19 (`BUG-103`).** A varredura por arquivo (177 server actions expostas,
-  57 sem guard) mostrou que o critério de fechamento foi aplicado **bug a bug**, mas a lista de
-  arquivos **dentro** do `BUG-020` também era checklist e não foi reconferida: `post-event.ts`
-  estava lá e nenhum dos 7 lotes o tocou (`BUG-102`). Confirmados à mão, além dele: escrita de
-  cota a partir de `uid` do cliente, leitura de PDI/survey/DISC de qualquer membro, e seeds de
-  produto/convite sem trava. **Os 12 bugs originais seguem corrigidos** — o que estava errado era
-  declarar o track fechado a partir deles. Plano: lotes por módulo (cotas -> PII -> pós-evento ->
-  seeds -> confirmação dos legítimos), com o double-check de chamadores já feito em `BUG-103`.
-  _(texto anterior mantido abaixo como histórico)_
+- **REABERTO em 2026-07-19 (`BUG-103`) e RE-FECHADO em 2026-07-20.** A varredura por arquivo (177
+  server actions expostas, 57 sem guard) mostrou que o critério de fechamento fora aplicado **bug a
+  bug**, mas a lista de arquivos **dentro** do `BUG-020` também era checklist e não fora reconferida
+  (`post-event.ts` escapara — `BUG-102`). A varredura correu em **5 lotes**, todos concluídos e com
+  deploy confirmado: **1** cotas (PR #122), **2a** PII (PR #123), **2b** identidade/anônimos +
+  `BUG-106` (Crítico)/`BUG-107` (PRs #124/#125/#126), **3** pós-evento/`BUG-102` (PR #127), **4**
+  seeds fora da rede (PR #128), **5** efeitos fora da rede + **superfície conferida por padrão**
+  (PR #129). O lote 5 institui a invariante executável `server-action-surface.test.ts` (toda action
+  exposta tem guard OU está declarada pública-por-design com motivo) e foi nele que apareceu o
+  **`BUG-108`** (Alto) — convite aceitando matrícula do cliente sem vínculo ao token — o **último
+  bloqueador**, corrigido no **PR #135** (identidade pela sessão verificada). **Track T-02 fechado de
+  novo, agora conferido por PADRÃO (não bug a bug):** os 12 originais + os itens da reabertura
+  (`BUG-102/103/106/107/108`) estão todos Corrigidos. _(texto anterior mantido abaixo como histórico)_
 - Execução: **Concluída — 12/12 (100%), Track FECHADO** (ver `DASHBOARD.md`). **BUG-020 Corrigido**
   (7 lotes, PRs #8–#14 — todos os módulos do Mapa 4b padronizados com o guard
   canônico). **BUG-021 Corrigido** (PR #13). **BUG-032 Corrigido** (PR #14, novo
@@ -1104,12 +1112,15 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-099 | **Alto** | **Corrigido (PR #121)** | F1-03/agenda — bloco "Seu Agendamento Confirmado" **sempre** vazio: `StepRenderer` e `UserBookings` casavam a mesma sessão com regras diferentes (8 de 8 pares reais falhando). Fonte única extraída. **Diagnóstico anterior corrigido**: não era a janela de 21 dias nem regressão do PR #112 |
 | BUG-100 | Médio | Corrigido (PR #134) | F1-03 — `StepRenderer` chamava todos os hooks depois do early return de `locked`; crash latente. Return movido p/ depois dos hooks + efeitos de leitura guardados por `status !== "locked"` (parada travada segue com 0 leitura) |
 | BUG-101 | Médio | Corrigido (PR #133) | F1-06/agenda — Ata some do agendamento se enviada depois de fechar o participante (1 de 7 afetado); `closeEventAction` espelha a Ata no `User_Bookings` + BP-005 reconciliado |
-| BUG-102 | **Alto** | Aberto | **T-02 (reaberto)** — `post-event.ts` sem guard; resíduo nominal do `BUG-020` |
-| BUG-103 | **Alto** | Aberto | **T-02 (reaberto)** — varredura de guards: 177 actions expostas, 57 sem guard; subconjunto sensível confirmado (cota, PII de survey/DISC, seeds) |
+| BUG-102 | **Alto** | Corrigido (PR #127) | **T-02** — `post-event.ts` guardado (pós-evento) + registro global fora da rede; lote 3 |
+| BUG-103 | **Alto** | Corrigido (PRs #122–#129) | **T-02** — varredura de guards em 5 lotes; superfície agora conferida por padrão (`server-action-surface.test.ts`) |
 | BUG-104 | Médio | Aberto | F2-04 — editar cota no painel soma em vez de definir; salvar 2× dobra o saldo (soma é intencional só para nova aquisição) |
 | BUG-105 | Baixo | Aberto | produto — Pré-Análise Comportamental é coletada (parada 5.1 do Posicionamento) e nunca entregue; falta a tela de devolutiva. Decisão da Gestora |
 | BUG-106 | **CRÍTICO** | **Corrigido (PR #124)** | T-02 lote 2b / identidade — sequestro de conta por e-mail digitado; 2 cópias do padrão (`survey-effects.ts`, `lib/user-matricula.ts`); mesmo padrão do `BUG-032` |
-| BUG-107 | Médio | Aberto | T-02 lote 2b — feedback de conteúdo de visitante não logado lança erro; 0 registros anônimos na base confirmam |
+| BUG-107 | Médio | Corrigido (PR #125) | T-02 lote 2b — feedback de conteúdo de visitante não logado lançava erro; corrigido junto da fonte única de identidade |
+| BUG-108 | **Alto** | **Corrigido (PR #135)** | **T-02 lote 5** / convite (F4-02) — `submitInvitationSurveyAction` aceitava matrícula do cliente sem vínculo ao token; agora deriva a identidade da **sessão verificada** (`getServerSession`) e exige `claimedBy === matrícula`; e-mail action fora da rede. **Último bloqueador do T-02** |
+| BUG-109 | Médio | Corrigido | efeito de feedback de conteúdo gravava `N/A` na planilha do Drive (desencontro de nome de campo); dado íntegro no Firestore |
+| BUG-110 | **Alto** | Aberto | Drive/backup — planilha de survey APAGA a avaliação anterior (snapshot) em vez de anexar; agravado pela pasta única de anônimos. Firestore preserva |
 
 ---
 

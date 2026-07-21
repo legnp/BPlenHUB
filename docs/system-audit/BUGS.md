@@ -2808,7 +2808,12 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   `journey.ts`, upload e `auth-permissions.ts`. O **T-02 foi declarado FECHADO 12/12** com um item
   da propria lista do bug sem cobertura. Licao a extrair: *criterio de fechamento de track conferido
   por bug nao prova cobertura por arquivo — a lista interna do bug tambem e checklist.*
-- Status: **Aberto** — e o **lote 3** do plano do `BUG-103` (o lote 1, cotas, saiu no PR #122).
+- Status: **Corrigido** — PR #127 (`b9f7209`, deploy `success`), o **lote 3** do plano do `BUG-103`.
+  `requireAdmin()` como 1a linha de `closeEventAction`/`closeAttendeeAction`; o registro global
+  (`updateGlobalProgramacaoRegistryAction`) saiu da rede (deixou de ser reexportado pelo dispatcher
+  `calendar.ts`, resolvedor cru so chamado internamente por sync/booking/post-evento). Teste
+  `__tests__/lib/post-event-guards.test.ts` trava o guard e a nao-reexportacao. *(Corrigido nesta
+  reconciliacao — o Status estava defasado em "Aberto".)*
 - Decisao de execucao: **Precisa plano+aprovacao** (seguranca + agenda/booking). Correcao esperada:
   `requireAdmin()` como 1a linha das tres (padrao canonico do T-02), sem alterar assinatura. Os
   callers sao 100% admin (`PostEventWizard`), entao nenhum fluxo legitimo e barrado.
@@ -2856,7 +2861,13 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   (100%)** e nao estava. O criterio de fechamento conferiu **bug a bug**, mas a lista de arquivos
   **dentro** do `BUG-020` tambem era um checklist, e ninguem a reconferiu por arquivo. **O T-02
   deve ser reaberto.**
-- Status: **Em Progresso** — **lotes 1, 2a, 2b.1, 2b.2-A e 2b.2-B CONCLUIDOS.** **Lote 2b.2-B (PR #126, `9cfdf27`, deploy `success`):** a superficie exposta de identidade deixou de aceitar uid do cliente — `resolveUserIdentity(surveyId, responses, uid)` e `getUserMetadata(uid)` sairam do `"use server"` para `src/lib/survey/identity.ts`, e no lugar entraram `resolveOwnIdentityAction(surveyId)` e `getOwnMetadataAction()`, **sem parametro de uid**. Fecha a cunhagem de matricula em serie pelo contador global e a leitura de apelido/metadata alheios. Junto: **pasta unica de anonimos** (`BP-ANON`, pedido da Gestora), com id de doc composto para o anonimo — sem isso, dois visitantes avaliando o mesmo artigo se sobrescreveriam. Verificado que os 2 leitores do admin agrupam pelo CAMPO `surveyId`, nao pelo id do doc. **Lote 2b.2-A (PR #125, `b92cdbb`, deploy `success`):** resolucao de identidade consolidada numa **fonte unica** (`src/lib/identity/find-matricula.ts`) — era a duplicacao que deixara o padrao do `BUG-032` sobreviver ate virar o `BUG-106`; e o `BUG-107` corrigido junto. **Restam:** o PR B do 2b.2 (assinatura do `resolveUserIdentity` + pasta unica de anonimos), o lote 3 (`BUG-102`), o 4 (seeds) e o 5 (confirmar os legitimos e fechar o track). **Lote 2a (PII, PR #123, `76254e1`, deploy `success`):** fechado o IDOR de leitura de DISC/Gestao de Tempo/Aprendizado/Reconhecimento/PDI/respostas de survey (dono-ou-admin); `resolveMatricula` movida para `src/lib/user-matricula.ts` (era endpoint que revelava a matricula de qualquer uid/e-mail, mas e primitivo de infra de 8 modulos que ja autenticaram); getter orfao `getPreAnaliseComportamentalResult` removido (o DADO segue gravado — ver `BUG-105`). `submitSurvey` ficou SEM guard de proposito: serve tambem o feedback publico (lote 2b). **Lote 1 (cotas) CONCLUIDO** (PR #122, `e03504b`, deploy `success`). Camada crua `src/lib/member-quotas.ts` criada sem guard e sem `"use server"`; `updateMemberQuotasAction` -> `requireAdmin`, `getMemberQuotasAction`/`consumeQuotaAction` -> `requireAuth` + dono-ou-admin; `lib/checkout.ts` passou a chamar a camada crua para o webhook do Mercado Pago seguir concedendo cota sem sessao. 8 testes de arquitetura + mutacao de cada metade (4 regressoes, todas pegas). Restam os lotes 2 (PII), 3 (pos-evento/`BUG-102`), 4 (seeds) e 5 (confirmar os legitimos).
+- Status: **Corrigido — TRACK T-02 FECHADO** (reconciliado 2026-07-20). **Os 5 lotes estao
+  concluidos:** 1 (cotas, PR #122), 2a (PII, PR #123), 2b (identidade/anonimos + `BUG-106`/`BUG-107`,
+  PRs #124/#125/#126), **3 (pos-evento/`BUG-102`, PR #127)**, **4 (seeds fora da rede, PR #128)** e
+  **5 (efeitos fora da rede + superficie conferida por padrao, PR #129 — foi nesse lote que apareceu
+  o `BUG-108`, agora fechado no PR #135)**. A invariante executavel `server-action-surface.test.ts`
+  garante que toda action exposta tem guard OU esta declarada publica-por-design com motivo. Historico
+  dos lotes abaixo. **lotes 1, 2a, 2b.1, 2b.2-A e 2b.2-B CONCLUIDOS.** **Lote 2b.2-B (PR #126, `9cfdf27`, deploy `success`):** a superficie exposta de identidade deixou de aceitar uid do cliente — `resolveUserIdentity(surveyId, responses, uid)` e `getUserMetadata(uid)` sairam do `"use server"` para `src/lib/survey/identity.ts`, e no lugar entraram `resolveOwnIdentityAction(surveyId)` e `getOwnMetadataAction()`, **sem parametro de uid**. Fecha a cunhagem de matricula em serie pelo contador global e a leitura de apelido/metadata alheios. Junto: **pasta unica de anonimos** (`BP-ANON`, pedido da Gestora), com id de doc composto para o anonimo — sem isso, dois visitantes avaliando o mesmo artigo se sobrescreveriam. Verificado que os 2 leitores do admin agrupam pelo CAMPO `surveyId`, nao pelo id do doc. **Lote 2b.2-A (PR #125, `b92cdbb`, deploy `success`):** resolucao de identidade consolidada numa **fonte unica** (`src/lib/identity/find-matricula.ts`) — era a duplicacao que deixara o padrao do `BUG-032` sobreviver ate virar o `BUG-106`; e o `BUG-107` corrigido junto. **Restam:** o PR B do 2b.2 (assinatura do `resolveUserIdentity` + pasta unica de anonimos), o lote 3 (`BUG-102`), o 4 (seeds) e o 5 (confirmar os legitimos e fechar o track). **Lote 2a (PII, PR #123, `76254e1`, deploy `success`):** fechado o IDOR de leitura de DISC/Gestao de Tempo/Aprendizado/Reconhecimento/PDI/respostas de survey (dono-ou-admin); `resolveMatricula` movida para `src/lib/user-matricula.ts` (era endpoint que revelava a matricula de qualquer uid/e-mail, mas e primitivo de infra de 8 modulos que ja autenticaram); getter orfao `getPreAnaliseComportamentalResult` removido (o DADO segue gravado — ver `BUG-105`). `submitSurvey` ficou SEM guard de proposito: serve tambem o feedback publico (lote 2b). **Lote 1 (cotas) CONCLUIDO** (PR #122, `e03504b`, deploy `success`). Camada crua `src/lib/member-quotas.ts` criada sem guard e sem `"use server"`; `updateMemberQuotasAction` -> `requireAdmin`, `getMemberQuotasAction`/`consumeQuotaAction` -> `requireAuth` + dono-ou-admin; `lib/checkout.ts` passou a chamar a camada crua para o webhook do Mercado Pago seguir concedendo cota sem sessao. 8 testes de arquitetura + mutacao de cada metade (4 regressoes, todas pegas). Restam os lotes 2 (PII), 3 (pos-evento/`BUG-102`), 4 (seeds) e 5 (confirmar os legitimos).
 - **DOUBLE-CHECK DE EFEITO COLATERAL (2026-07-19, pedido da Gestora) — a trava ingenua QUEBRARIA
   4 fluxos vivos.** Mapa de chamadores feito ANTES de codar (Licao 23). Achados:
   1. **RECEITA — `updateMemberQuotasAction`.** Cadeia confirmada:
@@ -3081,16 +3092,31 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - **Mesma familia do `BUG-106`/`BUG-032`:** identidade vinda do cliente aceita sem verificacao. E o
   terceiro lugar onde esse padrao aparece — reforca a tese do `BUG-103` de que o T-02 precisava ser
   conferido **por padrao**, nao por lista.
-- Status: **Aberto** — registrado, **nao corrigido de proposito**.
-- Decisao de execucao: **Precisa plano+aprovacao** (identidade + fluxo de convite = F4-02, dominio da
-  Gestora). A correcao exige uma **decisao de modelo** que nao cabe inventar: o vinculo
-  token -> matricula precisa existir e ser a fonte da identidade. Provavel saida: `claimInvitationTokenAction`
-  passa a gravar o dono do token, e `submitInvitationSurveyAction` deriva a matricula **do token**
-  (ou da sessao), deixando de aceita-la como parametro. `sendInvitationRsvpEmailsAction` deixa de ser
-  exportada (so o dispatcher interno a chama).
-- **Consequencia para o T-02:** o track **nao pode ser declarado fechado** enquanto este bug estiver
-  aberto. Fechar com ele em pe repetiria exatamente o erro que originou o `BUG-103`.
-- Commit/PR: —
+- Status: **Corrigido** — 2026-07-20, PR #135 (deploy de producao `success`, SHA `ee54530`).
+- Decisao de modelo (Gestora, **Opcao B**): a identidade vem da **sessao verificada**, nao do
+  parametro. O fluxo de convite ja autentica o convidado (login Google) e o `AuthProvider` cria o
+  cookie de sessao assinado — a identidade comprovada estava disponivel e nao era usada.
+  Implementado:
+  - `submitInvitationSurveyAction(token, eventSlug, answers, idToken?)` — a matricula vem de
+    `getServerSession(idToken)`; o token e a **autorizacao deste convite** (tem de existir, ser do
+    evento, estar `claimed` e ter `claimedBy === matricula` da sessao). Sem sessao valida -> recusa
+    ("faca login novamente"). A escrita vai para a matricula da sessao, nunca de um parametro.
+  - `sendInvitationRsvpEmailsAction` -> `sendInvitationRsvpEmails` (sem `export`): deixou de ser
+    endpoint de rede; so o proprio submit a chama. Fecha o vetor de e-mail em nome de terceiros.
+  - Cliente (`InvitationSurvey.tsx`): manda `user.getIdToken()` (prova fresca) no envio, nao a
+    matricula; guarda `if (!user)`. Estado `matricula` morto removido.
+  - **Fora de escopo (decisao existente):** `claimInvitationTokenAction` segue publica ("o token e a
+    credencial") — o fix do submit torna irrelevante como o claim correu, porque o submit exige a
+    sessao bater com o `claimedBy`.
+- **Teste:** `__tests__/actions/invitation-submit-identity.test.ts` (7 casos: grava na matricula da
+  sessao; recusa token de outra pessoa; recusa sem sessao; recusa `unused`; recusa `unused` com
+  `claimedBy` correto — isola a guarda de status; recusa token de outro evento; e-mail nao mais
+  exportado). Mutacao de cada metade (cross-check `claimedBy`, guarda `status`, guarda de sessao)
+  derruba o teste correspondente. `server-action-surface.test.ts` atualizado: o submit saiu das
+  "publicas por design" (tem guard) e a entrada morta do e-mail foi removida.
+- **Consequencia para o T-02:** era o **ultimo bloqueador**. Com ele fechado, o track **T-02 pode ser
+  declarado FECHADO** (ver reconciliacao no `00-PLAN.md`/`DASHBOARD.md`).
+- Commit/PR: **PR #135** (`ee54530`), deploy de producao `success` confirmado.
 
 
 ### BUG-109 Avaliacao de conteudo chega VAZIA ("N/A") na planilha do Drive

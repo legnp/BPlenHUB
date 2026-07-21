@@ -12,7 +12,20 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-20 (chat de execução — **BUG-100 corrigido (PR #134)**, deploy de
+> **Última atualização:** 2026-07-20 (chat de execução — **BUG-108 corrigido (PR #135) + T-02
+> RE-FECHADO**, deploy de produção `success`, SHA `ee54530`. O envio do survey de convite
+> (`submitInvitationSurveyAction`) aceitava a **matrícula do cliente** sem vínculo ao token e gravava
+> na subcoleção privada de qualquer membro + disparava e-mail em nome de terceiros (3º lugar com o
+> padrão do `BUG-032`/`BUG-106`). **Opção B (aprovada pela Gestora após ela questionar a segurança):**
+> a identidade vem da **sessão verificada** (`getServerSession(idToken)`), nunca de parâmetro; o token
+> é a autorização deste convite (`claimedBy === matrícula` da sessão); o disparo de e-mail saiu da
+> rede. O cliente manda uma prova de identidade fresca no envio. 7 testes + mutação de cada metade;
+> `server-action-surface` atualizado. **BUG-108 era o último bloqueador do T-02** — com ele fechado, e
+> após reconciliar `BUG-102` (PR #127)/`BUG-103` (5 lotes)/`BUG-107` (PR #125), o **track T-02 volta a
+> FECHADO**, agora conferido por PADRÃO (invariante executável), não bug a bug. Fila de triagem
+> **vazia**. Suíte 272/272. **Fila de pendências aprovada (BUG-101/100/108) concluída.**
+>
+> _(entrada anterior)_ 2026-07-20 (chat de execução — **BUG-100 corrigido (PR #134)**, deploy de
 > produção `success`, SHA `9d5148f`. O `StepRenderer` chamava todos os hooks (useState/useCallback/
 > useEffect) **depois** do early return de `status === "locked"`: quando uma parada passava de
 > travada para disponível sem desmontar, a contagem de hooks mudava e a tela da jornada quebrava

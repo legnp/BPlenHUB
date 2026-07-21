@@ -24,6 +24,49 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-20] Chat de execução — BUG-108: identidade do convite pela sessão + T-02 re-fechado (PR #135)
+
+- Chat/sessão: chat de execução (Opus 4.8). Escopo: o 3º item da fila aprovada — `BUG-108` (Alto),
+  o convite aceitando matrícula do cliente sem vínculo ao token. **Era o último bloqueador do T-02.**
+- **Decisão de modelo levada à Gestora (explicada em linguagem leiga).** A pergunta dela — "como uma
+  sessão não autenticada garante que o ingresso é de quem diz?" — expôs que a Opção A (derivar do
+  `claimedBy`) **não prova identidade**, só exige posse do token. Ao verificar o código, corrigi uma
+  imprecisão minha: o fluxo de convite **já autentica** (login Google) e o `AuthProvider` cria o
+  cookie de sessão assinado — a identidade comprovada estava disponível. Com isso a **Opção B**
+  (sessão verificada) ficou barata. A Gestora escolheu a B.
+- **Correção (PR #135, `ee54530`, deploy de produção `success` confirmado — L31):**
+  - `submitInvitationSurveyAction(token, eventSlug, answers, idToken?)` — a matrícula vem de
+    `getServerSession(idToken)` (sessão verificada), nunca de parâmetro. O token é a autorização
+    deste convite: tem de existir, ser do evento, estar `claimed` e ter `claimedBy === matrícula` da
+    sessão. Sem sessão → recusa ("faça login novamente").
+  - `sendInvitationRsvpEmailsAction` → `sendInvitationRsvpEmails` (sem `export`): fora da rede; fecha
+    o vetor de e-mail em nome de terceiros.
+  - Cliente manda `user.getIdToken()` (prova fresca no instante do envio — robusto contra timing do
+    cookie), não a matrícula; estado `matricula` morto removido.
+- **Robustez do happy-path (pergunta da Gestora):** a prova é buscada no envio da sessão já ativa;
+  se cair, o convidado só refaz o login (mensagem clara). Não há dependência frágil de cookie.
+- Validado: `invitation-submit-identity.test.ts` novo (7 casos); **mutação de cada metade** (Lição
+  36): cross-check `claimedBy`, guarda `status` (isolada por um teste dedicado — a 1ª rodada passou
+  a mutação porque o teste de `unused` usava `claimedBy:null`, já pego pelo cross-check) e guarda de
+  sessão — cada uma derruba o teste certo. `server-action-surface.test.ts` (invariante do PR #129)
+  **pegou** que o submit saiu das públicas (tem guard) e a entrada do e-mail ficou morta — atualizado.
+  eslint dos arquivos tocados 0 erros; test **272/272**; type-check exit 0; build exit 0 (2 OOMs na
+  fase TS — artefato de builds consecutivos; provado com `--max-old-space-size=3072`: compila, TS
+  finished, 38/38 páginas, exit 0).
+- **RECONCILIAÇÃO — T-02 (Segurança sistemática) RE-FECHADO.** Ao registrar o BUG-108 percebi que os
+  docs estavam defasados: `BUG-102` constava "Aberto" (corrigido no PR #127), `BUG-103` "Em Progresso"
+  e `BUG-107` "Aberto" (PR #125). Reconciliado pelo git: os **5 lotes** da varredura (`BUG-103`) estão
+  concluídos (PRs #122/#123/#124/#125/#126/#127/#128/#129) e o `BUG-108`, achado no lote 5, era o
+  último bloqueador. Agora a superfície é conferida **por padrão** (`server-action-surface.test.ts`),
+  não bug a bug — a falha de método que originou a reabertura. Fila de triagem por severidade
+  **vazia**.
+- Itens atualizados: `BUGS.md` (BUG-108/102/103 → Corrigido), `00-PLAN.md` (Triagem esvaziada, track
+  T-02 re-fechado, índice — 102/103/107/108/109/110), `VALIDACAO-T02.md`, `DASHBOARD.md`, este LOG.
+- Conferência visual em **produção** pela Gestora (BUG-030): responder um convite de ponta a ponta
+  (token → login → survey → envio) e confirmar que grava e o e-mail chega. Fila de pendências
+  aprovada **concluída** (BUG-101/100/108).
+
+
 ## [2026-07-20] Chat de execução — BUG-100: hooks depois do early return no StepRenderer (PR #134)
 
 - Chat/sessão: chat de execução (Opus 4.8). Escopo: o 2º item da fila aprovada — `BUG-100` (Médio),

@@ -171,15 +171,17 @@ Nenhuma destas quebra nada hoje; são decisões que eu não podia tomar.
 
 | Bug | O que é | O que preciso de você |
 |---|---|---|
-| **`BUG-108`** (Alto) | Convite aceita `matricula` do cliente sem vincular ao token — escrita em subcoleção de qualquer membro + vetor de e-mail | Decisão de modelo: o token deve determinar a matrícula? É F4-02 |
+| ~~**`BUG-108`** (Alto)~~ **CORRIGIDO (PR #135)** | Convite aceita `matricula` do cliente sem vincular ao token — escrita em subcoleção de qualquer membro + vetor de e-mail | **Decidido (Opção B) e implementado:** identidade pela sessão verificada + token exige `claimedBy` da sessão. **Validação visual:** responder um convite de ponta a ponta (token → login → survey → envio) e confirmar que grava e o e-mail chega |
 | ~~**`BUG-101`** (Médio)~~ **CORRIGIDO (PR #133)** | Ata some do agendamento se enviada **depois** de fechar o participante. 1 de 7 afetado (BP-005) | **Validação visual:** abrir a Gestão de Agenda do BP-005 e confirmar que a Devolutiva de 16/06 agora mostra o botão **ATA** (o doc foi reconciliado). Fechamentos futuros ficam independentes de ordem |
 | **`BUG-104`** (Médio) | Editar cota no painel **soma** em vez de definir — salvar 2× dobra | Confirmado por você que é parcialmente intencional; falta implementar |
 | **`BUG-105`** (Baixo) | Pré-Análise Comportamental é coletada e **nunca exibida** | Construir a devolutiva ou aposentar o instrumento |
 | ~~**`BUG-100`** (Médio)~~ **CORRIGIDO (PR #134)** | `StepRenderer` chama hooks depois de early return — crash latente | **Validação visual:** navegar entre paradas travadas e disponíveis de uma jornada sem a tela quebrar. Parada travada segue com 0 leitura de agenda (custo de cota inalterado) |
 | Tokens de teste | 10 `BPL-INV-TEST*` com convidados fictícios em produção | Sair ou ficar? É F4-02 |
 
-**Importante:** o **T-02 não pode ser declarado fechado** enquanto o `BUG-108` estiver
-aberto. Fechar com ele em pé repetiria exatamente o erro que originou toda esta reabertura.
+**Atualização (2026-07-20):** o `BUG-108` foi corrigido (PR #135, deploy `success`) — era o **último
+bloqueador**. Com ele fechado e após reconciliar `BUG-102`/`BUG-103`/`BUG-107` (docs estavam
+defasados), o **T-02 volta a FECHADO**, agora conferido por PADRÃO via a invariante executável
+`server-action-surface.test.ts` — não mais bug a bug (a falha de método que originou a reabertura).
 
 ---
 
