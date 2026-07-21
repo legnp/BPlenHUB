@@ -700,8 +700,13 @@ sem copy hardcoded fora do que o guia permitir).
     cartões `text-4xl` locais → `StatTile`); passada de copy/tom (acentos no `marketing`, "MEDIA E
     EDITORIAL"→"Mídia e Editorial", "MÁQUINA DE QR CODES"→"QR Codes", "Google Drive corporativo"
     removido). Imports mortos removidos (17→4 problemas de eslint nos 3 arquivos). Sem bugs novos.
-    **Próximo: R3** (Jornada e Agenda: `agenda`, `gestao-agenda`). Validação visual em produção pela
-    Gestora (BUG-030).
+    **R2 validado pela Gestora.**
+  - **[2026-07-21] R3 concluído (PR #141, deploy de produção confirmado):** camadas 2+3 em Jornada e
+    Agenda (`agenda`, `gestao-agenda`). `FunctionalPageHeader` + `StatTile` (agenda: botões e Top-5
+    preservados; gestao-agenda: abas no slot action); copy/tom ("PROGRAMAÇÃO Hub"→"Programação da
+    Jornada", "Dashboard"→"Painel", acentos). Não tocou a lógica de sync. Sem `--no-verify` (eslint
+    sem erro). Sem bugs novos. **Próximo: R4** (Pessoas + Instrumentos: `users`, `fs` + sub-rotas).
+    Validação visual em produção pela Gestora (BUG-030).
   Nota: os 4 bugs de segurança vinculados abaixo já
   foram corrigidos (via T-02), mas a validação de UI/responsivo/copy das
   páginas em si ainda não começou; não confundir uma coisa com a outra.

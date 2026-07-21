@@ -24,6 +24,36 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-21] Chat de execução — REDESIGN DO ADMIN R3: Jornada e Agenda (PR #141)
+
+- Chat/sessão: mesmo chat de execução, após o **R2 ser validado pela Gestora** ("segue r3"). Lote
+  **R3** = camadas 2+3 nas 2 telas de **Jornada e Agenda** (`ADMIN-REDESIGN-DESIGN.md`).
+- **Entrega: PR #141 mergeado (`4c27496`, squash), deploy de produção CONFIRMADO** (Vercel success no
+  status do commit). 2 arquivos, +89/-109.
+  - **Camada 2:** `FunctionalPageHeader` + `StatTile` nas 2 telas. No `agenda` (Sincronizar Agenda),
+    os 2 botões (Configurar/Sincronizar) foram para o slot `action` e os 2 stat cards simples viraram
+    `StatTile` — o card "Top 5 tipos" **ficou como widget próprio** (é lista de chips, não tile de
+    métrica). No `gestao-agenda`, a nav de abas foi para o slot `action` e o `<hr>` redundante saiu
+    (o header já tem borda inferior).
+  - **Camada 3 — copy/tom (F0-06):** `agenda` — título/descrição pelo header ("Google" removido da
+    descrição), "Dashboard Atualizado"→"Painel atualizado", "90 Dias Audit"→"auditoria de 90 dias",
+    acentos no modal de tipos de evento (padrão, serviços, Razões, configuração); `gestao-agenda` —
+    "PROGRAMAÇÃO Hub"→"Programação da Jornada" pelo header.
+  - **Higiene:** imports mortos removidos (agenda: Plus/X; gestao-agenda: Info/LayoutGrid/
+    CheckCircle2/Clock/date-fns/PostEventWizard).
+- **Não tocados:** paleta / variáveis de tema, o seletor de tema do `HubHeader`, e **a lógica de
+  sincronização** (`AGENDA-SYNC-DESIGN.md`) — redesign é só de superfície.
+- Validado (Lição 14): eslint dos arquivos tocados **0 erros** (2 warnings baseline: `setLastSyncResult`
+  unused em agenda; nada novo). `type-check` limpo; `test` **280/280**; `build` exit 0. **Pre-commit
+  passou limpo — sem `--no-verify`** (diferente de R1/R2, onde havia erro de baseline no arquivo).
+- Sem bugs novos. Itens atualizados: `00-PLAN.md` (F1-06), `ADMIN-REDESIGN-DESIGN.md` (R3 concluído),
+  `DASHBOARD.md`, este LOG.
+- **Próximo: R4** — Pessoas + Instrumentos (`users`, `fs` + `devolutiva`/`forms`/`surveys`/previews),
+  camadas 2+3, reusando o `StatTile`. É o lote com os tiles "SURVEY_REGISTRY/FORMS_REGISTRY"→rótulo
+  humano e "Welcome Survey"→"Onboarding".
+
+---
+
 ## [2026-07-21] Chat de execução — REDESIGN DO ADMIN R2: Marketing (header + StatTile + copy) (PR #140)
 
 - Chat/sessão: mesmo chat de execução, após o **R1 ser validado pela Gestora** ("pode seguir"). Lote

@@ -187,7 +187,8 @@ O `StatTile` compartilhado (camada 2) deve nascer no R0 ou R1 e ser reusado nos 
 | Execução — **R0** (camada 1: nav + rótulos) | **Concluído — PR #138, deploy de produção confirmado (2026-07-21)** |
 | Execução — **R1** (Visão Geral + Comercial, cam. 2+3) | **Concluído — PR #139, deploy de produção confirmado (2026-07-21)** |
 | Execução — **R2** (Marketing, cam. 2+3) | **Concluído — PR #140, deploy de produção confirmado (2026-07-21)** |
-| Execução — R3..R5 (camadas 2+3) | **Não iniciada** — próximos lotes |
+| Execução — **R3** (Jornada e Agenda, cam. 2+3) | **Concluído — PR #141, deploy de produção confirmado (2026-07-21)** |
+| Execução — R4..R5 (camadas 2+3) | **Não iniciada** — próximos lotes |
 
 **R0 entregue (PR #138):** sidebar reorganizada de 3 grupos para os 7 escopos; renomeações
 aplicadas (DASHBOARD→PAINEL, PROGRAMAÇÃO HUB→PROGRAMAÇÃO DA JORNADA, MEDIA→MÍDIA E EDITORIAL com
@@ -211,3 +212,11 @@ locais viraram `StatTile`. Copy/tom: acentos restaurados no `marketing` (~15 str
 EDITORIAL"→"Mídia e Editorial" e "MÁQUINA DE QR CODES"→"QR Codes" pelos headers; "Google Drive
 corporativo" removido da descrição do qrcodes. Higiene: imports mortos removidos (os 3 arquivos de
 17→4 problemas de eslint). Sem bugs novos.
+
+**R3 entregue (PR #141):** camadas 2+3 em Jornada e Agenda (`agenda`, `gestao-agenda`).
+`FunctionalPageHeader` + `StatTile` nas 2 telas — no `agenda` os botões vão no slot `action` e os 2
+stat cards simples viraram `StatTile` (o card "Top 5 tipos" segue como widget próprio); no
+`gestao-agenda` a nav de abas vai no slot `action`. Copy/tom: "PROGRAMAÇÃO Hub"→"Programação da
+Jornada", "SINCRONIZAR AGENDA" pelo header, "Google" removido da descrição, "Dashboard"→"Painel",
+acentos no modal de tipos de evento. Não tocou a lógica de sync (AGENDA-SYNC-DESIGN). **Sem
+`--no-verify`** (eslint dos tocados sem erro). Sem bugs novos.

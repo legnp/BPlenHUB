@@ -12,7 +12,17 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-21 (chat de execução — **REDESIGN DO ADMIN R2 (PR #140)**, deploy
+> **Última atualização:** 2026-07-21 (chat de execução — **REDESIGN DO ADMIN R3 (PR #141)**, deploy
+> de produção `success`, SHA `4c27496`. Camadas 2+3 em Jornada e Agenda (`agenda`, `gestao-agenda`):
+> `FunctionalPageHeader` + `StatTile` nas 2 telas (agenda: botões e card "Top 5" preservados;
+> gestao-agenda: abas no slot action, `<hr>` redundante removido); copy/tom ("PROGRAMAÇÃO Hub"→
+> "Programação da Jornada", "SINCRONIZAR AGENDA" pelo header, "Dashboard"→"Painel", "Google" removido,
+> acentos no modal). Não tocou a lógica de sync (AGENDA-SYNC-DESIGN). Imports mortos removidos. eslint
+> 0 erros — **sem `--no-verify`**; type-check limpo, suíte **280/280**, build exit 0. Sem bugs novos.
+> **Não tocou paleta/tema.** **Próximo: R4** (Pessoas + Instrumentos). Validação visual em produção
+> pela Gestora.
+>
+> _(entrada anterior)_ 2026-07-21 (chat de execução — **REDESIGN DO ADMIN R2 (PR #140)**, deploy
 > de produção `success`, SHA `881ab8d`. Camadas 2+3 em Marketing (`marketing`, `social`, `qrcodes`):
 > `FunctionalPageHeader` + `StatTile` (o mesmo do R1) nas 3 telas — MetricCard/cartões `text-4xl`
 > locais → `StatTile`; copy/tom (acentos no marketing, "MEDIA E EDITORIAL"→"Mídia e Editorial",
