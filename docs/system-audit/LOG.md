@@ -24,6 +24,24 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-21] Validação da Gestora — BUG-108 (convite) end-to-end em produção
+
+- Chat/sessão: mesma sessão. **Sem código** — validação + conferência read-only.
+- A Gestora percorreu o fluxo do convite completo em produção
+  (`bplen.com/convites/pre_inauguracao?token=BPL-INV-TEST07` → login Google → survey → envio) e
+  **recebeu o e-mail**. Falso alarme inicial ("Token inválido") foi digitar o token **sem o prefixo**
+  (`TEST07` em vez de `BPL-INV-TEST07`) — comportamento correto do sistema, não bug.
+- **Conferência read-only** (`scratch/verify-bug108-submit.js`): `BPL-INV-TEST07` →
+  `claimedBy: BP-002-PF-260331`; survey em `User/BP-002-PF-260331/Surveys/invitation_pre_inauguracao`
+  com `token` vinculado, `matricula` batendo com o caminho e o `claimedBy`, `status: completed`,
+  `rsvp: "talvez"`. **Prova a identidade-pela-sessão + `claimedBy === matricula`** — a brecha do
+  BUG-108 está fechada e o caminho feliz funciona. **F4-02: 1ª validação real ponta a ponta.**
+- Investigação do falso alarme confirmou de passagem que `.env.local` = **produção** (projeto
+  `bplenhub`, authDomain `bplen.com`; tokens TEST01-06 já `claimed by BP-002`, conta real).
+- Tokens de teste restantes livres: **TEST08/09/10**.
+- Itens atualizados: `BUGS.md` (BUG-108 validado), `VALIDACAO-T02.md`, este LOG.
+
+
 ## [2026-07-21] Chat de execução — Melhorias BUG-111 e BUG-112 escopo A (PRs #137 e #136)
 
 - Chat/sessão: mesma sessão. Escopo: implementar as 2 melhorias com a decisão de escopo da Gestora,

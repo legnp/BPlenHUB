@@ -171,7 +171,7 @@ Nenhuma destas quebra nada hoje; são decisões que eu não podia tomar.
 
 | Bug | O que é | O que preciso de você |
 |---|---|---|
-| ~~**`BUG-108`** (Alto)~~ **CORRIGIDO (PR #135)** | Convite aceita `matricula` do cliente sem vincular ao token — escrita em subcoleção de qualquer membro + vetor de e-mail | **Decidido (Opção B) e implementado:** identidade pela sessão verificada + token exige `claimedBy` da sessão. **Validação visual:** responder um convite de ponta a ponta (token → login → survey → envio) e confirmar que grava e o e-mail chega |
+| ~~**`BUG-108`** (Alto)~~ **CORRIGIDO + VALIDADO (PR #135)** | Convite aceita `matricula` do cliente sem vincular ao token — escrita em subcoleção de qualquer membro + vetor de e-mail | **Implementado (Opção B)** e **validado end-to-end em produção (2026-07-21):** fluxo completo do convite + e-mail recebido; back-end confere a survey em `User/BP-002/Surveys` com token vinculado e matrícula da sessão. **Nada pendente.** |
 | ~~**`BUG-101`** (Médio)~~ **CORRIGIDO (PR #133)** | Ata some do agendamento se enviada **depois** de fechar o participante. 1 de 7 afetado (BP-005) | **Validação visual:** abrir a Gestão de Agenda do BP-005 e confirmar que a Devolutiva de 16/06 agora mostra o botão **ATA** (o doc foi reconciliado). Fechamentos futuros ficam independentes de ordem |
 | **`BUG-104`** (Médio) | Editar cota no painel **soma** em vez de definir — salvar 2× dobra | Confirmado por você que é parcialmente intencional; falta implementar |
 | **`BUG-105`** (Baixo) | Pré-Análise Comportamental é coletada e **nunca exibida** | Construir a devolutiva ou aposentar o instrumento |

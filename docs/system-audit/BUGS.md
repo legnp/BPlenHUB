@@ -3116,7 +3116,16 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   "publicas por design" (tem guard) e a entrada morta do e-mail foi removida.
 - **Consequencia para o T-02:** era o **ultimo bloqueador**. Com ele fechado, o track **T-02 pode ser
   declarado FECHADO** (ver reconciliacao no `00-PLAN.md`/`DASHBOARD.md`).
-- Commit/PR: **PR #135** (`ee54530`), deploy de producao `success` confirmado.
+- **VALIDADO END-TO-END EM PRODUCAO (2026-07-21, Gestora):** fluxo completo do convite
+  (`bplen.com/convites/pre_inauguracao?token=...` -> login Google -> survey -> envio), e-mail
+  recebido. Conferencia read-only no back-end (`scratch/verify-bug108-submit.js`): token
+  `BPL-INV-TEST07` -> `claimedBy: BP-002-PF-260331`; a resposta caiu em
+  `User/BP-002-PF-260331/Surveys/invitation_pre_inauguracao` com `token` vinculado, `matricula`
+  batendo com o caminho e o `claimedBy`, `status: completed`. Prova a identidade-pela-sessao +
+  `claimedBy === matricula`. *(Nota de teste: "Token invalido" so aparecia porque o token estava
+  sendo digitado sem o prefixo — `TEST07` em vez de `BPL-INV-TEST07`; comportamento correto. Restam
+  livres TEST08/09/10.)*
+- Commit/PR: **PR #135** (`ee54530`), deploy de producao `success` confirmado; validado em producao.
 
 
 ### BUG-109 Avaliacao de conteudo chega VAZIA ("N/A") na planilha do Drive
