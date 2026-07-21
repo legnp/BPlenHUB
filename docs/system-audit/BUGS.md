@@ -2743,14 +2743,23 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   documentos do participante** (`participantDocs`: o relatorio da Analise Comportamental e o DISC)
   **estao** no agendamento e aparecem no **modal de detalhe** (botao do olho), nao na linha da
   tabela — a linha so tem a coluna ATA.
-- Status: **Aberto** — diagnosticado, aguardando decisao da Gestora sobre corrigir antes ou depois
-  da Fase 3.2.
-- Decisao de execucao: **Precisa plano+aprovacao** (agenda/booking). Correcao proposta: a
-  `closeEventAction` passa a espelhar a Ata para os `User_Bookings` dos participantes ja fechados
-  (mesmo laco que ja percorre os `attendees` para gravar em `Atas`), tornando as duas partes
-  **independentes de ordem**. Precisa de um passo de reconciliacao para o caso ja gravado do
-  `BP-005` (1 doc). Fonte da verdade continua sendo o doc do evento.
-- Commit/PR: —
+- Status: **Corrigido** — 2026-07-20, PR #133 (deploy de producao `success`, SHA `7053ea8`).
+- Decisao de execucao: **Precisa plano+aprovacao** (agenda/booking) — plano aprovado pela Gestora
+  (fila de pendencias). Correcao implementada: a `closeEventAction` passa a espelhar a Ata para os
+  `User_Bookings` dos participantes ja fechados (mesmo laco que ja percorre os `attendees` para
+  gravar em `Atas`), tornando as duas partes **independentes de ordem**. `forEach` -> `for...of`
+  porque a consulta ao agendamento e assincrona. Fonte da verdade continua sendo o doc do evento.
+- **Reconciliacao do caso ja gravado (BP-005):** feita a mao contra a producao com
+  `scratch/reconcile-bug101-bp005.js` (alvo unico, sem full scan — so os 4 `User_Bookings` do
+  membro). 1 doc afetado (`st1upq196qb6gm570021bg5klt_20260616T182500Z`, Devolutiva Analise
+  Comportamental) recebeu o `meetingMinutesFile` que ja existia no doc do evento. Verificado
+  read-only apos: **0 afetados restantes**. Os outros 3 agendamentos do membro ja estavam corretos.
+- **Teste:** `__tests__/actions/close-event-ata-mirror.test.ts` (5 casos: Ata pos-fechamento chega
+  ao `User_Bookings`; a replica de `Atas` pre-existente continua; participante sem agendamento nao
+  quebra; `PENDING` e pulado; fechamento sem Ata nao espelha). Mutacao de cada metade do fix
+  (Licao 36) derruba o teste correspondente — remover o espelhamento: 2 quebras; remover o pulo do
+  `PENDING`: 1 quebra.
+- Commit/PR: **PR #133** (`7053ea8`), deploy de producao `success` confirmado.
 
 
 ### BUG-102 `closeEventAction`/`closeAttendeeAction`/`updateGlobalProgramacaoRegistryAction` sem guard — residuo do BUG-020 num track declarado FECHADO

@@ -1103,7 +1103,7 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-098 | Baixo | Aberto | agenda/Etapa 3 — campo `mentor` com nomenclatura antiga (rótulo já é "Consultor") |
 | BUG-099 | **Alto** | **Corrigido (PR #121)** | F1-03/agenda — bloco "Seu Agendamento Confirmado" **sempre** vazio: `StepRenderer` e `UserBookings` casavam a mesma sessão com regras diferentes (8 de 8 pares reais falhando). Fonte única extraída. **Diagnóstico anterior corrigido**: não era a janela de 21 dias nem regressão do PR #112 |
 | BUG-100 | Médio | Aberto | F1-03 — `StepRenderer` chama todos os hooks depois do early return de `locked`; crash latente. Achado no PR #121 |
-| BUG-101 | Médio | Aberto | F1-06/agenda — Ata some do agendamento se enviada depois de fechar o participante (1 de 7 afetado) |
+| BUG-101 | Médio | Corrigido (PR #133) | F1-06/agenda — Ata some do agendamento se enviada depois de fechar o participante (1 de 7 afetado); `closeEventAction` espelha a Ata no `User_Bookings` + BP-005 reconciliado |
 | BUG-102 | **Alto** | Aberto | **T-02 (reaberto)** — `post-event.ts` sem guard; resíduo nominal do `BUG-020` |
 | BUG-103 | **Alto** | Aberto | **T-02 (reaberto)** — varredura de guards: 177 actions expostas, 57 sem guard; subconjunto sensível confirmado (cota, PII de survey/DISC, seeds) |
 | BUG-104 | Médio | Aberto | F2-04 — editar cota no painel soma em vez de definir; salvar 2× dobra o saldo (soma é intencional só para nova aquisição) |

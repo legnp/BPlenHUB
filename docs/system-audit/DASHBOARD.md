@@ -12,7 +12,17 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-20 (chat de execução — **T-02 lote 2b.2 completo (PRs #125 e
+> **Última atualização:** 2026-07-20 (chat de execução — **BUG-101 corrigido (PR #133)**, deploy de
+> produção `success`, SHA `7053ea8`. A Ata sumia do agendamento do membro quando enviada **depois**
+> de fechar o participante: o `User_Bookings` só recebia o `meetingMinutesFile` no instante do
+> fechamento (`closeAttendeeAction`), então Ata posterior ficava só no doc do evento e no histórico
+> de `Atas`. `closeEventAction` passa a espelhar a Ata no `User_Bookings` no **mesmo laço** que grava
+> em `Atas`, tornando as duas partes **independentes de ordem**. Caso já gravado do **BP-005
+> reconciliado** à mão (1 doc afetado, alvo único sem full scan; releitura confirma 0 restantes).
+> Teste novo (5 casos) + **mutação de cada metade do fix** (espelhamento: 2 quebras; pulo do
+> `PENDING`: 1). Suíte **262/262**, type-check e build exit 0. Fila aprovada: próximo é o `BUG-100`.
+>
+> _(entrada anterior)_ 2026-07-20 (chat de execução — **T-02 lote 2b.2 completo (PRs #125 e
 > #126)**, ambos com deploy confirmado. **#125:** resolução de identidade consolidada numa **fonte
 > única** — era a duplicação que deixara o padrão do `BUG-032` sobreviver até virar o `BUG-106` — e
 > o **`BUG-107`** corrigido: o feedback de visitante não logado **nunca funcionou** (0 `BP-ANON` e 0

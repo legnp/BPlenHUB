@@ -24,6 +24,39 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-20] Chat de execução — BUG-101: Ata espelhada no agendamento (PR #133)
+
+- Chat/sessão: chat de execução (Opus 4.8). Escopo: o 1º item da fila aprovada — `BUG-101` (Médio),
+  a Ata que sumia do agendamento do membro quando enviada **depois** de fechar o participante.
+- **Causa (já diagnosticada, reconfirmada por leitura antes de codar):** o `meetingMinutesFile` do
+  `User_Bookings` era escrito **somente** pela `closeAttendeeAction`, que copia
+  `eventData.meetingMinutesFile` no instante do fechamento do participante. A `closeEventAction`
+  (quem recebe a Ata) gravava no doc do evento e em `Atas`, mas nunca voltava ao agendamento já
+  fechado. A ordem das duas partes decidia se o membro via a Ata.
+- **Correção (PR #133, `7053ea8`, deploy de produção `success` confirmado — L31):** `closeEventAction`
+  passa a espelhar a Ata para o `User_Bookings` de cada participante no **mesmo laço** que replica
+  para `Atas`, tornando as duas partes **independentes de ordem**. `forEach` → `for...of` porque a
+  consulta ao agendamento é assíncrona. Fonte da verdade segue sendo o doc do evento.
+- **Reconciliação do caso já gravado (BP-005):** `scratch/reconcile-bug101-bp005.js`, alvo único, sem
+  full scan (só os 4 `User_Bookings` do membro + os eventos por id). DRY-RUN confirmou 1 afetado
+  (`st1upq196qb6gm570021bg5klt_20260616T182500Z`, Devolutiva Análise Comportamental — evento com Ata,
+  booking `null`); `--apply` copiou o `meetingMinutesFile` do evento; releitura read-only: **0
+  afetados**. Os outros 3 agendamentos do BP-005 já estavam corretos.
+- **Achado que NÃO era código (BUG-102 já registrado):** ao reler o arquivo inteiro, os guards de
+  `closeEventAction`/`closeAttendeeAction` já estavam presentes (lote 3 do `BUG-103`, PR anterior) —
+  nada novo a corrigir aqui.
+- Validado: `close-event-ata-mirror.test.ts` novo (5 casos); **mutação de cada metade do fix**
+  (Lição 36) derruba o teste correspondente (espelhamento: 2 quebras; pulo do `PENDING`: 1 quebra);
+  eslint dos arquivos tocados **0 problemas**; test **262/262**; type-check exit 0; build exit 0
+  (`.next` limpo antes; 1º build deu OOM na fase TS pós-compilação — artefato de builds consecutivos,
+  o `type-check` isolado já passava; **retry limpo passou** TS em 5.2min + page data).
+- Itens atualizados: `BUGS.md` (BUG-101 → Corrigido), `00-PLAN.md` (índice bug→track),
+  `DASHBOARD.md`, este LOG.
+- Conferência visual em **produção** pela Gestora (BUG-030): abrir a Gestão de Agenda do BP-005 e
+  confirmar que a linha da Devolutiva de 16/06 agora mostra o botão **ATA**. Próximo da fila:
+  `BUG-100` (early return dos hooks do `StepRenderer`, PR próprio com medição de leitura).
+
+
 ## [2026-07-19] Chat de execução — BUG-099: o bloco do agendamento confirmado (PR #121)
 
 - Chat/sessão: chat de execução (Opus 4.8). Escopo: o único item da fila de triagem — `BUG-099`.
