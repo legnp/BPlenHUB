@@ -8,6 +8,7 @@ import { getMemberActivityArtifactsAction } from "@/actions/activity-artifacts";
 import { getUserBookingsAction } from "@/actions/calendar";
 import { UserBooking } from "@/types/calendar";
 import { CareerFeedback, CareerAta, CareerSharedDocument } from "@/types/career";
+import { forecastActivityDates } from "@/lib/journey/activity-forecast";
 import Link from "next/link";
 import { 
   CheckCircle2, 
@@ -59,6 +60,12 @@ interface VisaoGeralActivity {
   isSequenceLocked: boolean;
   isSubstepLocked: boolean;
   bookingStatus: "not_booked" | "booked_future" | "booked_past";
+  // BUG-111: sequencia da jornada + data prevista (real onde existe, estimada pelo ritmo do membro)
+  order: number;
+  realDate?: string;
+  realKind?: "agendado" | "meta";
+  plannedDate?: string;
+  plannedKind?: "estimate" | "agendado" | "meta";
 }
 
 function normalizeStr(s: string) {
@@ -105,8 +112,8 @@ export default function VisaoGeralPage() {
 
   // Filtros e ordenacao
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortPendentes, setSortPendentes] = useState<"service" | "title-asc" | "title-desc">("service");
-  const [sortEmAndamento, setSortEmAndamento] = useState<"service" | "title-asc" | "title-desc">("service");
+  const [sortPendentes, setSortPendentes] = useState<"service" | "title-asc" | "title-desc" | "date-asc" | "date-desc">("service");
+  const [sortEmAndamento, setSortEmAndamento] = useState<"service" | "title-asc" | "title-desc" | "date-asc" | "date-desc">("service");
   const [sortConcluidas, setSortConcluidas] = useState<"service" | "title-asc" | "title-desc" | "date-desc" | "date-asc">("service");
 
   // Handle secure Google Drive document downloading/viewing via proxy
@@ -277,6 +284,8 @@ export default function VisaoGeralPage() {
 
         // Determinar status de agendamento (bookings)
         let bookingStatus: "not_booked" | "booked_future" | "booked_past" = "not_booked";
+        let realDate: string | undefined;
+        let realKind: "agendado" | "meta" | undefined;
         if (sub.type === "meeting" && userBookings.length > 0) {
           const matchedBooking = userBookings.find(b =>
             isAtaOrFeedbackMatch(friendlyTitle, sub.referenceId, b.eventDetail?.theme || b.eventDetail?.summary || "")
@@ -285,6 +294,11 @@ export default function VisaoGeralPage() {
             const now = new Date();
             const eventDate = new Date(matchedBooking.eventDetail.start);
             bookingStatus = eventDate > now ? "booked_future" : "booked_past";
+            // BUG-111: reuniao ja agendada no futuro tem data REAL — nunca estimada.
+            if (bookingStatus === "booked_future") {
+              realDate = matchedBooking.eventDetail.start;
+              realKind = "agendado";
+            }
           }
         }
 
@@ -292,6 +306,9 @@ export default function VisaoGeralPage() {
         const isSubstepLocked = !isCompleted && firstIncompleteIdx !== undefined && idx > firstIncompleteIdx;
 
         list.push({
+          order: list.length,
+          realDate,
+          realKind,
           id: sub.id,
           title: friendlyTitle,
           stageName: stage.title,
@@ -327,6 +344,7 @@ export default function VisaoGeralPage() {
         const lastAdminComment = task.comments?.filter(c => c.author === "admin").slice(-1)[0];
 
         list.push({
+          order: list.length,
           id: task.id || `task-${task.title}`,
           title: task.title,
           stageName: "Backlog de Carreira",
@@ -358,6 +376,10 @@ export default function VisaoGeralPage() {
         }
 
         list.push({
+          order: list.length,
+          // BUG-111: metas tem data real via `targetDate` (quando preenchida).
+          realDate: obj.targetDate,
+          realKind: obj.targetDate ? "meta" : undefined,
           id: obj.id || `obj-${obj.title}`,
           title: `Meta: ${obj.title}`,
           stageName: "Objetivos Estratégicos",
@@ -382,16 +404,37 @@ export default function VisaoGeralPage() {
     return list;
   }, [stages, progress, journeyLoading, careerData, activityArtifacts, userBookings, getStageTelemetry]);
 
+  // BUG-111: data prevista das atividades nao concluidas — real onde existe
+  // (reuniao agendada / meta com targetDate), estimada pelo ritmo do proprio membro
+  // no restante. A estimativa e explicitamente rotulada como "previsao" na UI.
+  const forecastedActivities = useMemo(() => {
+    const map = forecastActivityDates(
+      activities.map(a => ({
+        id: a.id,
+        order: a.order,
+        completed: a.status === "completed",
+        completionDate: a.completionDate,
+        realDate: a.realDate,
+        realKind: a.realKind,
+      })),
+      new Date()
+    );
+    return activities.map(a => {
+      const f = map.get(a.id);
+      return f ? { ...a, plannedDate: f.plannedDate, plannedKind: f.plannedKind } : a;
+    });
+  }, [activities]);
+
   // Filtro de busca global
   const filteredActivities = useMemo(() => {
-    if (!searchTerm.trim()) return activities;
+    if (!searchTerm.trim()) return forecastedActivities;
     const term = normalizeStr(searchTerm);
-    return activities.filter(act => 
+    return forecastedActivities.filter(act =>
       normalizeStr(act.title).includes(term) ||
       normalizeStr(act.stageName).includes(term) ||
       normalizeStr(act.feedbackText || "").includes(term)
     );
-  }, [activities, searchTerm]);
+  }, [forecastedActivities, searchTerm]);
 
   // Ordenador genérico
   const sortActivities = (list: VisaoGeralActivity[], mode: string) => {
@@ -403,16 +446,17 @@ export default function VisaoGeralPage() {
     } else if (mode === "service") {
       sorted.sort((a, b) => a.stageOrder - b.stageOrder);
     } else if (mode === "date-desc") {
+      // BUG-111: nas nao-concluidas ordena pela data prevista; nas concluidas, pela conclusao.
       sorted.sort((a, b) => {
-        const timeA = a.completionDate ? new Date(a.completionDate).getTime() : 0;
-        const timeB = b.completionDate ? new Date(b.completionDate).getTime() : 0;
-        return timeB - timeA;
+        const da = a.plannedDate || a.completionDate;
+        const db = b.plannedDate || b.completionDate;
+        return (db ? new Date(db).getTime() : 0) - (da ? new Date(da).getTime() : 0);
       });
     } else if (mode === "date-asc") {
       sorted.sort((a, b) => {
-        const timeA = a.completionDate ? new Date(a.completionDate).getTime() : 9999999999999;
-        const timeB = b.completionDate ? new Date(b.completionDate).getTime() : 9999999999999;
-        return timeA - timeB;
+        const da = a.plannedDate || a.completionDate;
+        const db = b.plannedDate || b.completionDate;
+        return (da ? new Date(da).getTime() : 9999999999999) - (db ? new Date(db).getTime() : 9999999999999);
       });
     }
     return sorted;
@@ -464,6 +508,18 @@ export default function VisaoGeralPage() {
         </div>
       </div>
 
+      {/* BUG-111: aviso de que datas sem agendamento/meta são ESTIMATIVAS */}
+      <div className="flex items-start gap-3 px-5 py-3.5 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-2xl glass -mt-4">
+        <Clock size={16} className="text-[var(--accent-start)] shrink-0 mt-0.5" />
+        <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+          <span className="font-black uppercase tracking-wide text-[10px] text-[var(--text-secondary)]">Sobre as datas</span>
+          <span className="mx-1.5 opacity-40">·</span>
+          Atividades com reunião agendada ou meta com prazo mostram a <span className="font-bold text-[var(--text-secondary)]">data real</span>.
+          As demais mostram uma <span className="font-bold text-[var(--text-secondary)]">previsão (est.)</span>, calculada a partir do seu ritmo de
+          conclusão das etapas anteriores — é uma estimativa e <span className="font-bold text-[var(--text-secondary)]">pode mudar</span>.
+        </p>
+      </div>
+
       {/* Grid de 3 Colunas Horizontais */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         
@@ -476,10 +532,12 @@ export default function VisaoGeralPage() {
             <div className="flex items-center gap-2">
               <select
                 value={sortPendentes}
-                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSortPendentes(e.target.value as "service" | "title-asc" | "title-desc")}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSortPendentes(e.target.value as "service" | "title-asc" | "title-desc" | "date-asc" | "date-desc")}
                 className="bg-[var(--input-bg)] border border-[var(--border-primary)] text-[9px] font-bold text-[var(--text-muted)] rounded-lg px-2 py-1 outline-none cursor-pointer focus:border-[var(--accent-start)]/30"
               >
                 <option value="service">Serviço</option>
+                <option value="date-asc">Data (próximas)</option>
+                <option value="date-desc">Data (distantes)</option>
                 <option value="title-asc">A-Z</option>
                 <option value="title-desc">Z-A</option>
               </select>
@@ -512,10 +570,12 @@ export default function VisaoGeralPage() {
             <div className="flex items-center gap-2">
               <select
                 value={sortEmAndamento}
-                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSortEmAndamento(e.target.value as "service" | "title-asc" | "title-desc")}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSortEmAndamento(e.target.value as "service" | "title-asc" | "title-desc" | "date-asc" | "date-desc")}
                 className="bg-[var(--input-bg)] border border-[var(--border-primary)] text-[9px] font-bold text-[var(--text-muted)] rounded-lg px-2 py-1 outline-none cursor-pointer focus:border-[var(--accent-start)]/30"
               >
                 <option value="service">Serviço</option>
+                <option value="date-asc">Data (próximas)</option>
+                <option value="date-desc">Data (distantes)</option>
                 <option value="title-asc">A-Z</option>
                 <option value="title-desc">Z-A</option>
               </select>
@@ -725,6 +785,20 @@ function ActivityRow({
     }
   }, [isCompleted, activity.completionDate]);
 
+  // BUG-111: data prevista das atividades nao concluidas. "agendado"/"meta" sao
+  // datas reais; "estimate" e previsao pelo ritmo do membro (rotulada como tal).
+  const plannedInfo = useMemo(() => {
+    if (isCompleted || !activity.plannedDate) return null;
+    const label = activity.plannedKind === "agendado" ? "Agendado" : activity.plannedKind === "meta" ? "Meta até" : "Previsão";
+    try {
+      // meio-dia evita que o fuso desloque a data (YYYY-MM-DD e interpretado em UTC)
+      const date = new Date(activity.plannedDate + "T12:00:00").toLocaleDateString("pt-BR");
+      return { label, date, isEstimate: activity.plannedKind === "estimate" };
+    } catch {
+      return null;
+    }
+  }, [isCompleted, activity.plannedDate, activity.plannedKind]);
+
   return (
     <div className="p-4 rounded-2xl bg-[var(--input-bg)] border border-[var(--input-border)] hover:bg-white/5 transition-all group flex flex-col justify-between gap-3 text-left relative overflow-hidden">
       <div className="flex items-start justify-between gap-3">
@@ -745,6 +819,17 @@ function ActivityRow({
                   <span className="text-[8px] text-[var(--text-muted)] opacity-40">•</span>
                   <span className="text-[8px] font-mono text-[var(--text-muted)] font-bold">
                     Concluído em {formattedDate}
+                  </span>
+                </>
+              )}
+              {plannedInfo && (
+                <>
+                  <span className="text-[8px] text-[var(--text-muted)] opacity-40">•</span>
+                  <span
+                    className={cn("text-[8px] font-mono font-bold", plannedInfo.isEstimate ? "text-[var(--text-muted)] opacity-70" : "text-[var(--accent-start)]")}
+                    title={plannedInfo.isEstimate ? "Estimativa com base no seu ritmo de conclusão das etapas anteriores — pode mudar." : undefined}
+                  >
+                    {plannedInfo.label}: {plannedInfo.date}{plannedInfo.isEstimate ? " (est.)" : ""}
                   </span>
                 </>
               )}
