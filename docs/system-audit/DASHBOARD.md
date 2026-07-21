@@ -12,7 +12,19 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-20 (chat de execução — **BUG-101 corrigido (PR #133)**, deploy de
+> **Última atualização:** 2026-07-20 (chat de execução — **BUG-100 corrigido (PR #134)**, deploy de
+> produção `success`, SHA `9d5148f`. O `StepRenderer` chamava todos os hooks (useState/useCallback/
+> useEffect) **depois** do early return de `status === "locked"`: quando uma parada passava de
+> travada para disponível sem desmontar, a contagem de hooks mudava e a tela da jornada quebrava
+> (crash latente; 18 erros de `rules-of-hooks` que a baseline vinha anunciando). O early return foi
+> movido para **depois de todos os hooks** e os efeitos que **leem a agenda** foram guardados por
+> `status !== "locked"`, então uma parada travada segue com **0 leitura de Firestore** (a correção
+> ingênua teria feito toda parada travada baixar eventos/bookings — custo de cota no Spark). Medição
+> objetiva: **eslint do arquivo 18 erros -> 0**. Teste estrutural novo (3 casos) + mutação de cada
+> metade. Suíte 265/265. Fila: próximo é o `BUG-108` (Alto — convite, enquanto aberto o T-02 não
+> fecha).
+>
+> _(entrada anterior)_ 2026-07-20 (chat de execução — **BUG-101 corrigido (PR #133)**, deploy de
 > produção `success`, SHA `7053ea8`. A Ata sumia do agendamento do membro quando enviada **depois**
 > de fechar o participante: o `User_Bookings` só recebia o `meetingMinutesFile` no instante do
 > fechamento (`closeAttendeeAction`), então Ata posterior ficava só no doc do evento e no histórico

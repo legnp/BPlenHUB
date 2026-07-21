@@ -2700,14 +2700,30 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   os seus hooks. Quando uma parada passa de **travada para disponivel** sem desmontar, a contagem de
   hooks muda entre renders e o React lanca erro — a tela da jornada quebra. Nao reproduzido em
   producao ainda; e o defeito que os 18 erros de lint vinham anunciando (baseline vermelha herdada).
-- **Por que NAO foi corrigido junto (decisao consciente):** mover o early return para depois dos
-  hooks faz as paradas **travadas** passarem a executar o `useEffect` que busca eventos + bookings
-  — leitura extra de Firestore por parada travada, no plano **Spark**. A correcao certa precisa
-  guardar o efeito por `status !== "locked"` junto da mudanca, e isso e plano proprio, nao carona
-  num PR de outro bug (mesma disciplina do `BUG-098`).
-- Status: **Aberto** — registrado de proposito.
-- Decisao de execucao: PR proprio, com a medicao de leitura antes/depois (Licao 38).
-- Commit/PR: —
+- **Por que NAO foi corrigido junto (decisao consciente, no PR #121):** mover o early return para
+  depois dos hooks faz as paradas **travadas** passarem a executar o `useEffect` que busca eventos +
+  bookings — leitura extra de Firestore por parada travada, no plano **Spark**. A correcao certa
+  precisa guardar o efeito por `status !== "locked"` junto da mudanca, e isso e plano proprio, nao
+  carona num PR de outro bug (mesma disciplina do `BUG-098`).
+- Status: **Corrigido** — 2026-07-20, PR #134 (deploy de producao `success`, SHA `9d5148f`).
+- Correcao implementada: o early return de `status === "locked"` foi movido para **depois de todos
+  os hooks** (markup identico ao original), estabilizando a ordem de hooks e zerando os 18 erros de
+  `rules-of-hooks`. Os dois efeitos que **leem a agenda** ganharam guarda `status !== "locked"`: o de
+  `meeting` (`getUpcomingEvents` + `getUserBookingsAction`) e o de survey/form
+  (`checkSurveyCompletedAction`); o efeito do tour (`onComplete`) tambem, para preservar o invariante
+  "parada travada nao faz nada".
+- **Medicao antes/depois (Licao 38):** o `StepRenderer` renderiza **uma vez** por pagina (a parada
+  selecionada), nao uma por parada — sem multiplicacao por lista. Leituras de Firestore para uma
+  parada `locked`: **antes 0** (early return antes dos hooks), **correcao ingenua** = os efeitos de
+  leitura disparariam (`getUpcomingEvents`+`getUserBookings` ou `checkSurveyCompletedAction`),
+  **esta correcao = 0** (as guardas curto-circuitam antes de qualquer leitura). Custo de cota
+  inalterado para o estado travado.
+- **Teste:** `__tests__/components/step-renderer-hooks.test.ts` (3 casos, padrao estrutural do
+  `post-event-guards.test.ts` — o projeto nao tem infra de render de componente). Mutacao de cada
+  metade (Licao 36): mover o return para antes dos hooks derruba 1 teste; remover cada guarda derruba
+  1 cada.
+- Decisao de execucao: PR proprio, com a medicao de leitura antes/depois (Licao 38). **Feito.**
+- Commit/PR: **PR #134** (`9d5148f`), deploy de producao `success` confirmado.
 
 ### BUG-101 Ata some do agendamento do membro se for enviada DEPOIS de fechar o participante
 

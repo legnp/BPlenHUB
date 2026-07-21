@@ -175,7 +175,7 @@ Nenhuma destas quebra nada hoje; são decisões que eu não podia tomar.
 | ~~**`BUG-101`** (Médio)~~ **CORRIGIDO (PR #133)** | Ata some do agendamento se enviada **depois** de fechar o participante. 1 de 7 afetado (BP-005) | **Validação visual:** abrir a Gestão de Agenda do BP-005 e confirmar que a Devolutiva de 16/06 agora mostra o botão **ATA** (o doc foi reconciliado). Fechamentos futuros ficam independentes de ordem |
 | **`BUG-104`** (Médio) | Editar cota no painel **soma** em vez de definir — salvar 2× dobra | Confirmado por você que é parcialmente intencional; falta implementar |
 | **`BUG-105`** (Baixo) | Pré-Análise Comportamental é coletada e **nunca exibida** | Construir a devolutiva ou aposentar o instrumento |
-| **`BUG-100`** (Médio) | `StepRenderer` chama hooks depois de early return — crash latente | Aprovar PR próprio (a correção óbvia tem custo de cota) |
+| ~~**`BUG-100`** (Médio)~~ **CORRIGIDO (PR #134)** | `StepRenderer` chama hooks depois de early return — crash latente | **Validação visual:** navegar entre paradas travadas e disponíveis de uma jornada sem a tela quebrar. Parada travada segue com 0 leitura de agenda (custo de cota inalterado) |
 | Tokens de teste | 10 `BPL-INV-TEST*` com convidados fictícios em produção | Sair ou ficar? É F4-02 |
 
 **Importante:** o **T-02 não pode ser declarado fechado** enquanto o `BUG-108` estiver

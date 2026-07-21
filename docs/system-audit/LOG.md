@@ -24,6 +24,46 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-20] Chat de execução — BUG-100: hooks depois do early return no StepRenderer (PR #134)
+
+- Chat/sessão: chat de execução (Opus 4.8). Escopo: o 2º item da fila aprovada — `BUG-100` (Médio),
+  o crash latente de `rules-of-hooks` no `StepRenderer` (18 erros de lint na baseline).
+- **Causa:** só o `useAuthContext` vinha antes do early return de `status === "locked"`; os outros
+  ~13 hooks (useState/useCallback/useEffect) vinham **depois**. Quando uma parada passa de travada
+  para disponível sem desmontar (mesmo ponto na árvore, só o prop `status` muda), a contagem de
+  hooks muda entre renders e o React quebra a tela.
+- **Contexto que dimensionou o fix:** o `StepRenderer` renderiza **uma vez** por página (a parada
+  selecionada, `[stepId]/page.tsx:157`), não uma por parada — então a correção ingênua não
+  multiplicaria leitura por lista, mas ainda gastaria leitura por render de parada travada.
+- **Correção (PR #134, `9d5148f`, deploy de produção `success` confirmado — L31):** early return de
+  `locked` movido para **depois de todos os hooks** (markup idêntico ao original). Os dois efeitos
+  que **leem a agenda** ganharam guarda `status !== "locked"` — o de `meeting` (`getUpcomingEvents` +
+  `getUserBookingsAction`) e o de survey/form (`checkSurveyCompletedAction`) — e o efeito do tour
+  (`onComplete`) também, para preservar "parada travada não faz nada". `status` entrou nas deps dos
+  efeitos guardados.
+- **Medição antes/depois (Lição 38):** leituras de Firestore para uma parada `locked` — **antes 0**
+  (early return antes dos hooks), **correção ingênua** os efeitos disparariam, **esta correção 0**
+  (guardas curto-circuitam). O medidor objetivo do fix: **eslint deste arquivo 18 erros de
+  `rules-of-hooks` -> 0** (os 10 warnings legados de código morto seguem inalterados, conferido
+  contra a `main`).
+- **Teste:** `step-renderer-hooks.test.ts` novo (3 casos, padrão estrutural do
+  `post-event-guards.test.ts` — sem `@testing-library/react` no projeto e sem precedente de render de
+  componente). **Mutação de cada metade** (Lição 36): mover o return para antes dos hooks derruba 1
+  teste; remover cada guarda derruba 1 cada. **Nota de processo:** o 1º ciclo de mutação usou
+  `git checkout --` para restaurar e **apagou o fix não commitado** — as mutações B/C rodaram contra
+  o arquivo já revertido (falsos sinais). Recommitei o fix **antes** de mutar e refiz: as 3 mutações
+  derrubam exatamente o teste esperado.
+- Validado: eslint dos arquivos tocados 0 erros; test **265/265**; type-check exit 0; build exit 0
+  (`.next` limpo antes; 1º build OOM na fase TS pós-compilação — artefato de builds consecutivos, o
+  `type-check` isolado já passava; retry limpo passou).
+- Itens atualizados: `BUGS.md` (BUG-100 → Corrigido), `00-PLAN.md` (índice bug→track),
+  `VALIDACAO-T02.md`, `DASHBOARD.md`, este LOG.
+- Conferência visual em **produção** pela Gestora (BUG-030): navegar entre paradas travadas e
+  disponíveis de uma jornada sem a tela quebrar. Próximo da fila: **BUG-108** (Alto — convite aceita
+  matrícula do cliente sem vincular ao token; exige decisão de modelo; enquanto aberto o T-02 não
+  fecha).
+
+
 ## [2026-07-20] Chat de execução — BUG-101: Ata espelhada no agendamento (PR #133)
 
 - Chat/sessão: chat de execução (Opus 4.8). Escopo: o 1º item da fila aprovada — `BUG-101` (Médio),
