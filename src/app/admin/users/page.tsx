@@ -40,6 +40,7 @@ import { getMemberQuotasAction, setMemberQuotasAction } from "@/actions/quotas";
 import { getErrorMessage } from "@/lib/utils/errors";
 import type { UserAssessment } from "@/actions/admin-assessments";
 import type { AdminContractRow } from "@/actions/admin/contract-invoice";
+import { FunctionalPageHeader } from "@/components/layout/FunctionalPageHeader";
 
 /**
  * BPlen HUB — Gestão de Usuários e Governança
@@ -352,25 +353,16 @@ export default function UsersManagementPage() {
 
   return (
     <div className="space-y-8 pb-20">
-      {/* Header section com Estetíca Premium */}
-      <div className="flex flex-col md:flex-row justify-between items-start gap-4">
-        <div className="space-y-1 text-left">
-          <h1 className="text-3xl font-bold tracking-tight text-[var(--text-primary)]">
-            GESTÃO DE <span className="text-[var(--accent-start)] italic">USUÁRIOS</span>
-          </h1>
-          <p className="text-[var(--text-muted)] text-sm font-medium opacity-70">
-            Gestão centralizada de usuários, papéis e permissões de acesso.
-          </p>
-        </div>
-
-        <div className="flex flex-col md:flex-row items-center gap-3">
-          <div className="flex items-center gap-3 bg-[var(--accent-soft)]/20 border border-[var(--accent-start)]/10 px-6 py-3 rounded-2xl">
-            <Activity size={16} className="text-[var(--accent-start)] animate-pulse" />
-            <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--accent-start)]">
-               Governance Engine Active
-            </span>
-          </div>
-
+      <FunctionalPageHeader
+        eyebrow="Pessoas"
+        title="Gestão de Usuários"
+        icon={<Users size={24} />}
+        statusTag={{
+          label: "Governança Ativa",
+          tone: "accent",
+          icon: <Activity className="w-3 h-3" />,
+        }}
+        action={
           <button
             onClick={async () => {
               if (!confirm("Deseja executar a migração de dados legados? Isso irá atualizar todos os perfis para o novo padrão institucional.")) return;
@@ -390,10 +382,14 @@ export default function UsersManagementPage() {
             className="flex items-center gap-2 px-6 py-3 bg-[var(--accent-start)] text-white rounded-full text-[9px] font-bold uppercase tracking-widest hover:bg-[var(--accent-end)] transition-all group shadow-lg shadow-[var(--accent-start)]/20"
           >
             <ShieldCheck size={14} className="group-hover:scale-110 transition-transform" />
-            Migrar Dados Legados (Cleanup)
+            Migrar Dados Legados
           </button>
-        </div>
-      </div>
+        }
+      />
+
+      <p className="text-[var(--text-muted)] text-sm font-medium opacity-70 -mt-4 text-left">
+        Gestão centralizada de usuários, papéis e permissões de acesso.
+      </p>
 
       {/* Alerta de Erro (Debug) */}
       <AnimatePresence>
@@ -457,7 +453,7 @@ export default function UsersManagementPage() {
             <thead>
               <tr className="bg-[var(--input-bg)]/80 border-b border-[var(--border-primary)]">
                 <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Identidade / Membro</th>
-                <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Papel (Role)</th>
+                <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Papel</th>
                 <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Acessos Granulares</th>
                 <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Status</th>
                 <th className="px-8 py-5 text-right text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Ações</th>
@@ -467,7 +463,7 @@ export default function UsersManagementPage() {
               {loading ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <tr key={i} className="animate-pulse">
-                    <td colSpan={5} className="px-8 py-10 bg-[var(--input-bg)]/40 opacity-50 italic text-[10px] uppercase font-bold tracking-widest">Sincronizando governança...</td>
+                    <td colSpan={5} className="px-8 py-10 bg-[var(--input-bg)]/40 opacity-50 italic text-[10px] uppercase font-bold tracking-widest">Carregando usuários...</td>
                   </tr>
                 ))
               ) : (
@@ -663,7 +659,7 @@ export default function UsersManagementPage() {
                                   </button>
                                </div>
 
-                               {/* Portaria / Área de Membro (Nova Localização: Segurança 🔐) */}
+                               {/* Portaria / Área de Membro (Nova Localização: Segurança) */}
                                <button 
                                  onClick={() => {
                                     const n = { ...selectedUser.services, member_area_access: !selectedUser.services.member_area_access };
