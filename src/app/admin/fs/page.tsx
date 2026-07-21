@@ -9,12 +9,9 @@ import {
   Activity, 
   CheckCircle2, 
   Search, 
-  User, 
-  ChevronDown, 
-  ExternalLink,
+  User,
+  ChevronDown,
   Loader2,
-  FileSpreadsheet,
-  TrendingUp,
   FileText
 } from "lucide-react";
 import { 
@@ -26,6 +23,8 @@ import {
   FSRespondent
 } from "@/actions/admin-fs";
 import { FSTabs } from "@/components/admin/FSTabs";
+import { FunctionalPageHeader } from "@/components/layout/FunctionalPageHeader";
+import { StatTile } from "@/components/admin/StatTile";
 
 export default function AdminFSAnalyticsPage() {
   // Estados Globais de Carregamento e Dados
@@ -140,76 +139,41 @@ export default function AdminFSAnalyticsPage() {
     <div className="space-y-10 animate-fade-in-up text-left">
       <FSTabs />
       
-      {/* 1. CABEÇALHO DA PÁGINA (Apple Pro Layout) */}
-      <motion.div 
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col gap-1"
-      >
-        <h1 className="text-3xl font-bold tracking-tight text-[var(--text-primary)]">
-          ANÁLISE DE SUBMISSÕES
-        </h1>
-        <p className="text-[var(--text-muted)] text-[11px] font-bold uppercase tracking-[0.15em] opacity-70">
-          Painel consolidado de formulários e pesquisas
-        </p>
-      </motion.div>
+      <FunctionalPageHeader
+        eyebrow="Instrumentos e Devolutivas"
+        title="Análise"
+        titleAccent="de Submissões"
+        icon={<BarChart3 size={24} />}
+      />
 
-      {/* 2. CARDS DO PAINEL CONSOLIDADO GERAL */}
+      <p className="text-[var(--text-muted)] text-[11px] font-bold uppercase tracking-[0.15em] opacity-70 -mt-6">
+        Painel consolidado de formulários e pesquisas
+      </p>
+
+      {/* Cards do painel consolidado geral */}
       {stats && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.97 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.05 }}
-            className="p-6 rounded-[24px] bg-[var(--input-bg)] border border-[var(--border-primary)] space-y-3 shadow-sm hover:shadow-md transition-all backdrop-blur-md"
-          >
-            <div className="flex items-center justify-between text-[var(--text-muted)]">
-              <CheckCircle2 size={18} className="text-[var(--accent-start)]" />
-              <span className="text-[9px] font-bold uppercase tracking-widest opacity-60">F&S ATIVOS</span>
-            </div>
-            <div className="text-3xl font-bold text-[var(--text-primary)] tracking-tighter">
-              {stats.totalForms + stats.totalSurveys}
-            </div>
-            <p className="text-[11px] font-medium text-[var(--text-muted)]">
-              {stats.totalForms} formulários e {stats.totalSurveys} pesquisas ativos
-            </p>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.97 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.1 }}
-            className="p-6 rounded-[24px] bg-[var(--input-bg)] border border-[var(--border-primary)] space-y-3 shadow-sm hover:shadow-md transition-all backdrop-blur-md"
-          >
-            <div className="flex items-center justify-between text-[var(--text-muted)]">
-              <Users size={18} className="text-indigo-500" />
-              <span className="text-[9px] font-bold uppercase tracking-widest opacity-60">RESPOSTAS TOTAIS</span>
-            </div>
-            <div className="text-3xl font-bold text-[var(--text-primary)] tracking-tighter">
-              {stats.totalGlobalResponses.toLocaleString()}
-            </div>
-            <p className="text-[11px] font-medium text-[var(--text-muted)]">
-              respostas totais enviadas
-            </p>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.97 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.15 }}
-            className="p-6 rounded-[24px] bg-[var(--input-bg)] border border-[var(--border-primary)] space-y-3 shadow-sm hover:shadow-md transition-all backdrop-blur-md border-l-4 border-l-[var(--accent-start)]"
-          >
-            <div className="flex items-center justify-between text-[var(--text-muted)]">
-              <Activity size={18} className="text-[var(--accent-end)] animate-pulse" />
-              <span className="text-[9px] font-bold uppercase tracking-widest opacity-60">ATIVIDADE RECENTE</span>
-            </div>
-            <div className="text-3xl font-bold text-[var(--text-primary)] tracking-tighter">
-              +{stats.responsesLast24h}
-            </div>
-            <p className="text-[11px] font-medium text-[var(--text-muted)]">
-              submissões nas últimas 24 horas
-            </p>
-          </motion.div>
+          <StatTile
+            icon={<CheckCircle2 size={20} />}
+            label="F&S Ativos"
+            value={stats.totalForms + stats.totalSurveys}
+            detail={`${stats.totalForms} formulários e ${stats.totalSurveys} pesquisas ativos`}
+            tone="accent"
+          />
+          <StatTile
+            icon={<Users size={20} />}
+            label="Respostas Totais"
+            value={stats.totalGlobalResponses.toLocaleString()}
+            detail="respostas totais enviadas"
+            tone="accent"
+          />
+          <StatTile
+            icon={<Activity size={20} />}
+            label="Atividade Recente"
+            value={`+${stats.responsesLast24h}`}
+            detail="submissões nas últimas 24 horas"
+            tone="success"
+          />
         </div>
       )}
 
@@ -451,7 +415,7 @@ export default function AdminFSAnalyticsPage() {
             </div>
             
             <span className="text-[8px] font-bold uppercase tracking-[0.25em] text-[var(--accent-start)] bg-[var(--accent-start)]/10 px-3 py-1.5 rounded-full">
-              Camada 2 • Progressive Deploy
+              Em construção
             </span>
           </div>
 

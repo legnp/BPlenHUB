@@ -8,7 +8,7 @@ import { ChevronLeft, FlaskConical, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 /**
- * BPlen HUB — Admin Survey Preview (Sandbox) 🧬📊
+ * BPlen HUB — Admin Survey Preview (Sandbox)
  * Ambiente seguro para testar narrativas, campos dinâmicos e lógica de saltos.
  */
 export default function SurveyPreviewPage() {
@@ -27,7 +27,7 @@ export default function SurveyPreviewPage() {
         </div>
         <h2 className="text-xl font-bold text-[var(--text-primary)]">Survey Não Encontrada</h2>
         <p className="text-[var(--text-muted)] text-sm max-w-xs">
-          O ID <span className="font-mono text-[var(--accent-start)]">{surveyId}</span> não existe no SURVEY_REGISTRY.
+          O ID <span className="font-mono text-[var(--accent-start)]">{surveyId}</span> não existe no BPlen HUB.
         </p>
         <button 
           onClick={() => router.push("/admin/fs/surveys")}
