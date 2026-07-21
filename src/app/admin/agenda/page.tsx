@@ -16,9 +16,7 @@ import {
   TrendingUp,
   Activity,
   Settings2,
-  Plus,
   Trash2,
-  X,
   BadgeCheck,
   Loader2
 } from "lucide-react";
@@ -30,6 +28,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { format, addDays, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import GlassModal from "@/components/ui/GlassModal";
+import { FunctionalPageHeader } from "@/components/layout/FunctionalPageHeader";
+import { StatTile } from "@/components/admin/StatTile";
 
 type SortOption = "date" | "name" | "status";
 type DateRangeOption = "all" | "15" | "30";
@@ -118,7 +118,7 @@ export default function AgendaManagementPage() {
     if (resRazoes.success && resTipos.success) {
       setIsConfigModalOpen(false);
     } else {
-      alert(resTipos.message || "Erro ao salvar configuracoes.");
+      alert(resTipos.message || "Erro ao salvar configurações.");
     }
     setIsSaving(false);
   };
@@ -229,66 +229,58 @@ export default function AgendaManagementPage() {
 
   return (
     <div className="space-y-8 pb-20 animate-fade-in">
-      {/* Header & Main Actions */}
-      <div className="flex flex-col md:flex-row justify-between items-start gap-4">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight text-[var(--text-primary)] text-left">
-             SINCRONIZAR <span className="text-[var(--accent-start)] italic">AGENDA</span>
-          </h1>
-          <p className="text-[var(--text-muted)] text-sm font-medium opacity-70">
-            Sincronização com o Google Agenda BPlen HUB
-          </p>
-        </div>
+      <FunctionalPageHeader
+        eyebrow="Jornada e Agenda"
+        title="Sincronizar"
+        titleAccent="Agenda"
+        icon={<RefreshCw size={24} />}
+        action={
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsConfigModalOpen(true)}
+              className="flex items-center gap-2 px-5 py-3 rounded-full font-bold text-[10px] uppercase tracking-widest bg-[var(--input-bg)] border border-[var(--input-border)] text-[var(--text-muted)] transition-all hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)] active:scale-[0.98]"
+            >
+              <Settings2 className="w-4 h-4" />
+              Configurar Tipos de Evento
+            </button>
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setIsConfigModalOpen(true)}
-            className="flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-[10px] uppercase tracking-widest bg-[var(--input-bg)] border border-[var(--input-border)] text-[var(--text-muted)] transition-all hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)] active:scale-[0.98]"
-          >
-            <Settings2 className="w-4 h-4" />
-            Configurar Tipos de Evento
-          </button>
+            <button
+              onClick={handleSync}
+              disabled={isSyncing}
+              className={`flex items-center gap-2 px-6 py-3 rounded-full font-bold text-[10px] uppercase tracking-widest transition-all shadow-lg hover:translate-y-[-2px] active:scale-[0.98] shrink-0 ${isSyncing
+                  ? "bg-[var(--input-bg)] text-[var(--text-muted)] cursor-not-allowed"
+                  : "bg-gradient-to-tr from-[var(--accent-start)] to-[var(--accent-end)] text-white shadow-[var(--accent-start)]/20"
+                }`}
+            >
+              <RefreshCw className={`w-4 h-4 ${isSyncing ? "animate-spin" : ""}`} />
+              {isSyncing ? "Sincronizando..." : "Sincronizar Agora"}
+            </button>
+          </div>
+        }
+      />
 
-          <button
-            onClick={handleSync}
-            disabled={isSyncing}
-            className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-[10px] uppercase tracking-widest transition-all shadow-lg hover:translate-y-[-2px] active:scale-[0.98] shrink-0 ${isSyncing
-                ? "bg-[var(--input-bg)] text-[var(--text-muted)] cursor-not-allowed"
-                : "bg-gradient-to-tr from-[var(--accent-start)] to-[var(--accent-end)] text-white shadow-[var(--accent-start)]/20"
-              }`}
-          >
-            {isSyncing ? <RefreshCw className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-            {isSyncing ? "Sincronizando..." : "Sincronizar Agora"}
-          </button>
-        </div>
-      </div>
+      <p className="text-[var(--text-muted)] text-sm font-medium opacity-70 -mt-4">
+        Sincronização da agenda do BPlen HUB
+      </p>
 
       {/* Stats Cards Dashboard */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-5 bg-[var(--input-bg)] rounded-[2rem] border border-[var(--border-primary)] shadow-sm transition-all hover:bg-[var(--accent-soft)]">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="p-1.5 bg-[var(--accent-start)]/10 rounded-xl text-[var(--accent-start)]">
-              <LayoutDashboard className="w-3.5 h-3.5" />
-            </div>
-            <span className="text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-[0.2em] leading-none">Total na Base</span>
-          </div>
-          <div className="text-3xl font-bold text-[var(--text-primary)]">{stats.total}</div>
-          <p className="text-[9px] text-[var(--text-muted)] mt-1.5 font-bold uppercase tracking-widest opacity-40">Eventos mapeados</p>
-        </div>
+        <StatTile
+          icon={<LayoutDashboard className="w-5 h-5" />}
+          label="Total na Base"
+          value={stats.total}
+          detail="Eventos mapeados"
+          tone="accent"
+        />
 
-        <div className="p-5 bg-[var(--input-bg)] rounded-[2rem] border border-[var(--border-primary)] shadow-sm transition-all hover:bg-[var(--accent-soft)]">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="p-1.5 bg-green-500/10 rounded-xl text-green-500">
-              <Activity className="w-3.5 h-3.5" />
-            </div>
-            <span className="text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-[0.2em] leading-none">Status Sincronizado</span>
-          </div>
-          <div className="text-3xl font-bold text-[var(--text-primary)]">{stats.status.sync}</div>
-          <div className="flex items-center gap-1.5 mt-1.5">
-            <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.3)]" />
-            <span className="text-[9px] font-bold text-green-500 uppercase">Operacional</span>
-          </div>
-        </div>
+        <StatTile
+          icon={<Activity className="w-5 h-5" />}
+          label="Status Sincronizado"
+          value={stats.status.sync}
+          detail="Operacional"
+          tone="success"
+          dot
+        />
 
         <div className="col-span-1 md:col-span-2 p-6 bg-[var(--input-bg)] rounded-[2rem] border border-[var(--border-primary)] shadow-sm">
           <div className="flex items-center gap-3 mb-4">
@@ -365,7 +357,7 @@ export default function AgendaManagementPage() {
           >
             <CheckCircle2 className="w-5 h-5 shrink-0" />
             <div className="text-[11px] font-bold uppercase tracking-widest">
-              Dashboard Atualizado: {lastSyncResult.count} eventos capturados em {format(new Date(lastSyncResult.timestamp), "HH:mm:ss")}.
+              Painel atualizado: {lastSyncResult.count} eventos capturados em {format(new Date(lastSyncResult.timestamp), "HH:mm:ss")}.
             </div>
           </motion.div>
         )}
@@ -468,7 +460,7 @@ export default function AgendaManagementPage() {
             <AlertCircle className="w-5 h-5 text-[var(--accent-start)]" />
           </div>
           <div className="space-y-1">
-            <p className="text-[11px] font-bold uppercase tracking-widest text-[var(--text-primary)]">Governança BPlen (90 Dias Audit)</p>
+            <p className="text-[11px] font-bold uppercase tracking-widest text-[var(--text-primary)]">Governança BPlen (auditoria de 90 dias)</p>
             <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed font-medium opacity-60">
               Este dashboard utiliza uma base sincronizada incremental. Eventos passados são arquivados automaticamente para atribuição de Auditoria e Atas, enquanto eventos futuros são atualizados a cada sincronização. A ordenação e agrupamento por título auxiliam na identificação rápida de gargalos de portfólio.
             </p>
@@ -496,13 +488,13 @@ export default function AgendaManagementPage() {
                     </p>
                   </div>
                   <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${casados > 0 ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-amber-500/10 border-amber-500/20 text-amber-400"}`}>
-                    {casados > 0 ? `${casados} eventos na agenda` : "nenhum evento com este titulo"}
+                    {casados > 0 ? `${casados} eventos na agenda` : "nenhum evento com este título"}
                   </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <label className="space-y-1.5 block">
-                    <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Consultor padrao</span>
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Consultor padrão</span>
                     <input
                       type="text"
                       value={tipo.consultorPadrao}
@@ -511,7 +503,7 @@ export default function AgendaManagementPage() {
                     />
                   </label>
                   <label className="space-y-1.5 block">
-                    <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Vagas padrao</span>
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Vagas padrão</span>
                     <input
                       type="number"
                       min={0}
@@ -523,7 +515,7 @@ export default function AgendaManagementPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Atende os servicos</span>
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Atende os serviços</span>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                     {servicos.map((sv) => (
                       <label key={sv.serviceCode} className="flex items-center gap-2 p-2 rounded-xl hover:bg-[var(--accent-soft)] cursor-pointer transition-colors">
@@ -543,14 +535,14 @@ export default function AgendaManagementPage() {
                 {tipo.id === "1-to-1" && (
                   <div className="space-y-2 pt-3 border-t border-[var(--border-primary)]">
                     <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
-                      Razoes (viram o tema do agendamento)
+                      Razões (viram o tema do agendamento)
                     </span>
                     <div className="flex gap-2">
                       <input
                         type="text"
                         value={newType}
                         onChange={(e) => setNewType(e.target.value)}
-                        placeholder="Ex: Alinhamento Estrategico"
+                        placeholder="Ex: Alinhamento Estratégico"
                         className="flex-1 px-4 py-3 bg-[var(--bg-primary)]/50 border border-[var(--input-border)] rounded-xl text-sm font-bold text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-start)]/50 placeholder:text-[var(--text-muted)] placeholder:opacity-40"
                         onKeyDown={(e) => e.key === "Enter" && handleAddType()}
                       />
@@ -564,7 +556,7 @@ export default function AgendaManagementPage() {
                     <div className="space-y-1.5">
                       {oneToOneTypes.length === 0 ? (
                         <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-40 py-3">
-                          Nenhuma razao cadastrada
+                          Nenhuma razão cadastrada
                         </p>
                       ) : (
                         oneToOneTypes.map((razao, index) => (
@@ -587,8 +579,8 @@ export default function AgendaManagementPage() {
           })}
 
           <p className="text-[10px] font-medium text-[var(--text-muted)] opacity-70 px-1">
-            Nesta fase a configuracao e apenas registrada: o agendamento do membro segue
-            funcionando pelo mecanismo atual, sem alteracao.
+            Nesta fase a configuração é apenas registrada: o agendamento do membro segue
+            funcionando pelo mecanismo atual, sem alteração.
           </p>
         </div>
 
