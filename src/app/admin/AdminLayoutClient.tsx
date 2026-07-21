@@ -5,21 +5,19 @@ import Link from "next/link";
 import { useAuthContext } from "@/context/AuthContext";
 import { redirect } from "next/navigation";
 import { useTheme } from "@/context/ThemeContext";
-import { 
-  Calendar, 
-  Settings, 
-  FileText, 
-  Briefcase, 
-  Users, 
+import {
+  Calendar,
+  Settings,
+  Users,
   LayoutDashboard,
-  ShieldCheck,
   Zap,
   Globe,
   Ticket,
   Handshake,
   FlaskConical,
   Activity,
-  QrCode
+  QrCode,
+  UserPlus
 } from "lucide-react";
 import { HubHeader } from "@/components/hub/HubHeader";
 
@@ -56,27 +54,36 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                  <h2 className="text-xl font-bold tracking-tight text-[var(--text-primary)] group uppercase leading-none">
                    Admin
                  </h2>
-                 <p className="text-[9px] uppercase tracking-[0.3em] text-[var(--text-muted)] font-bold opacity-60">Control Center</p>
+                 <p className="text-[9px] uppercase tracking-[0.3em] text-[var(--text-muted)] font-bold opacity-60">Central de Controle</p>
                </div>
             </div>
 
         <nav className="flex-1 space-y-1.5 overflow-y-auto pr-2 custom-scrollbar">
-          <NavLink href="/admin" icon={<LayoutDashboard size={18} />}>DASHBOARD</NavLink>
-          <div className="pt-4 pb-2 px-4 text-[8px] font-bold uppercase tracking-[0.3em] text-[var(--text-muted)] opacity-40">Operação</div>
-          <NavLink href="/admin/agenda" icon={<Calendar size={18} />}>SINCRONIZAR AGENDA</NavLink>
-          <NavLink href="/admin/gestao-agenda" icon={<Settings size={18} />}>PROGRAMAÇÃO HUB</NavLink>
-          
-          <div className="pt-4 pb-2 px-4 text-[8px] font-bold uppercase tracking-[0.3em] text-[var(--text-muted)] opacity-40">Conteúdo & Vendas</div>
+          <NavGroup>Visão Geral</NavGroup>
+          <NavLink href="/admin" icon={<LayoutDashboard size={18} />}>PAINEL</NavLink>
+
+          <NavGroup>Comercial</NavGroup>
           <NavLink href="/admin/products" icon={<Zap size={18} />}>PORTFÓLIO</NavLink>
           <NavLink href="/admin/partners" icon={<Handshake size={18} />}>GESTÃO DE PARCEIROS</NavLink>
+
+          <NavGroup>Marketing</NavGroup>
           <NavLink href="/admin/marketing" icon={<Ticket size={18} />}>CUPONS E OFERTAS</NavLink>
-          <NavLink href="/admin/social" icon={<Globe size={18} />}>MEDIA E EDITORIAL</NavLink>
-          <NavLink href="/admin/qrcodes" icon={<QrCode size={18} />}>MÁQUINA DE QR CODES</NavLink>
-          
-          <div className="pt-4 pb-2 px-4 text-[8px] font-bold uppercase tracking-[0.3em] text-[var(--text-muted)] opacity-40">Dados & Usuários</div>
+          <NavLink href="/admin/social" icon={<Globe size={18} />}>MÍDIA E EDITORIAL</NavLink>
+          <NavLink href="/admin/qrcodes" icon={<QrCode size={18} />}>QR CODES</NavLink>
+
+          <NavGroup>Jornada e Agenda</NavGroup>
+          <NavLink href="/admin/agenda" icon={<Calendar size={18} />}>SINCRONIZAR AGENDA</NavLink>
+          <NavLink href="/admin/gestao-agenda" icon={<Settings size={18} />}>PROGRAMAÇÃO DA JORNADA</NavLink>
+
+          <NavGroup>Pessoas</NavGroup>
           <NavLink href="/admin/users" icon={<Users size={18} />}>GESTÃO DE USUÁRIOS</NavLink>
+
+          <NavGroup>Instrumentos e Devolutivas</NavGroup>
           <NavLink href="/admin/fs" icon={<Activity size={18} />}>F&S</NavLink>
+
+          <NavGroup>Sistema e Ferramentas</NavGroup>
           <NavLink href="/admin/sandbox" icon={<FlaskConical size={18} />}>SANDBOX</NavLink>
+          <NavLink href="/admin/migrate-welcome" icon={<UserPlus size={18} />}>MIGRAR ONBOARDING</NavLink>
         </nav>
 
         <div className="mt-auto pt-6 border-t border-[var(--border-primary)]/50">
@@ -100,6 +107,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
          </main>
       </div>
+    </div>
+  );
+}
+
+function NavGroup({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="pt-4 pb-2 px-4 text-[8px] font-bold uppercase tracking-[0.3em] text-[var(--text-muted)] opacity-40">
+      {children}
     </div>
   );
 }
