@@ -12,7 +12,17 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-21 (chat de execução — **REDESIGN DO ADMIN R3 (PR #141)**, deploy
+> **Última atualização:** 2026-07-21 (chat de execução — **REDESIGN DO ADMIN R4 (PRs #142/#143)**,
+> deploy de produção `success`, SHAs `1496841`/`bc13601`. R4 dividido em 2 PRs para **isolar a área de
+> survey/form** (diretriz da Gestora). **R4a — Pessoas:** `FunctionalPageHeader` no `users` (sem tiles);
+> "Governance Engine"→"Governança Ativa", "(Cleanup)"/"(Role)" removidos, 1 emoji removido. **R4b —
+> Instrumentos F&S:** header + `StatTile` no **chrome admin** de `fs`/`fs/forms`/`fs/surveys`/`fs/devolutiva`;
+> **nomes de banco humanizados** ("FORMS_REGISTRY"/"SURVEY_REGISTRY"/"CollectionGroup"). **Design próprio
+> das surveys/forms NÃO tocado** (previews: só emoji + nome-de-banco no erro; engines intactos). eslint 0
+> erros — **sem `--no-verify`**; type-check limpo, suíte **280/280**, build exit 0. Sem bugs novos. **Não
+> tocou paleta/tema.** **Próximo: R5** (Sistema e Ferramentas — último lote). Validação visual em produção.
+>
+> _(entrada anterior)_ 2026-07-21 (chat de execução — **REDESIGN DO ADMIN R3 (PR #141)**, deploy
 > de produção `success`, SHA `4c27496`. Camadas 2+3 em Jornada e Agenda (`agenda`, `gestao-agenda`):
 > `FunctionalPageHeader` + `StatTile` nas 2 telas (agenda: botões e card "Top 5" preservados;
 > gestao-agenda: abas no slot action, `<hr>` redundante removido); copy/tom ("PROGRAMAÇÃO Hub"→

@@ -24,6 +24,40 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-21] Chat de execução — REDESIGN DO ADMIN R4: Pessoas + Instrumentos F&S (PRs #142/#143)
+
+- Chat/sessão: mesmo chat de execução, após o **R3 ser validado pela Gestora** ("segue r4, e cuidado
+  para não misturar o design da página admin com o design próprio das surveys e forms"). Lote **R4** =
+  camadas 2+3 em **Pessoas + Instrumentos**. **Dividido em 2 PRs** para isolar a área delicada de
+  survey/form (diretriz explícita da Gestora + tamanho: `users` tem 1072 linhas).
+- **R4a — Pessoas (PR #142, `1496841`, deploy confirmado):** `FunctionalPageHeader` no `users` (Gestão
+  de Usuários). A tela **não tem tiles de métrica** (vai do header direto para a tabela), então não usa
+  `StatTile`; o badge de status e o botão de migração foram para statusTag + slot action. Copy:
+  "Governance Engine Active"→"Governança Ativa" (inglês→PT), "Migrar Dados Legados (Cleanup)"→"Migrar
+  Dados Legados", "Papel (Role)"→"Papel", loading "Sincronizando governança..."→"Carregando usuários...".
+  **Zero Emoji:** removido um emoji de cadeado de um comentário. Modais (cotas/assessments/contratos)
+  com copy já limpa — não mexidos.
+- **R4b — Instrumentos F&S (PR #143, `bc13601`, deploy confirmado):** header + `StatTile` no **chrome
+  admin** de `fs` (Análise de Submissões), `fs/forms` e `fs/surveys` (Server Components — o header
+  client renderiza sem problema, build confirma) e `fs/devolutiva` (header só; `DevolutivaComportamentalView`
+  intacto). **Nomes de banco na tela humanizados** (diagnóstico da seção 1.2 do design doc):
+  "Registrados em FORMS_REGISTRY"/"Registradas em SURVEY_REGISTRY"→"Total ativo"; "Consolidado via
+  CollectionGroup"→"Consolidado". Jargão: "Configurações de Engine"/"Configurar Registry"→"Configurações";
+  "Progressive Deploy", "(Forms_Global)", "(Não-CRUD)" removidos; "workflows"→"fluxos"; "PREVIEW"→"Prévia".
+- **Diretriz da Gestora respeitada — design de survey/form NÃO tocado:** nos previews
+  (`SurveyEngine`/`FormsEngine`) a pegada foi **mínima** — só removi 1 emoji de comentário (surveys) e
+  troquei o vazamento de nome-de-banco no erro ("SURVEY_REGISTRY"/"FORMS_REGISTRY"→"BPlen HUB"). O frame
+  de preview, os engines, o `DevolutivaComportamentalView` e o `FSTabs` ficaram intactos.
+- Validado (Lição 14): eslint dos arquivos tocados **0 erros** (warnings baseline; `users` 7=7 idêntico
+  à main por `git stash`); `type-check` limpo; `test` **280/280**; `build` exit 0. **Ambos sem
+  `--no-verify`** (pre-commit limpo). Sem bugs novos.
+- Itens atualizados: `00-PLAN.md` (F1-06), `ADMIN-REDESIGN-DESIGN.md` (R4a/R4b concluídos), `DASHBOARD.md`,
+  este LOG.
+- **Próximo: R5** — Sistema e Ferramentas (`sandbox`, `migrate-welcome`), último lote. Inclui a copy
+  "Migração: Welcome Survey"→"Onboarding".
+
+---
+
 ## [2026-07-21] Chat de execução — REDESIGN DO ADMIN R3: Jornada e Agenda (PR #141)
 
 - Chat/sessão: mesmo chat de execução, após o **R2 ser validado pela Gestora** ("segue r3"). Lote

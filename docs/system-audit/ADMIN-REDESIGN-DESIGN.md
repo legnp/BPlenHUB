@@ -188,7 +188,9 @@ O `StatTile` compartilhado (camada 2) deve nascer no R0 ou R1 e ser reusado nos 
 | Execução — **R1** (Visão Geral + Comercial, cam. 2+3) | **Concluído — PR #139, deploy de produção confirmado (2026-07-21)** |
 | Execução — **R2** (Marketing, cam. 2+3) | **Concluído — PR #140, deploy de produção confirmado (2026-07-21)** |
 | Execução — **R3** (Jornada e Agenda, cam. 2+3) | **Concluído — PR #141, deploy de produção confirmado (2026-07-21)** |
-| Execução — R4..R5 (camadas 2+3) | **Não iniciada** — próximos lotes |
+| Execução — **R4a** (Pessoas: `users`, cam. 2+3) | **Concluído — PR #142, deploy de produção confirmado (2026-07-21)** |
+| Execução — **R4b** (Instrumentos F&S, cam. 2+3) | **Concluído — PR #143, deploy de produção confirmado (2026-07-21)** |
+| Execução — R5 (Sistema e Ferramentas, cam. 2+3) | **Não iniciada** — último lote |
 
 **R0 entregue (PR #138):** sidebar reorganizada de 3 grupos para os 7 escopos; renomeações
 aplicadas (DASHBOARD→PAINEL, PROGRAMAÇÃO HUB→PROGRAMAÇÃO DA JORNADA, MEDIA→MÍDIA E EDITORIAL com
@@ -220,3 +222,13 @@ stat cards simples viraram `StatTile` (o card "Top 5 tipos" segue como widget pr
 Jornada", "SINCRONIZAR AGENDA" pelo header, "Google" removido da descrição, "Dashboard"→"Painel",
 acentos no modal de tipos de evento. Não tocou a lógica de sync (AGENDA-SYNC-DESIGN). **Sem
 `--no-verify`** (eslint dos tocados sem erro). Sem bugs novos.
+
+**R4 entregue em 2 PRs** (dividido para isolar a área de survey/form, que tem design global próprio):
+- **R4a — Pessoas (PR #142):** `FunctionalPageHeader` no `users` (badge/botão no statusTag+action; a tela
+  não tem tiles); copy "Governance Engine Active"→"Governança Ativa", "(Cleanup)"/"(Role)" removidos,
+  1 emoji de comentário removido.
+- **R4b — Instrumentos F&S (PR #143):** header + `StatTile` no **chrome admin** de `fs`, `fs/forms`,
+  `fs/surveys` (server components) e `fs/devolutiva` (header só). **Nomes de banco na tela humanizados**
+  ("FORMS_REGISTRY"/"SURVEY_REGISTRY"/"CollectionGroup" → rótulos humanos). **Design próprio das
+  surveys/forms NÃO tocado** (a pedido da Gestora): nos previews (`SurveyEngine`/`FormsEngine`) a pegada
+  foi mínima — só 1 emoji e o nome-de-banco no erro; engines e frame de preview intactos.
