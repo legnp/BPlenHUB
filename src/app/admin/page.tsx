@@ -8,15 +8,17 @@ import {
   CalendarCheck,
   RefreshCw,
   Users,
+  LayoutDashboard,
 } from "lucide-react";
-import { motion } from "framer-motion";
 import { getAdminDashboardData, AdminDashboardData } from "@/actions/admin-dashboard";
 import { formatDateInBR, formatTimeInBR } from "@/lib/timezone";
+import { FunctionalPageHeader } from "@/components/layout/FunctionalPageHeader";
+import { StatTile, StatTone } from "@/components/admin/StatTile";
 
-const SYNC_TONE: Record<string, { dot: string; text: string }> = {
-  ok: { dot: "bg-green-500", text: "text-green-500" },
-  warn: { dot: "bg-amber-500", text: "text-amber-500" },
-  stale: { dot: "bg-red-500", text: "text-red-400" },
+const SYNC_STAT_TONE: Record<string, StatTone> = {
+  ok: "success",
+  warn: "warning",
+  stale: "danger",
 };
 
 export default function AdminDashboardPage() {
@@ -30,7 +32,7 @@ export default function AdminDashboardPage() {
         const res = await getAdminDashboardData();
         if (active) setData(res);
       } catch (error) {
-        console.error("Erro ao carregar o dashboard:", error);
+        console.error("Erro ao carregar o painel:", error);
       } finally {
         if (active) setLoading(false);
       }
@@ -39,75 +41,34 @@ export default function AdminDashboardPage() {
     return () => { active = false; };
   }, []);
 
-  const syncTone = data ? SYNC_TONE[data.sync.tone] : SYNC_TONE.stale;
+  const syncTone: StatTone = data ? SYNC_STAT_TONE[data.sync.tone] : "danger";
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col gap-2"
-      >
-        <h1 className="text-3xl font-bold tracking-tight text-[var(--text-primary)] text-left">
-          DASHBOARD <span className="text-[var(--accent-start)] italic">Administrativo</span>
-        </h1>
-        <p className="text-[var(--text-muted)] text-sm font-medium opacity-70 text-left">
-          BPlen HUB | Visão Geral Administrativa
-        </p>
-      </motion.div>
+      <FunctionalPageHeader
+        eyebrow="Visão Geral"
+        title="Painel"
+        titleAccent="Administrativo"
+        icon={<LayoutDashboard size={24} />}
+      />
 
       {/* Cards de status — 2 métricas reais */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Agendamentos 1:1 da semana */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.97 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="p-5 rounded-2xl border border-[var(--border-primary)] bg-[var(--input-bg)] backdrop-blur-xl"
-        >
-          <div className="flex items-start justify-between mb-4">
-            <div className="p-2.5 rounded-2xl bg-[var(--accent-start)]/10 text-[var(--accent-start)]">
-              <Handshake className="w-5 h-5" />
-            </div>
-          </div>
-          <div className="space-y-1 text-left">
-            <h3 className="text-3xl font-bold text-[var(--text-primary)] tracking-tighter">
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (data?.oneToOneThisWeek ?? 0)}
-            </h3>
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--text-muted)] opacity-60">
-              Agendamentos 1:1
-            </p>
-            <p className="text-xs font-medium text-[var(--text-muted)]">
-              sessões com participante nesta semana
-            </p>
-          </div>
-        </motion.div>
-
-        {/* Status real da sincronização */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.97 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.05 }}
-          className="p-5 rounded-2xl border border-[var(--border-primary)] bg-[var(--input-bg)] backdrop-blur-xl"
-        >
-          <div className="flex items-start justify-between mb-4">
-            <div className={`p-2.5 rounded-2xl bg-[var(--input-bg)] ${syncTone.text}`}>
-              <RefreshCw className="w-5 h-5" />
-            </div>
-          </div>
-          <div className="space-y-1 text-left">
-            <h3 className="text-3xl font-bold text-[var(--text-primary)] tracking-tighter">
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (data?.sync.label ?? "Sem dados")}
-            </h3>
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--text-muted)] opacity-60">
-              Agenda
-            </p>
-            <p className={`text-xs font-medium flex items-center gap-1.5 ${syncTone.text}`}>
-              {!loading && <span className={`w-1.5 h-1.5 rounded-full ${syncTone.dot}`} />}
-              {loading ? "verificando..." : (data?.sync.detail ?? "")}
-            </p>
-          </div>
-        </motion.div>
+        <StatTile
+          label="Agendamentos 1:1"
+          value={loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (data?.oneToOneThisWeek ?? 0)}
+          detail="sessões com participante nesta semana"
+          icon={<Handshake className="w-5 h-5" />}
+          tone="accent"
+        />
+        <StatTile
+          label="Agenda"
+          value={loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (data?.sync.label ?? "Sem dados")}
+          detail={loading ? "verificando..." : (data?.sync.detail ?? "")}
+          icon={<RefreshCw className="w-5 h-5" />}
+          tone={syncTone}
+          dot={!loading}
+        />
       </div>
 
       {/* Próximas sessões desta semana */}

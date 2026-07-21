@@ -2,36 +2,25 @@
 
 import React from "react";
 import { AdminProductBuilder } from "@/components/admin/AdminProductBuilder";
-import { ArrowLeft, Package } from "lucide-react";
-import Link from "next/link";
+import { Package } from "lucide-react";
+import { FunctionalPageHeader } from "@/components/layout/FunctionalPageHeader";
 
 /**
- * New Product Page — BPlen HUB
- * Ponto de entrada para criação de novos produtos no ecossistema.
+ * Nova Ficha de Produto — BPlen HUB
+ * Ponto de entrada para criacao de novos produtos.
  */
 export default function NewProductPage() {
   return (
     <div className="p-8 md:p-12 space-y-12 animate-fade-in pb-24 max-w-6xl mx-auto">
-      
-      {/* Breadcrumbs / Back */}
-      <header className="space-y-6">
-        <Link 
-          href="/admin/products"
-          className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors group"
-        >
-          <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-          Voltar para Lista de Produtos
-        </Link>
-        <div className="flex items-center gap-4">
-           <div className="w-12 h-12 rounded-2xl bg-[var(--text-primary)] text-[var(--bg-primary)] flex items-center justify-center shadow-xl">
-              <Package size={24} />
-           </div>
-           <div>
-              <h1 className="text-3xl font-bold text-[var(--text-primary)] tracking-tight">Novo <span className="text-[var(--accent-start)] italic">Produto</span></h1>
-              <p className="text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-widest mt-1 opacity-70 italic">Definição de ecossistema e entrega estratégica</p>
-           </div>
-        </div>
-      </header>
+
+      <FunctionalPageHeader
+        eyebrow="Comercial"
+        title="Novo"
+        titleAccent="Produto"
+        backHref="/admin/products"
+        backLabel="Lista de Produtos"
+        icon={<Package size={24} />}
+      />
 
       {/* Builder Component */}
       <AdminProductBuilder />

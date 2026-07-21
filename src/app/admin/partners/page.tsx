@@ -1,32 +1,28 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { 
-  Users, 
-  Plus, 
-  Trash2, 
-  Camera, 
-  Globe, 
-  Instagram, 
-  Linkedin, 
-  Save, 
+import {
+  Plus,
+  Trash2,
+  Camera,
+  Globe,
+  Instagram,
+  Linkedin,
+  Save,
   X,
   Loader2,
-  CheckCircle2,
-  AlertCircle,
-  Search,
   Briefcase
 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { 
-  getPartnersAction, 
-  upsertPartnerAction, 
-  deletePartnerAction, 
-  PartnerData 
+import {
+  getPartnersAction,
+  upsertPartnerAction,
+  deletePartnerAction,
+  PartnerData
 } from "@/actions/admin/partners";
+import { FunctionalPageHeader } from "@/components/layout/FunctionalPageHeader";
 
 /**
- * BPlen HUB — Admin: Gestão de Parceiros 🤝🛡️
+ * BPlen HUB — Admin: Gestao de Parceiros
  */
 export default function AdminPartnersPage() {
   const [partners, setPartners] = useState<PartnerData[]>([]);
@@ -90,30 +86,25 @@ export default function AdminPartnersPage() {
   return (
     <div className="p-8 space-y-10 animate-in fade-in duration-700">
       
-      {/* 🏆 Header */}
-      <div className="flex justify-between items-center bg-[var(--input-bg)] p-8 rounded-[2.5rem] glass border border-[var(--border-primary)]">
-         <div className="flex items-center gap-6">
-            <div className="p-4 bg-[var(--accent-start)]/10 rounded-3xl text-[var(--accent-start)]">
-               <Briefcase size={32} />
-            </div>
-            <div className="space-y-1">
-               <h1 className="text-2xl font-black tracking-tighter text-[var(--text-primary)]">Gestão de Parceiros</h1>
-               <p className="text-[10px] uppercase font-black tracking-[0.2em] text-[var(--text-muted)]">Ecosistema Estratégico BPlen</p>
-            </div>
-         </div>
-         <button 
-           onClick={() => {
-             setEditingPartner({ isActive: true, socials: {}, keywords: [] });
-             setShowModal(true);
-           }}
-           className="px-8 py-4 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all flex items-center gap-2"
-         >
-           <Plus size={14} />
-           Novo Parceiro
-         </button>
-      </div>
+      <FunctionalPageHeader
+        eyebrow="Ecossistema Estratégico BPlen"
+        title="Gestão de Parceiros"
+        icon={<Briefcase size={24} />}
+        action={
+          <button
+            onClick={() => {
+              setEditingPartner({ isActive: true, socials: {}, keywords: [] });
+              setShowModal(true);
+            }}
+            className="px-6 py-3 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-full text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all flex items-center gap-2"
+          >
+            <Plus size={14} />
+            Novo Parceiro
+          </button>
+        }
+      />
 
-      {/* 📊 Lista Grid */}
+      {/* Lista de parceiros */}
       {isLoading ? (
         <div className="flex flex-col items-center justify-center py-20">
            <Loader2 className="animate-spin text-white/20" size={40} />
@@ -173,7 +164,7 @@ export default function AdminPartnersPage() {
         </div>
       )}
 
-      {/* 🎭 Modal de Cadastro */}
+      {/* Modal de cadastro */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-md animate-in fade-in duration-300">
            <div className="w-full max-w-2xl bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-[3rem] p-10 space-y-8 relative overflow-y-auto max-h-[90vh] shadow-2xl">
@@ -186,9 +177,9 @@ export default function AdminPartnersPage() {
 
               <div className="space-y-1">
                  <h2 className="text-xl font-black text-[var(--text-primary)] tracking-tighter">
-                    {editingPartner?.id ? "Editar Parceiro" : "Novo Parceiro Soberano"}
+                    {editingPartner?.id ? "Editar Parceiro" : "Novo Parceiro"}
                  </h2>
-                 <p className="text-[10px] font-black uppercase text-[var(--text-muted)] tracking-widest italic">Preencha os ativos para o ecossistema</p>
+                 <p className="text-[10px] font-black uppercase text-[var(--text-muted)] tracking-widest">Preencha os dados do parceiro</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -214,7 +205,7 @@ export default function AdminPartnersPage() {
                  {/* Dados Básicos */}
                  <div className="space-y-6">
                     <div className="space-y-2">
-                       <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Nome Estratégico</label>
+                       <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Nome</label>
                        <input 
                          type="text"
                          value={editingPartner?.name || ""}
