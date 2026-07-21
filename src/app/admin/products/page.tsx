@@ -30,6 +30,8 @@ import {
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { getErrorMessage } from "@/lib/utils/errors";
+import { FunctionalPageHeader } from "@/components/layout/FunctionalPageHeader";
+import { StatTile } from "@/components/admin/StatTile";
 
 interface ProductDiffAdded {
   slug: string;
@@ -158,7 +160,7 @@ export default function PortfolioCommandCenter() {
     try {
       const result = await syncPortfolioAction();
       if (result.success) {
-        setSyncSuccessMessage(result.message || "Sincronizacao concluida com sucesso.");
+        setSyncSuccessMessage(result.message || "Sincronização concluída com sucesso.");
         setBackupCollectionName(result.backedUpTo ?? null);
         
         // Reload products list
@@ -172,7 +174,7 @@ export default function PortfolioCommandCenter() {
         setDryRunData(null);
         setDryRunExecuted(false);
       } else {
-        setDryRunError(result.error || "Erro ao commitar sincronizacao.");
+        setDryRunError(result.error || "Erro ao aplicar a sincronização.");
       }
     } catch (err: unknown) {
       const errorObj = err instanceof Error ? err : new Error(String(err));
@@ -218,29 +220,17 @@ export default function PortfolioCommandCenter() {
   return (
     <div className="space-y-10 animate-fade-in pb-24 max-w-7xl mx-auto p-4 md:p-8">
       
-      {/* Header Estrategico */}
-      <header className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 border-b border-[var(--border-primary)] pb-8">
-        <div className="space-y-2 text-left">
-          <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[8px] font-black uppercase tracking-widest">
-              Sincronia Soberana Ativa
-            </span>
-          </div>
-          <h1 className="text-3xl font-black text-[var(--text-primary)] tracking-tight">
-            PORTFOLIO <span className="text-[var(--accent-start)] italic ml-1">Command Center</span>
-          </h1>
-          <p className="text-[var(--text-muted)] text-[11px] max-w-2xl leading-relaxed opacity-80">
-            Painel soberano de auditoria, versionamento e sincronizacao de dados comerciais, de marketing e campanhas. A edicao direta de banco de dados foi travada para mitigar divergencias operacionais.
-          </p>
-        </div>
-
-        <div className="flex flex-col sm:flex-row items-center gap-3">
-          <div className="flex items-center gap-1.5 px-4 py-2 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-full text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
-            <Activity className="w-3.5 h-3.5 text-emerald-500" />
-            Ultima Sincronia: {loading ? "Carregando..." : products.length > 0 ? "Ativa" : "Sem dados"}
-          </div>
-          
-          <button 
+      <FunctionalPageHeader
+        eyebrow="Comercial"
+        title="Portfólio"
+        icon={<Package size={24} />}
+        statusTag={{
+          label: `Última sincronia: ${loading ? "carregando" : products.length > 0 ? "ativa" : "sem dados"}`,
+          tone: loading ? "neutral" : products.length > 0 ? "success" : "warning",
+          icon: <Activity className="w-3 h-3" />,
+        }}
+        action={
+          <button
             onClick={handleGitSync}
             disabled={gitSyncLoading || loading}
             className="flex items-center gap-2 px-4 py-2 bg-[var(--accent-start)]/10 hover:bg-[var(--accent-start)]/20 border border-[var(--accent-start)]/20 rounded-full text-[9px] font-black uppercase tracking-widest text-[var(--accent-start)] transition-all disabled:opacity-50"
@@ -250,10 +240,15 @@ export default function PortfolioCommandCenter() {
             ) : (
               <UploadCloud className="w-3.5 h-3.5" />
             )}
-            Sincronizar via Repositório (Git)
+            Sincronizar via Repositório
           </button>
-        </div>
-      </header>
+        }
+      />
+
+      <p className="text-[var(--text-muted)] text-[11px] max-w-2xl leading-relaxed opacity-80 -mt-4">
+        Painel de auditoria, versionamento e sincronização dos dados comerciais, de marketing e
+        campanhas. A edição direta do banco foi travada para evitar divergências operacionais.
+      </p>
 
       {/* Grid de Operacao */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -263,8 +258,8 @@ export default function PortfolioCommandCenter() {
           <div className="p-8 bg-[var(--bg-secondary)]/30 border border-[var(--border-primary)] rounded-[2.5rem] space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-sm font-black uppercase tracking-widest text-[var(--text-primary)]">Sincronizacao de Arquivos Locais</h2>
-                <p className="text-[10px] text-[var(--text-muted)] mt-1">Insira os arquivos gerados pelas areas comercial e copywritter</p>
+                <h2 className="text-sm font-black uppercase tracking-widest text-[var(--text-primary)]">Sincronização de Arquivos Locais</h2>
+                <p className="text-[10px] text-[var(--text-muted)] mt-1">Insira os arquivos gerados pelas áreas comercial e de copywriting</p>
               </div>
               <ShieldCheck className="text-emerald-500 w-5 h-5 opacity-80" />
             </div>
@@ -276,7 +271,7 @@ export default function PortfolioCommandCenter() {
               <FileDropzone 
                 id="portfolio"
                 label="portfolio_bplen.xlsx"
-                description="Dados de precificacao e checkpoints"
+                description="Dados de precificação e checkpoints"
                 file={portfolioFile}
                 dragActive={dragActiveField === "portfolio"}
                 onDragStateChange={(active) => setDragActiveField(active ? "portfolio" : null)}
@@ -289,7 +284,7 @@ export default function PortfolioCommandCenter() {
               <FileDropzone 
                 id="anuncios"
                 label="anuncios_bplen.docx"
-                description="Copywriting de anuncios e FAQ"
+                description="Copywriting de anúncios e FAQ"
                 file={anunciosFile}
                 dragActive={dragActiveField === "anuncios"}
                 onDragStateChange={(active) => setDragActiveField(active ? "anuncios" : null)}
@@ -325,9 +320,9 @@ export default function PortfolioCommandCenter() {
                     setDryRunExecuted(false);
                     setDryRunError(null);
                   }}
-                  className="px-6 py-3 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-full text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)] hover:text-white transition-all w-full sm:w-auto"
+                  className="px-6 py-3 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-full text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-all w-full sm:w-auto"
                 >
-                  Limpar Palco
+                  Limpar Seleção
                 </button>
               )}
               <button 
@@ -338,12 +333,12 @@ export default function PortfolioCommandCenter() {
                 {dryRunLoading ? (
                   <>
                     <RefreshCw className="animate-spin w-3.5 h-3.5" />
-                    Rodando Sandbox...
+                    Processando...
                   </>
                 ) : (
                   <>
                     <Activity className="w-3.5 h-3.5" />
-                    Simular Alteracoes (Dry-Run)
+                    Simular Alterações
                   </>
                 )}
               </button>
@@ -361,8 +356,8 @@ export default function PortfolioCommandCenter() {
               >
                 <div className="w-8 h-8 border-2 border-t-[var(--accent-start)] border-transparent rounded-full animate-spin" />
                 <div>
-                  <h3 className="text-xs font-black uppercase tracking-widest">Processador Sandbox Ativo</h3>
-                  <p className="text-[10px] text-[var(--text-muted)] mt-1">Carregando planilhas de precificacao e convertendo copywriting via subprocesso Python...</p>
+                  <h3 className="text-xs font-black uppercase tracking-widest">Processando Arquivos</h3>
+                  <p className="text-[10px] text-[var(--text-muted)] mt-1">Carregando as planilhas de precificação e convertendo o copywriting...</p>
                 </div>
               </motion.div>
             )}
@@ -390,8 +385,8 @@ export default function PortfolioCommandCenter() {
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--border-primary)] pb-5">
                   <div>
-                    <h3 className="text-xs font-black uppercase tracking-widest text-amber-500">Preview Comparativo (Dry-Run Sandbox)</h3>
-                    <p className="text-[10px] text-[var(--text-muted)] mt-1">Compare os novos dados processados com o banco de dados antes de commitar.</p>
+                    <h3 className="text-xs font-black uppercase tracking-widest text-amber-500">Prévia Comparativa</h3>
+                    <p className="text-[10px] text-[var(--text-muted)] mt-1">Compare os novos dados com o banco antes de aplicar.</p>
                   </div>
                   <button
                     onClick={handleSyncCommit}
@@ -401,12 +396,12 @@ export default function PortfolioCommandCenter() {
                     {syncLoading ? (
                       <>
                         <RefreshCw className="animate-spin w-3.5 h-3.5" />
-                        Salvando Lote...
+                        Salvando...
                       </>
                     ) : (
                       <>
                         <CheckCircle2 className="w-3.5 h-3.5" />
-                        Aplicar Alteracoes em Producao
+                        Aplicar Alterações
                       </>
                     )}
                   </button>
@@ -418,11 +413,11 @@ export default function PortfolioCommandCenter() {
                   {/* Added Items */}
                   {(dryRunData.productsAdded.length > 0 || dryRunData.couponsAdded.length > 0) && (
                     <div className="space-y-2">
-                      <h4 className="text-[9px] font-black uppercase tracking-widest text-emerald-500">Novidades para Insercao (+)</h4>
+                      <h4 className="text-[9px] font-black uppercase tracking-widest text-emerald-500">Novidades para Inserção (+)</h4>
                       <div className="space-y-2">
                         {dryRunData.productsAdded.map(p => (
                           <div key={p.slug} className="p-4 bg-emerald-500/5 border border-emerald-500/10 rounded-xl flex items-center justify-between text-[11px]">
-                            <span className="font-bold uppercase tracking-wide text-emerald-400">Servico: {p.title}</span>
+                            <span className="font-bold uppercase tracking-wide text-emerald-400">Serviço: {p.title}</span>
                             <span className="font-mono text-emerald-500">R$ {p.price.toFixed(2)}</span>
                           </div>
                         ))}
@@ -439,7 +434,7 @@ export default function PortfolioCommandCenter() {
                   {/* Modified Items */}
                   {(dryRunData.productsModified.length > 0 || dryRunData.couponsModified.length > 0) && (
                     <div className="space-y-4">
-                      <h4 className="text-[9px] font-black uppercase tracking-widest text-amber-500">Alteracoes Detectadas (Delta)</h4>
+                      <h4 className="text-[9px] font-black uppercase tracking-widest text-amber-500">Alterações Detectadas</h4>
                       <div className="space-y-3">
                         {dryRunData.productsModified.map(p => (
                           <div key={p.slug} className="p-5 bg-amber-500/5 border border-amber-500/10 rounded-2xl space-y-3">
@@ -487,18 +482,18 @@ export default function PortfolioCommandCenter() {
                   {/* Archived / Deactivated Items */}
                   {(dryRunData.productsArchived.length > 0 || dryRunData.couponsDeactivated.length > 0) && (
                     <div className="space-y-2">
-                      <h4 className="text-[9px] font-black uppercase tracking-widest text-red-400">Desativacao / Arquivamento (-)</h4>
+                      <h4 className="text-[9px] font-black uppercase tracking-widest text-red-400">Desativação / Arquivamento (-)</h4>
                       <div className="space-y-2">
                         {dryRunData.productsArchived.map(p => (
                           <div key={p.slug} className="p-4 bg-red-500/5 border border-red-500/10 rounded-xl flex items-center justify-between text-[11px]">
-                            <span className="font-bold uppercase tracking-wide text-red-400">Servico: {p.title}</span>
-                            <span className="px-2 py-0.5 rounded bg-red-500/20 text-red-300 text-[8px] font-bold uppercase tracking-wider">Sera Arquivado</span>
+                            <span className="font-bold uppercase tracking-wide text-red-400">Serviço: {p.title}</span>
+                            <span className="px-2 py-0.5 rounded bg-red-500/20 text-red-300 text-[8px] font-bold uppercase tracking-wider">Será Arquivado</span>
                           </div>
                         ))}
                         {dryRunData.couponsDeactivated.map(c => (
                           <div key={c.code} className="p-4 bg-red-500/5 border border-red-500/10 rounded-xl flex items-center justify-between text-[11px]">
                             <span className="font-bold uppercase tracking-wide text-red-400">Cupom: {c.code}</span>
-                            <span className="px-2 py-0.5 rounded bg-red-500/20 text-red-300 text-[8px] font-bold uppercase tracking-wider">Ficara Inativo</span>
+                            <span className="px-2 py-0.5 rounded bg-red-500/20 text-red-300 text-[8px] font-bold uppercase tracking-wider">Ficará Inativo</span>
                           </div>
                         ))}
                       </div>
@@ -512,7 +507,7 @@ export default function PortfolioCommandCenter() {
                    dryRunData.couponsModified.length === 0 && 
                    dryRunData.couponsDeactivated.length === 0 && (
                      <div className="p-6 border border-dashed border-[var(--border-primary)] rounded-2xl text-center">
-                       <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Nenhuma alteracao detectada. O portfolio local esta em perfeita sincronia com o banco de dados.</p>
+                       <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Nenhuma alteração detectada. O portfólio local está em sincronia com o banco.</p>
                      </div>
                   )}
 
@@ -531,11 +526,11 @@ export default function PortfolioCommandCenter() {
                     <CheckCircle2 size={24} />
                   </div>
                   <div className="space-y-1">
-                    <h3 className="text-sm font-black uppercase tracking-widest text-emerald-400">Sincronizacao Efetuada com Sucesso</h3>
+                    <h3 className="text-sm font-black uppercase tracking-widest text-emerald-400">Sincronização Efetuada com Sucesso</h3>
                     <p className="text-[11px] text-[var(--text-muted)] leading-relaxed">{syncSuccessMessage}</p>
                     {backupCollectionName && (
                       <p className="text-[9px] text-[var(--text-muted)] font-mono opacity-80 mt-2">
-                        Backup preventivo criado na colecao Firestore: <span className="text-emerald-400 font-bold">{backupCollectionName}</span>
+                        Backup preventivo criado na coleção: <span className="text-emerald-400 font-bold">{backupCollectionName}</span>
                       </p>
                     )}
                   </div>
@@ -549,23 +544,25 @@ export default function PortfolioCommandCenter() {
         {/* Status Lateral */}
         <div className="space-y-6 text-left">
           
-          {/* Stats Cards */}
+          {/* Metricas */}
           <div className="grid grid-cols-1 gap-4">
-            <StatCard 
-              label="Produtos Ativos" 
-              value={loading ? "--" : activeProductsCount.toString()} 
-              icon={<Package size={20} />} 
-              status={`${archivedProductsCount} arquivados`}
+            <StatTile
+              label="Produtos Ativos"
+              value={loading ? "--" : activeProductsCount.toString()}
+              icon={<Package size={20} />}
+              detail={`${archivedProductsCount} arquivados`}
+              tone="accent"
             />
-            <StatCard 
-              label="Seguranca Operacional" 
-              value="100%" 
-              icon={<Lock size={20} />} 
-              status="Edicao ad-hoc bloqueada"
+            <StatTile
+              label="Segurança Operacional"
+              value="100%"
+              icon={<Lock size={20} />}
+              detail="Edição ad-hoc bloqueada"
+              tone="success"
             />
           </div>
 
-          {/* Instrucoes de Seguranca */}
+          {/* Instrucoes de seguranca */}
           <div className="p-6 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-[2rem] space-y-4 text-[11px]">
             <h4 className="text-[9px] font-black uppercase tracking-widest text-[var(--accent-start)] flex items-center gap-1.5">
               <Database className="w-3.5 h-3.5" />
@@ -596,7 +593,7 @@ export default function PortfolioCommandCenter() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-4 border-t border-[var(--border-primary)] pt-10">
           <div>
             <h2 className="text-xs font-black uppercase tracking-widest text-[var(--text-muted)] opacity-80">Catálogo Atualizado ({products.length})</h2>
-            <p className="text-[10px] text-[var(--text-muted)] mt-1">Lista de servicos e pacotes indexados no cache do BPlen HUB</p>
+            <p className="text-[10px] text-[var(--text-muted)] mt-1">Lista de serviços e pacotes do BPlen HUB</p>
           </div>
           <div className="relative">
              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)] w-4 h-4" />
@@ -613,7 +610,7 @@ export default function PortfolioCommandCenter() {
         {loading ? (
           <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-[var(--border-primary)] rounded-[3rem] opacity-30 gap-4">
             <div className="w-6 h-6 border-2 border-t-[var(--accent-primary)] border-transparent rounded-full animate-spin" />
-            <p className="text-[10px] font-bold uppercase tracking-widest">Sincronizando Ecossistema...</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest">Carregando produtos...</p>
           </div>
         ) : filteredProducts.length === 0 ? (
           <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-[var(--border-primary)] rounded-[3rem] text-center px-12">
@@ -745,22 +742,6 @@ function FileDropzone({
   );
 }
 
-// Stats Card Sub-Component (No Emojis)
-function StatCard({ label, value, icon, status }: { label: string; value: string; icon: React.ReactNode; status: string }) {
-  return (
-    <div className="p-6 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-[2rem] flex items-center justify-between group hover:border-[var(--accent-start)]/30 transition-all">
-      <div className="space-y-1 text-left">
-        <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-60">{label}</p>
-        <p className="text-2xl font-black text-[var(--text-primary)] tracking-tight">{value}</p>
-        <p className="text-[8px] font-semibold text-[var(--text-muted)] uppercase tracking-wide opacity-80 mt-1">{status}</p>
-      </div>
-      <div className="p-3.5 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-primary)] text-[var(--text-muted)] group-hover:text-[var(--accent-start)] transition-colors">
-        {icon}
-      </div>
-    </div>
-  );
-}
-
 // Product Item Row (No Emojis)
 function ProductItem({ product }: { product: Product }) {
   return (
@@ -776,7 +757,7 @@ function ProductItem({ product }: { product: Product }) {
             <h3 className="text-[10px] font-bold text-[var(--text-primary)] uppercase tracking-widest">{product.title}</h3>
             {product.isStepJourney && (
               <span className="px-2 py-0.5 rounded-full bg-[var(--accent-start)]/10 border border-[var(--accent-start)]/20 text-[var(--accent-start)] text-[7px] font-bold uppercase tracking-widest">
-                Journey Step #{product.order}
+                Etapa da Jornada #{product.order}
               </span>
             )}
             {product.status === "archived" && (
@@ -794,7 +775,7 @@ function ProductItem({ product }: { product: Product }) {
             <span className="flex items-center gap-1.5"><Clock size={12} /> {product.status}</span>
             <span className="flex items-center gap-1.5 italic opacity-40">/{product.slug}</span>
             {product.serviceCode && <span className="opacity-60">{product.serviceCode}</span>}
-            <span className="opacity-80">R$ {product.price?.toFixed(2)} (Cartao) | R$ {product.pricePix?.toFixed(2)} (PIX)</span>
+            <span className="opacity-80">R$ {product.price?.toFixed(2)} (Cartão) | R$ {product.pricePix?.toFixed(2)} (PIX)</span>
           </div>
 
           {/* Atributos do modelo de acesso (BUG-047) — leitura apenas, a fonte e a
@@ -803,7 +784,7 @@ function ProductItem({ product }: { product: Product }) {
             <div className="flex flex-wrap items-center gap-1.5 pt-1">
               {product.escopo && (
                 <span className="px-2 py-0.5 rounded-full bg-[var(--input-bg)] border border-[var(--border-primary)] text-[var(--text-muted)] text-[7px] font-bold uppercase tracking-widest">
-                  Escopo: {product.escopo === "member" ? "Membro" : "Publico"}
+                  Escopo: {product.escopo === "member" ? "Membro" : "Público"}
                 </span>
               )}
               {product.concedeSelo && (
@@ -813,7 +794,7 @@ function ProductItem({ product }: { product: Product }) {
               )}
               {product.preRequisitos && product.preRequisitos.modo !== "nenhum" && (
                 <span className="px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[7px] font-bold uppercase tracking-widest">
-                  Pre-req: {product.preRequisitos.modo}{product.preRequisitos.etapas?.length ? ` (${product.preRequisitos.etapas.join(", ")})` : ""}
+                  Pré-req: {product.preRequisitos.modo}{product.preRequisitos.etapas?.length ? ` (${product.preRequisitos.etapas.join(", ")})` : ""}
                 </span>
               )}
               {product.libera && product.libera.length > 0 && (
@@ -832,7 +813,7 @@ function ProductItem({ product }: { product: Product }) {
           className="p-3 rounded-xl border border-[var(--border-primary)] text-[var(--text-muted)] hover:text-[var(--accent-start)] hover:border-[var(--accent-start)]/30 transition-all flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider"
         >
           <Settings size={14} />
-          Ficha Tecnica
+          Ficha Técnica
         </Link>
         <Link 
           href={`/servicos/people/${product.slug}`}
