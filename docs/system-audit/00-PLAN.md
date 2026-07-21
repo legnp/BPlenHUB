@@ -694,8 +694,14 @@ sem copy hardcoded fora do que o guia permitir).
     + Comercial (`/admin`, `products` + `new`/`[id]`, `partners`). Nasceu o componente compartilhado
     `StatTile`; `FunctionalPageHeader` adotado nas 5 telas; passada de copy/tom (acentos restaurados,
     jargão removido, "Ecosistema"→"Ecossistema", emojis de comentário removidos). Achado adiado:
-    `BUG-113`. **Próximo: R2** (Marketing: `marketing`, `social`, `qrcodes`). Validação visual em
-    produção pela Gestora (BUG-030).
+    `BUG-113`. **R1 validado pela Gestora.**
+  - **[2026-07-21] R2 concluído (PR #140, deploy de produção confirmado):** camadas 2+3 em Marketing
+    (`marketing`, `social`, `qrcodes`). `FunctionalPageHeader` + `StatTile` nas 3 telas (MetricCard/
+    cartões `text-4xl` locais → `StatTile`); passada de copy/tom (acentos no `marketing`, "MEDIA E
+    EDITORIAL"→"Mídia e Editorial", "MÁQUINA DE QR CODES"→"QR Codes", "Google Drive corporativo"
+    removido). Imports mortos removidos (17→4 problemas de eslint nos 3 arquivos). Sem bugs novos.
+    **Próximo: R3** (Jornada e Agenda: `agenda`, `gestao-agenda`). Validação visual em produção pela
+    Gestora (BUG-030).
   Nota: os 4 bugs de segurança vinculados abaixo já
   foram corrigidos (via T-02), mas a validação de UI/responsivo/copy das
   páginas em si ainda não começou; não confundir uma coisa com a outra.

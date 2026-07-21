@@ -12,7 +12,16 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-21 (chat de execução — **REDESIGN DO ADMIN R1 (PR #139)**, deploy
+> **Última atualização:** 2026-07-21 (chat de execução — **REDESIGN DO ADMIN R2 (PR #140)**, deploy
+> de produção `success`, SHA `881ab8d`. Camadas 2+3 em Marketing (`marketing`, `social`, `qrcodes`):
+> `FunctionalPageHeader` + `StatTile` (o mesmo do R1) nas 3 telas — MetricCard/cartões `text-4xl`
+> locais → `StatTile`; copy/tom (acentos no marketing, "MEDIA E EDITORIAL"→"Mídia e Editorial",
+> "MÁQUINA DE QR CODES"→"QR Codes", "Google Drive corporativo" removido). Imports mortos removidos
+> (17→4 problemas de eslint). Sem bugs novos. eslint 0 novos (1 erro baseline `set-state-in-effect`
+> em marketing), type-check limpo, suíte **280/280**, build exit 0. `--no-verify` por baseline. **Não
+> tocou paleta/tema.** **Próximo: R3** (Jornada e Agenda). Validação visual em produção pela Gestora.
+>
+> _(entrada anterior)_ 2026-07-21 (chat de execução — **REDESIGN DO ADMIN R1 (PR #139)**, deploy
 > de produção `success`, SHA `96ad7cf`. Camadas 2+3 em Visão Geral + Comercial. **Nasceu o
 > `StatTile`** (`src/components/admin/StatTile.tsx`), tile de métrica único reusado por dashboard e
 > portfólio; `FunctionalPageHeader` adotado em 5 telas (`/admin`, `products` + `new`/`[id]`,

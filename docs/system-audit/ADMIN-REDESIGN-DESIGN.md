@@ -186,7 +186,8 @@ O `StatTile` compartilhado (camada 2) deve nascer no R0 ou R1 e ser reusado nos 
 | Decisões de rótulo pendentes | **Resolvidas (2026-07-21)** — F&S e Sandbox mantidos (ver seção 3) |
 | Execução — **R0** (camada 1: nav + rótulos) | **Concluído — PR #138, deploy de produção confirmado (2026-07-21)** |
 | Execução — **R1** (Visão Geral + Comercial, cam. 2+3) | **Concluído — PR #139, deploy de produção confirmado (2026-07-21)** |
-| Execução — R2..R5 (camadas 2+3) | **Não iniciada** — próximos lotes |
+| Execução — **R2** (Marketing, cam. 2+3) | **Concluído — PR #140, deploy de produção confirmado (2026-07-21)** |
+| Execução — R3..R5 (camadas 2+3) | **Não iniciada** — próximos lotes |
 
 **R0 entregue (PR #138):** sidebar reorganizada de 3 grupos para os 7 escopos; renomeações
 aplicadas (DASHBOARD→PAINEL, PROGRAMAÇÃO HUB→PROGRAMAÇÃO DA JORNADA, MEDIA→MÍDIA E EDITORIAL com
@@ -203,3 +204,10 @@ jargão removido, ~25 acentos restaurados no `products`; "Ecosistema"→"Ecossis
 comentário removidos no `partners`. Achado adiado: `BUG-113` (cores hardcoded brancas em partners,
 ilegíveis em tema claro — recolor focado num lote de camada 2 futuro). Convenção de título dos headers
 = a do hub (Title Case; o peso vem do header, não de caixa alta — a caixa alta é só da sidebar/R0).
+
+**R2 entregue (PR #140):** camadas 2+3 em Marketing (`marketing`, `social`, `qrcodes`).
+`FunctionalPageHeader` + `StatTile` (o mesmo do R1) nas 3 telas — os `MetricCard`/cartões `text-4xl`
+locais viraram `StatTile`. Copy/tom: acentos restaurados no `marketing` (~15 strings); "MEDIA E
+EDITORIAL"→"Mídia e Editorial" e "MÁQUINA DE QR CODES"→"QR Codes" pelos headers; "Google Drive
+corporativo" removido da descrição do qrcodes. Higiene: imports mortos removidos (os 3 arquivos de
+17→4 problemas de eslint). Sem bugs novos.
