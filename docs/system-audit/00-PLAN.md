@@ -462,6 +462,8 @@ sem copy hardcoded fora do que o guia permitir).
   achados novos. Pendente (bloqueado pela instabilidade do preview local, não por
   defeito): reconferência ao vivo de `/profissionais/[slug]` e `/conteudo/artigo/[id]`
   + responsivo tablet das internas — de baixo risco, pode fechar numa passada final.
+  **[2026-07-21] VALIDADA em produção pela Gestora:** correu as páginas, folheou, tudo funcional,
+  nada quebrou. **F1-01 concluída.**
 - Resultado: renderização sem erro nas páginas validadas (após o fix do BUG-036,
   console limpo do erro de hidratação). Achados corrigidos: **BUG-036** (hidratação
   no `ComparisonTable`), **BUG-037** (acentos/crase), **BUG-014** (import morto) —
@@ -594,7 +596,9 @@ sem copy hardcoded fora do que o guia permitir).
   `GlassModal`; link "Visão Geral" adicionado ao menu sanduíche do `HubHeader`.
 - Resultado: as 4 páginas com header canônico, copy com acentos, modais no padrão, guards
   auditados (`visao_geral` só login por decisão da Gestora; as outras 3 sob o cadeado Fase D).
-  Resta a conferência visual/responsivo/fluxos em produção.
+  **[2026-07-21] VALIDADA em produção pela Gestora:** passada nas 3 páginas, tudo perfeito, nada
+  quebrou, links corretos. **F1-04 concluída.** Pedido de melhoria registrado na `visao_geral`:
+  data prevista + ordenação por data (`BUG-111`, custo avaliado — aguarda decisão de escopo).
 - Bug(s) vinculado(s): BUG-062 (Corrigido, PR #73 — copy), BUG-063 (Corrigido, PR #74 — headers),
   BUG-064 (Corrigido, PR #74 — modal)
 - Log: [2026-07-11] revisão das 4 páginas + PR1 copy (PR #73) + PR2 design (PR #74) — código
@@ -629,6 +633,9 @@ sem copy hardcoded fora do que o guia permitir).
 - Resultado: privacidade de networking fechada (valores ocultos não trafegam mais), cota de
   entrega correta, filtro morto removido, headers no padrão canônico. Resta conferência de
   fluxos/responsivo/temas em produção (checkout membro + `CouponTermsModal`, networking, perfil, entrega).
+  **[2026-07-21] VALIDADA em produção pela Gestora:** telas conferidas, tudo funcional. **F1-05
+  concluída.** Pedido de melhoria no networking: renomear selo "Profissional" → "Consultor"
+  (`BUG-112`, custo avaliado por escopo — aguarda decisão).
 - Bug(s) vinculado(s): BUG-005 (Corrigido, PR #19), BUG-006 (Corrigido, PR #18),
   BUG-016 (Corrigido, PR #77), BUG-033 (Corrigido, PR #77); + headers Gestão Funcional (PR #78, F2-05)
 - Pendência de validação acumulada: `CouponTermsModal` (F0-01 lote A, via
@@ -672,6 +679,9 @@ sem copy hardcoded fora do que o guia permitir).
     é `requireAdmin` + idempotente (`merge` + ids fixos, pula quem não tem legado), one-shot controlado.
   - **Pendente:** validação visual da Gestora em produção dos lotes B(devolutiva)/D (produtos) — a do
     dashboard e da agenda já foi feita.
+  - **[2026-07-21] VALIDADA em produção pela Gestora:** passada OK, funcional. **Parte funcional da
+    F1-06 concluída.** Fica pendente **só a passada de DESIGN geral do admin** (que a Gestora quer
+    revisar à parte — não é bug, é redesign).
   Nota: os 4 bugs de segurança vinculados abaixo já
   foram corrigidos (via T-02), mas a validação de UI/responsivo/copy das
   páginas em si ainda não começou; não confundir uma coisa com a outra.
@@ -1121,6 +1131,8 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-108 | **Alto** | **Corrigido (PR #135)** | **T-02 lote 5** / convite (F4-02) — `submitInvitationSurveyAction` aceitava matrícula do cliente sem vínculo ao token; agora deriva a identidade da **sessão verificada** (`getServerSession`) e exige `claimedBy === matrícula`; e-mail action fora da rede. **Último bloqueador do T-02** |
 | BUG-109 | Médio | Corrigido | efeito de feedback de conteúdo gravava `N/A` na planilha do Drive (desencontro de nome de campo); dado íntegro no Firestore |
 | BUG-110 | **Alto** | Aberto | Drive/backup — planilha de survey APAGA a avaliação anterior (snapshot) em vez de anexar; agravado pela pasta única de anônimos. Firestore preserva |
+| BUG-111 | Melhoria | Aberto | F1-04 — `visao_geral`: data prevista + ordenação por data nas colunas Próximas/Em Foco; custo do plano BAIXO, decisão real-only vs. estimado |
+| BUG-112 | Melhoria | Aberto | F1-05 — networking: renomear selo "Profissional" → "Consultor"; custo (a) rótulo BAIXO / (b) +campo do banco MÉDIO / (c) papel real ALTO; Drive sem impacto |
 
 ---
 

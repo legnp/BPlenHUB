@@ -3208,6 +3208,73 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Commit/PR: —
 
 
+### BUG-111 (MELHORIA) Visao Geral: campo de "data prevista" + ordenacao por data nas colunas Proximas/Em Foco
+
+- Severidade: **Melhoria** (pedido da Gestora ao validar a F1-04, 2026-07-21)
+- Area/fase onde foi achado: F1-04 (`/hub/visao_geral`)
+- Pedido: incluir uma **data prevista** para as atividades e permitir **ordenar por data** as colunas
+  "Proximas" e "Em Foco" (hoje so ordenam por Servico/A-Z/Z-A; so "Concluidas" ordena por data, via
+  `completionDate`). So entra se o **custo/risco for baixo**.
+- **Avaliacao de custo (leitura de codigo, sem implementar):**
+  - **Superficie: 1 arquivo** (`src/app/hub/visao_geral/page.tsx`). A ordenacao ja existe
+    (`sortActivities` tem `date-desc`/`date-asc`); adicionar as opcoes as duas colunas e a parte
+    trivial. O custo real esta em **definir QUE data** cada item usa.
+  - **De onde vem data REAL hoje:** reunioes tem data agendada (`eventDetail.start`, ja lido para
+    `bookingStatus`); objetivos tem campo de data/sprint no dado (a Gestora confirmou) — hoje a
+    pagina **nao le** esse campo (`completionDate: undefined` nos objetivos). Backlog e metas sem
+    data real; substeps de survey/conteudo tambem nao tem data propria.
+  - **O risco central e mostrar data FICTICIA.** Um "racional automatico" por ordem de checkpoint
+    inventa uma data que o membro pode ler como compromisso. Duas versoes:
+    - **Barata e segura:** ordenar pela data REAL onde existe (reuniao agendada; data/sprint do
+      objetivo) e mandar para o fim quem nao tem data. Baixo custo, baixo risco.
+    - **Ambiciosa e arriscada:** derivar data prevista para tudo via heuristica (cadencia x ordem) —
+      exige **regra de negocio** (cadencia, ancora temporal) e corre o risco da data inventada.
+- **Custo de fazer o PLANO: BAIXO** (item de 1 pagina, ja escopado). A decisao que dimensiona a
+  implementacao e: "data prevista" mostra so datas reais (barato/seguro) ou tambem estimadas
+  (precisa de regra + rotulo claro de "estimativa")?
+- Status: **Aberto** — aguarda decisao da Gestora sobre o escopo (real-only vs. estimado).
+- Commit/PR: —
+
+
+### BUG-112 (MELHORIA) Networking: renomear aba/selo "Profissional" -> "Consultor"
+
+- Severidade: **Melhoria** (pedido da Gestora ao validar a F1-05, 2026-07-21)
+- Area/fase onde foi achado: F1-05 (`/hub/networking`)
+- Pedido: trocar a aba "Profissionais" por "Consultores", **incluindo as logicas internas de fluxo e
+  o acesso** — em vez de um acesso "profissional", um acesso "consultor". Avaliar custo incluindo
+  banco/drive/codigo.
+- **Distincao critica (o que decide o custo):** existem DOIS "profissional" no sistema:
+  1. **Selo de networking** (`profile.networking.isBPlenProfessional`, um booleano de curadoria
+     gravado pelo admin) — **e o alvo do pedido**.
+  2. **Perfil/CV profissional do MEMBRO** (`ProfileProfessionalTab`, ferramentas de CV, surveys
+     `perfil-publico`/`cv-focado`/`master-cv`, geracao de docx) — e a **vida profissional/curriculo
+     do membro**, NAO um consultor. **Nao pode ser renomeado** (conceito diferente, ~40 arquivos).
+- **Superficie real do selo de networking (mapeada):** `actions/networking.ts` (tipo `NetworkingTab`,
+  filtro `isBPlenProfessional`, campo `NetworkingMember.isProfessional`), `components/hub/
+  NetworkingFilters.tsx` (tipo da prop), `app/hub/networking/page.tsx` (label + id da aba),
+  `components/hub/NetworkingCard.tsx` (badge), `actions/users-admin.ts` (le :112 / grava :296
+  `isBPlenProfessional`), `app/admin/users/page.tsx` (toggle "Profissional BPlen"), `types/users.ts`
+  (`AdminUser.isProfessional`).
+- **DRIVE: sem impacto.** O que ha de "profissional" no Drive e o CV/portfolio do membro (conceito 2),
+  intocado. O selo nao tem pasta/planilha propria.
+- **Avaliacao de custo (3 escopos):**
+  - **(a) So o rotulo** (mostra "Consultor", mantem `isBPlenProfessional` internamente): **BAIXO** —
+    ~5-6 arquivos, so strings; sem migracao, sem banco, sem drive; risco baixo.
+  - **(b) Rotulo + identificador + campo do banco** (`isBPlenProfessional` -> `isBPlenConsultor`):
+    **MEDIO** — soma um script de **migracao** dos docs `User` + atualizar leitores/gravadores + o
+    toggle do admin; risco moderado (a migracao nao pode perder a curadoria existente).
+  - **(c) Papel "consultor" real** (novo `UserRole`/acesso substituindo o selo, com gating proprio):
+    **ALTO** — e um redesenho do modelo de acesso, nao um rename. **Casa com a decisao ja registrada**
+    no `AGENDA-SYNC-DESIGN.md` §8.6.2 (o Consultor vira usuario da plataforma, papel concedido via
+    admin; "o papel nao existe e precisa ser criado") e com o `BUG-098` (mentor->consultor). So vale
+    se ela quiser consultores como tipo de conta distinto.
+- **Custo de fazer o PLANO: BAIXO-MEDIO** (ja escopado acima). Falta so a Gestora escolher o escopo
+  (a/b/c) e decidir se a rota **publica** `/profissionais/[slug]` (marketing de profissionais) entra
+  ou fica de fora (provavelmente fora — e outro conceito).
+- Status: **Aberto** — aguarda decisao de escopo da Gestora.
+- Commit/PR: —
+
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em

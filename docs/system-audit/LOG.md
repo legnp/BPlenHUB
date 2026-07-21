@@ -24,6 +24,35 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-21] Validação da Gestora em produção — F1-01/04/05/06 + 2 pedidos de melhoria
+
+- Chat/sessão: chat de execução (Opus 4.8). **Sem alteração de código** — registro de validações
+  reportadas pela Gestora e avaliação de custo de 2 melhorias pedidas (só leitura).
+- **Validações em produção (BUG-030 — telas logadas só validam ao vivo):**
+  - **F1-01** (páginas públicas): correu, folheou, tudo funcional, nada quebrou. **Concluída.**
+  - **F1-04** (carreira/agenda/visão geral): passada nas 3 páginas, tudo perfeito, links corretos.
+    **Concluída.**
+  - **F1-05** (checkout membro/networking/perfil/entrega): telas conferidas, funcional. **Concluída.**
+  - **F1-06** (19 telas admin): passada OK, funcional. **Parte funcional concluída** — fica só a
+    passada de **design geral do admin**, que a Gestora quer revisar à parte (redesign, não bug).
+  - **F1-02** (checkout/contratos): **segue no aguardo** — a base do usuário de teste só será limpa
+    **ao final da auditoria** (validação de ponta a ponta), então essa validação leva mais tempo.
+- **Estado da Fase 1:** F1-01/03/04/05 concluídas; F1-06 funcional concluída (design à parte);
+  F1-02 é o único item de fase que fica pendente até a limpeza da base (fim da auditoria).
+- **2 pedidos de melhoria da Gestora — custo avaliado por leitura de código (não implementados):**
+  - **`BUG-111` (Melhoria, F1-04):** data prevista + ordenação por data em Próximas/Em Foco na
+    `visao_geral`. Custo do PLANO **baixo** (1 arquivo; a ordenação por data já existe). A decisão que
+    dimensiona é real-only (barato/seguro) vs. estimado por heurística (precisa de regra + risco de
+    data fictícia).
+  - **`BUG-112` (Melhoria, F1-05):** renomear selo/aba "Profissional" → "Consultor" no networking.
+    Mapeada a superfície do **selo** (`isBPlenProfessional`, ~7 arquivos + admin) e separada do **CV/
+    perfil profissional do membro** (conceito diferente, não renomear). **Drive sem impacto.** Custo
+    por escopo: (a) só rótulo BAIXO / (b) +campo do banco (migração) MÉDIO / (c) papel "consultor"
+    real ALTO (casa com o consultor do `AGENDA-SYNC-DESIGN` §8.6.2 e o `BUG-098`).
+- Itens atualizados: `BUGS.md` (+BUG-111/112), `00-PLAN.md` (F1-01/04/05/06 validadas + índice),
+  este LOG. Aguarda decisão de escopo da Gestora nos 2 pedidos antes de qualquer código.
+
+
 ## [2026-07-20] Chat de execução — BUG-108: identidade do convite pela sessão + T-02 re-fechado (PR #135)
 
 - Chat/sessão: chat de execução (Opus 4.8). Escopo: o 3º item da fila aprovada — `BUG-108` (Alto),
