@@ -81,7 +81,7 @@ export function NetworkingCard({ type, data }: Props) {
             )}
           </div>
           
-          {/* Badge de Profissional BPlen */}
+          {/* Badge de Consultor BPlen (curadoria; campo interno segue isProfessional) */}
           {isMember && member.isProfessional && (
             <div className="absolute -bottom-2 -right-2 bg-white text-black p-2 rounded-2xl shadow-lg border border-white/20 animate-in zoom-in duration-500">
                <Star size={12} fill="black" />

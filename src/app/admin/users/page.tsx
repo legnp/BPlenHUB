@@ -644,14 +644,14 @@ export default function UsersManagementPage() {
                                   </button>
                                </div>
 
-                               {/* NOVO: Selo Profissional BPlen 🌟 */}
+                               {/* Selo Consultor BPlen (BUG-112 escopo A: rotulo; campo interno segue isBPlenProfessional) */}
                                <div className={`p-6 rounded-[2rem] border transition-all flex items-center justify-between ${selectedUser.isProfessional ? 'bg-[var(--accent-start)]/10 border-[var(--accent-start)]/30 shadow-lg shadow-[var(--accent-start)]/5' : 'bg-[var(--input-bg)] border-[var(--border-primary)] opacity-40 hover:opacity-100'}`}>
                                   <div className="flex items-center gap-3">
                                      <div className={cn("p-2 rounded-xl", selectedUser.isProfessional ? "bg-[var(--accent-start)]/10 text-[var(--accent-start)]" : "bg-[var(--bg-primary)]/40 text-[var(--text-muted)]")}>
                                         <Trophy size={16} />
                                      </div>
                                      <div>
-                                        <p className={cn("text-[10px] font-bold uppercase", selectedUser.isProfessional ? "text-[var(--accent-start)]" : "text-[var(--text-primary)]")}>Profissional BPlen</p>
+                                        <p className={cn("text-[10px] font-bold uppercase", selectedUser.isProfessional ? "text-[var(--accent-start)]" : "text-[var(--text-primary)]")}>Consultor BPlen</p>
                                         <p className="text-[8px] text-[var(--text-muted)] uppercase mt-1 font-medium italic">Habilitar curadoria na rede</p>
                                      </div>
                                   </div>

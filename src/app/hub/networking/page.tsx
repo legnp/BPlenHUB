@@ -28,10 +28,13 @@ export default function NetworkingPage() {
   const [data, setData] = useState<(NetworkingMember | PartnerData)[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Abas horizontais (rotulos encurtados no Pacote 6 — sem "BPlen" repetido)
+  // Abas horizontais (rotulos encurtados no Pacote 6 — sem "BPlen" repetido).
+  // BUG-112 escopo A: o rotulo visivel da 2a aba passa a ser "Consultores"; o id
+  // interno segue "profissionais" (e o campo `isBPlenProfessional`) de proposito —
+  // a renomeacao de identificador/banco e o escopo C, adiado para apos a auditoria.
   const tabs = [
     { id: "membros", label: "Membros", icon: Users },
-    { id: "profissionais", label: "Profissionais", icon: Star },
+    { id: "profissionais", label: "Consultores", icon: Star },
     { id: "parceiros", label: "Parceiros", icon: Handshake },
   ];
 
