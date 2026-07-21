@@ -6,6 +6,7 @@ import { Resend } from "resend";
 import { serverEnv } from "@/env";
 import { InvitationEvent, InvitationToken } from "@/types/invitations";
 import { buildSoberanaEmail, EMAIL_STYLES } from "@/lib/emails/soberana-layout";
+import { getServerSession } from "@/lib/server-session";
 
 const resend = new Resend(serverEnv.RESEND_API_KEY);
 
@@ -268,21 +269,46 @@ export async function claimInvitationTokenAction(
 
 /**
  * 4. Submete as respostas da survey e aciona os e-mails transacionais.
+ *
+ * BUG-108: a identidade vem da SESSAO VERIFICADA (idToken -> getServerSession),
+ * nunca de uma matricula recebida do cliente. O token e a autorizacao DESTE
+ * convite e precisa ter sido reivindicado pela mesma pessoa da sessao — sem isso,
+ * um chamador escrevia respostas na subcolecao privada de qualquer membro so
+ * informando a matricula (mesmo padrao de identidade do BUG-032/106).
  */
 export async function submitInvitationSurveyAction(
   token: string,
   eventSlug: string,
   answers: Record<string, string | number>,
-  matricula: string
+  idToken?: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    // A. Identidade comprovada pela sessao (nunca por parametro do cliente).
+    const session = await getServerSession(idToken);
+    if (!session || !session.matricula) {
+      return { success: false, error: "Sessao invalida. Faca login novamente." };
+    }
+    const matricula = session.matricula;
+
     const db = getAdminDb();
     const normalizedToken = token.trim().toUpperCase();
 
-    // A. Gravar as respostas isoladas na subcoleção privada do usuário
-    const surveyPath = `User/${matricula}/Surveys/invitation_${eventSlug}`;
-    const surveyRef = db.doc(surveyPath);
+    // B. O token e a autorizacao deste convite: tem de existir, ser deste evento
+    //    e ter sido reivindicado por ESTA pessoa (claimedBy === matricula da sessao).
+    const tokenSnap = await db.collection("Invitation_Tokens").doc(normalizedToken).get();
+    if (!tokenSnap.exists) {
+      return { success: false, error: "Token invalido." };
+    }
+    const tokenData = tokenSnap.data();
+    if (tokenData?.eventSlug !== eventSlug) {
+      return { success: false, error: "Este token nao pertence a este evento." };
+    }
+    if (tokenData?.status !== "claimed" || tokenData?.claimedBy !== matricula) {
+      return { success: false, error: "Este convite nao esta vinculado a sua conta." };
+    }
 
+    // C. Gravar as respostas na subcolecao da matricula VERIFICADA.
+    const surveyRef = db.doc(`User/${matricula}/Surveys/invitation_${eventSlug}`);
     await surveyRef.set({
       surveyId: `invitation_${eventSlug}`,
       token: normalizedToken,
@@ -292,27 +318,32 @@ export async function submitInvitationSurveyAction(
       submittedAt: admin.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
 
-    // B. Disparar e-mails apenas se o RSVP tiver status de resposta
+    // D. Disparar e-mails apenas se o RSVP tiver status de resposta
     const rsvpStatus = answers.rsvp as string;
     if (rsvpStatus === "com_certeza" || rsvpStatus === "talvez") {
-      await sendInvitationRsvpEmailsAction(matricula, eventSlug, answers);
+      await sendInvitationRsvpEmails(matricula, eventSlug, answers);
     } else if (rsvpStatus === "nao" && answers.future_invite === "sim") {
       // Dispara e-mail de notificação para futuras datas
-      await sendInvitationRsvpEmailsAction(matricula, eventSlug, answers);
+      await sendInvitationRsvpEmails(matricula, eventSlug, answers);
     }
 
     return { success: true };
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
-    console.error(`[submitInvitationSurveyAction] Erro lendo ${eventSlug} de ${matricula}:`, errorMessage);
+    console.error(`[submitInvitationSurveyAction] Erro no evento ${eventSlug}:`, errorMessage);
     return { success: false, error: errorMessage };
   }
 }
 
 /**
  * 5. Envia os e-mails em formato Soberana v3.1 (Dual Dispatch: Usuário + BPlen Notificação)
+ *
+ * BUG-108: helper INTERNO (sem `export`) — deixou de ser endpoint de rede. Quando
+ * exportada, aceitava `matricula` do cliente e era um vetor de disparo de e-mail em
+ * nome de qualquer membro. Agora so o proprio `submitInvitationSurveyAction` a
+ * chama, com a matricula ja verificada pela sessao.
  */
-export async function sendInvitationRsvpEmailsAction(
+async function sendInvitationRsvpEmails(
   matricula: string,
   eventSlug: string,
   answers: Record<string, string | number>
