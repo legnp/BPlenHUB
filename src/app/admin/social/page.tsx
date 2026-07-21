@@ -1,36 +1,35 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { 
-  Plus, 
-  Search, 
-  Filter, 
-  Trash2, 
-  Edit3, 
-  ExternalLink, 
-  Eye, 
-  EyeOff, 
+import {
+  Plus,
+  Search,
+  Trash2,
+  Edit3,
+  Eye,
+  EyeOff,
   Star,
   Linkedin,
   Instagram,
   Phone,
-  Globe, 
-  Loader2, 
+  Globe,
   Calendar as CalendarIcon,
   LayoutDashboard,
   ArrowRight,
   FileText,
+  Newspaper,
   LucideIcon
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { SocialPost, SocialPlatform } from "@/types/social";
+import { FunctionalPageHeader } from "@/components/layout/FunctionalPageHeader";
+import { StatTile } from "@/components/admin/StatTile";
 import { 
   getSocialPosts, 
   deleteSocialPost, 
   togglePostStatus 
 } from "@/actions/social";
-import { uploadSocialThumbnailToDrive, deleteSocialThumbnailFromDrive } from "@/actions/social-drive";
-import GlassModal from "@/components/ui/GlassModal";
+import { deleteSocialThumbnailFromDrive } from "@/actions/social-drive";
 import { SocialPostForm } from "@/components/admin/SocialPostForm";
 import { auth } from "@/lib/firebase";
 import Link from "next/link";
@@ -109,58 +108,49 @@ export default function SocialManagementPage() {
 
   return (
     <div className="space-y-8 pb-20">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start gap-4">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight text-[var(--text-primary)]">
-            MEDIA E <span className="text-[var(--accent-start)] italic">EDITORIAL</span>
-          </h1>
-          <p className="text-[var(--text-muted)] text-sm font-medium opacity-70">
-            Gestão e criação de conteúdos editoriais e de social media.
-          </p>
-        </div>
+      <FunctionalPageHeader
+        eyebrow="Marketing"
+        title="Mídia"
+        titleAccent="e Editorial"
+        icon={<Newspaper size={24} />}
+        action={
+          <button
+            onClick={() => {
+              setEditingPost(null);
+              setIsFormOpen(true);
+            }}
+            className="flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] text-white rounded-full font-bold text-xs uppercase tracking-[0.2em] shadow-xl shadow-[var(--accent-start)]/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+          >
+            <Plus size={18} />
+            Nova Postagem
+          </button>
+        }
+      />
 
-        <button
-          onClick={() => {
-            setEditingPost(null);
-            setIsFormOpen(true);
-          }}
-          className="flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] text-white rounded-2xl font-bold text-xs uppercase tracking-[0.2em] shadow-xl shadow-[var(--accent-start)]/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
-        >
-          <Plus size={18} />
-          Nova Postagem
-        </button>
-      </div>
+      <p className="text-[var(--text-muted)] text-sm font-medium opacity-70 -mt-4">
+        Gestão e criação de conteúdos editoriais e de social media.
+      </p>
 
       {/* Stats Summary */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
-        <div className="p-6 bg-[var(--input-bg)] rounded-3xl border border-[var(--border-primary)] shadow-sm">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-[var(--accent-start)]/10 rounded-xl text-[var(--accent-start)]">
-              <LayoutDashboard size={18} />
-            </div>
-            <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest leading-none">Total de Posts</span>
-          </div>
-          <div className="text-4xl font-bold text-[var(--text-primary)]">{posts.length}</div>
-        </div>
-        <div className="p-6 bg-[var(--input-bg)] rounded-3xl border border-[var(--border-primary)] shadow-sm">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-green-500/10 rounded-xl text-green-500">
-              <Eye size={18} />
-            </div>
-            <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest leading-none">Ativos no Site</span>
-          </div>
-          <div className="text-4xl font-bold text-[var(--text-primary)]">{posts.filter(p => p.isActive).length}</div>
-        </div>
-        <div className="p-6 bg-[var(--input-bg)] rounded-3xl border border-[var(--border-primary)] shadow-sm">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-yellow-500/10 rounded-xl text-yellow-500">
-              <Star size={18} />
-            </div>
-            <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest leading-none">Em Destaque</span>
-          </div>
-          <div className="text-4xl font-bold text-[var(--text-primary)]">{posts.filter(p => p.isFeatured).length}</div>
-        </div>
+        <StatTile
+          icon={<LayoutDashboard size={20} />}
+          label="Total de Posts"
+          value={posts.length}
+          tone="accent"
+        />
+        <StatTile
+          icon={<Eye size={20} />}
+          label="Ativos no Site"
+          value={posts.filter(p => p.isActive).length}
+          tone="success"
+        />
+        <StatTile
+          icon={<Star size={20} />}
+          label="Em Destaque"
+          value={posts.filter(p => p.isFeatured).length}
+          tone="warning"
+        />
       </div>
 
       {/* Filter Bar */}
