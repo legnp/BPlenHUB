@@ -1,19 +1,17 @@
 import React from "react";
 import { Metadata } from "next";
-import { 
-  Plus, 
-  Search, 
-  MoreHorizontal, 
-  BarChart3, 
-  Eye, 
-  Settings, 
-  CheckCircle2, 
-  Filter,
-  Users,
+import {
+  Search,
+  BarChart3,
+  Eye,
+  Settings,
+  CheckCircle2,
   Activity
 } from "lucide-react";
 import { getAdminSurveysAnalytics } from "@/actions/admin-surveys";
 import { FSTabs } from "@/components/admin/FSTabs";
+import { FunctionalPageHeader } from "@/components/layout/FunctionalPageHeader";
+import { StatTile } from "@/components/admin/StatTile";
 
 export const metadata: Metadata = {
   title: "Gestão de Pesquisas",
@@ -37,55 +35,46 @@ export default async function AdminSurveysPage() {
         </div>
       )}
 
-      {/* Header Admin */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight text-[var(--text-primary)]">
-            SURVEYS <span className="text-[var(--accent-start)] italic ml-1">e Inteligência</span>
-          </h1>
-          <p className="text-[var(--text-muted)] text-[11px] font-medium opacity-70">
-            Gerenciamento de surveys para pesquisas e análises.
-          </p>
-        </div>
+      <FunctionalPageHeader
+        eyebrow="Instrumentos e Devolutivas"
+        title="Surveys"
+        titleAccent="e Inteligência"
+        icon={<BarChart3 size={24} />}
+        action={
+          <button className="flex items-center gap-2 px-6 py-3 bg-[var(--input-bg)] border border-[var(--border-primary)] text-[var(--text-primary)] rounded-full font-bold text-sm hover:border-[var(--accent-start)]/50 transition-all">
+            <Settings size={18} />
+            Configurações
+          </button>
+        }
+      />
 
-        <button className="flex items-center gap-2 px-6 py-3 bg-[var(--input-bg)] border border-[var(--border-primary)] text-[var(--text-primary)] rounded-2xl font-bold text-sm hover:border-[var(--accent-start)]/50 transition-all">
-          <Settings size={18} />
-          Configurar Registry
-        </button>
-      </div>
+      <p className="text-[var(--text-muted)] text-[11px] font-medium opacity-70 -mt-4">
+        Gerenciamento de surveys para pesquisas e análises.
+      </p>
 
-      {/* Stats Quick View (Dados Reais) */}
+      {/* Metricas rapidas (dados reais) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="p-6 rounded-3xl bg-[var(--input-bg)] border border-[var(--border-primary)] space-y-4 shadow-sm hover:shadow-md transition-all">
-          <div className="flex items-center justify-between text-[var(--text-muted)]">
-            <BarChart3 size={20} />
-            <span className="text-[10px] font-bold uppercase tracking-widest">Respostas Globais</span>
-          </div>
-          <div className="text-4xl font-bold text-[var(--text-primary)] text-left">
-            {stats.totalGlobalResponses.toLocaleString()}
-          </div>
-          <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest text-left">
-            Consolidado via CollectionGroup
-          </p>
-        </div>
-        <div className="p-6 rounded-3xl bg-[var(--input-bg)] border border-[var(--border-primary)] space-y-4 shadow-sm hover:shadow-md transition-all">
-          <div className="flex items-center justify-between text-[var(--text-muted)]">
-            <Activity size={20} />
-            <span className="text-[10px] font-bold uppercase tracking-widest">Atividade 24h</span>
-          </div>
-          <div className="text-4xl font-bold text-[var(--accent-start)] text-left">
-            +{stats.responsesLast24h}
-          </div>
-          <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest text-left">Novas submissões</p>
-        </div>
-        <div className="p-6 rounded-3xl bg-[var(--input-bg)] border border-[var(--border-primary)] space-y-4 shadow-sm hover:shadow-md transition-all border-l-4 border-l-[var(--accent-start)]">
-          <div className="flex items-center justify-between text-[var(--text-muted)]">
-            <CheckCircle2 size={20} />
-            <span className="text-[10px] font-bold uppercase tracking-widest">Surveys Ativas</span>
-          </div>
-          <div className="text-4xl font-bold text-[var(--text-primary)] text-left">{stats.activeSurveysCount}</div>
-          <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest text-left">Registradas em SURVEY_REGISTRY</p>
-        </div>
+        <StatTile
+          icon={<BarChart3 size={20} />}
+          label="Respostas Globais"
+          value={stats.totalGlobalResponses.toLocaleString()}
+          detail="Consolidado"
+          tone="accent"
+        />
+        <StatTile
+          icon={<Activity size={20} />}
+          label="Atividade 24h"
+          value={`+${stats.responsesLast24h}`}
+          detail="Novas submissões"
+          tone="accent"
+        />
+        <StatTile
+          icon={<CheckCircle2 size={20} />}
+          label="Surveys Ativas"
+          value={stats.activeSurveysCount}
+          detail="Total ativo"
+          tone="success"
+        />
       </div>
 
       {/* Main List Table (Dados Agregados) */}
@@ -97,12 +86,12 @@ export default async function AdminSurveysPage() {
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors" size={16} />
               <input 
                 type="text" 
-                placeholder="Filtrar registry..." 
+                placeholder="Filtrar surveys..." 
                 className="w-full bg-[var(--bg-primary)]/50 border border-[var(--input-border)] rounded-xl py-3 pl-10 pr-4 text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent-start)]/50 transition-all font-medium placeholder:text-[var(--text-muted)] placeholder:opacity-40"
               />
            </div>
            <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-[0.2em]">
-             Visão Analítica Real (Não-CRUD)
+             Visão analítica
            </p>
         </div>
 
@@ -153,7 +142,7 @@ export default async function AdminSurveysPage() {
                          href={`/admin/fs/surveys/preview/${survey.id}`}
                          className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 text-[var(--text-primary)] text-[10px] font-bold rounded-lg hover:border-[var(--accent-start)]/50 transition-all font-mono tracking-widest"
                        >
-                         <Eye size={14} className="text-[var(--accent-start)]" /> PREVIEW
+                         <Eye size={14} className="text-[var(--accent-start)]" /> Prévia
                        </a>
                        <button className="flex items-center gap-2 px-4 py-2 bg-accent-start text-white text-[10px] font-bold rounded-lg hover:opacity-90 transition-all shadow-lg shadow-accent-start/20">
                          <BarChart3 size={14} /> Detalhes

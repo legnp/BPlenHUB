@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getFormConfig } from "@/config/forms";
 import { FormsEngine } from "@/components/forms/FormsEngine";
-import { ChevronLeft, Eye, FlaskConical, CheckCircle2 } from "lucide-react";
+import { ChevronLeft, FlaskConical, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { FormResponse } from "@/types/forms";
 
@@ -28,7 +28,7 @@ export default function FormPreviewPage() {
         </div>
         <h2 className="text-xl font-bold text-[var(--text-primary)]">Formulário Não Encontrado</h2>
         <p className="text-[var(--text-muted)] text-sm max-w-xs">
-          O ID <span className="font-mono text-[var(--accent-start)]">{formId}</span> não existe no FORMS_REGISTRY.
+          O ID <span className="font-mono text-[var(--accent-start)]">{formId}</span> não existe no BPlen HUB.
         </p>
         <button 
           onClick={() => router.push("/admin/fs/forms")}

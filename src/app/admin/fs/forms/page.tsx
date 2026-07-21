@@ -1,23 +1,21 @@
 import React from "react";
 import { Metadata } from "next";
-import { 
-  Search, 
-  MoreHorizontal, 
-  Eye, 
-  Settings, 
-  CheckCircle2, 
-  ClipboardCheck,
-  Zap,
-  LayoutGrid,
+import {
+  Search,
+  Eye,
+  Settings,
+  CheckCircle2,
   BarChart3,
   Activity
 } from "lucide-react";
 import { getAdminFormsAnalytics } from "@/actions/admin-forms";
 import { FSTabs } from "@/components/admin/FSTabs";
+import { FunctionalPageHeader } from "@/components/layout/FunctionalPageHeader";
+import { StatTile } from "@/components/admin/StatTile";
 
 export const metadata: Metadata = {
   title: "Gestão de Formulários",
-  description: "Administração de fluxos operacionais e coleta de dados (Forms_Global).",
+  description: "Administração de fluxos operacionais e coleta de dados.",
 };
 
 export default async function FormsManagementPage() {
@@ -37,55 +35,46 @@ export default async function FormsManagementPage() {
         </div>
       )}
       
-      {/* Header Admin */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight text-[var(--text-primary)]">
-            FORMULÁRIOS <span className="text-[var(--accent-start)] italic ml-1">Operacionais</span>
-          </h1>
-          <p className="text-[var(--text-muted)] text-[11px] font-medium opacity-70">
-            Gerenciamento de formulário para workflows, triagem e CRM.
-          </p>
-        </div>
+      <FunctionalPageHeader
+        eyebrow="Instrumentos e Devolutivas"
+        title="Formulários"
+        titleAccent="Operacionais"
+        icon={<CheckCircle2 size={24} />}
+        action={
+          <button className="flex items-center gap-2 px-6 py-3 bg-[var(--input-bg)] border border-[var(--border-primary)] text-[var(--text-primary)] rounded-full font-bold text-sm hover:border-[var(--accent-start)]/50 transition-all">
+            <Settings size={18} />
+            Configurações
+          </button>
+        }
+      />
 
-        <button className="flex items-center gap-2 px-6 py-3 bg-[var(--input-bg)] border border-[var(--border-primary)] text-[var(--text-primary)] rounded-2xl font-bold text-sm hover:border-[var(--accent-start)]/50 transition-all">
-          <Settings size={18} />
-          Configurações de Engine
-        </button>
-      </div>
+      <p className="text-[var(--text-muted)] text-[11px] font-medium opacity-70 -mt-4">
+        Gerenciamento de formulários para fluxos, triagem e CRM.
+      </p>
 
-      {/* Stats Quick View (Dados Reais) */}
+      {/* Metricas rapidas (dados reais) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="p-6 rounded-3xl bg-[var(--input-bg)] border border-[var(--border-primary)] space-y-4 shadow-sm hover:shadow-md transition-all">
-          <div className="flex items-center justify-between text-[var(--text-muted)]">
-            <BarChart3 size={20} />
-            <span className="text-[10px] font-bold uppercase tracking-widest">Respostas Globais</span>
-          </div>
-          <div className="text-4xl font-bold text-[var(--text-primary)] text-left">
-            {stats.totalGlobalResponses.toLocaleString()}
-          </div>
-          <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest text-left">
-            Consolidado via CollectionGroup
-          </p>
-        </div>
-        <div className="p-6 rounded-3xl bg-[var(--input-bg)] border border-[var(--border-primary)] space-y-4 shadow-sm hover:shadow-md transition-all">
-          <div className="flex items-center justify-between text-[var(--text-muted)]">
-            <Activity size={20} />
-            <span className="text-[10px] font-bold uppercase tracking-widest">Atividade 24h</span>
-          </div>
-          <div className="text-4xl font-bold text-[var(--accent-start)] text-left">
-            +{stats.responsesLast24h}
-          </div>
-          <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest text-left">Novas submissões</p>
-        </div>
-        <div className="p-6 rounded-3xl bg-[var(--input-bg)] border border-[var(--border-primary)] space-y-4 shadow-sm hover:shadow-md transition-all border-l-4 border-l-[var(--accent-start)]">
-          <div className="flex items-center justify-between text-[var(--text-muted)]">
-            <CheckCircle2 size={20} />
-            <span className="text-[10px] font-bold uppercase tracking-widest">Formulários Ativos</span>
-          </div>
-          <div className="text-4xl font-bold text-[var(--text-primary)] text-left">{stats.activeFormsCount}</div>
-          <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest text-left">Registrados em FORMS_REGISTRY</p>
-        </div>
+        <StatTile
+          icon={<BarChart3 size={20} />}
+          label="Respostas Globais"
+          value={stats.totalGlobalResponses.toLocaleString()}
+          detail="Consolidado"
+          tone="accent"
+        />
+        <StatTile
+          icon={<Activity size={20} />}
+          label="Atividade 24h"
+          value={`+${stats.responsesLast24h}`}
+          detail="Novas submissões"
+          tone="accent"
+        />
+        <StatTile
+          icon={<CheckCircle2 size={20} />}
+          label="Formulários Ativos"
+          value={stats.activeFormsCount}
+          detail="Total ativo"
+          tone="success"
+        />
       </div>
 
       {/* Main List Table (Dados Agregados) */}
@@ -153,7 +142,7 @@ export default async function FormsManagementPage() {
                          href={`/admin/fs/forms/preview/${form.id}`}
                          className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 text-[var(--text-primary)] text-[10px] font-bold rounded-lg hover:border-[var(--accent-start)]/50 transition-all font-mono tracking-widest"
                        >
-                         <Eye size={14} className="text-[var(--accent-start)]" /> PREVIEW
+                         <Eye size={14} className="text-[var(--accent-start)]" /> Prévia
                        </a>
                        <button className="flex items-center gap-2 px-4 py-2 bg-accent-start text-white text-[10px] font-bold rounded-lg hover:opacity-90 transition-all shadow-lg shadow-accent-start/20">
                          <BarChart3 size={14} /> Detalhes
@@ -176,7 +165,7 @@ export default async function FormsManagementPage() {
 
         {/* Footer Admin Table */}
         <div className="p-8 flex justify-between items-center text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest bg-[var(--bg-primary)]/40">
-           Exibindo {forms.length} roteiros operacionais (Forms_Global)
+           Exibindo {forms.length} formulários operacionais
            <div className="flex gap-4 font-bold">
               <button disabled className="opacity-30">Página Anterior</button>
               <button disabled className="opacity-30">Próxima Página</button>
