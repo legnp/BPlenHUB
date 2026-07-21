@@ -101,8 +101,8 @@ a Gestora aprovou; se um dia pesar mais como utilidade, migra para Ferramentas.
 | MEDIA E EDITORIAL | **MÍDIA E EDITORIAL** |
 | MÁQUINA DE QR CODES | **QR CODES** |
 | GESTÃO DE USUÁRIOS | GESTÃO DE USUÁRIOS (mantém) |
-| F&S | **FORMULÁRIOS E SURVEYS** _(decisão pendente: "Surveys" vs "Pesquisas" — "survey" é jargão entranhado no projeto; confirmar com a Gestora)_ |
-| SANDBOX | **SANDBOX** _(decisão pendente: manter "Sandbox" (ferramenta dev) ou PT "Laboratório"/"Ambiente de Teste")_ |
+| F&S | **F&S** _(mantido — decisão da Gestora 2026-07-21: a abreviação ajuda a assimilar a diferença entre survey e forms; supera a proposta "FORMULÁRIOS E SURVEYS")_ |
+| SANDBOX | **SANDBOX** _(mantido — decisão da Gestora 2026-07-21: mais enxuto)_ |
 
 **Correções de copy dentro das telas** (tom, `F0-06`):
 - "Control Center" (sidebar subtítulo) → PT ("Central de Controle") ou remover.
@@ -183,5 +183,13 @@ O `StatTile` compartilhado (camada 2) deve nascer no R0 ou R1 e ser reusado nos 
 | Levantamento + diagnóstico | **Concluído (2026-07-21)** |
 | 7 categorias | **Aprovadas (2026-07-21)** |
 | Escopo (camadas 1+2+3, por lotes) | **Aprovado (2026-07-21)** |
-| Decisões de rótulo pendentes | "Surveys" vs "Pesquisas"; "Sandbox" vs PT |
-| Execução (R0..R5) | **Não iniciada** — próximo chat |
+| Decisões de rótulo pendentes | **Resolvidas (2026-07-21)** — F&S e Sandbox mantidos (ver seção 3) |
+| Execução — **R0** (camada 1: nav + rótulos) | **Concluído — PR #138, deploy de produção confirmado (2026-07-21)** |
+| Execução — R1..R5 (camadas 2+3) | **Não iniciada** — próximos lotes |
+
+**R0 entregue (PR #138):** sidebar reorganizada de 3 grupos para os 7 escopos; renomeações
+aplicadas (DASHBOARD→PAINEL, PROGRAMAÇÃO HUB→PROGRAMAÇÃO DA JORNADA, MEDIA→MÍDIA E EDITORIAL com
+acento, MÁQUINA DE QR CODES→QR CODES, "Control Center"→"Central de Controle"); F&S/SANDBOX mantidos
+por decisão da Gestora; **MIGRAR ONBOARDING** (`/admin/migrate-welcome`) adicionada à nav (a página
+existia sem entrada — sinalizada para veto na PR). Higiene: `NavGroup` extraído, 3 imports mortos
+removidos. Não tocou paleta/tema. O `StatTile` compartilhado (camada 2) nasce no R1.

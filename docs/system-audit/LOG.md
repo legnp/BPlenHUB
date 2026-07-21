@@ -24,6 +24,44 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-21] Chat de execução — REDESIGN DO ADMIN R0: sidebar em 7 escopos + rótulos (PR #138)
+
+- Chat/sessão: chat de execução (Opus 4.8). Primeiro lote (**R0**, camada 1) do redesign do admin,
+  conforme o plano aprovado em `ADMIN-REDESIGN-DESIGN.md`. Área sensível (sistema de design) com plano
+  já aprovado → executa por lotes, cada lote branch + PR.
+- **2 decisões de rótulo pendentes resolvidas com a Gestora ANTES de codar** (o próprio plano as
+  deixara em aberto): (1) categoria 6 → **manter "F&S"** (a abreviação ajuda a assimilar a diferença
+  entre survey e forms — supera a proposta "FORMULÁRIOS E SURVEYS"); (2) categoria 7 → **manter
+  "Sandbox"** (mais enxuto). Registradas na seção 3 do design doc.
+- **Entrega: PR #138 mergeado (`1c7e5e9`, squash), deploy de produção CONFIRMADO** (Vercel success no
+  status do commit, ~3 min após o merge — L31). Arquivo único: `src/app/admin/AdminLayoutClient.tsx`.
+  - **Nav reorganizada** de 3 grupos (Operação/Conteúdo & Vendas/Dados & Usuários) para os **7
+    escopos** aprovados: Visão Geral, Comercial, Marketing, Jornada e Agenda, Pessoas, Instrumentos e
+    Devolutivas, Sistema e Ferramentas.
+  - **Renomeações/tom (F0-06):** DASHBOARD→**PAINEL**; PROGRAMAÇÃO HUB→**PROGRAMAÇÃO DA JORNADA**;
+    MEDIA E EDITORIAL→**MÍDIA E EDITORIAL** (acento faltante); MÁQUINA DE QR CODES→**QR CODES**;
+    subtítulo "Control Center"→**"Central de Controle"**.
+  - **Nav nova:** **MIGRAR ONBOARDING** (`/admin/migrate-welcome`) — a página existia mas não tinha
+    entrada de nav (só URL direta; confirmado por grep, zero links). O plano a coloca na categoria 7.
+    Admin-only, baixo risco. **Sinalizada para veto** no corpo da PR.
+  - **`/admin/fs/devolutiva`** NÃO recebeu entrada própria — é aba interna do F&S (`FSTabs.tsx`),
+    permanece como sub-rota (correto).
+  - **Higiene:** cabeçalho de grupo repetido extraído para o componente `NavGroup`; 3 imports mortos
+    removidos (`FileText`, `Briefcase`, `ShieldCheck`).
+- **Não tocados** (regra do `CLAUDE.md` / seção 1.3 do design doc): paleta / variáveis de tema e o
+  seletor de tema do `HubHeader`. Camadas 2 (header canônico + `StatTile`) e 3 (copy tela a tela)
+  ficam para R1–R5; o `StatTile` compartilhado nasce no R1.
+- Validado (Lição 14): eslint do arquivo tocado **0 problemas** (abaixo da baseline — os 3 imports
+  mortos eram warnings na `main`); `type-check` limpo; `test` **280/280** (sem falha espúria);
+  `build` exit 0 (`.next` limpo antes). Pre-commit passou limpo (sem `--no-verify`).
+- **Sem bugs novos** — `BUGS.md` inalterado. Conferência visual em **produção** pela Gestora (BUG-030).
+- Itens atualizados: `ADMIN-REDESIGN-DESIGN.md` (decisões resolvidas + R0 concluído), `00-PLAN.md`
+  (F1-06), `DASHBOARD.md`, este LOG.
+- **Próximo: R1** — Visão Geral + Comercial (`/admin`, `products` + `new`/`[id]`, `partners`),
+  camadas 2+3, nascendo o `StatTile` compartilhado.
+
+---
+
 ## [2026-07-21] Levantamento + plano do REDESIGN DO ADMIN (F1-06) — aprovado, a executar por lotes
 
 - Chat/sessão: mesma sessão. **Sem código** — levantamento read-only + proposta aprovada. **Encerra

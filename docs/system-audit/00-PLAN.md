@@ -685,7 +685,12 @@ sem copy hardcoded fora do que o guia permitir).
   - **[2026-07-21] Passada de design: levantamento feito + PLANO APROVADO** — as 19 telas
     inventariadas (design + tom); reorganização em **7 escopos** e escopo **completo por lotes**
     aprovados pela Gestora. Plano formalizado em **`ADMIN-REDESIGN-DESIGN.md`** (lotes R0..R5).
-    **Execução não iniciada** — próximo chat.
+  - **[2026-07-21] R0 concluído (PR #138, deploy de produção confirmado):** camada 1 do redesign —
+    sidebar reorganizada nos 7 escopos + mapa de renomeação + correção de erros (MÍDIA com acento,
+    QR CODES, PROGRAMAÇÃO DA JORNADA, PAINEL, "Central de Controle"). 2 decisões de rótulo resolvidas
+    pela Gestora antes de executar (F&S e Sandbox mantidos). `MIGRAR ONBOARDING` adicionada à nav
+    (página órfã de nav, sinalizada para veto). **Próximo: R1** (Visão Geral + Comercial, camadas 2+3,
+    nasce o `StatTile`). Validação visual das telas em produção pela Gestora (BUG-030).
   Nota: os 4 bugs de segurança vinculados abaixo já
   foram corrigidos (via T-02), mas a validação de UI/responsivo/copy das
   páginas em si ainda não começou; não confundir uma coisa com a outra.

@@ -12,7 +12,20 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-20 (chat de execução — **BUG-108 corrigido (PR #135) + T-02
+> **Última atualização:** 2026-07-21 (chat de execução — **REDESIGN DO ADMIN R0 (PR #138)**, deploy
+> de produção `success`, SHA `1c7e5e9`. Camada 1 do redesign: sidebar do admin reorganizada de 3
+> grupos para os **7 escopos** aprovados (Visão Geral, Comercial, Marketing, Jornada e Agenda,
+> Pessoas, Instrumentos e Devolutivas, Sistema e Ferramentas); renomeações de tom/rótulo aplicadas
+> (DASHBOARD→PAINEL, PROGRAMAÇÃO HUB→PROGRAMAÇÃO DA JORNADA, MEDIA→MÍDIA E EDITORIAL com acento,
+> MÁQUINA DE QR CODES→QR CODES, "Control Center"→"Central de Controle"); 2 decisões de rótulo
+> resolvidas com a Gestora antes de codar (**F&S** e **Sandbox** mantidos). **MIGRAR ONBOARDING**
+> (`/admin/migrate-welcome`) adicionada à nav (página existia sem entrada; sinalizada para veto).
+> Higiene: `NavGroup` extraído + 3 imports mortos removidos. **Não tocou paleta/tema.** Arquivo único
+> `AdminLayoutClient.tsx`. eslint do arquivo 0, type-check limpo, suíte **280/280**, build exit 0.
+> Sem bugs novos. **Próximo: R1** (Visão Geral + Comercial, camadas 2+3, nasce o `StatTile`).
+> Validação visual em produção pela Gestora (BUG-030).
+>
+> _(entrada anterior)_ 2026-07-20 (chat de execução — **BUG-108 corrigido (PR #135) + T-02
 > RE-FECHADO**, deploy de produção `success`, SHA `ee54530`. O envio do survey de convite
 > (`submitInvitationSurveyAction`) aceitava a **matrícula do cliente** sem vínculo ao token e gravava
 > na subcoleção privada de qualquer membro + disparava e-mail em nome de terceiros (3º lugar com o
