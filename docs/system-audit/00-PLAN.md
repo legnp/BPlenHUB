@@ -1131,8 +1131,8 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-108 | **Alto** | **Corrigido (PR #135)** | **T-02 lote 5** / convite (F4-02) — `submitInvitationSurveyAction` aceitava matrícula do cliente sem vínculo ao token; agora deriva a identidade da **sessão verificada** (`getServerSession`) e exige `claimedBy === matrícula`; e-mail action fora da rede. **Último bloqueador do T-02** |
 | BUG-109 | Médio | Corrigido | efeito de feedback de conteúdo gravava `N/A` na planilha do Drive (desencontro de nome de campo); dado íntegro no Firestore |
 | BUG-110 | **Alto** | Aberto | Drive/backup — planilha de survey APAGA a avaliação anterior (snapshot) em vez de anexar; agravado pela pasta única de anônimos. Firestore preserva |
-| BUG-111 | Melhoria | Aberto | F1-04 — `visao_geral`: data prevista + ordenação por data nas colunas Próximas/Em Foco; custo do plano BAIXO, decisão real-only vs. estimado |
-| BUG-112 | Melhoria | Aberto | F1-05 — networking: renomear selo "Profissional" → "Consultor"; custo (a) rótulo BAIXO / (b) +campo do banco MÉDIO / (c) papel real ALTO; Drive sem impacto |
+| BUG-111 | Melhoria | Corrigido (PR #137) | F1-04 — `visao_geral`: data prevista (real onde há; estimativa pelo ritmo do membro, rotulada) + ordenação por data em Próximas/Em Foco |
+| BUG-112 | Melhoria | Escopo A Corrigido (PR #136); C adiado | F1-05 — networking: rótulo "Profissional" → "Consultor" (escopo A, label-only). Escopo C (papel real + migração) programado p/ após a auditoria |
 
 ---
 

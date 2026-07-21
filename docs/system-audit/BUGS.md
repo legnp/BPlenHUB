@@ -3232,8 +3232,15 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - **Custo de fazer o PLANO: BAIXO** (item de 1 pagina, ja escopado). A decisao que dimensiona a
   implementacao e: "data prevista" mostra so datas reais (barato/seguro) ou tambem estimadas
   (precisa de regra + rotulo claro de "estimativa")?
-- Status: **Aberto** — aguarda decisao da Gestora sobre o escopo (real-only vs. estimado).
-- Commit/PR: —
+- **Decisao da Gestora (2026-07-21): COM estimativa**, deixando explicito ao cliente que o prazo
+  depende do ritmo e pode mudar (o risco e de "promessa nao cumprida", nao tecnico). A longo prazo,
+  vira base estatistica de duracao/previsao da jornada.
+- Status: **Corrigido** — PR #137 (`74ae6e6`, deploy `success`). Data real onde existe (reuniao
+  agendada / meta com `targetDate`); estimativa pelo ritmo do proprio membro no restante, rotulada
+  "Previsao: .. (est.)" + aviso no topo. Logica extraida para `src/lib/journey/activity-forecast.ts`
+  (pura, testavel — `now` por parametro). 8 testes + mutacao de cada metade (cadencia, uso da data
+  real, clamp). Colunas Proximas/Em Foco ganharam ordenacao por data.
+- Commit/PR: **PR #137** (`74ae6e6`), deploy `success` confirmado.
 
 
 ### BUG-112 (MELHORIA) Networking: renomear aba/selo "Profissional" -> "Consultor"
@@ -3271,8 +3278,15 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - **Custo de fazer o PLANO: BAIXO-MEDIO** (ja escopado acima). Falta so a Gestora escolher o escopo
   (a/b/c) e decidir se a rota **publica** `/profissionais/[slug]` (marketing de profissionais) entra
   ou fica de fora (provavelmente fora — e outro conceito).
-- Status: **Aberto** — aguarda decisao de escopo da Gestora.
-- Commit/PR: —
+- **Decisao da Gestora (2026-07-21):** **escopo A agora** (so o rotulo) + **escopo C programado para
+  APOS a auditoria** (papel "consultor" real — deixa o terreno preparado). Rota publica
+  `/profissionais/[slug]` **fica de fora**.
+- Status: **Escopo A Corrigido** — PR #136 (`7fc2ff8`, deploy `success`): aba "Consultores" + toggle
+  admin "Consultor BPlen"; id interno (`profissionais`) e campo do banco (`isBPlenProfessional`)
+  intactos; Drive sem impacto; sem migracao. **Escopo C: Aberto (adiado para apos a auditoria)** —
+  papel/acesso "consultor" real + migracao do campo, casando com `AGENDA-SYNC-DESIGN.md` §8.6.2 e o
+  `BUG-098`.
+- Commit/PR: **PR #136** (`7fc2ff8`, escopo A); escopo C pendente.
 
 
 ---

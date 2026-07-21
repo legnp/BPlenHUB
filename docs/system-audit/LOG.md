@@ -24,6 +24,35 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-21] Chat de execução — Melhorias BUG-111 e BUG-112 escopo A (PRs #137 e #136)
+
+- Chat/sessão: mesma sessão. Escopo: implementar as 2 melhorias com a decisão de escopo da Gestora,
+  e dar o caminho de validação do convite (F4-02).
+- **BUG-111 (visão geral, PR #137, `74ae6e6`, deploy `success`) — COM estimativa:** Próximas/Em Foco
+  ganham data prevista + ordenação por data. Data **real** onde existe (reunião agendada / meta com
+  `targetDate`); **estimativa** no resto, pelo ritmo do próprio membro (cadência média de conclusão,
+  âncora nunca no passado), rotulada "Previsão: .. (est.)" + aviso no topo de que pode mudar (risco
+  de "promessa", não técnico — a Gestora confirmou o entendimento). Lógica pura em
+  `src/lib/journey/activity-forecast.ts`, 8 testes + mutação de cada metade. Longo prazo: base
+  estatística de duração/previsão da jornada.
+- **BUG-112 escopo A (networking, PR #136, `7fc2ff8`, deploy `success`) — label-only:** aba
+  "Consultores" + toggle admin "Consultor BPlen"; **id interno e campo do banco intactos**, Drive sem
+  impacto, sem migração. **Escopo C (papel "consultor" real + migração) programado para APÓS a
+  auditoria** — casa com o consultor do `AGENDA-SYNC-DESIGN` §8.6.2 e o `BUG-098`. Rota pública
+  `/profissionais/[slug]` fica de fora (decisão da Gestora). Distinção-chave confirmada: o selo de
+  networking ≠ o CV/perfil profissional do membro (este NÃO foi tocado).
+- **Validação do convite (F4-02) — caminho entregue à Gestora:** evento `pre_inauguracao`, URL
+  `bplen.com/convites/pre_inauguracao?token=BPL-INV-TESTxx`. Inventário read-only dos 10 tokens de
+  teste: **4 livres** (TEST07/08/09/10), 6 já usados por `BP-002`. Ela valida o fluxo BUG-108 de
+  ponta a ponta (token → login Google → survey → envio; confirma que grava e o e-mail chega).
+- Validado (ambos): eslint dos arquivos tocados 0 erros; test **280/280**; type-check e build exit 0
+  (build com `--max-old-space-size=3072` — o OOM na fase TS é artefato de builds consecutivos).
+- Itens atualizados: `BUGS.md` (BUG-111 Corrigido, BUG-112 escopo A), `00-PLAN.md` (índice), este LOG.
+- **Estado da F1:** F1-01/03/04/05 concluídas; F1-06 funcional concluída (só o redesign do admin à
+  parte); F1-02 aguarda a limpeza da base (fim da auditoria). Próximo combinado: **redesign do admin**
+  após a Gestora concluir a validação do convite.
+
+
 ## [2026-07-21] Validação da Gestora em produção — F1-01/04/05/06 + 2 pedidos de melhoria
 
 - Chat/sessão: chat de execução (Opus 4.8). **Sem alteração de código** — registro de validações
