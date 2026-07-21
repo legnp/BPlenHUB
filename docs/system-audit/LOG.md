@@ -24,6 +24,29 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-21] Levantamento + plano do REDESIGN DO ADMIN (F1-06) — aprovado, a executar por lotes
+
+- Chat/sessão: mesma sessão. **Sem código** — levantamento read-only + proposta aprovada. **Encerra
+  esta sessão** (limite de contexto); a execução segue em outro chat.
+- **Levantamento das 19 telas de admin** (design + tom de voz, a pedido da Gestora). Achados:
+  **0/19 usam o header canônico** (`FunctionalPageHeader`) — o admin é o único bloco da área logada
+  fora do padrão; ~4 estilos de título; tiles de métrica variando; tom misturado (inglês solto,
+  jargão, nomes de banco na tela) e erros ("Ecosistema", "PORTFOLIO" sem acento, "MEDIA"→"Mídia").
+  **Cor/tema já OK** (variáveis + seletor do HubHeader) — o problema é estrutura/tipografia/tom.
+- **APROVADO pela Gestora:** (1) reorganização em **7 escopos de negócio** — Visão Geral · Comercial ·
+  Marketing · Jornada e Agenda · Pessoas · Instrumentos e Devolutivas · Sistema e Ferramentas;
+  (2) escopo **completo (camadas 1 nav+rótulos / 2 header+tiles / 3 copy)**, **por lotes**.
+- **Plano formalizado em `docs/system-audit/ADMIN-REDESIGN-DESIGN.md`** (auto-contido): mapa
+  rota→categoria, mapa de renomeação, as 3 camadas, plano de lotes **R0..R5**, padrões a reusar
+  (FunctionalPageHeader, StatTile novo, F0-06). Decisões de rótulo pendentes: "Surveys" vs
+  "Pesquisas"; "Sandbox" vs PT.
+- **Entregas ANTERIORES desta sessão (todas em produção, deploy confirmado):** BUG-101 (PR #133),
+  BUG-100 (PR #134), BUG-108 (PR #135, **validado end-to-end**), **T-02 re-fechado**, BUG-112 escopo
+  A (PR #136), BUG-111 (PR #137). Estado: `main` == `origin/main`, árvore limpa, suíte 280/280.
+- Itens atualizados: `ADMIN-REDESIGN-DESIGN.md` (novo), `00-PLAN.md` (F1-06 — passada de design com
+  plano aprovado), este LOG.
+
+
 ## [2026-07-21] Validação da Gestora — BUG-108 (convite) end-to-end em produção
 
 - Chat/sessão: mesma sessão. **Sem código** — validação + conferência read-only.

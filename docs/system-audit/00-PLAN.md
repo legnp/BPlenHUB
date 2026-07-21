@@ -682,6 +682,10 @@ sem copy hardcoded fora do que o guia permitir).
   - **[2026-07-21] VALIDADA em produção pela Gestora:** passada OK, funcional. **Parte funcional da
     F1-06 concluída.** Fica pendente **só a passada de DESIGN geral do admin** (que a Gestora quer
     revisar à parte — não é bug, é redesign).
+  - **[2026-07-21] Passada de design: levantamento feito + PLANO APROVADO** — as 19 telas
+    inventariadas (design + tom); reorganização em **7 escopos** e escopo **completo por lotes**
+    aprovados pela Gestora. Plano formalizado em **`ADMIN-REDESIGN-DESIGN.md`** (lotes R0..R5).
+    **Execução não iniciada** — próximo chat.
   Nota: os 4 bugs de segurança vinculados abaixo já
   foram corrigidos (via T-02), mas a validação de UI/responsivo/copy das
   páginas em si ainda não começou; não confundir uma coisa com a outra.
