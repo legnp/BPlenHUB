@@ -63,21 +63,39 @@ export async function closeEventAction(
       const attendeesSnap = await eventRef.collection("attendees").get();
       if (!attendeesSnap.empty) {
         const batch = db.batch();
-        attendeesSnap.docs.forEach((doc) => {
-          const attData = doc.data();
+        for (const attendeeDoc of attendeesSnap.docs) {
+          const attData = attendeeDoc.data();
           const attendeeMatricula = attData.matricula;
-          if (attendeeMatricula && attendeeMatricula !== "PENDING") {
-            const ataId = `booking-${eventId}-ata`;
-            const ataRef = db.collection("User").doc(attendeeMatricula).collection("Atas").doc(ataId);
-            batch.set(ataRef, {
-              title: `Ata de Reunião - ${eventSummary}`,
-              meetingDate: eventStart ? eventStart.substring(0, 10) : new Date().toISOString().substring(0, 10),
-              fileUrl: data.meetingMinutesFile!.url,
-              contentSummary: data.publicGeneralComment || "Ata de mentoria consolidada.",
-              createdAt: data.meetingMinutesFile!.uploadedAt || new Date().toISOString()
+          if (!attendeeMatricula || attendeeMatricula === "PENDING") continue;
+
+          const ataId = `booking-${eventId}-ata`;
+          const ataRef = db.collection("User").doc(attendeeMatricula).collection("Atas").doc(ataId);
+          batch.set(ataRef, {
+            title: `Ata de Reunião - ${eventSummary}`,
+            meetingDate: eventStart ? eventStart.substring(0, 10) : new Date().toISOString().substring(0, 10),
+            fileUrl: data.meetingMinutesFile!.url,
+            contentSummary: data.publicGeneralComment || "Ata de mentoria consolidada.",
+            createdAt: data.meetingMinutesFile!.uploadedAt || new Date().toISOString()
+          }, { merge: true });
+
+          // BUG-101: o agendamento do membro (User_Bookings) so recebia a Ata na
+          // closeAttendeeAction, que copia eventData.meetingMinutesFile NO INSTANTE
+          // do fechamento do participante. Ata enviada depois desse fechamento
+          // ficava invisivel na Gestao de Agenda (caso real: BP-005). Espelhar aqui
+          // torna as duas partes independentes de ordem; a fonte da verdade segue
+          // sendo o doc do evento.
+          const bookingQuery = await db.collection("User").doc(attendeeMatricula)
+            .collection("User_Bookings")
+            .where("eventId", "==", eventId)
+            .limit(1)
+            .get();
+          if (!bookingQuery.empty) {
+            batch.set(bookingQuery.docs[0].ref, {
+              meetingMinutesFile: data.meetingMinutesFile,
+              postEventUpdatedAt: admin.firestore.FieldValue.serverTimestamp()
             }, { merge: true });
           }
-        });
+        }
         await batch.commit();
       }
     }
