@@ -62,13 +62,11 @@ const PUBLICAS_POR_DESIGN: Record<string, string> = {
   "invitations.ts:getInvitationEventAction": "pagina publica de convite — le o evento pelo slug",
   "invitations.ts:validateInvitationTokenAction": "o token E a credencial",
   "invitations.ts:claimInvitationTokenAction": "o token E a credencial",
-
-  // ATENCAO — NAO sao legitimas: estao aqui apenas para o teste refletir o estado
-  // real ate o BUG-108 ser corrigido. Aceitam `matricula` do cliente sem vincula-la
-  // ao token, permitindo escrita em subcolecao alheia e disparo de e-mail em nome
-  // de terceiros. Ver `BUGS.md#bug-108` — o T-02 NAO fecha enquanto estiverem aqui.
-  "invitations.ts:submitInvitationSurveyAction": "BUG-108 ABERTO — matricula do cliente sem vinculo com o token",
-  "invitations.ts:sendInvitationRsvpEmailsAction": "BUG-108 ABERTO — matricula do cliente; vetor de e-mail",
+  // BUG-108 corrigido: `submitInvitationSurveyAction` saiu desta lista porque passou
+  // a ter guard — deriva a identidade da SESSAO verificada (`getServerSession`) e
+  // exige `token.claimedBy === matricula` da sessao, em vez de aceitar a matricula do
+  // cliente. `sendInvitationRsvpEmailsAction` deixou de existir na rede (virou o
+  // helper interno `sendInvitationRsvpEmails`, sem `export`).
 };
 
 /** Todas as funcoes exportadas de arquivos `"use server"` em src/actions. */

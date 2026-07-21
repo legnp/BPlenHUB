@@ -54,7 +54,6 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
 
   // Dados do Fluxo
   const [token, setToken] = useState("");
-  const [matricula, setMatricula] = useState("");
   const [nickname, setNickname] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isActionLoading, setIsActionLoading] = useState(false);
@@ -124,7 +123,6 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
             user.displayName || "Membro BPlen"
           );
           if (claimRes.success) {
-            setMatricula(claimRes.matricula || "");
             setNickname(claimRes.nickname || "");
             setStep("survey_step_1");
           } else {
@@ -163,7 +161,6 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
             user.displayName || "Membro BPlen"
           );
           if (claimRes.success) {
-            setMatricula(claimRes.matricula || "");
             setNickname(claimRes.nickname || "");
             setStep("survey_step_1");
           } else {
@@ -198,7 +195,6 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
           authUser.displayName || "Membro BPlen"
         );
         if (claimRes.success) {
-          setMatricula(claimRes.matricula || "");
           setNickname(claimRes.nickname || "");
           setStep("survey_step_1");
         } else {
@@ -231,13 +227,20 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
   const handleFinalSubmit = async (finalRsvp: "com_certeza" | "talvez" | "nao", extraData?: Record<string, string | number>) => {
     setIsActionLoading(true);
     try {
+      // BUG-108: a matricula e derivada da sessao verificada no servidor. O cliente
+      // manda uma prova de identidade fresca (idToken), nunca a matricula.
+      if (!user) {
+        setError("Sua sessao expirou. Faca login novamente para enviar.");
+        return;
+      }
+      const idToken = await user.getIdToken();
       const finalAnswers = {
         ...answers,
         rsvp: finalRsvp,
         ...extraData
       };
 
-      const res = await submitInvitationSurveyAction(token, event.slug, finalAnswers, matricula);
+      const res = await submitInvitationSurveyAction(token, event.slug, finalAnswers, idToken);
       if (res.success) {
         if (finalRsvp === "com_certeza") {
           setStep("ending_c");
@@ -1108,9 +1111,11 @@ function InvitationSurveyContent({ event }: InvitationSurveyProps) {
                   onClick={async () => {
                     setIsActionLoading(true);
                     try {
-                      // Submeter o comentário final se preenchido
-                      if (specialComment.trim()) {
-                        await submitInvitationSurveyAction(token, event.slug, { ...answers, comment: specialComment }, matricula);
+                      // Submeter o comentário final se preenchido (idToken = prova
+                      // de identidade; a matricula vem da sessao no servidor, BUG-108)
+                      if (specialComment.trim() && user) {
+                        const idToken = await user.getIdToken();
+                        await submitInvitationSurveyAction(token, event.slug, { ...answers, comment: specialComment }, idToken);
                       }
                       router.push("https://www.bplen.com/");
                     } catch {
