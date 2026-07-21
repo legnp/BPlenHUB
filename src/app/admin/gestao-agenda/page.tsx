@@ -3,16 +3,11 @@
 import React, { useState, useEffect } from "react";
 import { getSyncedEvents } from "@/actions/calendar";
 import { GoogleCalendarEvent } from "@/types/calendar";
-import PostEventWizard from "@/components/admin/PostEventWizard";
-import { 
-  Info, 
-  LayoutGrid, 
-  Calendar as CalendarIcon, 
-  CheckCircle2, 
-  Clock,
+import {
+  Calendar as CalendarIcon,
   LayoutList
 } from "lucide-react";
-import { isBefore, parseISO } from "date-fns";
+import { FunctionalPageHeader } from "@/components/layout/FunctionalPageHeader";
 
 // Sub-módulos (Abas)
 import ProgramacaoResumo from "@/components/admin/ProgramacaoResumo";
@@ -49,37 +44,30 @@ export default function GestaoAgendaPage() {
 
   return (
     <div className="space-y-8 max-w-[1600px] mx-auto">
-      {/* Header do Laboratório */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight text-[var(--text-primary)]">
-            PROGRAMAÇÃO <span className="text-[var(--accent-start)] italic ml-1">Hub</span>
-          </h1>
-          <p className="text-[var(--text-muted)] text-[11px] font-medium opacity-70">
-            Gestão de programação e agenda BPlen HUB
-          </p>
-        </div>
-
-        {/* Tab Navigation (Premium Sidebar/Header combo look) */}
-        <div className="flex p-1.5 bg-[var(--input-bg)]/50 backdrop-blur-md rounded-[2rem] border border-[var(--border-primary)] shadow-sm">
-           {tabs.map((tab) => {
-             const Icon = tab.icon;
-             const isSelected = activeTab === tab.id;
-             return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as TabId)}
-                  className={`flex items-center gap-2.5 px-6 py-3.5 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest transition-all ${isSelected ? "bg-[var(--text-primary)] text-[var(--bg-primary)] shadow-lg shadow-[var(--text-primary)]/10" : "text-[var(--text-muted)] hover:text-[var(--text-primary)] opacity-60 hover:opacity-100"}`}
-                >
-                  <Icon size={14} className={isSelected ? "stroke-[3]" : "stroke-[2.5]"} />
-                  {tab.label}
-                </button>
-             );
-           })}
-        </div>
-      </div>
-
-      <hr className="border-[var(--border-primary)] opacity-50" />
+      <FunctionalPageHeader
+        eyebrow="Jornada e Agenda"
+        title="Programação"
+        titleAccent="da Jornada"
+        icon={<LayoutList size={24} />}
+        action={
+          <div className="flex p-1.5 bg-[var(--input-bg)]/50 backdrop-blur-md rounded-[2rem] border border-[var(--border-primary)] shadow-sm">
+             {tabs.map((tab) => {
+               const Icon = tab.icon;
+               const isSelected = activeTab === tab.id;
+               return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id as TabId)}
+                    className={`flex items-center gap-2.5 px-6 py-3.5 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest transition-all ${isSelected ? "bg-[var(--text-primary)] text-[var(--bg-primary)] shadow-lg shadow-[var(--text-primary)]/10" : "text-[var(--text-muted)] hover:text-[var(--text-primary)] opacity-60 hover:opacity-100"}`}
+                  >
+                    <Icon size={14} className={isSelected ? "stroke-[3]" : "stroke-[2.5]"} />
+                    {tab.label}
+                  </button>
+               );
+             })}
+          </div>
+        }
+      />
 
       {/* Main Content Area */}
       <div className="min-h-[600px]">
