@@ -88,6 +88,18 @@ describe("BUG-108: submit do convite deriva a identidade da sessao verificada", 
     expect(h.box.surveyWrite).toBeNull();
   });
 
+  it("recusa mesmo com claimedBy correto se o status nao for 'claimed' (defesa em profundidade)", async () => {
+    // Isola a guarda de status: no fluxo real, claim grava status e claimedBy
+    // juntos (atomico), mas um estado inconsistente (claimedBy certo, status ainda
+    // 'unused') nao pode liberar o envio.
+    h.sessionMock.mockResolvedValue({ uid: "u1", matricula: DONO });
+    h.tokenState.data = { eventSlug: SLUG, status: "unused", claimedBy: DONO };
+    const res = await submitInvitationSurveyAction(TOKEN, SLUG, { rsvp: "nao" }, "idtoken-x");
+
+    expect(res.success).toBe(false);
+    expect(h.box.surveyWrite).toBeNull();
+  });
+
   it("recusa token de outro evento", async () => {
     h.sessionMock.mockResolvedValue({ uid: "u1", matricula: DONO });
     h.tokenState.data = { eventSlug: "outro_evento", status: "claimed", claimedBy: DONO };
