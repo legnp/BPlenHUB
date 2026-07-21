@@ -12,7 +12,18 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-21 (chat de execução — **REDESIGN DO ADMIN R0 (PR #138)**, deploy
+> **Última atualização:** 2026-07-21 (chat de execução — **REDESIGN DO ADMIN R1 (PR #139)**, deploy
+> de produção `success`, SHA `96ad7cf`. Camadas 2+3 em Visão Geral + Comercial. **Nasceu o
+> `StatTile`** (`src/components/admin/StatTile.tsx`), tile de métrica único reusado por dashboard e
+> portfólio; `FunctionalPageHeader` adotado em 5 telas (`/admin`, `products` + `new`/`[id]`,
+> `partners`), headers reimplementados removidos. Copy/tom: "PORTFOLIO Command Center"→"Portfólio",
+> jargão removido, ~25 acentos restaurados; "Ecosistema"→"Ecossistema"; emojis de comentário
+> removidos. `partners` 9→4 problemas de eslint. Achado adiado: **BUG-113** (cores brancas hardcoded
+> em partners, tema claro). eslint dos tocados 0 novos, type-check limpo, suíte **280/280**, build
+> exit 0. **Não tocou paleta/tema.** `--no-verify` por baseline (immutability em partners, PR #101).
+> **Próximo: R2** (Marketing). Validação visual em produção pela Gestora (BUG-030).
+>
+> _(entrada anterior)_ 2026-07-21 (chat de execução — **REDESIGN DO ADMIN R0 (PR #138)**, deploy
 > de produção `success`, SHA `1c7e5e9`. Camada 1 do redesign: sidebar do admin reorganizada de 3
 > grupos para os **7 escopos** aprovados (Visão Geral, Comercial, Marketing, Jornada e Agenda,
 > Pessoas, Instrumentos e Devolutivas, Sistema e Ferramentas); renomeações de tom/rótulo aplicadas

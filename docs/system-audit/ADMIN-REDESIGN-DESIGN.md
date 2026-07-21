@@ -185,11 +185,21 @@ O `StatTile` compartilhado (camada 2) deve nascer no R0 ou R1 e ser reusado nos 
 | Escopo (camadas 1+2+3, por lotes) | **Aprovado (2026-07-21)** |
 | Decisões de rótulo pendentes | **Resolvidas (2026-07-21)** — F&S e Sandbox mantidos (ver seção 3) |
 | Execução — **R0** (camada 1: nav + rótulos) | **Concluído — PR #138, deploy de produção confirmado (2026-07-21)** |
-| Execução — R1..R5 (camadas 2+3) | **Não iniciada** — próximos lotes |
+| Execução — **R1** (Visão Geral + Comercial, cam. 2+3) | **Concluído — PR #139, deploy de produção confirmado (2026-07-21)** |
+| Execução — R2..R5 (camadas 2+3) | **Não iniciada** — próximos lotes |
 
 **R0 entregue (PR #138):** sidebar reorganizada de 3 grupos para os 7 escopos; renomeações
 aplicadas (DASHBOARD→PAINEL, PROGRAMAÇÃO HUB→PROGRAMAÇÃO DA JORNADA, MEDIA→MÍDIA E EDITORIAL com
 acento, MÁQUINA DE QR CODES→QR CODES, "Control Center"→"Central de Controle"); F&S/SANDBOX mantidos
 por decisão da Gestora; **MIGRAR ONBOARDING** (`/admin/migrate-welcome`) adicionada à nav (a página
 existia sem entrada — sinalizada para veto na PR). Higiene: `NavGroup` extraído, 3 imports mortos
-removidos. Não tocou paleta/tema. O `StatTile` compartilhado (camada 2) nasce no R1.
+removidos. Não tocou paleta/tema.
+
+**R1 entregue (PR #139):** camadas 2+3 em Visão Geral + Comercial. **Nasceu o `StatTile`**
+(`src/components/admin/StatTile.tsx`) — tile de métrica único, reusado por dashboard e portfólio.
+`FunctionalPageHeader` adotado em 5 telas (`/admin`, `products`, `products/new`, `products/[id]`,
+`partners`), com os headers reimplementados removidos. Copy/tom: "PORTFOLIO Command Center"→"Portfólio",
+jargão removido, ~25 acentos restaurados no `products`; "Ecosistema"→"Ecossistema" e emojis de
+comentário removidos no `partners`. Achado adiado: `BUG-113` (cores hardcoded brancas em partners,
+ilegíveis em tema claro — recolor focado num lote de camada 2 futuro). Convenção de título dos headers
+= a do hub (Title Case; o peso vem do header, não de caixa alta — a caixa alta é só da sidebar/R0).

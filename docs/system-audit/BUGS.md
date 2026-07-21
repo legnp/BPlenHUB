@@ -3297,6 +3297,21 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   `BUG-098`.
 - Commit/PR: **PR #136** (`7fc2ff8`, escopo A); escopo C pendente.
 
+### BUG-113 Cores hardcoded (branco) na Gestão de Parceiros — ilegível em temas claros
+
+- Severidade: Baixo
+- Área/fase onde foi achado: F1-06 / redesign do admin (lote R1)
+- Arquivo(s) afetado(s): `src/app/admin/partners/page.tsx` (cards da lista e modal de cadastro)
+- Cenário de falha: os cards de parceiro (`bg-white/5 border-white/10`) e o modal (`bg-white text-black`,
+  `bg-white/5`, `text-white`) usam branco fixo em vez das variáveis de tema. Nos temas **claros** o
+  contraste some (card quase invisível). O restante do admin já consome as vars de tema; estes pontos
+  ficaram legados. Também: o modal é um modal cru (não `GlassModal`) — débito separado do F0-01.
+- Status: **Aberto (adiado)** — fora do escopo do R1 (que é header canônico + `StatTile` + copy). Recolor
+  para vars de tema é uma passada focada de camada 2; agrupar com uma eventual convergência do modal ao
+  `GlassModal`. Registrado para não se perder.
+- Decisão de execução: Precisa plano+aprovação (sistema de design) — recolor + possível convergência de modal.
+- Commit/PR: —
+
 
 ---
 

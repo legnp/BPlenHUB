@@ -689,8 +689,13 @@ sem copy hardcoded fora do que o guia permitir).
     sidebar reorganizada nos 7 escopos + mapa de renomeação + correção de erros (MÍDIA com acento,
     QR CODES, PROGRAMAÇÃO DA JORNADA, PAINEL, "Central de Controle"). 2 decisões de rótulo resolvidas
     pela Gestora antes de executar (F&S e Sandbox mantidos). `MIGRAR ONBOARDING` adicionada à nav
-    (página órfã de nav, sinalizada para veto). **Próximo: R1** (Visão Geral + Comercial, camadas 2+3,
-    nasce o `StatTile`). Validação visual das telas em produção pela Gestora (BUG-030).
+    (página órfã de nav, sinalizada para veto). **R0 validado pela Gestora.**
+  - **[2026-07-21] R1 concluído (PR #139, deploy de produção confirmado):** camadas 2+3 em Visão Geral
+    + Comercial (`/admin`, `products` + `new`/`[id]`, `partners`). Nasceu o componente compartilhado
+    `StatTile`; `FunctionalPageHeader` adotado nas 5 telas; passada de copy/tom (acentos restaurados,
+    jargão removido, "Ecosistema"→"Ecossistema", emojis de comentário removidos). Achado adiado:
+    `BUG-113`. **Próximo: R2** (Marketing: `marketing`, `social`, `qrcodes`). Validação visual em
+    produção pela Gestora (BUG-030).
   Nota: os 4 bugs de segurança vinculados abaixo já
   foram corrigidos (via T-02), mas a validação de UI/responsivo/copy das
   páginas em si ainda não começou; não confundir uma coisa com a outra.
@@ -1142,6 +1147,7 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-110 | **Alto** | Aberto | Drive/backup — planilha de survey APAGA a avaliação anterior (snapshot) em vez de anexar; agravado pela pasta única de anônimos. Firestore preserva |
 | BUG-111 | Melhoria | Corrigido (PR #137) | F1-04 — `visao_geral`: data prevista (real onde há; estimativa pelo ritmo do membro, rotulada) + ordenação por data em Próximas/Em Foco |
 | BUG-112 | Melhoria | Escopo A Corrigido (PR #136); C adiado | F1-05 — networking: rótulo "Profissional" → "Consultor" (escopo A, label-only). Escopo C (papel real + migração) programado p/ após a auditoria |
+| BUG-113 | Baixo | Aberto (adiado) | F1-06/redesign — cores hardcoded brancas em `partners` (cards+modal), ilegíveis em tema claro; recolor focado num lote de camada 2 futuro |
 
 ---
 

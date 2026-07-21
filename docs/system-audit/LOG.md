@@ -24,6 +24,46 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-21] Chat de execução — REDESIGN DO ADMIN R1: header canônico + StatTile + copy (PR #139)
+
+- Chat/sessão: mesmo chat de execução, após o **R0 ser validado pela Gestora** ("validado, por
+  enquanto ok; pode seguir para o próximo"). Lote **R1** = camadas 2+3 nas telas de **Visão Geral +
+  Comercial** (`ADMIN-REDESIGN-DESIGN.md`, plano aprovado).
+- **Entrega: PR #139 mergeado (`96ad7cf`, squash), deploy de produção CONFIRMADO** (Vercel success no
+  status do commit). 6 arquivos, +245/-251.
+  - **Camada 2 — nasceu o `StatTile`** (`src/components/admin/StatTile.tsx`): tile de métrica único
+    (layout canônico, tons accent/success/warning/danger/neutral, ponto de status opcional),
+    substituindo os cartões ad-hoc que variavam `text-2xl/3xl/4xl`. Reusado por dashboard e portfólio.
+  - **Camada 2 — `FunctionalPageHeader`** (o mesmo do hub) adotado em 5 telas: `/admin` (Painel),
+    `products` (Portfólio), `products/new`, `products/[id]`, `partners`. Headers reimplementados
+    removidos. **Convenção de título = a do hub (Title Case)** — o peso visual vem do header; a caixa
+    alta é só da sidebar (R0). Confirmado por leitura das 4 páginas do hub que já usam o header.
+  - **Camada 3 — copy/tom (F0-06):** `products` — "PORTFOLIO Command Center"→"Portfólio", jargão
+    removido ("Soberana", "Command Center", "subprocesso Python"), **~25 acentos restaurados** em
+    strings visíveis (Lição 11); `partners` — "Ecosistema"→"Ecossistema", "Novo Parceiro Soberano"→
+    "Novo Parceiro", **emojis de comentário removidos** (Zero Emoji); dashboard — título pelo header.
+  - **Higiene:** imports mortos removidos (partners: Users/cn/AlertCircle/CheckCircle2/Search;
+    products: função local `StatCard`). `partners` passou de **9→4** problemas de eslint.
+- **Achado registrado e adiado — `BUG-113` (Baixo):** cores hardcoded brancas em `partners`
+  (cards `bg-white/5`, modal `bg-white text-black`), ilegíveis em temas claros; + o modal é cru (não
+  `GlassModal`). Fora do escopo do R1 (header/StatTile/copy) — recolor focado num lote de camada 2
+  futuro. Registrado antes de decidir (protocolo).
+- **Não tocados:** paleta / variáveis de tema e o seletor de tema do `HubHeader`.
+- Validado (Lição 14): eslint dos arquivos tocados **0 novos** (dashboard/products/sub-rotas/StatTile
+  = 0; `partners` = 4, todos baseline pré-existente da `main`, confirmado por `git stash` comparativo —
+  main tinha 9); `type-check` limpo; `test` **280/280**; `build` exit 0 (OOM na 1ª passada — artefato
+  de builds consecutivos; passou com `--max-old-space-size=3072`).
+- **`--no-verify` usado (caso a caso, Lição 14 / precedente PR #101):** o pre-commit barra por 1 erro de
+  lint de **baseline** em `partners` (`react-hooks/immutability` no `loadPartners`, idêntico à `main`).
+  Tentei corrigir via `useCallback`, mas a regra fussy do React só trocava por `set-state-in-effect` (o
+  padrão de fetch-on-mount dispara de qualquer jeito sem refactor maior, fora do escopo); reverti à
+  forma da `main` para não introduzir regra nova e commitei com `--no-verify`.
+- Itens atualizados: `BUGS.md` (+BUG-113), `00-PLAN.md` (F1-06 + índice), `ADMIN-REDESIGN-DESIGN.md`
+  (R1 concluído), `DASHBOARD.md`, este LOG.
+- **Próximo: R2** — Marketing (`marketing`, `social`, `qrcodes`), camadas 2+3, reusando o `StatTile`.
+
+---
+
 ## [2026-07-21] Chat de execução — REDESIGN DO ADMIN R0: sidebar em 7 escopos + rótulos (PR #138)
 
 - Chat/sessão: chat de execução (Opus 4.8). Primeiro lote (**R0**, camada 1) do redesign do admin,
