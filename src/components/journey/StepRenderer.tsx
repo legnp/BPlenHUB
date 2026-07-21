@@ -61,20 +61,15 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
     ? BPLEN_NOMENCLATURE.primeiros_passos 
     : BPLEN_NOMENCLATURE.member_area.journey;
 
-  if (status === "locked") {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center p-16 bg-[var(--input-bg)]/5 rounded-[3.5rem] border border-dashed border-[var(--border-primary)] opacity-40">
-        <div className="w-14 h-14 bg-white/5 rounded-full flex items-center justify-center mb-6">
-           <AlertCircle size={24} className="text-[var(--text-muted)]" />
-        </div>
-        <h3 className="text-[12px] font-black uppercase tracking-[0.3em] text-[var(--text-primary)]">{nomen.locked_title}</h3>
-        <p className="text-[10px] font-medium text-[var(--text-muted)] mt-2 text-center max-w-xs">
-           {nomen.locked_desc}
-        </p>
-      </div>
-    );
-  }
-
+  // BUG-100: os hooks abaixo (useState/useCallback/useEffect) precisam rodar em
+  // TODA renderizacao, na mesma ordem. Por isso o early return de `status ===
+  // "locked"` foi movido para DEPOIS de todos eles (ver adiante). Antes, os hooks
+  // vinham depois do return: quando uma parada passava de travada para disponivel
+  // sem desmontar, a contagem de hooks mudava entre renders e a tela quebrava
+  // (rules-of-hooks). Os efeitos que LEEM a agenda sao guardados por
+  // `status !== "locked"` para que uma parada travada nao gaste leitura de
+  // Firestore (custo de cota no Spark) — o comportamento "travada nao carrega
+  // nada" e preservado.
   const [events, setEvents] = React.useState<GoogleCalendarEvent[]>([]);
   const [loadingEvents, setLoadingEvents] = React.useState(false);
   const [userBookings, setUserBookings] = React.useState<UserBooking[]>([]);
@@ -85,11 +80,11 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
   // Predicado entregue ao `UserBookings`: a lista de confirmados usa a MESMA
   // regra do calendario e do cabecalho, em vez de uma propria (BUG-099).
   //
-  // Deliberadamente uma funcao simples, e nao `useCallback`: este componente
-  // chama todos os seus hooks DEPOIS do early return de `status === "locked"`
-  // (defeito pre-existente, ver BUG-100), entao acrescentar um hook aqui
-  // agravaria a violacao. O custo de recomputar o filtro a cada render e
-  // desprezivel — sao poucos agendamentos por membro.
+  // Deliberadamente uma funcao simples, e nao `useCallback`: o custo de recomputar
+  // o filtro a cada render e desprezivel (poucos agendamentos por membro) e nao
+  // vale acoplar a identidade dele as deps do `UserBookings`. (Com o BUG-100
+  // corrigido os hooks ja rodam todos antes do early return; um hook a mais aqui
+  // nao violaria mais a ordem — mas continua sem ganho real.)
   const matchesThisSubstep = (booking: UserBooking) =>
     eventMatchesSubstep(booking.eventDetail, substep);
 
@@ -114,10 +109,13 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
   }, [substep.type, substep.referenceId, substep.title, matricula]);
 
   React.useEffect(() => {
-    if (substep.type === "meeting") {
+    // BUG-100: parada travada nao dispara leitura de agenda (getUpcomingEvents +
+    // getUserBookingsAction). `status` entra nas deps para o carregamento ocorrer
+    // quando a parada passar de travada para disponivel.
+    if (substep.type === "meeting" && status !== "locked") {
       loadData();
     }
-  }, [loadData, substep.type]);
+  }, [loadData, substep.type, status]);
 
   const handleNPS = async (bookingId: string) => {
     if (!rating || !matricula || !user?.uid) return;
@@ -213,7 +211,7 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
   }, [substep.id]);
 
   React.useEffect(() => {
-    if ((substep.type === "survey" || substep.type === "form") && matricula && status !== "completed") {
+    if ((substep.type === "survey" || substep.type === "form") && matricula && status !== "completed" && status !== "locked") {
       setCheckingSurvey(true);
       checkSurveyCompletedAction(matricula, substep.referenceId)
         .then((completed) => {
@@ -229,13 +227,33 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
   }, [substep.type, substep.referenceId, matricula, status]);
 
   React.useEffect(() => {
-    if (typeof window !== "undefined") {
+    // BUG-100: parada travada nunca dispara efeito (aqui, avanco via onComplete).
+    // welcome_video_01 nao e travavel na pratica, mas a guarda preserva o
+    // invariante "travada nao faz nada" agora que o efeito roda em todo render.
+    if (typeof window !== "undefined" && status !== "locked") {
        if (window.location.search.includes("action=finishTour") && substep.referenceId === "welcome_video_01") {
           onComplete();
           window.history.replaceState({}, "", window.location.pathname);
        }
     }
-  }, [substep.referenceId, onComplete]);
+  }, [substep.referenceId, onComplete, status]);
+
+  // BUG-100: early return de parada travada — AGORA depois de TODOS os hooks, para
+  // a ordem de hooks ser estavel entre renders. `nomen` (acima) ja esta resolvido.
+  // Markup identico ao original (que ficava logo apos o `useAuthContext`).
+  if (status === "locked") {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center p-16 bg-[var(--input-bg)]/5 rounded-[3.5rem] border border-dashed border-[var(--border-primary)] opacity-40">
+        <div className="w-14 h-14 bg-white/5 rounded-full flex items-center justify-center mb-6">
+           <AlertCircle size={24} className="text-[var(--text-muted)]" />
+        </div>
+        <h3 className="text-[12px] font-black uppercase tracking-[0.3em] text-[var(--text-primary)]">{nomen.locked_title}</h3>
+        <p className="text-[10px] font-medium text-[var(--text-muted)] mt-2 text-center max-w-xs">
+           {nomen.locked_desc}
+        </p>
+      </div>
+    );
+  }
 
   const renderContent = () => {
     const isPdiSurvey = substep.referenceId ? substep.referenceId.startsWith("survey_pdi_") : false;
