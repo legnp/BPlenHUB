@@ -17,12 +17,13 @@ card tem um **ícone que redireciona para a página da métrica**. O painel deve
 estado **comercial** quanto a **operação**. Referência visual: resumo do Mercado Livre (muitos
 cards compactos por seção). Analisar backend, banco, servidor e coleta de dados — não só estética.
 
-> **Pendência de entrada:** a Gestora mencionou "vou deixar uma lista de métricas que eu gostaria
-> de monitorar", mas **a lista não veio na mensagem**. Solicitar a lista antes de fechar o escopo
-> final de métricas — as candidatas abaixo são a proposta inicial (minha análise do que o projeto
-> já permite), a serem mescladas com as dela.
+> **Entrada recebida (2026-07-22):** a Gestora enviou a lista de métricas dela e **confirmou o
+> timing: pós-auditoria** (não antecipar a Fase 1 agora). A lista está transcrita e classificada
+> na seção **"Lista final de métricas (Gestora) + classificação"** abaixo; as candidatas do plano
+> (mais adiante) foram mantidas como referência e mescladas ali. **Fase 0 (escopo) concluída** —
+> execução (build) fica para depois da auditoria.
 
-### Recomendação de TIMING: **após a auditoria** (junto das demais expansões)
+### Recomendação de TIMING: **após a auditoria** (junto das demais expansões) — **CONFIRMADO pela Gestora (2026-07-22)**
 
 Motivos: (1) é feature **nova** (expansão), não correção — a auditoria é a prioridade atual;
 (2) exige backend real (actions de agregação, índices, filtro de período) e **atenção a custo de
@@ -33,6 +34,63 @@ que ainda não é coletado** (séries temporais, custo, erros) — instrumentaç
 no meio da auditoria, competiria por foco e arriscaria o custo. **Documentado agora, construído
 como primeira grande expansão pós-auditoria.** _(Incrementos de baixo custo podem ser antecipados
 — ver Fase 1 — se a Gestora quiser algo já.)_
+
+### Lista final de métricas (Gestora, 2026-07-22) + classificação
+
+Lista enviada pela Gestora, transcrita **verbatim** e classificada por disponibilidade de dado
+(mesma legenda: **[REAL]** já existe / **[PARCIAL]** existe em parte / **[COLETAR]** não coletado
+hoje). A classificação foi feita por **leitura de código real** (não suposição). Onde o
+comportamento em runtime ainda não foi confirmado, o item leva **[HIPÓTESE]** e vira uma checagem
+da Fase 0/pré-build.
+
+**Filtros pedidos:**
+- Últimos 7 dias / últimos 15 dias / desde o começo do mês atual / período personalizado. **[REAL]**
+  (controle client-side; passa `{from,to}` às actions — não é dado, é UI).
+- **Comparação entre 2 períodos (período A vs período B).** **[NOVO — requisito arquitetural]** —
+  além do filtro de período único previsto no plano. Dobra a superfície de consulta: **barato sobre
+  snapshots** (ler duas faixas de `Admin_Metrics_Daily`), **2× custo** se agregado ao vivo. Reforça
+  a decisão de fazer a Fase 2 (snapshots) o coração do EXP-01.
+
+**Métricas (18):**
+
+| # | Métrica (verbatim) | Classe | Fonte / observação |
+|---|---|---|---|
+| 1 | Número de visitantes geral no domínio | **[COLETAR]** | **Sem instrumentação de tráfego** no projeto (nenhuma dep de analytics; sem pageview logging). Subsistema novo (provider ou log próprio). Casável com T-04 (observabilidade). Provisionado no lançamento. |
+| 2 | Páginas mais clicadas | **[COLETAR]** | idem #1 — precisa de tracking de navegação. |
+| 3 | Serviços mais clicados | **[COLETAR]** | idem #1 — tracking de clique por serviço/CTA. |
+| 4 | Número de autenticados | **[REAL]** | contagem da coleção `users` (todos com conta). |
+| 5 | Autenticados por tipo de público (clientes gerais / membros / parceiros) | **[PARCIAL]** | `UserRole = visitor\|member\|admin\|suspended` — **não há papel "parceiro"** (parceiros vivem em coleção separada `partners`) nem "cliente geral" explícito. Precisa **decisão de taxonomia** (mapear role↔rótulo) antes do groupBy. |
+| 6 | Autenticados por tipo de indicação/fonte | **[PARCIAL]/[COLETAR]** | **[HIPÓTESE]** o `origin` pode existir em `Surveys/welcome_survey.data` (desnormalizado, não estruturado) — exige `collectionGroup` scan; **não há campo de fonte estruturado** no signup. Se a Gestora quiser fonte confiável, é instrumentação nova no cadastro. |
+| 7 | 1:1 da área de visitantes — agendados / realizados / cancelados | **[PARCIAL]** | fluxo público em `external-booking.ts` (slots de `Calendar_Events` com "1 to 1"); status mapeia a `EventLifecycleStatus` (`scheduled\|completed\|cancelled\|postponed\|baixado`). Precisa separar **público vs membro** e carimbo de tempo por transição de status. |
+| 8 | Propostas de novos horários para 1:1 público | **[PARCIAL]** | existe o fluxo de proposta da equipe (`getTeamProposalNotificationEmail` em `external-booking.ts`); precisa persistir/contar as propostas por período. |
+| 9 | Motivos de solicitação de 1:1 público | **[PARCIAL]** | **[HIPÓTESE]** de que o "motivo" é capturado no payload do agendamento público — confirmar o campo antes de prometer. Se não for, é coleta nova. |
+| 10 | 1:1 ativos (área de membro) — agendados / realizados / cancelados | **[PARCIAL]** | `bookEventAction`/`User_Bookings` + `EventLifecycleStatus`; mesma questão de carimbo por status do #7. |
+| 11 | 1:1 ativos por público (clientes PF / clientes PJ / parceiros) | **[PARCIAL]** | PF/PJ vem de `User_Type` (não do role); "parceiros" de coleção separada — mesma decisão de taxonomia do #5. |
+| 12 | Membros por etapa (esperando liberação de etapa / etapa concluída) | **[REAL]** | progresso da jornada (`User_Journey/progress`, `StepStatus = locked\|available\|current\|completed`) — distribuição por etapa é agregável. |
+| 13 | NPS geral médio | **[PARCIAL]** | **Atenção de nomenclatura:** o sistema coleta **nota 1-5** (rating de avaliação), **não NPS clássico 0-10** (promotores/detratores). "NPS médio" hoje = média das notas 1-5. Confirmar com a Gestora se quer manter o nome "NPS" ou "Nota média". |
+| 14 | NPS geral médio por título de avaliação | **[REAL]/[PARCIAL]** | agrupar as avaliações por título/instrumento; o PR #147 já agrega `content_evaluation_*` (rating 1-5). Estender a demais avaliações = agregação a mais. Mesmo caveat de nome do #13. |
+| 15 | Total de vendas realizadas | **[PARCIAL]** | `User_Orders` pagos; depende de **timestamp de pagamento confiável** por período (auditar antes — ver Riscos). |
+| 16 | Valor total faturado | **[PARCIAL]** | soma do valor dos pedidos pagos no período; mesmo caveat de timestamp do #15. |
+| 17 | Total de cupons de desconto resgatados e aplicados | **[REAL]/[PARCIAL]** | contagem de resgates já existe (coupon-v2, exposto em `/admin/marketing`); "aplicados" (efetivamente usados num pedido) exige ligação cupom↔pedido. |
+| 18 | Valor total de cupons de desconto resgatados e aplicados | **[PARCIAL]** | soma do desconto efetivamente aplicado — precisa do vínculo cupom↔pedido (o desconto por pedido). |
+
+**Leitura do escopo dela:** predominam **[PARCIAL]** — não por falta de dado bruto, mas por
+**faltar carimbo de tempo confiável** (vendas/faturamento/status de 1:1) e **decisão de taxonomia**
+(público PF/PJ/parceiro vs role). Três itens de **tráfego (#1-#3)** e um de **fonte/indicação (#6)**
+são **[COLETAR]** puros — instrumentação nova, não agregação. **Nenhum** desses quatro nasce real
+no lançamento: entram provisionados com "Aguardando base de dados", como o pedido dela já previa.
+
+**Diferença vs. as candidatas do plano (abaixo):** a lista da Gestora é mais **comercial/tráfego**
+e menos "saúde de sistema". As candidatas do plano que ela **não** pediu (produtos ativos, notas
+fiscais, cotas concedidas vs consumidas, atividade F&S 24h, saúde/erros) ficam como **oferta
+opcional** — proponho na Fase 0 de build, ela inclui se quiser. Os agrupamentos por similaridade
+(Comercial / Operacional / Jornada / Marketing / Voz do usuário) seguem valendo como seções.
+
+**Pendências de confirmação com a Gestora antes do build (curtas):**
+1. Nome "NPS" vs "Nota média" (o dado é 1-5, não 0-10) — #13/#14.
+2. Taxonomia de público (como mapear "clientes gerais / membros / parceiros" e "PF/PJ") — #5/#11.
+3. Aceite de que #1-#3 e #6 nascem **provisionados** (tráfego/fonte exigem instrumentação nova).
+4. Prioridade da **comparação A vs B** (é o principal driver para começar pela Fase 2/snapshots).
 
 ### Viabilidade geral
 
@@ -133,6 +191,8 @@ como cards provisionados — assim o painel nasce útil e honesto.
 | Etapa | Estado |
 |---|---|
 | Pedido registrado | **Concluído (2026-07-22)** |
-| Lista de métricas da Gestora | **Pendente** — não veio na mensagem; solicitar |
-| Análise de viabilidade + agrupamentos + timing | **Concluída (proposta inicial acima)** |
-| Execução | **Não iniciada** — recomendado pós-auditoria (Fase 1 antecipável se a Gestora quiser) |
+| Lista de métricas da Gestora | **Recebida e classificada (2026-07-22)** — 18 métricas + filtros, ver seção "Lista final de métricas" |
+| Análise de viabilidade + agrupamentos + timing | **Concluída** |
+| Timing (Fase 1 antecipada vs pós-auditoria) | **Decidido: pós-auditoria (Gestora, 2026-07-22)** |
+| **Fase 0 — escopo** | **Concluída (2026-07-22)** — lista mesclada e classificada; restam 4 confirmações curtas com a Gestora (nome "NPS", taxonomia de público, aceite de provisionados, prioridade do A vs B) |
+| Execução (Fases 1-3 / build) | **Não iniciada — represada por decisão de timing (pós-auditoria).** Retomar após o fim da auditoria. |

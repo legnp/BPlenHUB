@@ -24,6 +24,43 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-22] Chat de execução — EXP-01 Fase 0 (escopo): lista de métricas da Gestora recebida e classificada
+
+- Chat/sessão: chat de execução (Opus 4.8). Estado de entrada: `main` == `origin/main` em `be829f9`,
+  árvore limpa, suíte **280/280**, nenhum PR aberto. Redesign do admin (R0..R5) + feedback 9/9
+  concluídos (PRs #138-#151, deploys confirmados).
+- **Pedido ativo da Gestora: EXP-01** (dashboard de KPIs do `/admin`). Duas entradas estavam
+  bloqueando o build: a lista de métricas dela e a decisão de timing. **Ambas resolvidas nesta
+  sessão** (perguntadas à Gestora):
+  - **Timing: pós-auditoria** (não antecipar a Fase 1 agora). Build represado; foco segue na auditoria.
+  - **Lista de métricas: recebida** — 18 métricas + filtros (incl. **comparação entre 2 períodos A/B**).
+- **Fase 0 (escopo) executada — só documentação, sem código** (coerente com o timing pós-auditoria e
+  com o modelo "documentar agora, construir depois" do plano). Classifiquei cada métrica dela por
+  **leitura de código real** (Lição 2):
+  - **[COLETAR] (instrumentação nova, não agregação):** visitantes no domínio, páginas mais clicadas,
+    serviços mais clicados — **o projeto não tem nenhuma lib/instrumentação de analytics de tráfego**
+    (confirmado: 0 deps de analytics, sem pageview logging). E "autenticados por indicação/fonte" —
+    sem campo de fonte estruturado no signup (`origin` só possivelmente em `welcome_survey.data`).
+  - **[NOVO — arquitetural]:** comparação A vs B (além do filtro único do plano) — barato sobre
+    snapshots (Fase 2), 2× custo ao vivo. Reforça a Fase 2 como coração do EXP-01.
+  - **Achados de modelagem:** `UserRole = visitor|member|admin|suspended` — **não há papel "parceiro"**
+    (coleção separada) nem PF/PJ (isso é `User_Type`); a segmentação de público que ela pede exige
+    **decisão de taxonomia**. E o "NPS" pedido é, no dado, **nota 1-5** (rating), não NPS clássico 0-10.
+  - Predominam **[PARCIAL]** — dado bruto existe, falta **carimbo de tempo confiável** (vendas/
+    faturamento/status de 1:1) e a decisão de taxonomia. Nenhum [COLETAR] nasce real: entram
+    provisionados ("Aguardando base de dados"), como ela já previa.
+- **Docs atualizados (governança, direto na `main` — permitido pela regra da máquina):**
+  `PLATFORM-EXPANSION-PLAN.md` (pendência de entrada → recebida; nova seção "Lista final de métricas
+  (Gestora) + classificação"; timing confirmado; tabela de Estado com Fase 0 concluída) e este LOG.
+  **Sem mudança de código** — nada de `00-PLAN.md`/`DASHBOARD.md` (EXP-01 é expansão, fora do
+  checklist da auditoria) nem `BUGS.md`.
+- **4 confirmações curtas pendentes com a Gestora antes do build** (registradas no plano): nome
+  "NPS" vs "Nota média"; taxonomia de público (clientes/membros/parceiros, PF/PJ); aceite de que
+  tráfego/fonte nascem provisionados; prioridade da comparação A vs B. **Não bloqueiam agora** — o
+  build só retoma pós-auditoria.
+
+---
+
 ## [2026-07-22] Chat de execução — Feedback do admin: #5/#8/#9 concluídos (PRs #147/#148/#149)
 
 - Chat/sessão: mesmo chat. A Gestora **aprovou o mockup** do #8/#9 e confirmou a escala 1-5 das
