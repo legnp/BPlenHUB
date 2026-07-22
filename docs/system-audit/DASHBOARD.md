@@ -38,6 +38,13 @@
 > completo do admin (R0–R5) + feedback pós-validação (9/9). Adicionadas seções
 > novas: Redesign do Admin e EXP-01. Nenhuma mudança de código.
 >
+> **Correção (chat de execução, 2026-07-22, logo após a reconciliação):** a
+> reconciliação acima colocou o `BUG-110` (Alto) na fila de triagem, mas ele **já
+> estava corrigido** (PR #131, 2026-07-20) — a verificação de status não conferiu o
+> git. Reclassificado para `Corrigido`; a fila de `Alto`/`Crítico` agora está
+> **vazia**. Docs corrigidos: `BUGS.md`, `00-PLAN.md`, este `DASHBOARD.md`. Sem
+> mudança de código (o fix já estava na `main`).
+>
 > _(entrada anterior)_ 2026-07-22 (chat de execução — **Feedback do admin: 9/9
 > itens concluídos**. PRs #145–#149: agenda (modal + lista compacta), "Jornada do
 > Cliente" (rename + rota própria) + remoção do "Migrar Onboarding", 2 cards reais
@@ -209,9 +216,11 @@ auditoria acima** — é expansão de plataforma, não item de homologação.
 | **F1-05** | Checkout membro, networking, perfil, entrega | ✓ **Validada em produção (2026-07-21).** Privacidade do networking + cota real na entrega + feedback por pacotes (networking redesenhado) |
 | **F1-06** | 19 páginas de admin | ✓ **Validada em produção (2026-07-21) + REDESIGN COMPLETO (R0–R5) + feedback 9/9.** Ver seção "Redesign do Admin" acima |
 
-**Triagem por severidade (Fase 1 e geral): 1 único `Alto` aberto — `BUG-110`**
-(planilha do Drive de survey apaga avaliação anterior em vez de anexar — precisa
-plano+aprovação da Gestora). Nenhum `Crítico` aberto.
+**Triagem por severidade (Fase 1 e geral): fila VAZIA — 0 `Alto`, 0 `Crítico` aberto.**
+O `BUG-110` (planilha do Drive apagava avaliação anterior) **já estava corrigido** (PR
+#131, 2026-07-20) quando a reconciliação de 2026-07-22 o listou por engano como único
+`Alto` aberto; reclassificado para `Corrigido` na sessão de execução de 2026-07-22
+(leitura de código/git). Ver `BUGS.md#bug-110`.
 
 ---
 
@@ -232,7 +241,7 @@ eles. Destaques que não se encaixam num único item de fase:
 - **BUG-045** (Médio, corrigido PR #32) — `npm run test` estava quebrado na `main` desde o PR #19, sem ninguém ver (sessões validavam só com `tsc`+`build`, não `npm run check`)
 - **BUG-085** (Baixo, aberto/adiado) — ~340 docs de eventos passados nunca removidos; correção óbvia é destrutiva (apagaria atas/histórico de carreira)
 - **BUG-097/BUG-098/BUG-105** (aberto, decisão de produto/arquitetura pendente da Gestora)
-- **BUG-110** (Alto, aberto) — ver Triagem por severidade acima
+- **BUG-110** (Alto → **Corrigido**, PR #131) — reconciliação de 2026-07-22 o marcou aberto por engano; ver Triagem por severidade acima
 
 ---
 

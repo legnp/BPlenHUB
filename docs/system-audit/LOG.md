@@ -24,6 +24,38 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-22] Chat de execução — BUG-110 já estava corrigido (PR #131); correção de status pós-reconciliação
+
+- Chat/sessão: chat de execução (Opus 4.8), retomando após a reconciliação geral (commit `7b05a93`).
+  Estado de entrada: `main` == `origin/main` em `7b05a93`, árvore limpa, suíte 280/280, nenhum PR aberto.
+- **Tarefa recebida:** começar pelo `BUG-110` (listado como único `Alto` aberto e item 1 da fila),
+  apresentar o plano mínimo e perguntar à Gestora se os demais surveys também deviam virar `append`.
+- **Achado (parada obrigatória antes de codar):** o `BUG-110` **já estava corrigido**. Leitura de
+  `src/lib/drive-sync.ts` mostrou `syncSurveyToUserDrive` já usando `appendDataToSheet`
+  **incondicional** (l.67), com comentário atribuindo a "Decisão da Gestora, 2026-07-20". `git log`
+  confirmou: **PR #131 (`8757777`, 2026-07-20)** — "fix(drive): respostas de survey acumulam
+  historico em vez de sobrescrever (BUG-110)". A decisão foi **além do plano mínimo**: TODOS os
+  surveys acumulam (a "pergunta em aberto" já fora respondida e implementada). Fix na `main` há 2
+  dias, superado por ~20 deploys de produção posteriores (até o #151) — vivo em produção.
+- **Causa do erro:** a reconciliação de 2026-07-22 (`7b05a93`) reintroduziu o `BUG-110` na Triagem
+  por severidade **sem conferir o git/código** — exatamente a falha que a Lição 31/2 alerta (status
+  herdado é hipótese; verifique antes de concluir). Seguir a instrução ao pé da letra teria produzido
+  um "fix" de algo já corrigido.
+- **Ação:** nenhuma mudança de código (o fix já existe). Corrigidos os docs de processo:
+  - `BUGS.md#bug-110` → **Corrigido** (PR #131); registrada a decisão "todos os surveys acumulam" e
+    o resíduo **opcional** (reconstruir planilhas antigas do Drive a partir do Firestore — decisão da
+    Gestora, não é bug Alto; o Firestore preserva cada envio, nada se perdeu).
+  - `00-PLAN.md` — "onde a auditoria está" (**0 Alto, 0 Crítico**), item 1 da fila reclassificado,
+    recomendação de início atualizada (fila de severidade vazia → seguir grupo 4 + grupo 3).
+  - `DASHBOARD.md` — Triagem por severidade **vazia**; nota de correção no cabeçalho da reconciliação.
+- **Consequência para a fila:** com o `BUG-110` fechado, **não há Crítico/Alto aberto** — nada fura a
+  ordem por severidade. Próximo passo proposto à Gestora: perguntas de decisão de negócio do grupo 4
+  (destravam Fase 2/3), numa única rodada; em paralelo, `BUG-089` como candidato a PR solo de baixo
+  risco (os outros do grupo 3 exigem plano+aprovação de área sensível ou leitura em produção dela).
+- **Docs-only, direto na `main`** (governança). Nenhum código de produto tocado.
+
+---
+
 ## [2026-07-22] Chat de planejamento — reconciliação geral completa (primeira desde 2026-07-07)
 
 - Chat/sessão: chat de planejamento (Sonnet 5), a pedido explícito da Gestora.

@@ -3210,18 +3210,27 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   | `syncBacklogToUserDrive` | **append** | itens acumulam |
   | `syncSurveyToUserDrive` | **snapshot** | <- trata evento como estado |
   E ja existe `appendDataToSheet` em `drive-utils.ts`, pronta e usada pelas duas de cima.
-- Status: **Aberto**
-- Decisao de execucao: **Precisa plano+aprovacao** (muda semantica de dado no Drive).
-  Proposta minima e segura: `syncSurveyToUserDrive` ganha uma opcao `append` (default `false`,
-  preservando o comportamento atual de todos os demais surveys) e o **feedback de conteudo** passa a
-  usar `append: true`. Nao altera nenhum outro efeito.
-  **Questao aberta para a Gestora:** os demais surveys (check-in, CV, pre-analise, preferencias)
-  devem manter snapshot ou tambem passar a acumular historico? Snapshot perde a resposta anterior
-  quando o membro refaz um survey com `allowReview`. E decisao de backup, dela.
-- **Retroativo:** o que ja foi sobrescrito **nao e recuperavel pelo Drive**, mas **nao se perdeu** —
-  o Firestore guarda cada envio (o `BUG-109` confirmou: 3 avaliacoes integras la). Se a Gestora
-  quiser reconstruir as planilhas a partir do Firestore, e um script proprio.
-- Commit/PR: —
+- Status: **Corrigido** — PR #131 (`8757777`, 2026-07-20). **[Corrigido ANTES da reconciliacao de
+  2026-07-22; esta foi a apurar em 2026-07-22 e reclassificou o status por leitura de codigo/git.]**
+- Decisao de execucao: **Aprovada pela Gestora (2026-07-20)** — a decisao foi ALEM do plano minimo:
+  em vez de uma opcao `append` so para o feedback de conteudo, **TODOS os surveys passam a acumular
+  historico** (a pergunta em aberto foi respondida "todos acumulam"). `syncSurveyToUserDrive` trocou
+  `syncDataToSheet` (snapshot, apagava a aba) por `appendDataToSheet` **incondicionalmente**
+  (`src/lib/drive-sync.ts:67`), alinhando-se ao padrao que `syncOrderToUserDrive`/
+  `syncBacklogToUserDrive` ja usavam. Fecha tambem a colisao de anonimos (`BP-ANON`): dois visitantes
+  no mesmo artigo agora ANEXAM linhas em vez de o segundo apagar o primeiro. `syncDataToSheet` segue
+  em uso legitimo onde snapshot e correto (jornada/progresso, post-event, product-sync, form-effects,
+  submit-devolutiva) — nao afetados.
+- **Reconciliacao (2026-07-22):** a reconciliacao geral desta data reintroduziu erroneamente o
+  BUG-110 na Triagem por severidade como "unico Alto aberto" sem conferir git — o PR #131 ja o havia
+  fechado 2 dias antes. Corrigido nesta sessao de execucao. Com isto a fila de `Alto`/`Critico`
+  aberto fica **vazia**.
+- **Retroativo (PENDENTE, opcional, decisao da Gestora — NAO e mais bug Alto):** o que ja fora
+  sobrescrito no Drive **nao se perdeu** — o Firestore guarda cada envio (o `BUG-109` confirmou: 3
+  avaliacoes integras la). Reconstruir as planilhas do Drive a partir do Firestore e um **script
+  proprio, so se a Gestora quiser** o historico antigo espelhado no backup. Nao bloqueia nada.
+- Commit/PR: **mergeado** — PR #131 (`8757777`, squash), deploy de producao ja superado por ~20
+  deploys posteriores (ate o #151, 2026-07-22) — codigo vivo em producao.
 
 
 ### BUG-111 (MELHORIA) Visao Geral: campo de "data prevista" + ordenacao por data nas colunas Proximas/Em Foco

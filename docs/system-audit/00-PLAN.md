@@ -1390,20 +1390,23 @@ esquecida.
   Fase 1; `F3-03`/`BUG-022` já corrigido).
 - **Tracks:** `T-02` fechado (17/17), `T-03` em 6/7, `T-06` fechado (2/2).
   `T-01`/`T-04`/`T-05` nunca iniciados.
-- **Severidade:** 1 único `Alto` aberto (`BUG-110`), 0 `Crítico`.
+- **Severidade:** **0 `Alto`, 0 `Crítico` aberto.** _(A reconciliação de 2026-07-22 listou o
+  `BUG-110` como único `Alto` aberto por engano — o PR #131 já o corrigira em 2026-07-20;
+  reclassificado para `Corrigido` na sessão de execução de 2026-07-22. Ver `BUGS.md#bug-110`.)_
 - **EXP-01:** fora do checklist da auditoria; represado por decisão da Gestora
   até o fim desta.
 
 ### Lista priorizada do que resta (para o chat de execução retomar)
 
-**1. `BUG-110` (Alto, único aberto) — precisa decisão da Gestora antes de codar.**
-   Planilha do Drive de avaliação de conteúdo apaga a avaliação anterior em vez
-   de anexar (perda de histórico de backup). Plano mínimo já redigido em
-   `BUGS.md#bug-110` (`syncSurveyToUserDrive` ganha opção `append`, default
-   `false`; feedback de conteúdo passa a `append: true`). **Pergunta em aberto
-   para a Gestora:** os demais surveys (check-in, CV, pré-análise,
-   preferências) devem virar `append` também, ou continuam snapshot? Depois de
-   decidido, é uma mudança cirúrgica de baixo risco.
+**1. `BUG-110` — JÁ CORRIGIDO (PR #131, 2026-07-20), não é item aberto.**
+   ~~Alto, único aberto~~. `syncSurveyToUserDrive` já troca snapshot por append
+   **incondicional** (todos os surveys acumulam histórico — a decisão da Gestora
+   de 2026-07-20 foi além do plano mínimo). A reconciliação de 2026-07-22 o
+   listou por engano; reclassificado para `Corrigido` na sessão de execução
+   seguinte. Ver `BUGS.md#bug-110`. **Resíduo opcional (decisão da Gestora, não é
+   bug Alto):** reconstruir as planilhas antigas do Drive a partir do Firestore,
+   se ela quiser o histórico pré-#131 espelhado no backup — script próprio, não
+   bloqueia nada.
 
 **2. Ações da Gestora já pendentes, sem bloqueio de código (só aguardando ela):**
    - Validação visual da sidebar recolhida/flyout do admin (área topo-esquerda
@@ -1462,12 +1465,14 @@ da auditoria por decisão da Gestora — não compete com os itens acima.
 
 ### Recomendação de por onde começar
 
-Pela regra de triagem por severidade (Protocolo item 6): **`BUG-110` primeiro**
-— é o único Alto aberto e já tem plano redigido, só falta a decisão da
-Gestora sobre o escopo (só o feedback de conteúdo, ou todos os surveys).
-Enquanto isso aguarda resposta, o chat de execução pode aproveitar o tempo em
-paralelo nos itens do grupo 3 (sem decisão pendente) ou levar à Gestora, numa
-única rodada, as perguntas do grupo 4 — várias são perguntas curtas que
-destravam fases inteiras (Fase 2/3) e cabem juntas na mesma conversa, seguindo
-a Lição 8 do `RETROSPECTIVE.md` (agrupar confirmações sem dependência entre
-si).
+**Atualização (execução, 2026-07-22):** o `BUG-110` — que a triagem indicava como
+ponto de partida — **já estava corrigido** (PR #131). Com a fila de `Alto`/`Crítico`
+**vazia**, não há mais item furando a ordem por severidade. O melhor uso do tempo
+passa a ser: **(a)** levar à Gestora, numa única rodada, as perguntas do **grupo 4**
+(decisões de negócio que destravam Fase 2/3 — perguntas curtas, sem dependência entre
+si, Lição 8); e **(b)** em paralelo, avançar os itens do **grupo 3** que não exigem
+decisão de negócio nem gating de área sensível. Atenção: dentro do grupo 3, `BUG-017`
+(padrão de acesso a dado) e `BUG-104` (cotas) ainda exigem **plano+aprovação** por
+área sensível; `BUG-009` depende de **leitura em produção** (passo da Gestora);
+`BUG-089` (catch que engole erro de cota) é o candidato mais direto a um PR solo de
+baixo risco.
