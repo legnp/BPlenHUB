@@ -96,10 +96,11 @@ export function AboutSection() {
               
               {/* Foto Circular (Placeholder luxuoso) */}
               <div className="w-48 h-48 rounded-full border border-white/10 bg-[#111] overflow-hidden relative shadow-[0_0_30px_rgba(0,0,0,0.5)] flex items-center justify-center mb-8">
-                 <Image 
-                   src="/foto_perfil_fundadora.jpg" 
+                 <Image
+                   src="/foto_perfil_fundadora.jpg"
                    alt="Lisandra Lencina - Fundadora da BPlen"
                    fill
+                   sizes="192px"
                    className="object-cover"
                    priority
                  />
