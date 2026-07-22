@@ -107,12 +107,12 @@ export default function AdminPartnersPage() {
       {/* Lista de parceiros */}
       {isLoading ? (
         <div className="flex flex-col items-center justify-center py-20">
-           <Loader2 className="animate-spin text-white/20" size={40} />
+           <Loader2 className="animate-spin text-[var(--text-muted)]/30" size={40} />
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
            {partners.map(partner => (
-             <div key={partner.id} className="p-6 bg-white/5 border border-white/10 rounded-[2.5rem] glass hover:border-white/20 transition-all group">
+             <div key={partner.id} className="p-6 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-[2.5rem] glass hover:border-[var(--accent-start)]/30 transition-all group">
                 <div className="flex items-center gap-4">
                    <div className="w-16 h-16 rounded-2xl bg-[var(--input-bg)] overflow-hidden flex-shrink-0 border border-[var(--border-primary)]">
                       {partner.photoUrl ? (
@@ -278,18 +278,18 @@ export default function AdminPartnersPage() {
                   </div>
                </div>
 
-              <div className="pt-8 border-t border-white/5 flex gap-4">
+              <div className="pt-8 border-t border-[var(--border-primary)] flex gap-4">
                  <button 
                    onClick={handleSave}
                    disabled={isSaving}
-                   className="flex-1 py-4 bg-white text-black rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                   className="flex-1 py-4 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
                  >
                     {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
                     {editingPartner?.id ? "Atualizar Parceiro" : "Criar Parceiro"}
                  </button>
                  <button 
                    onClick={() => setShowModal(false)}
-                   className="px-8 py-4 bg-white/5 border border-white/10 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all"
+                   className="px-8 py-4 bg-[var(--input-bg)] border border-[var(--border-primary)] text-[var(--text-primary)] rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[var(--accent-soft)] transition-all"
                  >
                     Cancelar
                  </button>

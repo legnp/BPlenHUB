@@ -2,23 +2,23 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { 
-  FlaskConical, 
-  Play, 
-  ClipboardCheck, 
-  Map, 
+import {
+  FlaskConical,
+  ClipboardCheck,
+  Map,
   ChevronRight,
   Info
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { FunctionalPageHeader } from "@/components/layout/FunctionalPageHeader";
 
 export default function SandboxPage() {
   const router = useRouter();
 
   const tools = [
     {
-      title: "Member Tour",
-      description: "Teste o tour guiado da Área de Membro. Isso irá redirecionar você para o Dashboard de Membro e forçar o início do guia.",
+      title: "Tour da Área de Membro",
+      description: "Teste o tour guiado da Área de Membro. Isso irá redirecionar você para a Área de Membro e forçar o início do guia.",
       icon: ClipboardCheck,
       color: "text-blue-500",
       bg: "bg-blue-500/10",
@@ -26,7 +26,7 @@ export default function SandboxPage() {
       onClick: () => router.push("/hub/membro?startTour=true")
     },
     {
-      title: "Onboarding Tour",
+      title: "Tour de Onboarding",
       description: "Teste o guia interativo no Hub. Isso irá redirecionar você para o Hub e forçar o início do tour.",
       icon: Map,
       color: "text-pink-500",
@@ -38,15 +38,16 @@ export default function SandboxPage() {
 
   return (
     <div className="space-y-8 animate-fade-in-up">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight text-[var(--text-primary)] text-left">
-          AMBIENTE <span className="text-[var(--accent-start)] italic">Sandbox</span>
-        </h1>
-        <p className="text-[var(--text-muted)] text-sm font-medium opacity-70 flex items-center gap-2 text-left">
-          <FlaskConical size={14} className="text-[var(--accent-start)]" />
-          Espaço seguro para validação de fluxos e experiência do usuário.
-        </p>
-      </div>
+      <FunctionalPageHeader
+        eyebrow="Sistema e Ferramentas"
+        title="Sandbox"
+        icon={<FlaskConical size={24} />}
+      />
+
+      <p className="text-[var(--text-muted)] text-sm font-medium opacity-70 flex items-center gap-2 text-left -mt-4">
+        <FlaskConical size={14} className="text-[var(--accent-start)]" />
+        Espaço seguro para validação de fluxos e experiência do usuário.
+      </p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {tools.map((tool, idx) => (
@@ -61,8 +62,8 @@ export default function SandboxPage() {
               <div className={`p-4 rounded-2xl ${tool.bg} ${tool.color} group-hover:scale-110 transition-transform duration-500`}>
                 <tool.icon size={24} />
               </div>
-              <div className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)] group-hover:text-[var(--accent-start)] transition-colors">
-                Sandbox Tool
+              <div className="px-3 py-1 rounded-full bg-[var(--input-bg)] border border-[var(--border-primary)] text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)] group-hover:text-[var(--accent-start)] transition-colors">
+                Ferramenta
               </div>
             </div>
 
