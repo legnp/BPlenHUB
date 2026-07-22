@@ -24,6 +24,40 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-22] Chat de execução — Feedback pós-validação do redesign do admin (PRs #145/#146 + mockup)
+
+- Chat/sessão: mesmo chat, após a **Gestora validar o checklist inteiro do redesign (R0..R5)** — todos os
+  pontos aprovados. Ela retornou uma lista de 9 ajustes/dúvidas. Estado deste turno:
+- **PR #145 (`d169282`, deploy confirmado) — `/admin/agenda`:** (#6) modal "Tipos de Evento" alargada
+  (`maxWidth="max-w-2xl"`; o default `max-w-md` do GlassModal cortava os campos e forçava scroll
+  horizontal). (#7) a grade de cards grandes de eventos sincronizados virou **lista compacta estilo
+  tabela** (linha por evento). Sem `--no-verify`.
+- **PR #146 (`d1f1ba6`, deploy confirmado) — reorganização estrutural:**
+  - **#4 — "Devolutiva Comportamental" → "Jornada do Cliente":** nova rota `/admin/jornada-cliente`
+    (renderiza o `DevolutivaComportamentalView` como 1ª seção; a página crescerá para reunir contratos,
+    serviços, atalho p/ gestão do usuário e a jornada inteira do cliente — decisão da Gestora). Rota
+    antiga `/admin/fs/devolutiva` e a aba do `FSTabs` removidas. Sidebar: link em **Pessoas**; categoria
+    6 renomeada "Instrumentos e Devolutivas" → **"Instrumentos"**.
+  - **#3 — "Migrar Onboarding" removido do projeto** (migração one-shot legada, sem serventia; confirmado
+    que não afeta dados): página `/admin/migrate-welcome` + item da sidebar + botão "Migrar Dados Legados"
+    do header de `users` + a action órfã `src/actions/migration-welcome.ts` (únicos consumidores). Sem
+    `--no-verify`. type-check limpo após `rm -rf .next` (validators de rota do Next regeneram).
+- **Decisões da Gestora registradas:** nome "Jornada do Cliente" (rota `/admin/jornada-cliente`); remover
+  Migrar Onboarding; #8/#9 "mockup visual primeiro".
+- **#8 (sidebar recolhível) + #9 (densidade): mockup entregue** (artifact navegável) — barra recolhível
+  (só ícones + flyout no hover das subpáginas + tooltip nos itens únicos + toggle + logo quadrado/completo)
+  e demonstração da densidade proposta. **Aguarda aprovação da Gestora antes de implementar.**
+- **#5 (cards de NPS/temas na `/admin/social`): investigado, viável.** Os dados existem em
+  `src/actions/feedback.ts`: `submitContentFeedback` (avaliação de conteúdo com `rating`, id de survey
+  dinâmico `content_evaluation_<postId>` por post) e `submitThemeSuggestion` (form de sugestão de tema).
+  Dá para 2 cards reais (nota média das avaliações + total de sugestões) — **PR focado à parte** (precisa
+  de uma action de agregação nova; confirmar a escala do `rating`). Pendente.
+- **#1 (título "Admin" só) e #2 (alinhar à esquerda):** serão absorvidos pela implementação do #8
+  (redesign da sidebar), para não editar a `AdminLayoutClient` duas vezes.
+- Validado: os 2 PRs com type-check/test **280/280**/build limpos. Sem bugs novos.
+
+---
+
 ## [2026-07-21] Chat de execução — REDESIGN DO ADMIN R5 + BUG-113 — COMPLETO (PR #144)
 
 - Chat/sessão: mesmo chat de execução, após o **R4 ser validado pela Gestora** ("pode seguir com r5 +

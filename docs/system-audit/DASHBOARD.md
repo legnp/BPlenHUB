@@ -12,7 +12,17 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-21 (chat de execução — **REDESIGN DO ADMIN R5 + BUG-113 — COMPLETO
+> **Última atualização:** 2026-07-22 (chat de execução — **Feedback pós-validação do redesign do admin**.
+> A Gestora validou o checklist R0..R5 inteiro (tudo aprovado) e pediu ajustes. Entregues: **PR #145**
+> (`d169282`) — `/admin/agenda`: modal de tipos de evento alargada + cards de eventos em lista compacta;
+> **PR #146** (`d1f1ba6`) — "Devolutiva Comportamental" virou **Jornada do Cliente** (`/admin/jornada-cliente`,
+> em Pessoas; categoria 6 → "Instrumentos") e o **"Migrar Onboarding" removido do projeto** (página +
+> sidebar + botão em users + action órfã; migração legada sem serventia, sem afetar dados). Ambos deploy
+> `success`, sem `--no-verify`, suíte 280/280. **Pendentes:** mockup do #8 (sidebar recolhível) + #9
+> (densidade) entregue e aguardando aprovação; #5 (2 cards de NPS/temas em `/social`) investigado e viável
+> (dados em `feedback.ts`), PR focado à parte. **Redesign R0..R5 segue COMPLETO** — estes são refinos.
+>
+> _(entrada anterior)_ 2026-07-21 (chat de execução — **REDESIGN DO ADMIN R5 + BUG-113 — COMPLETO
 > (PR #144)**, deploy de produção `success`, SHA `61cf8e8`. Último lote (Sistema e Ferramentas):
 > `sandbox` (header + copy + recolor) e `migrate-welcome` (convertido ao layout padrão com header;
 > "Welcome Survey"→"Onboarding"; nomes de banco removidos; recolor). **BUG-113 corrigido junto**

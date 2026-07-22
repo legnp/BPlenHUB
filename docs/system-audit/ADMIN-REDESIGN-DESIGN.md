@@ -243,3 +243,24 @@ Com isto **as 19 telas usam o `FunctionalPageHeader` + `StatTile`**, inglês/nom
 design próprio das surveys/forms preservado. Débitos separados remanescentes: modal cru de `partners`
 (não-`GlassModal`); loading screens de admin não padronizadas no `AtmosphericLoading` (fora do escopo
 do redesign de superfície).
+
+---
+
+## 9. Fila de ajustes pós-validação (feedback da Gestora, 2026-07-22)
+
+A Gestora validou o checklist R0..R5 inteiro (tudo aprovado) e pediu 9 ajustes/dúvidas:
+
+| # | Item | Status |
+|---|---|---|
+| 1 | Título da sidebar só "Admin" (sem "Central de Controle") | **A fazer** — absorvido pelo #8 |
+| 2 | Alinhar o título "Admin" à esquerda | **A fazer** — absorvido pelo #8 |
+| 3 | "Migrar Onboarding": o que é / removível? | **Feito (PR #146)** — removido do projeto (migração one-shot legada, sem serventia; não afeta dados) |
+| 4 | Desmembrar `fs/devolutiva` → rota própria + renomear (jornada do cliente) | **Feito (PR #146)** — `/admin/jornada-cliente` ("Jornada do Cliente"), em Pessoas; cresce depois p/ contratos, serviços, atalho de usuário, jornada inteira |
+| 5 | 2 cards reais na `/social`: nota média das avaliações de conteúdo + total de sugestões de tema | **Viável, pendente** — dados em `src/actions/feedback.ts` (`submitContentFeedback` com `rating`; `submitThemeSuggestion`); precisa de action de agregação nova (ids dinâmicos `content_evaluation_<postId>`) — PR focado |
+| 6 | Modal de tipos de evento (`/agenda`) muito estreito | **Feito (PR #145)** — `maxWidth="max-w-2xl"` |
+| 7 | Cards de eventos sincronizados (`/agenda`) muito largos → lista compacta | **Feito (PR #145)** — lista estilo tabela |
+| 8 | Sidebar recolhível/expansível (flyout no hover, tooltip, toggle, logo quadrado/completo) | **Mockup entregue, aguarda aprovação** |
+| 9 | Densidade geral do admin (cartões/botões/cards menores, menos scroll) | **Mockup entregue, aguarda aprovação** (junto do #8) |
+
+Absorções e ordem: #1 e #2 entram na implementação do #8 (evita editar a `AdminLayoutClient` duas
+vezes). #8 e #9 saem juntos após a Gestora aprovar o mockup. #5 é um PR de dados à parte.
