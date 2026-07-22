@@ -57,23 +57,21 @@ export function StatTile({
   dot?: boolean;
 }) {
   return (
-    <div className="p-5 rounded-2xl border border-[var(--border-primary)] bg-[var(--input-bg)] backdrop-blur-xl transition-all hover:border-[var(--accent-start)]/30">
+    <div className="p-4 rounded-xl border border-[var(--border-primary)] bg-[var(--input-bg)] backdrop-blur-xl transition-all hover:border-[var(--accent-start)]/30 flex items-center gap-3.5">
       {icon ? (
-        <div className="flex items-start justify-between mb-4">
-          <div className={`p-2.5 rounded-2xl ${ICON_TONE[tone]}`}>{icon}</div>
-        </div>
+        <div className={`p-2.5 rounded-xl shrink-0 ${ICON_TONE[tone]}`}>{icon}</div>
       ) : null}
-      <div className="space-y-1 text-left">
-        <h3 className="text-3xl font-bold text-[var(--text-primary)] tracking-tighter">
+      <div className="min-w-0 text-left">
+        <h3 className="text-2xl font-bold text-[var(--text-primary)] tracking-tighter leading-tight">
           {value}
         </h3>
-        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--text-muted)] opacity-60">
+        <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-[var(--text-muted)] opacity-60 mt-1">
           {label}
         </p>
         {detail ? (
-          <p className={`text-xs font-medium flex items-center gap-1.5 ${DETAIL_TONE[tone]}`}>
-            {dot ? <span className={`w-1.5 h-1.5 rounded-full ${DOT_TONE[tone]}`} /> : null}
-            {detail}
+          <p className={`text-[11px] font-medium flex items-center gap-1.5 mt-0.5 ${DETAIL_TONE[tone]}`}>
+            {dot ? <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${DOT_TONE[tone]}`} /> : null}
+            <span className="truncate">{detail}</span>
           </p>
         ) : null}
       </div>
