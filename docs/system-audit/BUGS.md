@@ -3030,7 +3030,14 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   o ramo nao cura — devolve anonimo em vez de casar por e-mail digitado. Isso preserva o
   auto-healing `AuthMap -> UID -> Email` documentado no `CLAUDE.md` e fecha a brecha, porque o
   e-mail deixa de ser um campo de formulario.
-- Commit/PR: —
+- **Lote 2b.2 concluido (2026-07-20, PRs #125/#126):** resolucao de identidade consolidada numa
+  **fonte unica** (`src/lib/identity/find-matricula.ts`) — fecha a consequencia registrada acima
+  (duas copias divergiam por construcao). `BUG-107` corrigido junto. Superficie deixou de aceitar
+  uid do cliente (`resolveOwnIdentityAction`/`getOwnMetadataAction`, sem parametro de uid) — fecha
+  a cunhagem de matricula em serie. **BUG-106 fechado por completo.**
+- Commit/PR: **PR #124** (contenção) + **PRs #125/#126** (lote 2b.2 — fonte única de identidade).
+  *(Nota desta reconciliação, 2026-07-22: o campo `Commit/PR` estava vazio (`—`) apesar do bug já
+  constar Corrigido no índice bug→track do `00-PLAN.md`; corrigido agora.)*
 
 ### BUG-107 Feedback de conteudo de visitante nao logado FALHA (a intencao existe, a execucao nao)
 
@@ -3064,7 +3071,7 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   falha. **Requisito da Gestora (2026-07-19):** manter acessivel a nao-logados **e** garantir
   rastreabilidade quando a pessoa esta logada — o que reforca a direcao do `BUG-106`: identidade vem
   da **sessao verificada**, nunca de parametro do cliente.
-- Commit/PR: —
+- Commit/PR: **PR #125** (`b92cdbb`)
 
 
 ### BUG-108 Convite: `matricula` do cliente aceita sem vinculo com o token — escrita em subcolecao alheia

@@ -481,6 +481,12 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
 
 ## Registro de revisões deste documento
 
+- 2026-07-22 — reconciliação geral do chat de planejamento: Lições 31 (merge não
+  é deploy) e 44 ("tem guard?" é só metade da pergunta de segurança) promovidas
+  a itens 13-14 do Protocolo do `00-PLAN.md`; a Lição 13 (contagem fracionária)
+  ganhou uma frase explícita nas Convenções do mesmo documento. Nenhuma lição
+  nova adicionada aqui nesta sessão — o trabalho foi de reconciliação cruzada
+  entre `00-PLAN.md`/`BUGS.md`/`DASHBOARD.md`, não de execução.
 - 2026-07-20 — Licao 44 ("tem guard?" e metade da pergunta: a outra e de onde vem a identidade em
   que a funcao acredita; + o corolario de que diagnosticar uma falha de metodo nao imuniza contra
   ela, e o de consolidar identidade numa fonte unica antes de endurecer) adicionada, a partir do

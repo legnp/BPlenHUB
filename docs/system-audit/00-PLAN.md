@@ -8,26 +8,47 @@ atualiza o status aqui ao final. `DASHBOARD.md` é só um agregador visual (não
 fonte de verdade); `F0-DECISIONS.md` guarda o detalhe longo das decisões de Fase 0.
 
 Populado pelo chat de planejamento a partir dos 5 mapas (`01` a `05`). **Status
-de cobertura dos mapas**: os 5 mapas estão **completos**. **Status de execução**:
-a **Fase 0 está completa** (6/6 itens decididos; `F0-01` com a **parte GlassModal
-concluída** — lotes 1/A/B mergeados, PRs #15/#20/#21; resta só um 2º componente-base
-para modais grandes app-shell, `BUG-034`, futuro; e `F0-04` **concluído**
-— entitlements removida + `User_JourneyMap` consolidado no v3, PRs
-#1/#22/#23/#24/#25; resíduo de nomenclatura tratado à parte no `BUG-033`,
-Fase 1; ver `DASHBOARD.md`) e a Track **T-02 (Segurança sistemática) está FECHADA — 12/12 (100%)**
-— o item sistêmico `BUG-020` foi fechado em 7 lotes (PRs #8–#14), junto de
-`BUG-021` e de um Crítico novo achado no processo (`BUG-032`, escalação de
-privilégio), ambos corrigidos; `BUG-025` (webhook Mercado Pago com assinatura
-HMAC, PR #16), `BUG-004` (path de debug no painel admin, PR #17, rebaixado
-Alto→Baixo após avaliação de exposição), `BUG-006` (guard `requireAuth` no
-networking, PR #18) e `BUG-005` (`requireMatricula` no pagamento do checkout de
-membro, PR #19 — rastreabilidade) foram corrigidos. Todos os 12 bugs do track
-estão corrigidos e mergeados (nenhum aceite formal foi necessário). **Nenhum bug
-Crítico está aberto no momento.**
-Uma lacuna estrutural residual e conhecida nos mapas: contagem exata de quantas
-etapas da jornada usam `SurveyEngine` (ver nota de fechamento em
-`01-map-features.md`) — não bloqueia nenhuma fase. Ver `LOG.md` para o
-histórico completo de sessões.
+de cobertura dos mapas**: os 5 mapas estão **completos**.
+
+**Status de execução (atualizado 2026-07-22):**
+- **Fase 0 — completa** (6/6 decididos). `F0-01`: parte GlassModal concluída
+  (lotes 1/A/B); resta só o 2º componente-base para modais grandes app-shell
+  (`BUG-034`, futuro). `F0-04` concluído.
+- **Fase 1 — as 6 páginas/clusters (`F1-01` a `F1-06`) foram VALIDADAS EM
+  PRODUÇÃO pela Gestora** (2026-07-11 a 2026-07-21). `F1-06` foi além do
+  funcional: recebeu um **redesign completo do admin** (`ADMIN-REDESIGN-DESIGN.md`,
+  lotes R0–R5, PRs #138–#144) + **9/9 itens de feedback pós-validação** (PRs
+  #145–#149) — as 19 telas usam `FunctionalPageHeader`/`StatTile`, sidebar em
+  7 escopos, inglês/nomes de banco limpos. Pendências residuais pontuais:
+  validação visual de detalhes não pré-visualizáveis (sidebar recolhida,
+  flyout — BUG-030) e débitos de design menores (modal cru de `partners`,
+  loadings fora do `AtmosphericLoading`).
+- **Fases 2/3/4 — não iniciadas** (só `F2-04`/`F2-05` com progresso parcial via
+  achados colaterais da Fase 1).
+- **Track T-02 (Segurança sistemática): fechado, reaberto, refechado —
+  17/17 (100%).** Fechou 1ª vez em 2026-07-04 (12/12: `BUG-020` em 7 lotes +
+  `BUG-021`/`BUG-025`/`BUG-004`/`BUG-006`/`BUG-005`/`BUG-032`). **Reaberto em
+  2026-07-19** quando uma varredura por arquivo (`BUG-103`) achou 57 server
+  actions sensíveis sem guard que os 7 lotes originais nunca tocaram — incluiu
+  um 2º Crítico (`BUG-106`, sequestro de conta por e-mail digitado, mesmo
+  padrão do `BUG-032`, corrigido em <24h) e o `BUG-108` (convite sem vínculo ao
+  token). **Refechado em 2026-07-20**, agora conferido por padrão (invariante
+  executável `server-action-surface.test.ts`), não bug a bug.
+- **Track T-03 (Integridade de dados): 6/7 (~86%)** — só `BUG-009` aberto.
+- **Track T-06 (Compliance): 2/2 (100%), fechado.**
+- **Tracks T-01/T-04/T-05: não iniciados.**
+- **Triagem por severidade: 1 único Alto aberto — `BUG-110`** (Drive/backup,
+  planilha de survey sobrescreve avaliação anterior). Nenhum Crítico aberto.
+- **EXP-01 (dashboard de KPIs do `/admin`)** é uma **expansão de plataforma**
+  (`PLATFORM-EXPANSION-PLAN.md`), fora do escopo/checklist da auditoria — não
+  entra em nenhuma % acima. Fase 0 (escopo) concluída; build represado por
+  decisão da Gestora até o fim da auditoria.
+
+Ver a seção **"Estado da auditoria e próximos itens de execução"** ao final
+deste documento para a lista priorizada do que resta. Uma lacuna estrutural
+residual e conhecida nos mapas: contagem exata de quantas etapas da jornada
+usam `SurveyEngine` (ver nota de fechamento em `01-map-features.md`) — não
+bloqueia nenhuma fase. Ver `LOG.md` para o histórico completo de sessões.
 
 **Refinamento desta versão** (chat de planejamento, ver entrada correspondente no
 `LOG.md`): incorporadas as 5 melhorias sugeridas em
@@ -89,6 +110,56 @@ abertos, nenhum Crítico). Achados corrigidos:
    no índice bug→track, mas ausente do campo "Bug(s) vinculado(s)" do próprio
    item `F1-05`** — checagem cruzada anterior tinha auditado o índice, não o
    campo de cada item da Fase 1 contra ele.
+
+**Reconciliação geral desta sessão** (chat de planejamento, 2026-07-22, ver
+entrada correspondente no `LOG.md`): a última reconciliação cruzada completa
+foi em 2026-07-07 (35 bugs); desde então houve uma sessão de execução muito
+longa (F1-01 a F1-06 validadas, subsistema de contratos, modelo de acesso,
+sync de agenda, T-02 reaberto/refechado, redesign completo do admin, EXP-01
+Fase 0) sem nova reconciliação geral. Checagem cruzada bug a bug de todos os
+113 bugs registrados entre `00-PLAN.md`/`BUGS.md`/`DASHBOARD.md`/índice
+bug→track. Achados corrigidos:
+1. **26 bugs (`BUG-056` a `071`, `073`/`074`, `076` a `083`) estavam
+   completamente ausentes do índice bug→track**, apesar de já registrados e
+   corrigidos em `BUGS.md` — a tabela pulava direto de `BUG-055` para `072`, e
+   de `075` para `084`. Todos adicionados.
+2. **7 status estavam defasados no índice** (diziam "Aberto", `BUGS.md` já
+   dizia "Corrigido" há dias/semanas): `BUG-010` (desde 2026-07-11), `BUG-040`/
+   `041`/`042` (desde 2026-07-08) e `BUG-052`/`053`/`055` (desde 2026-07-10).
+   Corrigidos.
+3. **`BUG-106`/`BUG-107`** (contidos no `BUGS.md`, mas com o campo `Commit/PR`
+   vazio apesar de já constarem Corrigidos no índice) — preenchidos com as PRs
+   corretas (#124+#125/#126 e #125).
+4. **Triagem por severidade não refletia o `BUG-110`** (Alto, reportado
+   2026-07-20) — nunca tinha entrado na fila porque o achado é do mesmo dia da
+   última atualização da tabela. É hoje o **único** Crítico/Alto aberto.
+5. **Track T-02 estava travado em "12/12"** no item de fase — não refletia a
+   reabertura/refechamento de 2026-07-19/20 (mais 5 bugs: `BUG-102/103/106/
+   107/108`). Recalculado para **17/17 (100%)**.
+6. **Track T-03 estava em "3/4"** — faltavam `BUG-040/041/042` (Trilha 3 de
+   higiene, corrigidos desde 2026-07-08 mas nunca linkados a este item).
+   Recalculado para **6/7 (~86%)**.
+7. **`F2-01` e `F2-04`** tinham bugs vinculados no índice mas ausentes do
+   próprio campo do item (`BUG-043` em F2-01; `BUG-093/094/104` em F2-04).
+   Corrigidos.
+8. **2 lições novas do `RETROSPECTIVE.md`** (31 — merge não é deploy, confirmar
+   produção; 44 — "tem guard?" é só metade da pergunta de segurança)
+   incorporadas como itens 13-14 do Protocolo; a Lição 13 (contagem
+   fracionária) ganhou uma frase explícita nas Convenções (já era seguida na
+   prática, mas não estava escrita ali).
+9. Confirmado que `ADMIN-REDESIGN-DESIGN.md` (R0–R5 + feedback 9/9) e
+   `PLATFORM-EXPANSION-PLAN.md` (EXP-01 Fase 0 concluída, build represado) já
+   estão com o estado correto em seus próprios documentos — sem defasagem
+   interna a corrigir; o que faltava era refleti-los no `00-PLAN.md`/
+   `DASHBOARD.md` (feito nesta sessão).
+10. **`DASHBOARD.md` tinha uma defasagem estrutural**: a nota "Última
+    atualização" vinha sendo narrada a cada PR (541 linhas de histórico
+    empilhado), mas as **tabelas agregadas** (Fase 0, Tracks, Fase 1) nunca
+    foram atualizadas desde ~2026-07-11 — mostravam T-02 "12/12", T-03 "3/4",
+    e F1-04/05 "código completo, pendente validação"/F1-06 "não iniciada",
+    todas defasadas em relação à realidade (Fase 1 inteira validada,
+    redesign do admin completo). Corrigido nesta sessão; histórico extenso
+    trimado (LOG.md já é o registro permanente completo).
 
 ---
 
@@ -176,6 +247,29 @@ abertos, nenhum Crítico). Achados corrigidos:
     num só. Caso real: `F0-01` — a decisão "GlassModal único" precisou virar
     "GlassModal (card) + 2º base (app-shell, `BUG-034`) + exceções aceitas"
     (Lição 12 do `RETROSPECTIVE.md`).
+13. **Merge na `main` não é entrega — confirme o deploy de produção do commit
+    certo antes de dizer "está em produção".** Este projeto mergeia PRs pela API
+    REST do GitHub (`gh` não instalado); uma instabilidade pode fazer o merge
+    suceder e o evento de deploy da Vercel se perder, e o `git log` sozinho não
+    denuncia isso. Dois detalhes operacionais: o "Redeploy" da Vercel reconstrói
+    o **mesmo commit** do deployment escolhido (não puxa o topo da `main` — para
+    publicar código novo é preciso um push novo, ex. commit vazio); e quando o
+    fix depende de um job manual (sync/migração/registro), a cadeia real é
+    **merge → deploy → execução do job → efeito** — a verificação read-only do
+    efeito é a única prova do último elo. Caso real: PR #109/#110 (Lição 31 do
+    `RETROSPECTIVE.md`).
+14. **Em toda revisão de segurança, "tem guard?" é só metade da pergunta — a
+    outra é "de onde vem a identidade que essa função acredita?".** Um guard
+    correto (`requireAuth`/dono-ou-admin) pode conviver com uma brecha na linha
+    seguinte se algum identificador que a função usa para decidir (`uid`,
+    `email`, `matricula`) vier de parâmetro do cliente em vez da sessão
+    verificada — foi assim que o `BUG-032` (corrigido) sobreviveu como `BUG-106`
+    (Crítico) em duas outras cópias da mesma lógica. Checklist mínimo por action
+    sensível: (1) tem guard? (2) todo identificador que decide vem da sessão
+    verificada ou de parâmetro? (3) ela **escreve** identidade (`uid`,
+    `_AuthMap`, papel) a partir de algum parâmetro? Ao corrigir, consolide numa
+    fonte única antes de endurecer — endurecer cópias em paralelo é como elas
+    divergiram (Lição 44 do `RETROSPECTIVE.md`).
 
 ---
 
@@ -203,7 +297,13 @@ calendários bem diferentes).
   em `BUGS.md` E aprovação explícita da Gestora, como o `BUG-030`). Um bug
   simplesmente `Aberto` ou `Em Progresso` mantém o Track aberto. A % no
   `DASHBOARD.md` só conta esses dois estados no numerador — nunca arredondar
-  para cima, nunca contar "decidido mas gated" como fechado.
+  para cima, nunca contar "decidido mas gated" como fechado. **Um bug
+  `Corrigido` conta sempre como unidade inteira, nunca fração** — contagem
+  fracionária (ex. `~5,5/11`) só é válida enquanto o bug está genuinamente
+  `Em Progresso` (lotes parciais de um mesmo bug, como o `BUG-020` antes de
+  fechar); não existe "meio ponto" para um bug já fechado (Lição 13 do
+  `RETROSPECTIVE.md` — erro real cometido e corrigido na reconciliação de
+  2026-07-07).
 
 ---
 
@@ -231,9 +331,15 @@ ativa furando a ordem das fases.
 
 | Bug | Severidade | Onde se conecta | Por que ainda não fechou |
 |---|---|---|---|
-| _(vazia)_ | — | — | nenhum `Crítico`/`Alto` aberto |
+| BUG-110 | Alto | Drive/backup (F1-05/networking, achado no `BUG-109`) | Planilha do Drive apaga a avaliação anterior em vez de anexar — perda de histórico no backup independente da plataforma. Precisa plano+aprovação (muda semântica de dado no Drive); proposta mínima registrada em `BUGS.md#bug-110` (opção `append` no `syncSurveyToUserDrive`), aguardando decisão da Gestora sobre os demais surveys |
 
-**Fila esvaziada em 2026-07-20 — T-02 re-fechado.** Os dois `Alto` da varredura de guards saíram:
+**Reconciliação de 2026-07-22:** `BUG-110` (Alto, reportado pela Gestora em
+2026-07-20) nunca tinha entrado nesta fila — ficou de fora porque a última
+atualização da tabela foi no mesmo dia, antes do achado. É o **único**
+`Crítico`/`Alto` aberto no momento; todo o resto listado abaixo (histórico) já
+fechou. Confirmado por checagem cruzada de todos os 113 bugs registrados.
+
+_(histórico)_ **Fila esvaziada em 2026-07-20 — T-02 re-fechado.** Os dois `Alto` da varredura de guards saíram:
 `BUG-102` (pós-evento, PR #127) e `BUG-103` (os 5 lotes concluídos, PRs #122–#129); e o `BUG-108`
 (Alto) — o **último bloqueador do T-02** — foi corrigido no PR #135 (submit do convite deriva a
 identidade da sessão verificada, não de parâmetro do cliente). Nenhum `Crítico`/`Alto` aberto.
@@ -281,9 +387,9 @@ fechado (7 lotes, PRs #8–#14) e saiu desta fila.
 | Usabilidade | Fase 0 (padrão canônico de design/UX via Mapa 5; tom de voz/copy via F0-06), Fase 1 (critério de aceite de cada página inclui usabilidade e revisão de texto/títulos) |
 | Eficiência de desempenho | Track adicional "Não-funcional / Performance" (full scans sem paginação já achados — `BUG-017`) |
 | Confiabilidade | Track adicional "Concorrência/Transactions" + Fase 4 (regressão e2e); transações do Firestore em booking/quotas já usam `runTransaction` corretamente na maioria dos casos mapeados |
-| Segurança | Track adicional "Segurança sistemática" (matriz de guards do Mapa 4) — **T-02 REABERTA em 2026-07-19 (`BUG-103`)**: a varredura por arquivo achou server actions sensíveis sem guard que os 7 lotes do `BUG-020` nunca tocaram (`post-event.ts` estava na lista do próprio bug). Os 12 bugs originais seguem corrigidos, mas o track não estava fechado — ver `BUGS.md#bug-102`/`#bug-103`. _(texto anterior: T-02 FECHADA, 12/12 (100%))_: corrigidos `BUG-003/004/005/006/007/019/020/021/023/024/025/032` (inclui o item sistêmico `BUG-020`, fechado em 7 lotes, o Crítico `BUG-032`, o webhook MP com HMAC `BUG-025`, o path de debug `BUG-004`, o guard de networking `BUG-006`, e a matrícula no pagamento `BUG-005`). **Abertos agora: `BUG-102` e `BUG-103`** |
+| Segurança | Track adicional "Segurança sistemática" — **T-02 RE-FECHADO em 2026-07-20, conferido por PADRÃO (não bug a bug).** Reaberto em 2026-07-19 (`BUG-103`) quando a varredura por arquivo achou 57 server actions sensíveis sem guard que os 7 lotes do `BUG-020` nunca tocaram (`post-event.ts` estava na lista do próprio bug). Corrigido em 5 lotes (PRs #122–#129), que também acharam o `BUG-106` (**Crítico** — sequestro de conta por e-mail digitado, mesmo padrão do `BUG-032`, corrigido em <24h), o `BUG-107` e o `BUG-108` (último bloqueador, convite aceitando matrícula sem vínculo ao token). O lote 5 instituiu a invariante executável `server-action-surface.test.ts`. **Track fechado: 17/17 (100%)** — os 12 originais (`BUG-003/004/005/006/007/019/020/021/023/024/025/032`) + os 5 da reabertura (`BUG-102/103/106/107/108`), todos corrigidos e mergeados. Nenhum bug de segurança aberto |
 | Compatibilidade | Fase 1 — critério de aceite de cada página inclui responsivo (mobile/tablet/desktop) e navegador via preview; integrações externas (Mercado Pago/Google/Resend) verificadas quanto à coexistência sem conflito no track de "Integrações externas" |
-| Manutenibilidade | Track adicional "Integridade e migração de dados" (schema drift, timestamps inconsistentes, coleções órfãs — `BUG-008/009/010/018`), reforçado pela regra "Zero Any" já enforced via ESLint |
+| Manutenibilidade | Track adicional "Integridade e migração de dados" (schema drift, timestamps inconsistentes, coleções órfãs, higiene da base — `BUG-008/009/010/018/040/041/042`, 6 de 7 corrigidos), reforçado pela regra "Zero Any" já enforced via ESLint |
 | Portabilidade | Relevância baixa para este tipo de sistema (SaaS web único, deploy Vercel, sem exigência de múltiplas plataformas/instalação). Verificação mínima: configuração via `src/env.ts`/variáveis de ambiente (já é padrão do projeto, não hardcoded) — sem track dedicado além disso |
 
 Nenhuma característica ficou inteiramente fora do escopo — Portabilidade tem
@@ -761,7 +867,9 @@ sem copy hardcoded fora do que o guia permitir).
 - Decisão: Pendente — destino de `/hub/step-journey`
 - Execução: Não iniciada
 - Resultado: —
-- Bug(s) vinculado(s): BUG-015
+- Bug(s) vinculado(s): BUG-015, BUG-043 (**[HIPÓTESE]**, `steps-registry.ts` fora
+  de sincronia com os produtos canônicos — *adicionado nesta reconciliação; já
+  constava no índice bug→track vinculado a F2-01, mas ausente deste campo*)
 - Log: —
 
 ### [F2-02] Consistência do Gate de Contrato em todas as páginas do hub
@@ -808,7 +916,11 @@ sem copy hardcoded fora do que o guia permitir).
   o `consumeQuotaAction` não for ligado ao booking. Enquanto isso, a frase "preservam
   o crédito" é verdadeira apenas como regra de conduta, não como automação.
 - Bug(s) vinculado(s): BUG-008 (Corrigido, PR #71), BUG-013 (Aberto — agora com a
-  política de 24h dependendo dele para virar automática), BUG-076 (Corrigido, PR #103)
+  política de 24h dependendo dele para virar automática), BUG-076 (Corrigido, PR #103),
+  BUG-093 (Corrigido, PR #111 — fuso do servidor na política de agendamento), BUG-094
+  (Aberto/adiado — `resolveEventWeek` mistura semana ISO com ano civil), BUG-104 (Aberto —
+  editar cota no painel soma em vez de definir) *(3 adicionados nesta reconciliação —
+  já constavam no índice bug→track vinculados a F2-04, mas ausentes deste campo)*
 - Log: [2026-07-11] BUG-008 corrigido — ver `LOG.md`
   [2026-07-16] **BUG-076 corrigido (PR #103)** — política de agendamento única, alinhada
   e validada no servidor (janela de 20 dias para todos, limite semanal por tipo de sessão,
@@ -983,18 +1095,27 @@ O mapeamento das jornadas abaixo é entregável desta fase (não pré-existente)
   bloqueador**, corrigido no **PR #135** (identidade pela sessão verificada). **Track T-02 fechado de
   novo, agora conferido por PADRÃO (não bug a bug):** os 12 originais + os itens da reabertura
   (`BUG-102/103/106/107/108`) estão todos Corrigidos. _(texto anterior mantido abaixo como histórico)_
-- Execução: **Concluída — 12/12 (100%), Track FECHADO** (ver `DASHBOARD.md`). **BUG-020 Corrigido**
-  (7 lotes, PRs #8–#14 — todos os módulos do Mapa 4b padronizados com o guard
+- Execução: **Concluída — 17/17 (100%), Track FECHADO** (ver `DASHBOARD.md`). *(Reconciliado
+  2026-07-22: campo estava travado em "12/12" desde 2026-07-04, sem refletir a reabertura/
+  refechamento de 2026-07-19/20 — os 5 bugs da reabertura entram no denominador.)* **BUG-020
+  Corrigido** (7 lotes, PRs #8–#14 — todos os módulos do Mapa 4b padronizados com o guard
   canônico). **BUG-021 Corrigido** (PR #13). **BUG-032 Corrigido** (PR #14, novo
-  Crítico de escalação de privilégio achado no lote 7; entra no denominador do track,
-  que sobe de 11 para 12). **BUG-025 Corrigido** (PR #16, webhook MP com assinatura
-  HMAC em habilitação suave — fecha o item financeiro do track). **BUG-004 Corrigido**
+  Crítico de escalação de privilégio achado no lote 7). **BUG-025 Corrigido** (PR #16, webhook MP com assinatura
+  HMAC em habilitação suave). **BUG-004 Corrigido**
   (PR #17, path de debug no lugar do apelido no painel admin; rebaixado Alto→Baixo
   após avaliação de exposição — admin-only). **BUG-006 Corrigido** (PR #18, guard
   `requireAuth` em `getNetworkingDataAction`, preservando a lógica da feature de
   networking). **BUG-005 Corrigido** (PR #19, `requireMatricula` nas ações de
-  pagamento do checkout — rastreabilidade fiscal, fecha o `NAO_MAPEADA`). **Track
-  T-02 FECHADO: 12/12, todos corrigidos e mergeados.** Nenhum Crítico aberto.
+  pagamento do checkout — rastreabilidade fiscal). **Track T-02 fechado pela 1ª vez em
+  2026-07-04 (12/12)** — depois **REABERTO em 2026-07-19** quando a varredura por arquivo
+  do `BUG-103` achou 57 server actions sensíveis sem guard, incluindo `post-event.ts`
+  (listado no próprio `BUG-020` mas nunca tocado pelos 7 lotes). Corrigido em **5 lotes**
+  (PRs #122–#129): **1** cotas (`BUG-020` residual), **2a** PII, **2b** identidade/anônimos
+  (achou o `BUG-106` **Crítico** — sequestro de conta por e-mail digitado, mesmo padrão do
+  `BUG-032`, corrigido em <24h — e o `BUG-107`), **3** pós-evento (`BUG-102`), **5** efeitos
+  fora da rede + invariante executável `server-action-surface.test.ts` (achou o `BUG-108`,
+  **último bloqueador**, PR #135). **Track T-02 RE-FECHADO em 2026-07-20: 17/17, todos
+  corrigidos e mergeados, agora conferido por PADRÃO (não bug a bug).** Nenhum Crítico aberto.
 - Resultado: ✓ Corrigidos/mergeados: BUG-003 (recover sem auth, PR #3), BUG-007
   (guard admin server-side = F0-05, PR #1), BUG-019 (IDOR de foto de perfil, PR
   #4), BUG-023 (rotas de debug órfãs, PR #3), BUG-024 (`trigger-sync` removido,
@@ -1005,9 +1126,13 @@ O mapeamento das jornadas abaixo é entregável desta fase (não pré-existente)
   Mercado Pago com validação de assinatura HMAC, PR #16), **BUG-004** (path de
   debug exposto no painel admin, PR #17), **BUG-006** (guard `requireAuth` no
   networking, PR #18), **BUG-005** (`requireMatricula` no pagamento do checkout de
-  membro, PR #19). ○ Restantes: nenhum — **track fechado**.
-- Bug(s) vinculado(s): BUG-003, BUG-004, BUG-005, BUG-006, BUG-007, BUG-019, BUG-020, BUG-021, BUG-023, BUG-024, BUG-025, BUG-032
-- Log: entradas de 2026-07-02, 2026-07-03 e 2026-07-04 no `LOG.md`
+  membro, PR #19), **BUG-102** (pós-evento sem guard, PR #127), **BUG-103** (varredura
+  sistemática de 177 actions em 5 lotes, PRs #122–#129), **BUG-106** (Crítico —
+  sequestro de conta por e-mail, PR #124 + PRs #125/#126), **BUG-107** (feedback de
+  visitante lançando erro, PR #125), **BUG-108** (convite sem vínculo ao token — último
+  bloqueador, PR #135). ○ Restantes: nenhum — **track fechado**.
+- Bug(s) vinculado(s): BUG-003, BUG-004, BUG-005, BUG-006, BUG-007, BUG-019, BUG-020, BUG-021, BUG-023, BUG-024, BUG-025, BUG-032, BUG-102, BUG-103, BUG-106, BUG-107, BUG-108
+- Log: entradas de 2026-07-02, 2026-07-03, 2026-07-04, 2026-07-19 e 2026-07-20 no `LOG.md`
 
 ### [T-03] Integridade e migração de dados
 - Categoria(s) de qualidade: Manutenibilidade / Confiabilidade
@@ -1017,17 +1142,25 @@ O mapeamento das jornadas abaixo é entregável desta fase (não pré-existente)
 - Modo de validação: PENDENTE (executável via análise de código — profundidade
   igual às Fases 0-4)
 - Decisão: —
-- Execução: Em andamento — **3/4 (75%)** (ver `DASHBOARD.md`) — `BUG-018` (F0-04),
-  `BUG-010` (código morto removido, PR #69) e `BUG-008` (chave de cota unificada,
-  PR #71) fechados; cada um conta como **unidade inteira** no numerador (critério
-  de fechamento de Track). Só `BUG-009` segue `Aberto`.
+- Execução: Em andamento — **6/7 (~86%)** (ver `DASHBOARD.md`) — `BUG-018` (F0-04),
+  `BUG-010` (código morto removido, PR #69), `BUG-008` (chave de cota unificada,
+  PR #71) e `BUG-040`/`041`/`042` (Trilha 3 de higiene — backups/produtos legados/
+  entitlement keys, executados via script local em 2026-07-08) fechados; cada um
+  conta como **unidade inteira** no numerador (critério de fechamento de Track).
+  Só `BUG-009` segue `Aberto`. *(Reconciliado 2026-07-22: `BUG-040/041/042` já
+  estavam corrigidos desde 2026-07-08 mas nunca tinham entrado no denominador
+  deste item — o campo "Bug(s) vinculado(s)" listava só 4 dos 7 bugs de fato
+  vinculados ao tema deste track.)*
 - Resultado: ✓ Corrigido: BUG-018 (`entitlements` removida via F0-04 +
   consolidação completa de `User_JourneyMap` no v3 — Ações 1a/2/1b, PRs
   #22/#23/#24/#25; ver `BUGS.md#bug-018`); BUG-010 (`adminAddAttendeeAction`
   morta removida, PR #69); BUG-008 (chave de cota 1-to-1 unificada em minúsculo
-  canônico + migração, PR #71). ○ Aberto: BUG-009 (**[HIPÓTESE]**
+  canônico + migração, PR #71); BUG-040 (~50 coleções de backup removidas da
+  raiz, PR #38 + limpeza executada); BUG-041 (14 produtos legados/arquivados
+  excluídos de `products`); BUG-042 (chaves de entitlement de 4 clientes
+  normalizadas). ○ Aberto: BUG-009 (**[HIPÓTESE]**
   `UserBooking.timestamp` sempre nulo, não confirmado em produção).
-- Bug(s) vinculado(s): BUG-008, BUG-009, BUG-010, BUG-018
+- Bug(s) vinculado(s): BUG-008, BUG-009, BUG-010, BUG-018, BUG-040, BUG-041, BUG-042
 - Log: —
 
 ### [T-04] Observabilidade (alertas de erro em produção)
@@ -1083,6 +1216,16 @@ resolve "onde esse bug se conecta no plano", que antes era inferido lendo cada
 item. Construída/reconciliada nesta sessão — 2 bugs (`BUG-004`, `BUG-022`)
 estavam sem nenhum vínculo e foram linkados agora.
 
+**Reconciliação de 2026-07-22 (checagem cruzada bug a bug, `BUG-001` a `BUG-113`):**
+26 bugs estavam **completamente ausentes** desta tabela (`BUG-056` a `BUG-071`,
+`BUG-073`/`074`, `BUG-076` a `BUG-083`) — todos já registrados e corrigidos em
+`BUGS.md`, mas nunca linkados aqui (a tabela pulava direto de `BUG-055` para
+`BUG-072`, e de `BUG-075` para `BUG-084`). Além disso, **7 status estavam
+defasados** (diziam "Aberto" quando `BUGS.md` já registrava "Corrigido" há
+sessões): `BUG-010` (PR #69, desde 2026-07-11), `BUG-040`/`041`/`042` (Trilha
+3b/3c/3d, desde 2026-07-08) e `BUG-052`/`053`/`055` (CT-4/PR #66, desde
+2026-07-10). Todos corrigidos agora — ver marcações inline na tabela.
+
 | Bug | Severidade | Status (`BUGS.md`) | Item(s)/Track(s) |
 |---|---|---|---|
 | BUG-001 | Alto | Corrigido (PR #70) | T-06 — tickets em subcoleção privada (rules+base OK) |
@@ -1094,7 +1237,7 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-007 | Médio | Corrigido (PR #1) | F0-05, F1-06, T-02 |
 | BUG-008 | Alto | Corrigido (PR #71) | F2-04, T-03 — chave de cota 1-to-1 unificada |
 | BUG-009 | Médio | Aberto | F0-02, T-03 — **[HIPÓTESE]** |
-| BUG-010 | Alto | Aberto | T-03 — **[HIPÓTESE]** |
+| BUG-010 | Alto | **Corrigido (PR #69)** | T-03 — `adminAddAttendeeAction` morta removida *(corrigido nesta sessão — estava "Aberto", defasado desde 2026-07-11)* |
 | BUG-011 | Médio | Aberto | F3-01 — **[HIPÓTESE]** |
 | BUG-012 | Baixo | Aberto | F3-01 |
 | BUG-013 | Médio | Aberto | F2-04 |
@@ -1124,9 +1267,9 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-037 | Baixo | Corrigido (PR #26) | F1-01 — acentos/crase em copy de serviços |
 | BUG-038 | Baixo | Aberto (adiado) | F1-01/T-01 — `<Image fill>` sem `sizes` na foto da fundadora (perf) |
 | BUG-039 | Baixo | Corrigido (PR #27) | F1-01 — `seedComparisonProductsAction` órfã removida (double-check: zero refs) |
-| BUG-040 | Baixo | Aberto | T-03 — ~50 coleções de backup na raiz (+ fonte na Sync de portfólio); Trilha 3d |
-| BUG-041 | Baixo | Aberto | T-03 — produtos legados/duplicados arquivados poluindo `products`; Trilha 3c (após migração) |
-| BUG-042 | Médio | Aberto | T-03 — chaves de entitlement de cliente inconsistentes (slugs antigos/órfãos); Trilha 3b |
+| BUG-040 | Baixo | **Corrigido (PR #38 + limpeza executada)** | T-03 — ~50 coleções de backup na raiz removidas; Trilha 3d *(corrigido nesta sessão — estava "Aberto", defasado desde 2026-07-08)* |
+| BUG-041 | Baixo | **Corrigido (Trilha 3c, script local)** | T-03 — produtos legados/duplicados excluídos de `products` (12 ativos, 0 arquivados) *(corrigido nesta sessão — estava "Aberto")* |
+| BUG-042 | Médio | **Corrigido (Trilha 3b, script local)** | T-03 — chaves de entitlement de cliente normalizadas (4 clientes) *(corrigido nesta sessão — estava "Aberto")* |
 | BUG-043 | Médio | Aberto | F2-01/Fase A — `steps-registry.ts` fora de sync com os produtos canônicos da jornada |
 | BUG-044 | Médio | Parcial (PR #28) | Fase A/A0 — parser: paths + slug BPL-003 + travas feitos; leituras de preço por coordenada seguem (mitigadas); campos novos via aba resiliente (A1) |
 | BUG-045 | Médio | Corrigido (PR #32) | Fase B — suíte de testes vermelha na baseline desde PR #19 (mock sem `requireMatricula`) |
@@ -1136,12 +1279,38 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-049 | Baixo | Corrigido (PR #44) | F1-01 — footer /conteudo adaptado ao tema claro |
 | BUG-050 | Baixo | Corrigido (PR #44/#47) | F1-01 — backdrop do FAQ; resolvido de fato na regra global de tema dos modais (PR #47) |
 | BUG-051 | Alto | Corrigido (PR #49) | F1-02 — geração do PDF lê `products`/matrícula/`User_Orders` corretos; CT-0 (`CONTRACTS-DESIGN.md`) — confirmado em produção antes do fix |
-| BUG-052 | Médio | Aberto | F1-02 — documento do contrato não visualizável no HUB; CT-3 |
-| BUG-053 | Médio | Aberto | F1-02 — painel de contratos básico (status pagamento, sem assinatura/doc/NF, link morto); CT-4 |
+| BUG-052 | Médio | **Corrigido (PRs #55/#57/#63)** | F1-02 — documento do contrato visível in-app; CT-3a/CT-3b.2/CT-4 *(corrigido nesta sessão — estava "Aberto", defasado desde 2026-07-10)* |
+| BUG-053 | Médio | **Corrigido (PRs #63/#64)** | F1-02 — painel de contratos reescrito (status de assinatura real, doc in-app, nota fiscal); CT-4 *(corrigido nesta sessão — estava "Aberto")* |
 | BUG-054 | Médio | Corrigido parte IP (PR #50) | F1-02 — IP real capturado na assinatura (CT-1); reforços jurídicos extras → CT-5 |
-| BUG-055 | Médio | Aberto | F1-02 — gate lê subcoleção morta `User/{uid}/Orders`; CT-0 |
+| BUG-055 | Médio | **Corrigido (aposentado, PR #66)** | F1-02 — portão morto removido + trava de acesso por-serviço auditada (pago+assinado via entitlement) *(corrigido nesta sessão — estava "Aberto", defasado desde 2026-07-10)* |
+| BUG-056 | Médio | Corrigido (PR #58) | F1-02, F2-05 — assinatura pós-checkout unificada (grátis==pago) + herança de tema *(bug ausente do índice — adicionado nesta sessão de reconciliação)* |
+| BUG-057 | Médio | Corrigido (PR #65) | F1-02 — admin lista contratos do cliente pela matrícula *(idem)* |
+| BUG-058 | Alto | Corrigido (PR #68) | F1-02 — painel de contratos: serialização de data corrigida ("Invalid time value") *(idem)* |
+| BUG-059 | Baixo | Corrigido (PR #72) | F1-03 — modal de onboarding travado roteado ao gate reutilizável *(idem)* |
+| BUG-060 | Baixo | Corrigido (PR #72) | F1-03 — modal de upsell sem nomes técnicos de checkpoint *(idem)* |
+| BUG-061 | Baixo | Corrigido (PR #72) | F1-03 — modal de detalhe do serviço convertido ao `GlassModal` *(idem)* |
+| BUG-062 | Baixo | Corrigido (PR #73) | F1-04 — acentos PT-BR restaurados (Visão Geral/Gestão de Carreira) *(idem)* |
+| BUG-063 | Baixo | Corrigido (PR #74) | F1-04, F2-05 — headers migrados ao `FunctionalPageHeader` *(idem)* |
+| BUG-064 | Baixo | Corrigido (PR #74) | F1-04 — modal de detalhe da Visão Geral no `GlassModal` *(idem)* |
+| BUG-065 | Baixo | Aberto (adiado) | F1-04 — responsividade geral das telas logadas; varredura futura *(idem)* |
+| BUG-066 | Alto | Corrigido (PR #80) | F1-04, T-06 — e-mail Master vazando na interface do cliente *(idem)* |
+| BUG-067 | Médio | Corrigido (PR #80) | F1-05 — networking: `isPublic` vs `visible` *(idem)* |
+| BUG-068 | Médio | Corrigido (PR #80) | F1-05 — networking: crash ao trocar de aba *(idem)* |
+| BUG-069 | Baixo | Corrigido (PR #80) | F1-05 — networking: ícone de ação morto *(idem)* |
+| BUG-070 | Alto | Corrigido (PR #92) | F1-05 — perfil sincronizava com doc órfão (`results/check_in`) *(idem)* |
+| BUG-071 | Médio | Corrigido (PR #93) | F1-05 — CV/Portfólio "Visível Network" não aparecia *(idem)* |
 | BUG-072 | Baixo | Corrigido (PR #116) | F1-06 lote B — benefícios legíveis na devolutiva; validado em produção |
+| BUG-073 | Alto | Corrigido (PR #101) | F1-03 — MentoCoach nunca aparecia na agenda do membro *(bug ausente do índice — adicionado nesta sessão de reconciliação)* |
+| BUG-074 | Alto | Corrigido (PR #101) | F1-03 — paradas listavam sessão de outro serviço, agendáveis *(idem)* |
 | BUG-075 | Baixo | Corrigido (PR #110) | F1-06 — typo "Bloquado"; resolvido como efeito do BUG-084 (radical normalizado) |
+| BUG-076 | Alto | Corrigido (PR #103) | F1-03, F1-04, F2-04 — política de agendamento anunciada não era executada pelo sistema *(bug ausente do índice — adicionado nesta sessão)* |
+| BUG-077 | Alto | Corrigido (PR #104) | F1-03 — concluir parada marcava todas as irmãs como concluídas (id colapsado) *(idem)* |
+| BUG-078 | Baixo | Corrigido (PR #104) | F1-04 — cards da Visão Geral com nome repetido (corrigido no dado, não no código) *(idem)* |
+| BUG-079 | Alto | Corrigido (PR #105) | F1-03 — conclusão de etapa com chave legada nunca reconhecida *(idem)* |
+| BUG-080 | Médio | Corrigido (PR #106) | F1-03 — rótulos do farol da jornada mentiam sobre o estado da etapa *(idem)* |
+| BUG-081 | Médio | Corrigido (PR #108) | F1-03 — clique mudo na 1ª etapa travada + modal nomeava a etapa errada *(idem)* |
+| BUG-082 | Alto | Corrigido (PR #109) | F1-04 — gráfico da Tríade plotava 0% (acento quebrava o casamento de rótulo) *(idem)* |
+| BUG-083 | Baixo | Corrigido (PR #109) | F1-04 — card do DISC fora do padrão dos demais assessments *(idem)* |
 | BUG-084 | Médio | Corrigido (PR #110) | F1-06 — sync descartava os bloqueios e a agenda pública oferecia horário ocupado (249 de 756) |
 | BUG-085 | Baixo | Aberto (adiado) | F1-06/T-03 — 340 docs de eventos passados nunca removidos; **a correção óbvia é destrutiva** (ata/attendees/histórico de carreira) |
 | BUG-086 | Baixo | Corrigido (PR #110) | F1-06 — registro global truncava em 500 antes de filtrar |
@@ -1201,3 +1370,104 @@ Pontos que este processo **não cobre por limite estrutural**, não por omissão
 
 Esses pontos ficam registrados como risco aceito e conhecido, não como pendência
 esquecida.
+
+---
+
+## Estado da auditoria e próximos itens de execução
+
+*(Seção viva — atualizar a cada reconciliação geral. Última: 2026-07-22.)*
+
+### Onde a auditoria está
+
+- **Fase 0 (fundamentos):** completa, 6/6. Só resta o `BUG-034` (2º componente-
+  base para modais grandes, esforço futuro, não bloqueante).
+- **Fase 1 (validação por página):** as 6 páginas/clusters **validados em
+  produção pela Gestora**. `F1-06` foi além do escopo funcional e recebeu o
+  **redesign completo do admin** (R0–R5) + 9/9 itens de feedback. Pendências
+  residuais são de validação visual pontual (não de código) — ver abaixo.
+- **Fases 2, 3 e 4:** **não iniciadas** como fases formais — o que existe são
+  achados colaterais já linkados (`F2-04`/`F2-05` com progresso parcial via
+  Fase 1; `F3-03`/`BUG-022` já corrigido).
+- **Tracks:** `T-02` fechado (17/17), `T-03` em 6/7, `T-06` fechado (2/2).
+  `T-01`/`T-04`/`T-05` nunca iniciados.
+- **Severidade:** 1 único `Alto` aberto (`BUG-110`), 0 `Crítico`.
+- **EXP-01:** fora do checklist da auditoria; represado por decisão da Gestora
+  até o fim desta.
+
+### Lista priorizada do que resta (para o chat de execução retomar)
+
+**1. `BUG-110` (Alto, único aberto) — precisa decisão da Gestora antes de codar.**
+   Planilha do Drive de avaliação de conteúdo apaga a avaliação anterior em vez
+   de anexar (perda de histórico de backup). Plano mínimo já redigido em
+   `BUGS.md#bug-110` (`syncSurveyToUserDrive` ganha opção `append`, default
+   `false`; feedback de conteúdo passa a `append: true`). **Pergunta em aberto
+   para a Gestora:** os demais surveys (check-in, CV, pré-análise,
+   preferências) devem virar `append` também, ou continuam snapshot? Depois de
+   decidido, é uma mudança cirúrgica de baixo risco.
+
+**2. Ações da Gestora já pendentes, sem bloqueio de código (só aguardando ela):**
+   - Validação visual da sidebar recolhida/flyout do admin (área topo-esquerda
+     — BUG-030, não pré-visualizável no preview).
+   - Validação manual dos 3 fluxos de contrato (grátis/pago/avulso) em
+     produção, programada para depois da limpeza da base do usuário de teste
+     (F1-02).
+   - Rodar `scripts/normalize-quota-keys.js` (passo manual do `BUG-008` que
+     nunca foi executado — a base pode ainda ter chaves de cota em maiúscula).
+
+**3. Bugs Médios/Baixos abertos sem decisão de negócio pendente (podem ser
+   resolvidos assim que o chat de execução tocar os arquivos relacionados, ou
+   agrupados numa sessão de limpeza dedicada):**
+   - `BUG-009` (T-03) — confirmar em produção se `UserBooking.timestamp` é
+     sempre nulo (só falta a leitura direta, não tem correção de código óbvia
+     até confirmar).
+   - `BUG-017` (T-01) — full scans em `admin-fs.ts` sem paginação.
+   - `BUG-089` (F1-06/agenda) — `catch → []` esconde erro de cota como "tudo
+     livre" no `/agendar`; correção é devolver o erro ao chamador.
+   - `BUG-097` (agenda) — agendamento fantasma quando o evento some do Google;
+     entra no desenho de uma próxima arquitetura de agenda.
+   - `BUG-104` (F2-04) — editar cota no painel admin soma em vez de definir.
+   - `BUG-012`, `BUG-027`, `BUG-031`, `BUG-038` — baixo risco, candidatos a
+     "carona" quando o chat tocar os arquivos vizinhos.
+
+**4. Decisões de negócio pendentes da Gestora que destravam fases inteiras:**
+   - `F2-01`: destino de `/hub/step-journey` (remover/redirecionar/manter) +
+     `BUG-043` (`steps-registry.ts` fora de sincronia com os produtos —
+     resolver junto, é a mesma fonte de dado da jornada).
+   - `F2-04`: conectar `consumeQuotaAction` ao fluxo real de booking
+     (`BUG-013`) — hoje a cota só é exibida, não trava agendamento.
+   - `F3-02`: as exceções do Sequence Lock (`onboarding`, `mentocoach`,
+     `offboarding`) ainda refletem a intenção de produto?
+   - `BUG-105`: Pré-Análise Comportamental coletada e nunca entregue — decisão
+     de produto (construir tela de devolutiva ou não), não bug de engenharia.
+   - `BUG-112` escopo C (papel real de "Consultor" + migração) — programado
+     para depois da auditoria, por decisão da Gestora.
+
+**5. Iniciar formalmente a Fase 2** (features transversais) — é a fase nominal
+   seguinte, e já tem terreno preparado: `F2-05` (categorização de design) está
+   avançada, `F2-04` parcial. `F2-02` (gate de contrato) e `F2-03` (seletor de
+   tema hub/admin) nunca foram tocados.
+
+**6. Tracks nunca iniciados** — `T-01` (performance/concorrência, já tem 2
+   achados conhecidos — `BUG-017`/`BUG-038` — e histórico de 2 apagões de cota
+   reais no processo, reforçando a prioridade), `T-04` (observabilidade —
+   escopo reduzido: só inventariar o gap), `T-05` (integrações externas em
+   sandbox).
+
+**7. Fases 3 (regras de negócio) e 4 (jornadas e2e)** — últimas do checklist
+   original; `F3-03` já tem o achado principal corrigido (`BUG-022`), resta
+   confirmar formalmente as demais regras financeiras.
+
+**Fora do checklist:** `EXP-01` (dashboard de KPIs do `/admin`) aguarda o fim
+da auditoria por decisão da Gestora — não compete com os itens acima.
+
+### Recomendação de por onde começar
+
+Pela regra de triagem por severidade (Protocolo item 6): **`BUG-110` primeiro**
+— é o único Alto aberto e já tem plano redigido, só falta a decisão da
+Gestora sobre o escopo (só o feedback de conteúdo, ou todos os surveys).
+Enquanto isso aguarda resposta, o chat de execução pode aproveitar o tempo em
+paralelo nos itens do grupo 3 (sem decisão pendente) ou levar à Gestora, numa
+única rodada, as perguntas do grupo 4 — várias são perguntas curtas que
+destravam fases inteiras (Fase 2/3) e cabem juntas na mesma conversa, seguindo
+a Lição 8 do `RETROSPECTIVE.md` (agrupar confirmações sem dependência entre
+si).

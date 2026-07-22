@@ -24,6 +24,105 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-22] Chat de planejamento — reconciliação geral completa (primeira desde 2026-07-07)
+
+- Chat/sessão: chat de planejamento (Sonnet 5), a pedido explícito da Gestora.
+  Estado de entrada confirmado: `main` == `origin/main` em `49d02b3`, árvore
+  limpa (só `.claude/` untracked), suíte 280/280, nenhum PR aberto, bugs até
+  `BUG-113`, PRs mergeados até #151 (+ 2 commits de docs de EXP-01: `be829f9`,
+  `49d02b3`).
+- Escopo: leitura integral de `00-PLAN.md`, `LOG.md` (tabela de conteúdo
+  completa via `grep` + leitura das seções relevantes desde 2026-07-07),
+  `BUGS.md` (mapa de status/severidade dos 113 bugs via `grep` estruturado +
+  leitura direta dos casos ambíguos), `RETROSPECTIVE.md` (Lições 1-44),
+  `DASHBOARD.md` e `ADMIN-REDESIGN-DESIGN.md`/`PLATFORM-EXPANSION-PLAN.md`
+  (lidos por completo). Checagem cruzada bug a bug de todos os 113 bugs entre
+  os 4 documentos + verificação de referências de PR via `git log`. **Nenhuma
+  linha de código de produto foi tocada** — chat de planejamento não implementa.
+- Contexto: desde a última reconciliação geral (2026-07-07, 35 bugs), houve uma
+  sessão de execução muito longa sem reconciliação: F1-01 a F1-06 validadas em
+  produção, subsistema de contratos (CT-0..CT-5), modelo de acesso (A0..D),
+  sync de agenda (Etapas 1/2a/2b), T-02 reaberto e refechado (`BUG-102/103/
+  106/107/108`), redesign completo do admin (R0..R5 + feedback 9/9), e EXP-01
+  Fase 0. Os agregadores (`00-PLAN.md`/`DASHBOARD.md`) tinham ficado defasados
+  em vários pontos, todos corrigidos nesta sessão.
+- Achados e correções:
+  1. **26 bugs (`BUG-056` a `071`, `073`/`074`, `076` a `083`) estavam
+     completamente ausentes do índice bug→track do `00-PLAN.md`** — já
+     registrados e corrigidos em `BUGS.md`, mas a tabela pulava de `BUG-055`
+     direto para `072`, e de `075` para `084`. Todos adicionados com severidade,
+     status, PR e vínculo de fase/track corretos.
+  2. **7 status estavam defasados no índice** (diziam "Aberto" quando
+     `BUGS.md` já registrava "Corrigido" há dias/semanas): `BUG-010` (PR #69,
+     desde 2026-07-11), `BUG-040`/`041`/`042` (Trilha 3, scripts locais, desde
+     2026-07-08) e `BUG-052`/`053`/`055` (CT-4/PR #66, desde 2026-07-10).
+     Corrigidos.
+  3. **`BUG-106`/`BUG-107`** já tinham `Status: Corrigido` em `BUGS.md`
+     (confirmado por leitura direta — um truncamento do `grep` tinha me feito
+     suspeitar de lacuna, mas não havia), porém o campo `Commit/PR` de ambos
+     estava vazio (`—`). Preenchido com as PRs corretas: `BUG-106` → PR #124
+     (contenção) + PRs #125/#126 (lote 2b.2, fonte única de identidade);
+     `BUG-107` → PR #125.
+  4. **Triagem por severidade não refletia o `BUG-110`** (Alto, reportado pela
+     Gestora em 2026-07-20) — nunca tinha entrado na fila porque o achado foi
+     no mesmo dia da última atualização da tabela (que dizia "vazia"). É hoje
+     o **único** Crítico/Alto aberto — confirmado por varredura de severidade
+     nos 113 bugs.
+  5. **Track T-02 travado em "12/12"** no item de fase do `00-PLAN.md` e no
+     `DASHBOARD.md` — não refletia a reabertura/refechamento de 2026-07-19/20.
+     Recalculado para **17/17 (100%)**, com os 5 bugs da reabertura
+     (`BUG-102/103/106/107/108`) adicionados ao campo "Bug(s) vinculado(s)".
+  6. **Track T-03 em "3/4"** em ambos os agregadores — faltavam `BUG-040/041/
+     042` (Trilha 3 de higiene, corrigidos desde 2026-07-08 mas nunca
+     linkados a este item). Recalculado para **6/7 (~86%)**.
+  7. **`F2-01` e `F2-04`** tinham bugs vinculados no índice mas ausentes do
+     próprio campo "Bug(s) vinculado(s)" do item (`BUG-043` em F2-01;
+     `BUG-093/094/104` em F2-04). Corrigidos.
+  8. **`DASHBOARD.md` com defasagem estrutural**: ~540 linhas de histórico
+     narrativo ("Última atualização") empilhadas desde 2026-07-04, mas as
+     **tabelas agregadas** (Fase 0, Tracks, Fase 1) nunca atualizadas desde
+     ~2026-07-11 — mostravam T-02/T-03 desatualizados e a Fase 1 com F1-04/05
+     "código completo, pendente validação" e F1-06 "não iniciada", quando na
+     realidade a Fase 1 inteira (F1-01 a F1-06) já foi validada em produção e
+     o admin recebeu o redesign completo (R0-R5) + feedback 9/9. Reescrito por
+     completo: tabelas recalculadas, histórico trimado (LOG.md é o registro
+     permanente e não foi tocado), e 2 seções novas adicionadas — "Redesign do
+     Admin" e "EXP-01" — que antes só existiam narrativamente no topo do
+     arquivo, sem uma tabela de estado própria.
+  9. **2 lições novas do `RETROSPECTIVE.md`** incorporadas como itens 13-14 do
+     Protocolo do `00-PLAN.md`: Lição 31 (merge na `main` não é entrega —
+     confirmar o deploy de produção do commit certo) e Lição 44 ("tem guard?"
+     é só metade da pergunta de segurança — a outra é de onde vem a
+     identidade que a função acredita). A Lição 13 (contagem fracionária de
+     Track) ganhou uma frase explícita na seção "Convenções" — já era seguida
+     na prática desde 2026-07-07, mas nunca tinha sido escrita ali.
+  10. Confirmado que `ADMIN-REDESIGN-DESIGN.md` (R0-R5 + feedback 9/9) e
+      `PLATFORM-EXPANSION-PLAN.md` (EXP-01 Fase 0 concluída, build represado
+      por decisão da Gestora) já estavam com o estado correto **em seus
+      próprios documentos** — a defasagem estava só na falta de reflexo deles
+      no `00-PLAN.md`/`DASHBOARD.md`, corrigida nos itens 8 acima.
+- Entrega obrigatória: nova seção **"Estado da auditoria e próximos itens de
+  execução"** ao final do `00-PLAN.md`, com a lista priorizada do que resta
+  (agrupada: `BUG-110` como único Alto aberto e primeira prioridade; ações
+  pendentes só da Gestora; bugs Médios/Baixos sem decisão de negócio; decisões
+  de negócio pendentes que destravam Fase 2/3; início formal da Fase 2; tracks
+  nunca iniciados T-01/T-04/T-05; Fases 3/4) + recomendação de por onde
+  começar. Painel visual entregue à Gestora na mesma sessão.
+- Itens atualizados: `00-PLAN.md` (parágrafo de status do topo reescrito,
+  novo parágrafo de reconciliação, Protocolo itens 13-14, Convenções, Triagem
+  por severidade, checagem ISO 25010 linha Segurança/Manutenibilidade, item
+  T-02, item T-03, item F2-01, item F2-04, índice bug→track — 26 linhas
+  novas + 7 corrigidas, nova seção final "Estado da auditoria..."). `BUGS.md`
+  (BUG-106/107 — campo Commit/PR preenchido). `DASHBOARD.md` (reescrito por
+  completo). `RETROSPECTIVE.md` (nota de revisão sobre a promoção das Lições
+  31/44 ao Protocolo). Este LOG.
+- Nada bloqueado para a próxima sessão de execução — a lista priorizada da
+  nova seção do `00-PLAN.md` está pronta para ser retomada; recomendação:
+  começar pelo `BUG-110` (único Alto aberto, plano já redigido, só falta a
+  decisão da Gestora sobre o escopo).
+
+---
+
 ## [2026-07-22] Chat de execução — EXP-01 Fase 0 (escopo): lista de métricas da Gestora recebida e classificada
 
 - Chat/sessão: chat de execução (Opus 4.8). Estado de entrada: `main` == `origin/main` em `be829f9`,
