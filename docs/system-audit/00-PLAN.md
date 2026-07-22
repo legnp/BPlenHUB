@@ -1415,14 +1415,16 @@ esquecida.
    se ela quiser o histórico pré-#131 espelhado no backup — script próprio, não
    bloqueia nada.
 
-**2. Ações da Gestora já pendentes, sem bloqueio de código (só aguardando ela):**
-   - Validação visual da sidebar recolhida/flyout do admin (área topo-esquerda
-     — BUG-030, não pré-visualizável no preview).
+**2. Ações da Gestora — atualizado 2026-07-22:**
+   - ~~Validação visual da sidebar recolhida/flyout do admin~~ **FEITA — validada e
+     aprovada pela Gestora em produção (2026-07-22).**
    - Validação manual dos 3 fluxos de contrato (grátis/pago/avulso) em
-     produção, programada para depois da limpeza da base do usuário de teste
-     (F1-02).
-   - Rodar `scripts/normalize-quota-keys.js` (passo manual do `BUG-008` que
-     nunca foi executado — a base pode ainda ter chaves de cota em maiúscula).
+     produção — **segue pendente**, programada para depois da limpeza da base do
+     usuário de teste (F1-02).
+   - ~~Rodar `scripts/normalize-quota-keys.js`~~ **JÁ EXECUTADO** (`--apply`,
+     2026-07-19) e **reconfirmado limpo em 2026-07-22** (dry-run: 0 a normalizar, 4
+     carteiras já canônicas). O item da fila que dizia "nunca foi executado" estava
+     desatualizado. Nada a fazer — ver `BUGS.md#bug-008`.
 
 **3. Bugs Médios/Baixos abertos sem decisão de negócio pendente (podem ser
    resolvidos assim que o chat de execução tocar os arquivos relacionados, ou

@@ -274,6 +274,10 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   (BP-005/BP-011/BP-012). Leitura independente pos-migracao confirma chaves minusculas com
   `total`/`used` intactos e `uid`/`updatedAt` preservados.
   **BUG-008 agora 100% fechado — codigo E dado.**
+  **Reconfirmacao (2026-07-22):** a pedido da Gestora, reexecutado o script em **dry-run (read-only)**
+  — resultado **0 a normalizar | 4 carteiras ja canonicas | 4 no total**, identico ao pos-migracao de
+  2026-07-19. A base segue limpa; nenhuma nova aplicacao necessaria. (O item da fila do `00-PLAN.md`
+  que dizia "nunca foi executado" era residuo desatualizado — corrigido.)
 
 ### BUG-009 `UserBooking.timestamp` provavelmente sempre nulo
 
