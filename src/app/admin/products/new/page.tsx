@@ -11,7 +11,7 @@ import { FunctionalPageHeader } from "@/components/layout/FunctionalPageHeader";
  */
 export default function NewProductPage() {
   return (
-    <div className="p-8 md:p-12 space-y-12 animate-fade-in pb-24 max-w-6xl mx-auto">
+    <div className="space-y-10 animate-fade-in pb-6">
 
       <FunctionalPageHeader
         eyebrow="Comercial"

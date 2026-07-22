@@ -84,7 +84,7 @@ export default function AdminPartnersPage() {
   };
 
   return (
-    <div className="p-8 space-y-10 animate-in fade-in duration-700">
+    <div className="space-y-10 animate-in fade-in duration-700">
       
       <FunctionalPageHeader
         eyebrow="Ecossistema Estratégico BPlen"
