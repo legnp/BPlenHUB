@@ -12,7 +12,18 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-22 (chat de execução — **Feedback pós-validação do redesign do admin**.
+> **Última atualização:** 2026-07-22 (chat de execução — **Feedback do admin: 9/9 itens concluídos**.
+> Além dos PRs #145/#146 (agenda + Jornada do Cliente + remoção do Migrar Onboarding), fecharam: **#5**
+> ([PR #147](.) `a33f303`) 2 cards reais na `/social` (nota média 1-5 das avaliações de conteúdo + total
+> de sugestões de tema, action de agregação nova); **#8** (PR #148 `b8578ce`) sidebar recolhível/
+> expansível (toggle persistido, rail de ícones + flyout no hover + tooltip, ativo por rota) + título só
+> "Admin" alinhado à esquerda (#1/#2); **#9** (PR #149 `84ca89a`) densidade — `StatTile` horizontal
+> compacto (global, ~9 telas) + shell enxuto. Todos deploy `success`, sem `--no-verify`, suíte 280/280.
+> **Pendente só a validação visual da Gestora** (BUG-030), com atenção à área topo-esquerda da sidebar e
+> ao flyout (não pré-visualizáveis). Débitos: densidade fina por tela; full-scan do social-feedback (T-01);
+> modal cru de partners.
+>
+> _(entrada anterior)_ 2026-07-22 (chat de execução — **Feedback pós-validação do redesign do admin**.
 > A Gestora validou o checklist R0..R5 inteiro (tudo aprovado) e pediu ajustes. Entregues: **PR #145**
 > (`d169282`) — `/admin/agenda`: modal de tipos de evento alargada + cards de eventos em lista compacta;
 > **PR #146** (`d1f1ba6`) — "Devolutiva Comportamental" virou **Jornada do Cliente** (`/admin/jornada-cliente`,

@@ -24,6 +24,34 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-22] Chat de execução — Feedback do admin: #5/#8/#9 concluídos (PRs #147/#148/#149)
+
+- Chat/sessão: mesmo chat. A Gestora **aprovou o mockup** do #8/#9 e confirmou a escala 1-5 das
+  avaliações de conteúdo. Fecha os 9 itens do feedback pós-validação.
+- **PR #147 (`a33f303`, deploy confirmado) — #5: 2 cards reais na `/admin/social`.** Nova action
+  `src/actions/admin-social-feedback.ts` (`requireAdmin`): "Nota Média do Conteúdo" (1-5) + qtd de
+  avaliações (surveys `content_evaluation_<postId>`, campo `data.rating`) e "Sugestões de Tema" (forms
+  `formId "theme_suggestion"`). Agrega via `collectionGroup` (mesmo padrão full-scan de
+  `getAdminSurveysAnalytics`; débito T-01 anotado no código). Grade de stats passou de 3 p/ 5 tiles.
+- **PR #148 (`b8578ce`, deploy confirmado) — #8 sidebar recolhível + #1/#2.** `AdminLayoutClient`
+  reescrito: toggle no topo (preferência persistida em localStorage), recolhida (~80px) só ícones com
+  tooltip nativo + **flyout de subpáginas** ao hover (posicionado via `fixed` para escapar do overflow
+  do nav), expandida (~256px) com rótulos; ativo por rota (`usePathname`); conteúdo ajusta a margem.
+  **#1** título só "Admin" (sem "Central de Controle"), **#2** alinhado à esquerda, abaixo do logo
+  flutuante do `HubHeader` (preservado; espaço reservado evita colisão). Preferência via inicializador
+  **lazy** do `useState` com guard de SSR (evita o `set-state-in-effect`; seguro porque a barra só
+  renderiza após o gate de auth). **Verificação visual em produção pendente** (BUG-030): área
+  superior esquerda (logo+título+toggle) e o flyout não puderam ser pré-visualizados.
+- **PR #149 (`84ca89a`, deploy confirmado) — #9 densidade, passo 1.** `StatTile` convertido para
+  horizontal compacto (ícone à esquerda, valor `text-3xl`→`text-2xl`, `p-5`→`p-4`) — densifica a linha
+  de métricas de ~9 telas de uma vez. + toques de densidade do shell no #8 (padding do `main`/`glass`,
+  cantos). Densidade fina por tela (cards de prévia, botões grandes) = varredura sob demanda.
+- **Todos os 9 itens do feedback resolvidos.** Cada PR sem `--no-verify` (pre-commit limpo);
+  type-check/test **280/280**/build limpos. Sem bugs novos.
+- Itens atualizados: `ADMIN-REDESIGN-DESIGN.md` (seção 9 — 9/9), `DASHBOARD.md`, este LOG.
+
+---
+
 ## [2026-07-22] Chat de execução — Feedback pós-validação do redesign do admin (PRs #145/#146 + mockup)
 
 - Chat/sessão: mesmo chat, após a **Gestora validar o checklist inteiro do redesign (R0..R5)** — todos os
