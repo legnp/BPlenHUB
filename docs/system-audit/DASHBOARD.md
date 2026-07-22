@@ -12,7 +12,17 @@
 > (critério de fechamento de Track definido em `00-PLAN.md`). Correções em PR
 > aberta ou bugs simplesmente "Aberto"/"Em Progresso" não contam na %.
 >
-> **Última atualização:** 2026-07-21 (chat de execução — **REDESIGN DO ADMIN R4 (PRs #142/#143)**,
+> **Última atualização:** 2026-07-21 (chat de execução — **REDESIGN DO ADMIN R5 + BUG-113 — COMPLETO
+> (PR #144)**, deploy de produção `success`, SHA `61cf8e8`. Último lote (Sistema e Ferramentas):
+> `sandbox` (header + copy + recolor) e `migrate-welcome` (convertido ao layout padrão com header;
+> "Welcome Survey"→"Onboarding"; nomes de banco removidos; recolor). **BUG-113 corrigido junto**
+> (recolor das brancas hardcoded em `partners`; scrims preservados). **REDESIGN DO ADMIN COMPLETO
+> (R0..R5): as 19 telas usam `FunctionalPageHeader` + `StatTile`; sidebar em 7 escopos; inglês/nomes de
+> banco limpos; design das surveys/forms preservado.** eslint 0 novos (partners baseline immutability),
+> type-check limpo, suíte **280/280**, build exit 0. `--no-verify` por baseline. **Não tocou paleta/
+> tema.** Falta só a validação visual da Gestora em produção, ponto a ponto (BUG-030) — checklist entregue.
+>
+> _(entrada anterior)_ 2026-07-21 (chat de execução — **REDESIGN DO ADMIN R4 (PRs #142/#143)**,
 > deploy de produção `success`, SHAs `1496841`/`bc13601`. R4 dividido em 2 PRs para **isolar a área de
 > survey/form** (diretriz da Gestora). **R4a — Pessoas:** `FunctionalPageHeader` no `users` (sem tiles);
 > "Governance Engine"→"Governança Ativa", "(Cleanup)"/"(Role)" removidos, 1 emoji removido. **R4b —

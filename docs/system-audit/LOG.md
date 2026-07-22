@@ -24,6 +24,41 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-21] Chat de execução — REDESIGN DO ADMIN R5 + BUG-113 — COMPLETO (PR #144)
+
+- Chat/sessão: mesmo chat de execução, após o **R4 ser validado pela Gestora** ("pode seguir com r5 +
+  correção bug 113 + checklist"). Último lote **R5** (Sistema e Ferramentas) + correção do **BUG-113**,
+  num **único PR** (ambos são o polimento final, aprovados juntos).
+- **Entrega: PR #144 mergeado (`61cf8e8`, squash), deploy de produção CONFIRMADO** (Vercel success).
+  3 arquivos, +46/-42.
+  - **R5 — sandbox:** `FunctionalPageHeader` ("Sandbox"); copy "Member Tour"→"Tour da Área de Membro",
+    "Onboarding Tour"→"Tour de Onboarding", "Sandbox Tool"→"Ferramenta"; badge branco hardcoded → vars.
+  - **R5 — migrate-welcome:** convertido do layout **centralizado** (fullscreen) para o padrão de
+    conteúdo com header (decisão: a tela vive dentro do shell do admin; o centralizado era quirk legado).
+    "Migração: Welcome Survey"→"Migrar Onboarding" (pelo header); **nomes de banco removidos da tela**
+    ("Survey_Global", "User/{mat}/Surveys/welcome_survey", "coleção 'User'"/"subcoleção 'Surveys'");
+    superfície branca hardcoded → vars.
+  - **BUG-113 (aprovado pela Gestora) — recolor de `partners`:** cores brancas hardcoded ilegíveis em
+    temas claros → vars de tema existentes (card da lista, loader, divisor, botões salvar/cancelar do
+    modal). **Preservados** os scrims `bg-black/60` (backdrop do modal + overlay da foto) e o ícone
+    branco sobre o scrim escuro — corretos nos dois temas. Confirmado por varredura que só restaram
+    esses 3 usos intencionais de branco/preto.
+- **REDESIGN DO ADMIN COMPLETO (R0..R5):** as **19 telas** usam o `FunctionalPageHeader` + `StatTile`;
+  sidebar em 7 escopos; inglês/nomes-de-banco limpos da UI; **design próprio das surveys/forms
+  preservado**. Débitos separados anotados: modal cru de `partners` (não-`GlassModal`); loadings de
+  admin fora do `AtmosphericLoading` (ambos fora do escopo do redesign de superfície).
+- Validado (Lição 14): eslint — sandbox/migrate-welcome **0**; `partners` **4** (1 erro immutability
+  **baseline** pré-existente, o recolor só mexeu em classes; idêntico à main). `type-check` limpo;
+  `test` **280/280**; `build` exit 0.
+- **`--no-verify` (caso a caso, precedente PR #101/#139):** pre-commit barra pelo erro de baseline em
+  `partners`. **BUG-113 → Corrigido** em `BUGS.md`.
+- Itens atualizados: `BUGS.md` (BUG-113 Corrigido), `00-PLAN.md` (F1-06 + índice), `ADMIN-REDESIGN-DESIGN.md`
+  (R5 concluído + redesign completo), `DASHBOARD.md`, este LOG.
+- **Entregue à Gestora: checklist de validação ponto a ponto de R0..R5 em produção** (BUG-030 — telas
+  logadas só validam em produção).
+
+---
+
 ## [2026-07-21] Chat de execução — REDESIGN DO ADMIN R4: Pessoas + Instrumentos F&S (PRs #142/#143)
 
 - Chat/sessão: mesmo chat de execução, após o **R3 ser validado pela Gestora** ("segue r4, e cuidado

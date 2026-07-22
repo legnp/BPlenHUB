@@ -190,7 +190,8 @@ O `StatTile` compartilhado (camada 2) deve nascer no R0 ou R1 e ser reusado nos 
 | Execução — **R3** (Jornada e Agenda, cam. 2+3) | **Concluído — PR #141, deploy de produção confirmado (2026-07-21)** |
 | Execução — **R4a** (Pessoas: `users`, cam. 2+3) | **Concluído — PR #142, deploy de produção confirmado (2026-07-21)** |
 | Execução — **R4b** (Instrumentos F&S, cam. 2+3) | **Concluído — PR #143, deploy de produção confirmado (2026-07-21)** |
-| Execução — R5 (Sistema e Ferramentas, cam. 2+3) | **Não iniciada** — último lote |
+| Execução — **R5** (Sistema e Ferramentas, cam. 2+3) + **BUG-113** | **Concluído — PR #144, deploy de produção confirmado (2026-07-21)** |
+| **REDESIGN DO ADMIN** | **COMPLETO (R0..R5) — 19 telas. Aguarda validação visual da Gestora (BUG-030)** |
 
 **R0 entregue (PR #138):** sidebar reorganizada de 3 grupos para os 7 escopos; renomeações
 aplicadas (DASHBOARD→PAINEL, PROGRAMAÇÃO HUB→PROGRAMAÇÃO DA JORNADA, MEDIA→MÍDIA E EDITORIAL com
@@ -232,3 +233,13 @@ acentos no modal de tipos de evento. Não tocou a lógica de sync (AGENDA-SYNC-D
   ("FORMS_REGISTRY"/"SURVEY_REGISTRY"/"CollectionGroup" → rótulos humanos). **Design próprio das
   surveys/forms NÃO tocado** (a pedido da Gestora): nos previews (`SurveyEngine`/`FormsEngine`) a pegada
   foi mínima — só 1 emoji e o nome-de-banco no erro; engines e frame de preview intactos.
+
+**R5 entregue + BUG-113 (PR #144) — REDESIGN COMPLETO:** último lote (Sistema e Ferramentas).
+`sandbox` (header + copy "Member/Onboarding Tour"→PT + recolor do badge) e `migrate-welcome`
+(convertido do layout centralizado ao padrão de conteúdo com header; "Migração: Welcome Survey"→
+"Migrar Onboarding"; nomes de banco removidos; recolor). **BUG-113 corrigido junto**: cores brancas
+hardcoded em `partners` → vars de tema (cards ilegíveis em tema claro resolvidos; scrims preservados).
+Com isto **as 19 telas usam o `FunctionalPageHeader` + `StatTile`**, inglês/nomes-de-banco limpos, e o
+design próprio das surveys/forms preservado. Débitos separados remanescentes: modal cru de `partners`
+(não-`GlassModal`); loading screens de admin não padronizadas no `AtmosphericLoading` (fora do escopo
+do redesign de superfície).

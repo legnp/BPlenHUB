@@ -3306,11 +3306,13 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   `bg-white/5`, `text-white`) usam branco fixo em vez das variáveis de tema. Nos temas **claros** o
   contraste some (card quase invisível). O restante do admin já consome as vars de tema; estes pontos
   ficaram legados. Também: o modal é um modal cru (não `GlassModal`) — débito separado do F0-01.
-- Status: **Aberto (adiado)** — fora do escopo do R1 (que é header canônico + `StatTile` + copy). Recolor
-  para vars de tema é uma passada focada de camada 2; agrupar com uma eventual convergência do modal ao
-  `GlassModal`. Registrado para não se perder.
-- Decisão de execução: Precisa plano+aprovação (sistema de design) — recolor + possível convergência de modal.
-- Commit/PR: —
+- Status: **Corrigido** — PR #144 (`61cf8e8`, deploy de produção `success`). Recolor das cores brancas
+  hardcoded para as variáveis de tema existentes: card da lista (`bg-white/5`→`input-bg`), loader,
+  divisor do modal, botão salvar (`bg-white text-black`→`text-primary`/`bg-primary`) e botão cancelar.
+  Preservados os scrims `bg-black/60` (backdrop do modal + overlay da foto) e o ícone branco sobre o
+  scrim escuro — corretos nos dois temas. O modal cru (não-`GlassModal`) segue como débito separado.
+- Decisão de execução: Corrigido inline (aprovado pela Gestora junto do R5).
+- Commit/PR: **PR #144** (`61cf8e8`).
 
 
 ---

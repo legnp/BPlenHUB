@@ -712,8 +712,14 @@ sem copy hardcoded fora do que o guia permitir).
     removido. **R4b — Instrumentos F&S (PR #143):** header + `StatTile` no chrome admin de `fs`/`fs/forms`/
     `fs/surveys`/`fs/devolutiva`; **nomes de banco humanizados** ("FORMS_REGISTRY"/"SURVEY_REGISTRY"/
     "CollectionGroup"). **Design próprio das surveys/forms preservado** (previews: só emoji + nome-de-banco
-    no erro; engines intactos). **Próximo: R5** (Sistema e Ferramentas: `sandbox`, `migrate-welcome`) —
-    último lote. Validação visual em produção pela Gestora (BUG-030).
+    no erro; engines intactos). **R4 validado pela Gestora.**
+  - **[2026-07-21] R5 concluído + BUG-113 (PR #144, deploy de produção confirmado) — REDESIGN COMPLETO:**
+    último lote (Sistema e Ferramentas): `sandbox` (header + copy + recolor do badge) e `migrate-welcome`
+    (convertido ao layout padrão com header; "Migração: Welcome Survey"→"Migrar Onboarding"; nomes de
+    banco removidos; recolor). **BUG-113 corrigido junto** (recolor das brancas hardcoded em `partners`).
+    **As 19 telas do admin agora usam o `FunctionalPageHeader` e o `StatTile`; nomes de banco/inglês
+    limpos da UI; design próprio das surveys/forms preservado.** Falta só a validação visual da Gestora
+    em produção, ponto a ponto por lote (BUG-030) — checklist entregue.
   Nota: os 4 bugs de segurança vinculados abaixo já
   foram corrigidos (via T-02), mas a validação de UI/responsivo/copy das
   páginas em si ainda não começou; não confundir uma coisa com a outra.
@@ -1165,7 +1171,7 @@ estavam sem nenhum vínculo e foram linkados agora.
 | BUG-110 | **Alto** | Aberto | Drive/backup — planilha de survey APAGA a avaliação anterior (snapshot) em vez de anexar; agravado pela pasta única de anônimos. Firestore preserva |
 | BUG-111 | Melhoria | Corrigido (PR #137) | F1-04 — `visao_geral`: data prevista (real onde há; estimativa pelo ritmo do membro, rotulada) + ordenação por data em Próximas/Em Foco |
 | BUG-112 | Melhoria | Escopo A Corrigido (PR #136); C adiado | F1-05 — networking: rótulo "Profissional" → "Consultor" (escopo A, label-only). Escopo C (papel real + migração) programado p/ após a auditoria |
-| BUG-113 | Baixo | Aberto (adiado) | F1-06/redesign — cores hardcoded brancas em `partners` (cards+modal), ilegíveis em tema claro; recolor focado num lote de camada 2 futuro |
+| BUG-113 | Baixo | Corrigido (PR #144) | F1-06/redesign — cores hardcoded brancas em `partners` recoloridas para vars de tema (legível em temas claros); scrims preservados |
 
 ---
 
