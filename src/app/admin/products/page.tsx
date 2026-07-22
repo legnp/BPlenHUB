@@ -218,7 +218,7 @@ export default function PortfolioCommandCenter() {
   const archivedProductsCount = products.filter(p => p.status === "archived").length;
 
   return (
-    <div className="space-y-10 animate-fade-in pb-24 max-w-7xl mx-auto p-4 md:p-8">
+    <div className="space-y-10 animate-fade-in pb-6">
       
       <FunctionalPageHeader
         eyebrow="Comercial"
