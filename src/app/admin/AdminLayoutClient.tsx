@@ -155,8 +155,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       >
         {/* Marca — espaço reservado ao logo flutuante do HubHeader (fixed top-8 left-8) */}
         <div className="pb-2 shrink-0">
-          <div className="h-[42px]" />
-          <div className={`flex items-center ${collapsed ? "justify-center" : "justify-between"} px-1 mt-1`}>
+          <div className="h-[58px]" />
+          <div className={`flex items-center ${collapsed ? "justify-center" : "justify-between"} px-1 mt-2`}>
             {!collapsed && (
               <h2 className="text-lg font-bold tracking-tight text-[var(--text-primary)] uppercase leading-none">Admin</h2>
             )}
@@ -214,9 +214,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="mt-auto pt-3 shrink-0">
           <div className={`rounded-2xl bg-[var(--accent-soft)] border border-[var(--accent-start)]/10 text-center ${collapsed ? "p-2" : "p-3"}`}>
             <p className="text-[8px] font-bold uppercase tracking-widest text-[var(--accent-start)]">
-              {collapsed ? "BP" : "Acesso Privilegiado"}
+              {collapsed ? "BP" : "Área Admin"}
             </p>
-            {!collapsed && <p className="text-[9px] text-[var(--text-muted)] mt-0.5">Navegação administrativa habilitada.</p>}
+            {!collapsed && <p className="text-[9px] text-[var(--text-muted)] mt-0.5">Versão 01.01</p>}
           </div>
         </div>
       </aside>
