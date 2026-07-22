@@ -18,16 +18,22 @@ import {
   ArrowRight,
   FileText,
   Newspaper,
+  Gauge,
+  Lightbulb,
   LucideIcon
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { SocialPost, SocialPlatform } from "@/types/social";
 import { FunctionalPageHeader } from "@/components/layout/FunctionalPageHeader";
 import { StatTile } from "@/components/admin/StatTile";
-import { 
-  getSocialPosts, 
-  deleteSocialPost, 
-  togglePostStatus 
+import {
+  getSocialFeedbackStats,
+  SocialFeedbackStats,
+} from "@/actions/admin-social-feedback";
+import {
+  getSocialPosts,
+  deleteSocialPost,
+  togglePostStatus
 } from "@/actions/social";
 import { deleteSocialThumbnailFromDrive } from "@/actions/social-drive";
 import { SocialPostForm } from "@/components/admin/SocialPostForm";
@@ -43,6 +49,7 @@ export default function SocialManagementPage() {
   
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<SocialPost | null>(null);
+  const [feedback, setFeedback] = useState<SocialFeedbackStats | null>(null);
 
   const fetchPosts = async () => {
     setIsLoading(true);
@@ -58,6 +65,7 @@ export default function SocialManagementPage() {
 
   useEffect(() => {
     fetchPosts();
+    getSocialFeedbackStats().then(res => setFeedback(res.stats)).catch(() => setFeedback(null));
   }, []);
 
   const filteredPosts = useMemo(() => {
@@ -132,7 +140,7 @@ export default function SocialManagementPage() {
       </p>
 
       {/* Stats Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 text-left">
         <StatTile
           icon={<LayoutDashboard size={20} />}
           label="Total de Posts"
@@ -150,6 +158,20 @@ export default function SocialManagementPage() {
           label="Em Destaque"
           value={posts.filter(p => p.isFeatured).length}
           tone="warning"
+        />
+        <StatTile
+          icon={<Gauge size={20} />}
+          label="Nota Média do Conteúdo"
+          value={feedback ? (feedback.contentRatingCount > 0 ? `${feedback.avgContentRating.toFixed(1)}/5` : "—") : "…"}
+          detail={feedback ? `${feedback.contentRatingCount} avaliações` : "carregando"}
+          tone="warning"
+        />
+        <StatTile
+          icon={<Lightbulb size={20} />}
+          label="Sugestões de Tema"
+          value={feedback ? feedback.themeSuggestionCount : "…"}
+          detail="total recebido"
+          tone="accent"
         />
       </div>
 
