@@ -163,6 +163,7 @@ export function PublicBookingFlow({ variant = "section" }: { variant?: "section"
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [currentDayBlockers, setCurrentDayBlockers] = useState<{ start: string; end: string }[]>([]);
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
+  const [slotsLoadFailed, setSlotsLoadFailed] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [emailError, setEmailError] = useState<string | null>(null);
@@ -189,11 +190,23 @@ export function PublicBookingFlow({ variant = "section" }: { variant?: "section"
     setSelectedSlot(null);
     try {
       const res = await getPublicSlotsAction(format(date, "yyyy-MM-dd"));
-      setSlots(res.slots);
-      setCurrentDayBlockers(res.blockers);
+      // Falha ao carregar != sem horarios (BUG-089): sem os bloqueadores, o modo
+      // de proposta trataria slots bloqueados como livres. Marca a falha e limpa a
+      // grade para a tela mostrar o erro, nunca disponibilidade inventada.
+      if (res.error) {
+        setSlots([]);
+        setCurrentDayBlockers([]);
+        setSlotsLoadFailed(true);
+      } else {
+        setSlots(res.slots);
+        setCurrentDayBlockers(res.blockers);
+        setSlotsLoadFailed(false);
+      }
     } catch (err) {
       console.error(err);
-      setError("Erro ao carregar horários. Tente novamente.");
+      setSlots([]);
+      setCurrentDayBlockers([]);
+      setSlotsLoadFailed(true);
     } finally {
       setIsLoadingSlots(false);
     }
@@ -785,6 +798,11 @@ export function PublicBookingFlow({ variant = "section" }: { variant?: "section"
                       <div className="h-full flex flex-col items-center justify-center gap-3 opacity-20 py-20">
                         <Loader2 className="w-8 h-8 animate-spin text-[var(--text-primary)]" />
                         <span className="text-[9px] font-black uppercase tracking-widest text-[var(--text-primary)]">Buscando horários</span>
+                      </div>
+                    ) : slotsLoadFailed ? (
+                      <div className="h-full flex flex-col items-center justify-center text-center py-20 gap-3">
+                        <AlertCircle className="w-6 h-6 text-[var(--text-muted)] opacity-30" />
+                        <p className="text-[10px] font-bold text-[var(--text-muted)] opacity-60 uppercase tracking-widest max-w-[220px]">Não foi possível carregar a agenda. Tente novamente em instantes.</p>
                       </div>
                     ) : (isProposalMode ? availableProposalSlots : slots).length === 0 ? (
                       <div className="h-full flex flex-col items-center justify-center text-center py-20">
