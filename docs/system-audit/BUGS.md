@@ -2405,10 +2405,20 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   reportou exatamente isso: terça 21/07 17:30, que está bloqueado no Google). Sem erro na tela, sem
   aviso. É a Lição 30 na forma mais cara: a falha se disfarça de resposta plausível, e o lead pode
   propor horário ocupado **por indisponibilidade do banco**.
-- Status: **Aberto** — tratado junto das etapas de `AGENDA-SYNC-DESIGN.md` (transversal).
-- Decisão de execução: a correção não é "logar o erro" — é **devolver o erro ao chamador** e a tela
-  dizer "não foi possível carregar a agenda" em vez de inventar disponibilidade. Entra com a Etapa 1.
-- Commit/PR: —
+- Status: **Corrigido** — PR #154 (`d487e22`, 2026-07-22, deploy de produção confirmado), para o
+  sintoma **confirmado** (grade de horários com falsa disponibilidade). `PublicSlotsResponse` ganhou
+  `error?: boolean`; o `catch` do `getPublicSlotsAction` devolve `{slots:[], blockers:[], error:true}`
+  em vez do vazio mudo; o `PublicBookingFlow` marca `slotsLoadFailed`, limpa a grade e mostra "Não foi
+  possível carregar a agenda" nos dois modos (proposta e direto) — nenhum horário bloqueado aparece
+  como livre por falha de backend. **Residual (menor, não corrigido aqui):** os outros dois `catch →
+  []` que este bug cita — `external-booking.ts:getPublicAvailableDaysAction` (dias) e
+  `queries.ts:fetchCalendarEvents` (helper interno, consumo amplo) — são da classe "**sub-mostra**"
+  (falha → menos dias/eventos, direção segura), não "falsa disponibilidade"; ficam com as etapas do
+  `AGENDA-SYNC-DESIGN.md`, como este bug já previa.
+- Decisão de execução: correção cirúrgica do sintoma confirmado (Gestora aprovou seguir, 2026-07-22).
+  Validado: eslint 0 erros nos tocados, test 292/292, type-check + build limpos. O estado de erro só
+  aparece sob falha real de backend (não induzível no preview) — validação real em produção.
+- Commit/PR: **mergeado** — PR #154 (`d487e22`, squash).
 
 ### BUG-090 Dashboard do admin: 2 dos 6 atalhos apontam para rotas inexistentes (404)
 

@@ -53,6 +53,9 @@
 > F2-04 concluído**: trava real da cota 1:1 no agendamento (consome ao agendar/estorna ao
 > cancelar em tempo hábil; só o tipo `1-to-1`, validadas as 5 categorias com a Gestora).
 > Sidebar recolhida do admin validada/aprovada; `normalize-quota-keys` reconfirmado limpo.
+> **PR #154** (deploy confirmado) — **BUG-089 Corrigido**: falha muda no `/agendar` público (erro de
+> backend virava "tudo livre") agora mostra "não foi possível carregar a agenda". **BUG-104** e
+> **BUG-110** reclassificados para Corrigido (já estavam, PRs #132/#131 — resíduos da reconciliação).
 >
 > _(entrada anterior)_ 2026-07-22 (chat de execução — **Feedback do admin: 9/9
 > itens concluídos**. PRs #145–#149: agenda (modal + lista compacta), "Jornada do

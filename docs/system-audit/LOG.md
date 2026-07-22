@@ -24,6 +24,30 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-22] Chat de execução — grupo 3: BUG-104 (já corrigido) + BUG-089 (falha muda no /agendar, PR #154)
+
+- Chat/sessão: mesmo chat de execução (Opus 4.8). A Gestora liberou os itens 1 e 2 do grupo 3 + a
+  varredura de baixo risco a seguir.
+- **Item 1 — BUG-104: já estava corrigido (PR #132).** Verificado por código/git (padrão do BUG-110):
+  `setMemberQuotas` DEFINE, `addMemberQuotas` SOMA, com nomes explícitos e teste
+  (`quota-set-vs-add.test.ts`); `admin/users/page.tsx:271` chama `setMemberQuotasAction`. A fila do
+  grupo 3 o listava como aberto — resíduo desatualizado. Status corrigido em `BUGS.md`/`00-PLAN.md`
+  (commit `a13605b`, docs-only).
+- **Item 2 — BUG-089: corrigido (PR #154, `d487e22`, deploy de produção confirmado).** Falha muda na
+  agenda pública: `getPublicSlotsAction` devolvia `{slots:[], blockers:[]}` no `catch`, e sem
+  bloqueadores o modo de proposta do `/agendar` mostrava horários bloqueados como **livres** (sintoma
+  observado no apagão de 2026-07-17). Fix: `PublicSlotsResponse` ganha `error?: boolean`; o `catch`
+  retorna `error:true`; o `PublicBookingFlow` marca `slotsLoadFailed`, limpa a grade e mostra "Não foi
+  possível carregar a agenda" nos dois modos, em vez de inventar disponibilidade. **Escopo no sintoma
+  confirmado** (falsa disponibilidade); os outros dois `catch → []` do bug (dias / helper interno) são
+  da classe "sub-mostra" (direção segura) e ficam com o AGENDA-SYNC-DESIGN. eslint 0 erros nos tocados,
+  test 292/292, type-check + build limpos. Sem `--no-verify`.
+- **Próximo:** varredura de baixo risco do grupo 3 (`BUG-012/027/031/038`), conforme a Gestora liberou.
+- Itens atualizados: `BUGS.md` (BUG-089 Corrigido, BUG-104 Corrigido), `00-PLAN.md` (fila grupo 3),
+  `DASHBOARD.md`, este LOG.
+
+---
+
 ## [2026-07-22] Chat de execução — BUG-013: trava real da cota 1:1 no agendamento (PR #153, F2-04)
 
 - Chat/sessão: mesmo chat de execução (Opus 4.8). Área financeira/cotas — plano+aprovação seguido à

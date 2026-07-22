@@ -1438,8 +1438,10 @@ esquecida.
      sempre nulo (só falta a leitura direta, não tem correção de código óbvia
      até confirmar).
    - `BUG-017` (T-01) — full scans em `admin-fs.ts` sem paginação.
-   - `BUG-089` (F1-06/agenda) — `catch → []` esconde erro de cota como "tudo
-     livre" no `/agendar`; correção é devolver o erro ao chamador.
+   - ~~`BUG-089` (F1-06/agenda) — `catch → []` esconde erro de cota como "tudo
+     livre" no `/agendar`~~ **CORRIGIDO (PR #154)** para o sintoma confirmado
+     (falsa disponibilidade); residual "sub-mostra" (dias/helper interno) fica com
+     o AGENDA-SYNC.
    - `BUG-097` (agenda) — agendamento fantasma quando o evento some do Google;
      entra no desenho de uma próxima arquitetura de agenda.
    - ~~`BUG-104` (F2-04) — editar cota no painel admin soma em vez de definir~~
