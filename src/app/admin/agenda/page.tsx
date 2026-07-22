@@ -376,77 +376,59 @@ export default function AgendaManagementPage() {
         )}
       </AnimatePresence>
 
-      {/* Events Grid */}
-      <div className="space-y-6">
+      {/* Lista de eventos (compacta, estilo tabela) */}
+      <div>
         {isLoadingList ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="rounded-[1.5rem] border border-[var(--border-primary)] bg-[var(--input-bg)] overflow-hidden divide-y divide-[var(--border-primary)]">
             {[1, 2, 3, 4, 5, 6].map(i => (
-              <div key={i} className="h-64 bg-[var(--input-bg)] animate-pulse rounded-[2.5rem] border border-[var(--border-primary)]"></div>
+              <div key={i} className="h-14 animate-pulse bg-[var(--input-bg)]"></div>
             ))}
           </div>
         ) : processedEvents.length === 0 ? (
-          <div className="p-24 text-center border-2 border-dashed border-[var(--border-primary)] rounded-[3rem] bg-[var(--input-bg)] backdrop-blur-sm">
-            <CalendarIcon className="w-16 h-16 text-[var(--text-muted)] opacity-10 mx-auto mb-6" />
+          <div className="p-16 text-center border-2 border-dashed border-[var(--border-primary)] rounded-[2rem] bg-[var(--input-bg)]/50">
+            <CalendarIcon className="w-12 h-12 text-[var(--text-muted)] opacity-10 mx-auto mb-4" />
             <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-[0.3em]">Nenhum evento encontrado</p>
-            <p className="text-[11px] text-[var(--text-muted)] opacity-40 mt-3 max-w-xs mx-auto">Ajuste os filtros ou realize uma nova sincronização.</p>
+            <p className="text-[11px] text-[var(--text-muted)] opacity-40 mt-2 max-w-xs mx-auto">Ajuste os filtros ou realize uma nova sincronização.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="rounded-[1.5rem] border border-[var(--border-primary)] bg-[var(--input-bg)] overflow-hidden divide-y divide-[var(--border-primary)] shadow-sm">
             {processedEvents.map(event => (
               <div
                 key={event.id}
-                className="group relative p-8 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-[2.5rem] hover:bg-[var(--accent-soft)] hover:border-[var(--accent-start)]/30 transition-all duration-500 hover:translate-y-[-4px] shadow-sm hover:shadow-xl"
+                className="group flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3 hover:bg-[var(--accent-soft)] transition-colors"
               >
-                {/* Status Indicator Dot */}
-                <div className="absolute top-8 left-8 flex items-center gap-2 bg-[var(--bg-primary)] backdrop-blur-xl px-3 py-1.5 rounded-full border border-[var(--border-primary)] shadow-2xl">
-                  <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent-start)] shadow-[0_0_10px_rgba(255,44,141,0.5)]" />
-                  <span className="text-[8px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Sincronizado</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-start)] shrink-0" title="Sincronizado" />
+
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-[var(--text-primary)] truncate group-hover:text-[var(--accent-start)] transition-colors">{event.summary}</p>
+                  {event.description && (
+                    <p className="text-[11px] text-[var(--text-muted)] truncate italic opacity-70">{event.description}</p>
+                  )}
                 </div>
 
-                <div className="flex justify-end items-start mb-8">
-                  <a
-                    href={event.htmlLink}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="p-3 bg-[var(--bg-primary)] shadow-xl border border-[var(--border-primary)] rounded-xl text-[var(--text-muted)] hover:text-[var(--accent-start)] hover:border-[var(--accent-start)]/30 transition-all hover:scale-110"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                  </a>
+                <div className="hidden md:flex items-center gap-1.5 text-[var(--text-muted)] shrink-0 w-[120px]">
+                  <CalendarIcon className="w-3.5 h-3.5 opacity-50 shrink-0" />
+                  <span className="text-[11px] font-semibold tabular-nums truncate">
+                    {event.start && format(new Date(event.start), "dd MMM yyyy", { locale: ptBR })}
+                  </span>
                 </div>
 
-                <h4 className="font-bold text-xl text-[var(--text-primary)] group-hover:text-[var(--accent-start)] transition-colors line-clamp-2 leading-tight min-h-[56px]">{event.summary}</h4>
-
-                <div className="mt-8 space-y-4 pt-8 border-t border-[var(--border-primary)]">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-[var(--accent-start)]/5 flex items-center justify-center text-[var(--accent-start)] border border-[var(--accent-start)]/10">
-                      <CalendarIcon className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <p className="text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-[0.2em] opacity-40">Data do Serviço</p>
-                      <p className="text-xs font-bold text-[var(--text-primary)]">{event.start && format(new Date(event.start), "dd 'de' MMMM, yyyy", { locale: ptBR })}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-[var(--accent-end)]/5 flex items-center justify-center text-[var(--accent-end)] border border-[var(--accent-end)]/10">
-                      <Clock className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <p className="text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-[0.2em] opacity-40">Horário Previsto</p>
-                      <p className="text-xs font-bold text-[var(--text-primary)]">
-                        {event.start && format(new Date(event.start), "HH:mm")} - {event.end && format(new Date(event.end), "HH:mm")}
-                      </p>
-                    </div>
-                  </div>
+                <div className="hidden sm:flex items-center gap-1.5 text-[var(--text-muted)] shrink-0 w-[110px]">
+                  <Clock className="w-3.5 h-3.5 opacity-50 shrink-0" />
+                  <span className="text-[11px] font-semibold tabular-nums">
+                    {event.start && format(new Date(event.start), "HH:mm")}&ndash;{event.end && format(new Date(event.end), "HH:mm")}
+                  </span>
                 </div>
 
-                {event.description && (
-                  <div className="mt-8 p-5 rounded-2xl bg-[var(--accent-start)]/[0.02] border border-[var(--border-primary)]">
-                    <p className="text-[10px] text-[var(--text-secondary)] line-clamp-2 italic leading-relaxed opacity-60">
-                      &quot;{event.description}&quot;
-                    </p>
-                  </div>
-                )}
+                <a
+                  href={event.htmlLink}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="p-2 rounded-lg text-[var(--text-muted)] hover:text-[var(--accent-start)] hover:bg-[var(--bg-primary)] transition-all shrink-0"
+                  title="Abrir no Google Agenda"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
               </div>
             ))}
           </div>
@@ -474,6 +456,7 @@ export default function AgendaManagementPage() {
         onClose={() => setIsConfigModalOpen(false)}
         title="Tipos de Evento"
         subtitle="O horário vem do Google; o significado é configurado aqui."
+        maxWidth="max-w-2xl"
       >
         <div className="space-y-5 p-2 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar text-left">
           {eventTypes.map((tipo) => {
