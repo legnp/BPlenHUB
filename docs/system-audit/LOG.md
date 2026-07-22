@@ -24,6 +24,42 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-22] Chat de execução — BUG-013: trava real da cota 1:1 no agendamento (PR #153, F2-04)
+
+- Chat/sessão: mesmo chat de execução (Opus 4.8). Área financeira/cotas — plano+aprovação seguido à
+  risca; PR apresentado à Gestora ANTES do merge (checkpoint), mergeado só após "pode mergear".
+- **Correção de premissa antes de codar (Lição 3):** eu tinha assumido que onboarding/mentoria eram
+  1:1. A Gestora corrigiu: são **consultoria em grupo**. Validei no código e confirmei o modelo real —
+  `src/types/calendar-event-types.ts` define **3 tipos de slot** (`1-to-1`, `consultoria-individual`,
+  `consultoria-em-grupo`) + onboarding/offboarding como categorias de jornada/grant = **5 categorias**.
+  **Só o tipo `1-to-1` consome a carteira `1-to-1`.**
+- **Entrega: PR #153 (`44cac87`, squash, deploy de produção CONFIRMADO).** 6 arquivos, +223/-22.
+  - `bookEventAction`: consome 1 crédito 1:1 na **mesma transação** da reserva (atômico), só no
+    caminho do membro (funil público de lead fora — Lição 23); bloqueia sem saldo.
+  - `cancelBookingAction`: estorna só reservas com flag `quotaConsumed` **e** canceladas em tempo
+    hábil; tardio (<24h) perde o crédito (a trilha `lateCancellation` já existia para isto); admin
+    estorna. `rescheduleAttendeeAction` não debita de novo e preserva a flag (spread da reserva);
+    `adminAddAttendeeAction` não consome.
+  - Detecção por **identificador** `tipoId` (Lição 19), com fallback ao título "1 to 1" nos eventos
+    não re-sincronizados. `isOneToOneEvent` em `policy.ts`.
+  - **Fonte única** (Lição 37): funções puras `consumeQuota`/`refundQuota` em `quota-keys.ts`;
+    `consumeMemberQuota` refatorada para usá-las. `tipoId`/`quotaConsumed` expostos no TS.
+  - **Sem backfill retroativo** (decisão da Gestora): a flag `quotaConsumed` evita creditar
+    cancelamento de agendamento anterior à trava.
+- **Nota de segurança (Lição 44):** o caminho do membro deriva a identidade da **sessão verificada**
+  (`requireAuth` + trava dono-ou-admin); a carteira é resolvida pela matrícula da sessão, não por
+  parâmetro do cliente.
+- Validado: eslint 0 erros nos tocados (baseline à parte), type-check limpo, test **292/292** (12
+  novos, puros — consumo/bloqueio/estorno/piso/normalização + `isOneToOneEvent`), build limpo.
+  **Sem `--no-verify`** (pre-commit limpo).
+- **Fecha BUG-013 e o F2-04.** Conferência real (agendar/cancelar 1:1) fica com a Gestora em produção
+  (BUG-030). Itens atualizados: `BUGS.md`, `00-PLAN.md`, `DASHBOARD.md`, este LOG.
+- **Nota de método reforçada:** ao validar as categorias, confirmei também que o **BUG-104** já está
+  corrigido (`setMemberQuotas` DEFINE, `addMemberQuotas` SOMA, nomes explícitos + teste
+  `quota-set-vs-add`) — a fila do grupo 3 ainda o lista como aberto; conferir/fechar status.
+
+---
+
 ## [2026-07-22] Chat de execução — remoção da rota órfã /hub/step-journey (PR #152) + verificações de fila
 
 - Chat/sessão: mesmo chat de execução (Opus 4.8). Feedback da Gestora processado + primeira entrega

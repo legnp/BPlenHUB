@@ -49,8 +49,10 @@
 > pela Gestora (F2-01 remover step-journey; F2-04/BUG-013 cota 1:1 com trava real —
 > aguarda plano; F3-02 mantém as 3 exceções — fechado; BUG-105 não é bug — fechado).
 > **PR #152** (deploy confirmado) removeu a rota órfã `/hub/step-journey` — **BUG-015
-> Corrigido, F2-01 concluído**. Sidebar recolhida do admin validada/aprovada;
-> `normalize-quota-keys` reconfirmado limpo (0 a normalizar).
+> Corrigido, F2-01 concluído**. **PR #153** (deploy confirmado) — **BUG-013 Corrigido,
+> F2-04 concluído**: trava real da cota 1:1 no agendamento (consome ao agendar/estorna ao
+> cancelar em tempo hábil; só o tipo `1-to-1`, validadas as 5 categorias com a Gestora).
+> Sidebar recolhida do admin validada/aprovada; `normalize-quota-keys` reconfirmado limpo.
 >
 > _(entrada anterior)_ 2026-07-22 (chat de execução — **Feedback do admin: 9/9
 > itens concluídos**. PRs #145–#149: agenda (modal + lista compacta), "Jornada do

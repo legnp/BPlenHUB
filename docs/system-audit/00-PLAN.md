@@ -910,20 +910,23 @@ sem copy hardcoded fora do que o guia permitir).
   o agendamento 1:1 bloqueia). Como é **área financeira**, a implementação exige
   **plano+aprovação** antes de codar (a próxima entrega do BUG-013 é esse plano, não o
   código). É o BUG-013.
-- Execução: **Parcial** — BUG-008 corrigido (PR #71): chave canônica minúscula,
+- Execução: **Concluída** — BUG-008 corrigido (PR #71): chave canônica minúscula,
   helper `src/lib/quota-keys.ts`, gravador auto-cura o drift, leitores tolerantes,
-  migração `scripts/normalize-quota-keys.js` (a rodar pela Gestora). BUG-013
-  (ligar consumo ao booking) não iniciado.
-- Resultado: ✓ BUG-008 (chave 1-to-1 unificada, PR #71). ○ BUG-013 (consumo não
-  conectado ao booking — aguarda decisão de negócio). **[2026-07-16]** O `BUG-013`
+  migração `scripts/normalize-quota-keys.js` (executada 2026-07-19, reconfirmada limpa
+  2026-07-22). **BUG-013 corrigido (PR #153, 2026-07-22, deploy confirmado):** trava real
+  da cota 1:1 ligada ao booking — consome ao agendar (atômico), estorna ao cancelar em
+  tempo hábil, escopo só no tipo `1-to-1` (validação das 5 categorias com a Gestora).
+- Resultado: ✓ BUG-008 (chave 1-to-1 unificada, PR #71). ✓ BUG-013 (trava real, PR #153).
+  **[2026-07-16]** O `BUG-013`
   ganhou **dependente**: a política de agendamento agora publicada (PR #103) diz que
   cancelar com menos de 24h faz o membro perder o crédito da sessão. A regra está
   implementada e **deixa o rastro pronto** (`lateCancellation` em
   `User_Booking_History`), mas **o débito em si continua manual/operacional** enquanto
   o `consumeQuotaAction` não for ligado ao booking. Enquanto isso, a frase "preservam
   o crédito" é verdadeira apenas como regra de conduta, não como automação.
-- Bug(s) vinculado(s): BUG-008 (Corrigido, PR #71), BUG-013 (Aberto — agora com a
-  política de 24h dependendo dele para virar automática), BUG-076 (Corrigido, PR #103),
+- Bug(s) vinculado(s): BUG-008 (Corrigido, PR #71), BUG-013 (**Corrigido, PR #153** — a
+  política de 24h de perda de crédito agora é automática: cancelamento tardio de 1:1 não
+  estorna), BUG-076 (Corrigido, PR #103),
   BUG-093 (Corrigido, PR #111 — fuso do servidor na política de agendamento), BUG-094
   (Aberto/adiado — `resolveEventWeek` mistura semana ISO com ano civil), BUG-104 (Aberto —
   editar cota no painel soma em vez de definir) *(3 adicionados nesta reconciliação —
@@ -1447,7 +1450,8 @@ esquecida.
    - `F2-01`: destino de `/hub/step-journey` → **REMOVER** (decidido) → **FEITO** (PR #152,
      deploy confirmado). `BUG-043` fica à parte (independente da rota).
    - `F2-04`/`BUG-013`: conectar `consumeQuotaAction` ao booking → **SIM, trava real**
-     (decidido). Área financeira → próxima entrega é **plano+aprovação**, não código.
+     (decidido) → **FEITO** (PR #153, deploy confirmado). Escopo validado às 5 categorias
+     (só `1-to-1` consome). F2-04 concluído.
    - `F3-02`: exceções do Sequence Lock → **mantêm-se as 3** (decidido). F3-02 fechado,
      sem código.
    - `BUG-105`: Pré-Análise "nunca entregue" → **NÃO É BUG** (decidido). Collect-only por

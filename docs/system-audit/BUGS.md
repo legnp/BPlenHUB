@@ -350,13 +350,22 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   chamada a partir de `calendar-module/booking.ts`)
 - Cenário de falha: a cota de sessões 1-to-1 é hoje só exibida (telemetria/UI)
   — não há trava real impedindo agendar além da cota contratada.
-- Status: **Aberto — decisão de negócio TOMADA (Gestora, 2026-07-22): ligar a cota ao booking com
-  TRAVA REAL** (ao esgotar a cota 1:1 contratada, o agendamento bloqueia). Falta só a implementação.
-- Decisão de execução: Precisa **plano+aprovação** antes de codar (fluxo financeiro/cotas) — a
-  próxima entrega deste bug é o **plano** (onde interceptar o booking, como contar consumo x cota,
-  o que fazer com o histórico de cancelamento tardio da política de 24h que depende disto — ver
-  `00-PLAN.md#f2-04`), não o código direto.
-- Commit/PR: —
+- Status: **Corrigido** — PR #153 (`44cac87`, 2026-07-22, deploy de produção confirmado). Trava real
+  ligada ao booking, escopada por **validação de categoria** (só o tipo `1-to-1` consome a carteira
+  `1-to-1`; Consultoria Individual/em Grupo, onboarding e offboarding NÃO tocam — `isOneToOneEvent`
+  decide por `tipoId`, não por texto, Lição 19). **Agendar** um 1:1 sem saldo bloqueia; com saldo
+  debita 1 crédito na **mesma transação** da reserva (atômico), só no caminho do membro (funil
+  público fora). **Cancelar** estorna só reservas que debitaram (flag `quotaConsumed`) e canceladas
+  em tempo hábil; tardio (<24h) perde o crédito (a trilha `lateCancellation` já existia p/ isto);
+  admin estorna. **Reagendar** não debita de novo e preserva a flag; inclusão por admin não consome.
+  **Sem backfill retroativo** (decisão da Gestora): a flag garante que só quem debitou é estornado.
+- Decisão de execução: plano+aprovação apresentados e **aprovados pela Gestora** (2026-07-22, área
+  financeira/cotas), incluindo a validação das 5 categorias de evento (a Gestora corrigiu a premissa:
+  onboarding/mentoria são consultoria em grupo, não 1:1). Fonte única do consumo (`consumeQuota`/
+  `refundQuota` puras em `quota-keys.ts`; `consumeMemberQuota` refatorada para usá-las — Lição 37).
+  Validado: eslint 0 erros nos tocados, test **292/292** (12 novos), type-check + build limpos.
+  Conferência real (agendar/cancelar 1:1) em produção pela Gestora (BUG-030).
+- Commit/PR: **mergeado** — PR #153 (`44cac87`, squash).
 
 ### BUG-014 Import morto de `seedComparisonProductsAction`
 
