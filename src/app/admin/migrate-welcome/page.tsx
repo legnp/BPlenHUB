@@ -2,8 +2,9 @@
 
 import React, { useState } from "react";
 import { runWelcomeMigration, WelcomeMigrationResults } from "@/actions/migration-welcome";
-import { Play, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { Play, Loader2, CheckCircle2, AlertCircle, UserPlus } from "lucide-react";
 import { getErrorMessage } from "@/lib/utils/errors";
+import { FunctionalPageHeader } from "@/components/layout/FunctionalPageHeader";
 
 export default function MigrateWelcomePage() {
   const [status, setStatus] = useState<"idle" | "running" | "success" | "error">("idle");
@@ -11,8 +12,8 @@ export default function MigrateWelcomePage() {
   const [error, setError] = useState<string | null>(null);
 
   const handleStart = async () => {
-    if (!confirm("Tem certeza que deseja rodar a migração? Isso gravará em User/{mat}/Surveys/welcome_survey.")) return;
-    
+    if (!confirm("Tem certeza que deseja rodar a migração? Isso atualizará os dados de onboarding de todos os usuários.")) return;
+
     setStatus("running");
     try {
       const res = await runWelcomeMigration();
@@ -25,24 +26,26 @@ export default function MigrateWelcomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] p-12 flex flex-col items-center justify-center space-y-10">
-      <div className="text-center space-y-2">
-        <h1 className="text-4xl font-bold tracking-tight">
-          Migração: <span className="text-[var(--accent-start)] italic">Welcome Survey</span>
-        </h1>
-        <p className="text-[var(--text-muted)] text-[11px] font-medium opacity-60">
-          Atualização do formato legado para a Survey_Global institucional.
-        </p>
-      </div>
+    <div className="space-y-8 animate-fade-in-up">
+      <FunctionalPageHeader
+        eyebrow="Sistema e Ferramentas"
+        title="Migrar"
+        titleAccent="Onboarding"
+        icon={<UserPlus size={24} />}
+      />
 
-      <div className="p-10 bg-white/5 border border-white/10 rounded-[2.5rem] max-w-xl w-full space-y-8">
-        
+      <p className="text-[var(--text-muted)] text-[11px] font-medium opacity-70 -mt-4">
+        Atualização do formato legado de onboarding para o padrão institucional.
+      </p>
+
+      <div className="p-10 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-[2.5rem] max-w-xl w-full mx-auto space-y-8">
+
         {status === "idle" && (
           <div className="text-center space-y-8">
             <div className="p-6 bg-yellow-500/10 border border-yellow-500/20 rounded-2xl">
               <p className="text-xs text-yellow-500 font-bold leading-relaxed">
-                ATENÇÃO: Este script lerá todos os usuários da coleção 'User' e criará registros 
-                na subcoleção 'Surveys' conforme o novo padrão.
+                ATENÇÃO: este processo lê todos os usuários e cria os registros de onboarding
+                conforme o novo padrão institucional.
               </p>
             </div>
             <button
@@ -67,7 +70,7 @@ export default function MigrateWelcomePage() {
               <CheckCircle2 size={24} />
               <span className="text-sm font-bold">Migração Concluída com Sucesso!</span>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4">
                {[
                  { label: "Total", val: results?.total ?? 0 },
@@ -75,7 +78,7 @@ export default function MigrateWelcomePage() {
                  { label: "Pulados", val: results?.skipped ?? 0 },
                  { label: "Erros", val: results?.errors ?? 0 },
                ].map(item => (
-                 <div key={item.label} className="p-4 bg-white/5 border border-white/10 rounded-2xl text-center">
+                 <div key={item.label} className="p-4 bg-[var(--bg-primary)]/50 border border-[var(--border-primary)] rounded-2xl text-center">
                     <div className="text-[9px] text-[var(--text-muted)] mb-1 font-bold uppercase tracking-widest">{item.label}</div>
                     <div className="text-2xl font-bold text-[var(--text-primary)]">{item.val}</div>
                  </div>
