@@ -19,6 +19,13 @@ export interface GoogleCalendarEvent {
   mentor?: string;
   theme?: string | null;
   status?: string;
+  /**
+   * Identificador do tipo de evento (`1-to-1` / `consultoria-individual` /
+   * `consultoria-em-grupo`), classificado no sync pelo `googleTitle`
+   * (Etapa 3.1, ver `types/calendar-event-types.ts`). `null` = titulo sem tipo
+   * casado. Usado pela trava de cota 1:1 (BUG-013) via `isOneToOneEvent`.
+   */
+  tipoId?: string | null;
 
   // Post-event Fields
   lifecycleStatus?: EventLifecycleStatus | null;
@@ -126,6 +133,14 @@ export interface AttendeeData {
   attendanceCheckedBy?: string;
 
   // 1 to 1 data
-  type?: string; 
+  type?: string;
   expectations?: string;
+
+  /**
+   * Marca a reserva que debitou 1 credito da cota 1:1 (BUG-013). So reservas com
+   * esta flag estornam no cancelamento em tempo habil; preservada no reagendamento
+   * (spread da reserva). Ausente/false = nao consumiu (reserva anterior a trava,
+   * lead publico, ou tipo que nao e 1:1).
+   */
+  quotaConsumed?: boolean;
 }
