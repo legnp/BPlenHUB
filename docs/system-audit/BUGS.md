@@ -2942,14 +2942,17 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   caso de nova aquisicao (inclusive de servicos diferentes que concedem a mesma cota). O defeito e
   **especifico da edicao**: "nao duplicar em caso de edicao". Ou seja, **parcialmente intencional** —
   nao remover a soma, e sim distinguir os dois usos.
-- Status: **Aberto** — registrado; **fora do lote 1** de proposito (o lote 1 e seguranca; misturar
-  mudanca de comportamento de negocio num PR de guard e o antipadrao que este processo evita).
-- Decisao de execucao: **Precisa plano+aprovacao** (financeiro/cotas). Saida provavel: a camada crua
-  expoe **duas** operacoes explicitas — `addMemberQuotas` (somar, para aquisicao) e
-  `setMemberQuotas` (definir, para edicao no painel) — e cada chamador escolhe a sua. O nome da
-  funcao passa a dizer o que ela faz, em vez de a intencao viver na cabeca de quem chama.
-  **Depende do lote 1**, que ja cria a camada crua onde essas duas operacoes vao morar.
-- Commit/PR: —
+- Status: **Corrigido** — PR #132 (`66d637f`, "fix(cotas): separa somar (aquisicao) de definir
+  (edicao)"). A saida prevista foi implementada exatamente: a camada crua (`lib/member-quotas.ts`)
+  expoe **duas** operacoes explicitas — `addMemberQuotas` (SOMA, para aquisicao via
+  `lib/checkout.ts`) e `setMemberQuotas` (DEFINE, para edicao no painel) — e cada chamador escolhe a
+  sua. **[CONFIRMADO por leitura/git, 2026-07-22]:** a edicao manual em `admin/users/page.tsx:271`
+  chama `setMemberQuotasAction` (define, `used` preservado), entao salvar duas vezes **nao dobra
+  mais**. Ha teste dedicado (`__tests__/lib/quota-set-vs-add.test.ts`). _(A fila do `00-PLAN.md`
+  listava este bug como aberto — residuo desatualizado, mesmo padrao do BUG-110; corrigido nesta
+  sessao.)_
+- Decisao de execucao: plano+aprovacao seguido a epoca (financeiro/cotas), mergeado no PR #132.
+- Commit/PR: **mergeado** — PR #132 (`66d637f`, squash).
 
 
 ### BUG-105 Pre-Analise Comportamental e coletada e nunca entregue — falta a tela de devolutiva

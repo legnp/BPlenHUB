@@ -1442,7 +1442,9 @@ esquecida.
      livre" no `/agendar`; correção é devolver o erro ao chamador.
    - `BUG-097` (agenda) — agendamento fantasma quando o evento some do Google;
      entra no desenho de uma próxima arquitetura de agenda.
-   - `BUG-104` (F2-04) — editar cota no painel admin soma em vez de definir.
+   - ~~`BUG-104` (F2-04) — editar cota no painel admin soma em vez de definir~~
+     **JÁ CORRIGIDO (PR #132)** — `setMemberQuotas` define; a fila estava
+     desatualizada (verificado 2026-07-22).
    - `BUG-012`, `BUG-027`, `BUG-031`, `BUG-038` — baixo risco, candidatos a
      "carona" quando o chat tocar os arquivos vizinhos.
 
