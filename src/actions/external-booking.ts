@@ -34,6 +34,14 @@ export interface TimeSlot {
 export interface PublicSlotsResponse {
   slots: TimeSlot[];
   blockers: { start: string; end: string }[];
+  /**
+   * `true` quando a busca FALHOU (ex.: cota do banco estourada). Distingue
+   * "falha ao carregar" de "sem horarios" — sem isso, o catch devolvia
+   * `{slots:[], blockers:[]}` e a tela mostrava tudo livre, inclusive slots
+   * bloqueados, porque a lista de bloqueadores vinha vazia (BUG-089). O chamador
+   * deve exibir erro em vez de inventar disponibilidade.
+   */
+  error?: boolean;
 }
 
 /**
@@ -116,7 +124,9 @@ export async function getPublicSlotsAction(dateStr: string): Promise<PublicSlots
     };
   } catch (error: unknown) {
     console.error("Erro ao buscar slots públicos unificados:", error);
-    return { slots: [], blockers: [] };
+    // NAO devolver `{slots:[], blockers:[]}` mudo: sem bloqueadores, a tela trata
+    // tudo como livre (BUG-089). `error: true` faz o chamador exibir falha.
+    return { slots: [], blockers: [], error: true };
   }
 }
 
