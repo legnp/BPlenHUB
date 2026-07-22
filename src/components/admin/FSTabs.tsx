@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, FileText, Activity, Brain } from "lucide-react";
+import { LayoutDashboard, FileText, Activity } from "lucide-react";
 
 export function FSTabs() {
   const pathname = usePathname();
@@ -23,11 +23,6 @@ export function FSTabs() {
       name: "Surveys",
       path: "/admin/fs/surveys",
       icon: <LayoutDashboard size={16} />
-    },
-    {
-      name: "Devolutiva Comportamental",
-      path: "/admin/fs/devolutiva",
-      icon: <Brain size={16} />
     }
   ];
 
