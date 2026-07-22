@@ -24,6 +24,36 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-22] Chat de execução — varredura de baixo risco do grupo 3 (BUG-012/027/031/038)
+
+- Chat/sessão: mesmo chat de execução (Opus 4.8). Varredura dos 4 candidatos a "carona" que a Gestora
+  liberou. Resultado: **1 corrigido por código, 1 já estava corrigido, 2 removidos da varredura** (um
+  por premissa errada, outro por não ser de baixo risco).
+- **BUG-038 — Corrigido (PR #155, `80e9dad`, deploy confirmado):** `sizes="192px"` no `<Image fill>`
+  da foto da fundadora (`AboutSection.tsx`); container fixo 192px, valor exato. Sem mudança visual.
+- **BUG-012 — já estava corrigido:** o limite semanal virou enforced no `BUG-076` (PR #103) —
+  `hasReachedWeeklyLimit` usa `MAX_BOOKINGS_PER_WEEK` e é chamado pelo `bookEventAction` (por tipo de
+  sessão). A constante não é mais órfã. Fila desatualizada (padrão do BUG-110). Docs corrigidos.
+- **BUG-027 (ThemeSelector órfão) — NÃO removido; premissa corrigida.** O "0 imports" valia só para
+  `src/`; ao tentar remover, o `type-check` acusou `_docs/labs/forms/page.tsx` usando o componente.
+  `_docs/labs/` é scaffolding de laboratório (raiz, fora de `src/app/`, não roteável mas type-checkado).
+  Remoção acoplada à decisão de limpar o `_docs/labs/` inteiro — **fica para a Gestora decidir**.
+  Reforça a lição de verificar o repo inteiro, não só `src/` (mesmo padrão do `step-journey`).
+- **BUG-031 — removido da varredura (não é carona de baixo risco).** Chamar
+  `updateGlobalProgramacaoRegistryAction()` ao fim do `syncCalendarToFirestore` toca o `sync.ts`
+  (histórico de apagão) e **multiplica o custo do sync** (Lição 38: medir o custo do automatismo).
+  Encaixa com o AGENDA-SYNC-DESIGN, com avaliação de custo + plano.
+- **Padrão observado (registrado para o próximo chat):** a fila da reconciliação de 2026-07-22
+  acumulou **vários status desatualizados** (BUG-110, BUG-104, BUG-012 já corrigidos; BUG-027 com
+  premissa incompleta) — a checagem de status da reconciliação não conferiu código/git item a item.
+  Todo item de fila é hipótese até verificado.
+- **2 decisões pequenas levadas à Gestora** (não bloqueiam): (a) limpar ou não o `_docs/labs/`
+  (destrava BUG-027); (b) BUG-031 entra no AGENDA-SYNC com avaliação de custo.
+- Itens atualizados: `BUGS.md` (BUG-038 Corrigido, BUG-012 Corrigido, BUG-027/031 anotados),
+  `00-PLAN.md` (fila grupo 3), `DASHBOARD.md`, este LOG.
+
+---
+
 ## [2026-07-22] Chat de execução — grupo 3: BUG-104 (já corrigido) + BUG-089 (falha muda no /agendar, PR #154)
 
 - Chat/sessão: mesmo chat de execução (Opus 4.8). A Gestora liberou os itens 1 e 2 do grupo 3 + a

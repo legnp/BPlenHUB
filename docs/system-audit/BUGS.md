@@ -337,10 +337,14 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Cenário de falha: constante existe na configuração mas nenhuma Server Action
   a utiliza — regra de negócio declarada porém não enforced (débito técnico,
   não necessariamente um bug funcional ativo).
-- Status: Aberto
-- Decisão de execução: Precisa plano+aprovação (confirmar se a regra ainda é
-  desejada antes de implementar)
-- Commit/PR: —
+- Status: **Corrigido** — o limite semanal **passou a ser enforced** no trabalho de política de
+  agendamento (`BUG-076`, PRs #102/#103): `hasReachedWeeklyLimit` (`src/lib/booking/policy.ts:126`)
+  usa `CALENDAR_CONFIG.MAX_BOOKINGS_PER_WEEK` e é chamado por `bookEventAction`; a regra é **por tipo
+  de sessão** (tipos diferentes na mesma semana são permitidos — refino da Gestora) e está exibida na
+  copy do `Calendar.tsx`. A constante não é mais órfã. **[Verificado por leitura, 2026-07-22]** — a
+  fila do grupo 3 listava como aberto; resíduo desatualizado (padrão do BUG-110).
+- Decisão de execução: fechado por verificação (já corrigido via BUG-076). Sem código novo.
+- Commit/PR: **coberto por PR #103** (política de agendamento).
 
 ### BUG-013 Consumo de cota 1-to-1 não conectado ao fluxo de agendamento
 
@@ -760,9 +764,17 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   usado vive em `HubHeader.tsx` (confirmado ativo em hub e admin) — não há
   violação da regra do `CLAUDE.md` sobre tema sempre acionável, apenas código
   morto a limpar.
-- Status: Aberto
-- Decisão de execução: Ajuste pequeno e localizado — remoção segura quando
-  alguém tocar o arquivo
+- **Correção de premissa (2026-07-22):** o "zero imports" valia só para `src/`. Ao tentar remover na
+  varredura de baixo risco, o `type-check` acusou **um consumidor fora de `src/`**:
+  `_docs/labs/forms/page.tsx:6` importa e usa o `ThemeSelector`. O `_docs/labs/` é **scaffolding de
+  laboratório** (pasta na raiz, fora de `src/app/` — não roteável, mas incluída no `tsconfig`, logo
+  type-checkada). Portanto **NÃO é órfão** e a remoção **quebraria o build** — ela está acoplada a uma
+  decisão maior: limpar (ou não) o playground `_docs/labs/` inteiro. Removida da varredura de baixo
+  risco (não é carona trivial). Lição reforçada: verificar o **repo inteiro**, não só `src/` (mesmo
+  padrão do `step-journey`/BUG-110).
+- Status: **Aberto** — premissa corrigida; remoção depende da decisão sobre o `_docs/labs/`.
+- Decisão de execução: **não remover isolado.** Levar à Gestora a decisão sobre o `_docs/labs/`
+  (playground de dev) antes; se ela quiser limpá-lo, ThemeSelector sai junto.
 - Commit/PR: —
 
 ### BUG-028 Login com Google falha sem fallback quando o popup é bloqueado (`auth/popup-blocked`)
@@ -924,9 +936,14 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   eventos recém-sincronizados sem depender de um booking posterior. Toca módulo de
   calendário (avaliar impacto/área sensível antes de implementar).
 - Status: Aberto (pendência de melhoria)
-- Decisão de execução: Pendente — melhoria de usabilidade priorizada pela Gestora
-  (2026-07-03); implementar quando a fila de segurança abrir. Precisa avaliação
-  (toca `sync.ts` do módulo de calendário).
+- **Avaliado na varredura de baixo risco (2026-07-22): NÃO é carona trivial — removido da varredura.**
+  A mudança (chamar `updateGlobalProgramacaoRegistryAction()` ao fim de `syncCalendarToFirestore`)
+  toca o `sync.ts` do módulo de calendário — área com histórico de apagão de cota — e **multiplica o
+  custo do sync** (o rebuild do registro faz reads/writes próprios, somados a todo sync). Lição 38:
+  medir o custo do automatismo antes de automatizar. Precisa de avaliação de custo + plano; encaixa
+  melhor com as etapas do `AGENDA-SYNC-DESIGN.md` do que numa varredura.
+- Decisão de execução: Pendente — melhoria priorizada pela Gestora (2026-07-03); implementar com
+  avaliação de custo (junto do AGENDA-SYNC), não como carona.
 - Commit/PR: —
 
 ### BUG-032 `syncUserPermissionsOnLogin` concede admin a partir de e-mail não-verificado (escalação de privilégio)
@@ -1170,12 +1187,12 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Cenário de falha: o dev server emite `Image with src "/foto_perfil_fundadora.jpg"
   has "fill" but is missing "sizes" prop` — sem `sizes`, o Next serve a imagem no
   maior tamanho possível, penalizando performance. Não afeta correção funcional.
-- Status: Aberto — adiado (não bloqueia F1-01; fix é adicionar `sizes` ao
-  `<Image>`, avaliar junto de uma varredura de performance — T-01 — ou quando
-  tocar o componente).
-- Decisão de execução: Ajuste pequeno e localizado; pode ser feito quando alguém
-  tocar o componente ou numa varredura de performance (T-01).
-- Commit/PR: —
+- Status: **Corrigido** — PR #155 (`80e9dad`, 2026-07-22, deploy confirmado). Adicionado
+  `sizes="192px"` ao `<Image fill>` da foto da fundadora (`AboutSection.tsx`); o container é fixo
+  (`w-48 h-48` = 192px), então o valor é exato. Sem mudança visual — só remove o aviso de perf.
+- Decisão de execução: varredura de baixo risco do grupo 3 (Gestora liberou, 2026-07-22). eslint 0
+  erros nos tocados, test 292/292, type-check + build limpos.
+- Commit/PR: **mergeado** — PR #155 (`80e9dad`, squash).
 
 ### BUG-039 `seedComparisonProductsAction` — server action órfã que grava produtos sem guard
 

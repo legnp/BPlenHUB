@@ -56,6 +56,10 @@
 > **PR #154** (deploy confirmado) — **BUG-089 Corrigido**: falha muda no `/agendar` público (erro de
 > backend virava "tudo livre") agora mostra "não foi possível carregar a agenda". **BUG-104** e
 > **BUG-110** reclassificados para Corrigido (já estavam, PRs #132/#131 — resíduos da reconciliação).
+> **Varredura grupo 3:** **PR #155** (deploy confirmado) — **BUG-038 Corrigido** (`sizes` na foto).
+> **BUG-012** já estava corrigido (limite semanal enforced via BUG-076/#103). **BUG-027** não é
+> órfão (usado por `_docs/labs/`) e **BUG-031** toca `sync.ts` (custo) — ambos saíram da varredura,
+> anotados para decisão da Gestora / AGENDA-SYNC.
 >
 > _(entrada anterior)_ 2026-07-22 (chat de execução — **Feedback do admin: 9/9
 > itens concluídos**. PRs #145–#149: agenda (modal + lista compacta), "Jornada do

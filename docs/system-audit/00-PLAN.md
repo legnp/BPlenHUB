@@ -1447,8 +1447,12 @@ esquecida.
    - ~~`BUG-104` (F2-04) — editar cota no painel admin soma em vez de definir~~
      **JÁ CORRIGIDO (PR #132)** — `setMemberQuotas` define; a fila estava
      desatualizada (verificado 2026-07-22).
-   - `BUG-012`, `BUG-027`, `BUG-031`, `BUG-038` — baixo risco, candidatos a
-     "carona" quando o chat tocar os arquivos vizinhos.
+   - **Varredura de baixo risco (2026-07-22):** `BUG-038` **corrigido** (PR #155,
+     `sizes` na foto). `BUG-012` **já estava corrigido** (limite semanal enforced via
+     `BUG-076`/PR #103). `BUG-027` **não é órfão** (usado por `_docs/labs/` fora de
+     `src/`) — remoção acoplada à decisão de limpar o playground `_docs/labs/`, levar à
+     Gestora. `BUG-031` **removido da varredura** — toca `sync.ts` e multiplica custo do
+     sync (Lição 38); vai com o AGENDA-SYNC, não é carona trivial.
 
 **4. Decisões de negócio da Gestora — RESOLVIDAS em 2026-07-22 (rodada única):**
    - `F2-01`: destino de `/hub/step-journey` → **REMOVER** (decidido) → **FEITO** (PR #152,
