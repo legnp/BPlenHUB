@@ -384,12 +384,14 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   esta rota (confirmado por busca textual) — implementa um dashboard de
   jornada alternativo ao de `/hub/membro/journey/[stepId]`, mas está
   inacessível pela navegação normal.
-- Status: **Aberto — decisão TOMADA (Gestora, 2026-07-22): REMOVER.** Órfã confirmada por leitura
-  (0 refs no `src/`; nenhum `href`/`push`/link). Falta só o PR de remoção (page + layout;
-  `rm -rf .next` antes do type-check por ser remoção de rota). Resolver junto do BUG-043
-  (`steps-registry.ts` fora de sync — mesma fonte de dado da jornada).
-- Decisão de execução: aprovada a remoção; próximo PR de execução (rota órfã, baixo risco).
-- Commit/PR: —
+- Status: **Corrigido** — PR #152 (`5ab0c79`, 2026-07-22, deploy de produção confirmado). Rota órfã
+  `/hub/step-journey` (page + layout) removida. Órfã confirmada por varredura (`step-journey` = 0
+  refs em todo o código fora de `docs/`); só importava componentes/hooks compartilhados (nada ficou
+  órfão). BUG-043 (`steps-registry.ts` fora de sync) é **independente** (importado por
+  `actions/journey.ts`, não por esta rota) e segue à parte.
+- Decisão de execução: remoção aprovada pela Gestora (2026-07-22). Validado: eslint 0 novos,
+  `rm -rf .next` + build limpo, test 280/280.
+- Commit/PR: **mergeado** — PR #152 (`5ab0c79`, squash).
 
 ### BUG-016 `quotas.used` hardcoded em `0`
 

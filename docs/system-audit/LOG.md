@@ -24,6 +24,36 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-22] Chat de execução — remoção da rota órfã /hub/step-journey (PR #152) + verificações de fila
+
+- Chat/sessão: mesmo chat de execução (Opus 4.8). Feedback da Gestora processado + primeira entrega
+  de código pós-reconciliação.
+- **Feedbacks da Gestora aplicados (docs, commit `6707408`):**
+  - Sidebar recolhida/flyout do admin: **validada e aprovada em produção** — item de validação fechado.
+  - `scripts/normalize-quota-keys.js`: a fila dizia "nunca executado", mas o BUG-008 registra `--apply`
+    em 2026-07-19. **Reexecutado em DRY-RUN (read-only)** a pedido da Gestora: **0 a normalizar, 4
+    carteiras já canônicas** — base limpa, nenhuma mutação necessária. Item da fila era resíduo
+    desatualizado (mesmo padrão do BUG-110). BUG-008 e a fila corrigidos.
+  - 3 fluxos de contrato: seguem pendentes (aguardam limpeza da base de teste) — sem mudança.
+- **PR #152 (`5ab0c79`, squash, deploy de produção CONFIRMADO) — remoção de `/hub/step-journey`:**
+  dashboard de jornada duplicado do canônico `/hub/journey`, órfão (varredura `step-journey` = 0 refs
+  fora de `docs/`). Removidos `page.tsx` + `layout.tsx` (167 linhas). Só importava componentes/hooks
+  **compartilhados** (JourneyNav, useJourney, AtmosphericLoading) — nada ficou órfão. **BUG-043
+  confirmado independente** (`steps-registry.ts` é importado por `actions/journey.ts`, não pela rota)
+  — não foi empacotado. Validado: eslint 0 novos (só remoção), `rm -rf .next` + build limpo (route
+  tree regenerado sem a rota), test **280/280**. Fecha **BUG-015** e o **F2-01**.
+- **Nota de método (registrada para o próximo chat):** dois itens da fila do plano estavam
+  desatualizados — `normalize-quota-keys` ("nunca executado", mas já rodado 2026-07-19) e, observado
+  de passagem ao ler `member-quotas.ts`, o **BUG-104** (`setMemberQuotas` já DEFINE em vez de somar; a
+  correção parece já feita). Ambos a confirmar/fechar quando o grupo 3 for tocado. Reforça a lição do
+  BUG-110: a fila da reconciliação lista hipóteses de status, não fatos — verificar contra código/git.
+- **Próximo:** plano+aprovação da trava de cota 1:1 (`BUG-013`, financeiro) — investigação de base já
+  feita (`consumeMemberQuota` existe e é transaction-safe; o gap é só o wiring ao booking).
+- Itens atualizados: `BUGS.md` (BUG-015 Corrigido), `00-PLAN.md` (F2-01 concluída + fila), este LOG,
+  `DASHBOARD.md`.
+
+---
+
 ## [2026-07-22] Chat de execução — 4 decisões de negócio da Gestora resolvidas (grupo 4 da fila)
 
 - Chat/sessão: mesmo chat de execução (Opus 4.8). Levadas à Gestora, numa única rodada (Lição 8), as

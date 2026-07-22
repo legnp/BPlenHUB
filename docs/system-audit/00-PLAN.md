@@ -868,12 +868,14 @@ sem copy hardcoded fora do que o guia permitir).
   confirmada por leitura (nenhum `href`/`push`/link aponta para ela; é dashboard de
   jornada duplicado da `/hub/journey`). BUG-043 (`steps-registry.ts` fora de sync) a
   tratar junto por ser a mesma fonte de dado.
-- Execução: **Gated — aguarda PR** (remoção de rota; `rm -rf .next` antes do type-check).
-  Próximo PR de execução.
-- Resultado: — (a preencher no PR de remoção)
-- Bug(s) vinculado(s): BUG-015 (decidido remover), BUG-043 (**[HIPÓTESE]**,
-  `steps-registry.ts` fora de sincronia com os produtos canônicos — resolver junto)
-- Log: [2026-07-22] decisão de remover tomada pela Gestora — ver `LOG.md`
+- Execução: **Concluída — mergeada em PR #152** (`5ab0c79`, deploy de produção confirmado).
+  `/hub/step-journey` (page + layout) removida.
+- Resultado: rota órfã eliminada; nenhum arquivo compartilhado afetado. **BUG-043 segue
+  em aberto e independente** (`steps-registry.ts` é importado por `actions/journey.ts`, não
+  pela rota removida) — a tratar à parte, não é pendência desta remoção.
+- Bug(s) vinculado(s): BUG-015 (**Corrigido**, PR #152), BUG-043 (**[HIPÓTESE]**/Aberto,
+  `steps-registry.ts` fora de sincronia — independente da rota removida)
+- Log: [2026-07-22] decidido remover + removido (PR #152) — ver `LOG.md`
 
 ### [F2-02] Consistência do Gate de Contrato em todas as páginas do hub
 - Categoria(s) de qualidade: Adequação funcional / Segurança
@@ -1442,8 +1444,8 @@ esquecida.
      "carona" quando o chat tocar os arquivos vizinhos.
 
 **4. Decisões de negócio da Gestora — RESOLVIDAS em 2026-07-22 (rodada única):**
-   - `F2-01`: destino de `/hub/step-journey` → **REMOVER** (decidido). Vira PR de
-     execução (rota órfã) + `BUG-043` junto.
+   - `F2-01`: destino de `/hub/step-journey` → **REMOVER** (decidido) → **FEITO** (PR #152,
+     deploy confirmado). `BUG-043` fica à parte (independente da rota).
    - `F2-04`/`BUG-013`: conectar `consumeQuotaAction` ao booking → **SIM, trava real**
      (decidido). Área financeira → próxima entrega é **plano+aprovação**, não código.
    - `F3-02`: exceções do Sequence Lock → **mantêm-se as 3** (decidido). F3-02 fechado,

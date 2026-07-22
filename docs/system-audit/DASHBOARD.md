@@ -45,6 +45,13 @@
 > **vazia**. Docs corrigidos: `BUGS.md`, `00-PLAN.md`, este `DASHBOARD.md`. Sem
 > mudança de código (o fix já estava na `main`).
 >
+> **Execução (2026-07-22, mesma sessão):** decisões de negócio do grupo 4 resolvidas
+> pela Gestora (F2-01 remover step-journey; F2-04/BUG-013 cota 1:1 com trava real —
+> aguarda plano; F3-02 mantém as 3 exceções — fechado; BUG-105 não é bug — fechado).
+> **PR #152** (deploy confirmado) removeu a rota órfã `/hub/step-journey` — **BUG-015
+> Corrigido, F2-01 concluído**. Sidebar recolhida do admin validada/aprovada;
+> `normalize-quota-keys` reconfirmado limpo (0 a normalizar).
+>
 > _(entrada anterior)_ 2026-07-22 (chat de execução — **Feedback do admin: 9/9
 > itens concluídos**. PRs #145–#149: agenda (modal + lista compacta), "Jornada do
 > Cliente" (rename + rota própria) + remoção do "Migrar Onboarding", 2 cards reais
