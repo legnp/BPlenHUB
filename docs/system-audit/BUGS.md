@@ -346,8 +346,12 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   chamada a partir de `calendar-module/booking.ts`)
 - Cenário de falha: a cota de sessões 1-to-1 é hoje só exibida (telemetria/UI)
   — não há trava real impedindo agendar além da cota contratada.
-- Status: Aberto
-- Decisão de execução: Precisa plano+aprovação (fluxo financeiro/cotas)
+- Status: **Aberto — decisão de negócio TOMADA (Gestora, 2026-07-22): ligar a cota ao booking com
+  TRAVA REAL** (ao esgotar a cota 1:1 contratada, o agendamento bloqueia). Falta só a implementação.
+- Decisão de execução: Precisa **plano+aprovação** antes de codar (fluxo financeiro/cotas) — a
+  próxima entrega deste bug é o **plano** (onde interceptar o booking, como contar consumo x cota,
+  o que fazer com o histórico de cancelamento tardio da política de 24h que depende disto — ver
+  `00-PLAN.md#f2-04`), não o código direto.
 - Commit/PR: —
 
 ### BUG-014 Import morto de `seedComparisonProductsAction`
@@ -376,9 +380,11 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   esta rota (confirmado por busca textual) — implementa um dashboard de
   jornada alternativo ao de `/hub/membro/journey/[stepId]`, mas está
   inacessível pela navegação normal.
-- Status: Aberto
-- Decisão de execução: Precisa avaliação antes de remover (confirmar se é
-  usada por link direto/QR code externo antes de tratar como morta)
+- Status: **Aberto — decisão TOMADA (Gestora, 2026-07-22): REMOVER.** Órfã confirmada por leitura
+  (0 refs no `src/`; nenhum `href`/`push`/link). Falta só o PR de remoção (page + layout;
+  `rm -rf .next` antes do type-check por ser remoção de rota). Resolver junto do BUG-043
+  (`steps-registry.ts` fora de sync — mesma fonte de dado da jornada).
+- Decisão de execução: aprovada a remoção; próximo PR de execução (rota órfã, baixo risco).
 - Commit/PR: —
 
 ### BUG-016 `quotas.used` hardcoded em `0`
@@ -2958,14 +2964,24 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - **Correcao de registro:** numa primeira leitura eu classifiquei isto como "dado coletado sem
   proposito". **Estava errado** — o proposito existe e esta explicito na copy e na ordem das paradas.
   O que falta e a **entrega**, nao a intencao.
-- Status: **Aberto** — decisao de **produto da Gestora**, nao de engenharia: construir a tela de
-  devolutiva (no hub, no admin, ou nos dois) **ou** aposentar o instrumento. Enquanto nao se decide,
-  a coleta segue viva e o dado acumulando sem consumidor — o que tambem toca a regra de
-  classificacao de coleta de dados do `CLAUDE.md` (`SURVEY_GLOBAL.md`).
-- Decisao de execucao: nenhuma acao de codigo ate a decisao de produto. **Nao confundir com o getter
-  removido no lote 2a**: aquele era codigo morto que nenhuma tela chamava; a coleta e o dado
-  permanecem intactos.
-- Commit/PR: —
+- Status: **NAO E BUG — fechado por decisao de produto da Gestora (2026-07-22).** A Pre-Analise e
+  **collect-only por desenho**: os resultados sao **insumo do consultor** para fazer a devolutiva do
+  servico de **Preparacao de Carreira** (a entrega ao membro e a **reuniao estrategica + o DISC**, e
+  o DISC esse sim ja chega ao membro). O membro **nao deve** ter uma tela de devolutiva propria da
+  Pre-Analise. NAO construir tela dedicada; NAO aposentar o instrumento.
+- **Onde o dado deve aparecer (exigencia da Gestora) — JA ATENDIDO, confirmado por leitura de codigo
+  (2026-07-22):** o unico lugar de exibicao desejado e `/admin/jornada-cliente`, quadro **"Mapa da
+  Jornada / Formularios & Surveys Preenchidos"**. Esse quadro (`DevolutivaComportamentalView.tsx`,
+  `allSubmissionsList`, l.580-587) lista **TODAS** as submissoes de `User/{matricula}/Surveys` +
+  `Forms` **sem filtro/allowlist**; a Pre-Analise e gravada em `Surveys/pre_analise_comportamental`
+  por `submitSurvey` (`submit-survey.ts:32`) e, portanto, **ja aparece** ali junto das demais surveys
+  e forms. Nenhuma mudanca de codigo necessaria. _(A nota anterior "nenhuma das duas mostra a
+  Pre-Analise" referia-se aos **cards de devolutiva dedicados** dos 4 instrumentos — nao ao quadro
+  generico de submissoes, que a mostra.)_
+- Decisao de execucao: **nenhuma acao de codigo** — o comportamento atual ja e o desejado. A regra de
+  classificacao de coleta do `CLAUDE.md` (`SURVEY_GLOBAL.md`) fica satisfeita: o proposito da coleta
+  esta documentado (insumo da consultoria de Preparacao de Carreira), nao e coleta sem proposito.
+- Commit/PR: — (sem codigo; fechado por decisao de produto)
 
 
 ### BUG-106 Sequestro de conta: e-mail DIGITADO numa resposta de survey reescreve o dono da matricula

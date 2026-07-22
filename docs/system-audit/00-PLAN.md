@@ -863,14 +863,17 @@ sem copy hardcoded fora do que o guia permitir).
 - Categoria(s) de qualidade: Adequação funcional / Manutenibilidade
 - Critério de aceite: decidido o destino de `/hub/step-journey` (remover,
   redirecionar, ou justificar como alternativa válida)
-- Modo de validação: PENDENTE
-- Decisão: Pendente — destino de `/hub/step-journey`
-- Execução: Não iniciada
-- Resultado: —
-- Bug(s) vinculado(s): BUG-015, BUG-043 (**[HIPÓTESE]**, `steps-registry.ts` fora
-  de sincronia com os produtos canônicos — *adicionado nesta reconciliação; já
-  constava no índice bug→track vinculado a F2-01, mas ausente deste campo*)
-- Log: —
+- Modo de validação: Automatizado (remoção de rota órfã — confirmada 0 refs no `src/`)
+- Decisão: **Decidida (Gestora, 2026-07-22) — REMOVER `/hub/step-journey`.** Órfã
+  confirmada por leitura (nenhum `href`/`push`/link aponta para ela; é dashboard de
+  jornada duplicado da `/hub/journey`). BUG-043 (`steps-registry.ts` fora de sync) a
+  tratar junto por ser a mesma fonte de dado.
+- Execução: **Gated — aguarda PR** (remoção de rota; `rm -rf .next` antes do type-check).
+  Próximo PR de execução.
+- Resultado: — (a preencher no PR de remoção)
+- Bug(s) vinculado(s): BUG-015 (decidido remover), BUG-043 (**[HIPÓTESE]**,
+  `steps-registry.ts` fora de sincronia com os produtos canônicos — resolver junto)
+- Log: [2026-07-22] decisão de remover tomada pela Gestora — ver `LOG.md`
 
 ### [F2-02] Consistência do Gate de Contrato em todas as páginas do hub
 - Categoria(s) de qualidade: Adequação funcional / Segurança
@@ -899,10 +902,12 @@ sem copy hardcoded fora do que o guia permitir).
 - Critério de aceite: chave de cota 1-to-1 unificada (uppercase vs lowercase),
   e decisão tomada sobre conectar `consumeQuotaAction` ao fluxo real de booking
 - Modo de validação: Automatizado (unificação de chave — decisão técnica embasada por leitura)
-- Decisão: **Parcial (2026-07-11)** — chave "1-to-1" unificada em minúsculo
-  canônico (aprovada pela Gestora, PR #71). A 2ª parte — conectar
-  `consumeQuotaAction` ao booking real — segue **Pendente** (decisão de negócio,
-  Gestora confirma se cota deve travar agendamento; é o BUG-013).
+- Decisão: **Decidida (2026-07-22)** — chave "1-to-1" unificada em minúsculo canônico
+  (Gestora, PR #71). A 2ª parte — conectar `consumeQuotaAction` ao booking real —
+  **decidida pela Gestora (2026-07-22): SIM, trava real** (ao esgotar a cota contratada,
+  o agendamento 1:1 bloqueia). Como é **área financeira**, a implementação exige
+  **plano+aprovação** antes de codar (a próxima entrega do BUG-013 é esse plano, não o
+  código). É o BUG-013.
 - Execução: **Parcial** — BUG-008 corrigido (PR #71): chave canônica minúscula,
   helper `src/lib/quota-keys.ts`, gravador auto-cura o drift, leitores tolerantes,
   migração `scripts/normalize-quota-keys.js` (a rodar pela Gestora). BUG-013
@@ -983,12 +988,14 @@ sem copy hardcoded fora do que o guia permitir).
   (`onboarding`, `mentocoach`, regra especial de `offboarding`) ainda refletem
   a intenção de produto
 - Modo de validação: Requer execução humana (julgamento de negócio)
-- Decisão: Pendente — requer julgamento de negócio da Gestora
-- Execução: N/A — item é puramente decisório; só gera execução se a decisão
-  implicar mudança de código
-- Resultado: —
+- Decisão: **Decidida (Gestora, 2026-07-22) — mantêm-se as 3 exceções** (`onboarding`,
+  `mentocoach`, `offboarding` podem ser feitos fora da ordem sequencial). Confirmadas
+  como intenção de produto corrente; nenhuma alteração pedida.
+- Execução: **N/A — fechado.** Item puramente decisório; a decisão foi "manter", logo
+  não gera mudança de código.
+- Resultado: **F3-02 concluído** — exceções do Sequence Lock ratificadas como estão.
 - Bug(s) vinculado(s): —
-- Log: —
+- Log: [2026-07-22] decidido pela Gestora (mantêm-se as 3) — ver `LOG.md`
 
 ### [F3-03] Regras financeiras: Cupom V2, pendência de contrato, reembolso
 - Categoria(s) de qualidade: Adequação funcional / Segurança
@@ -1432,18 +1439,19 @@ esquecida.
    - `BUG-012`, `BUG-027`, `BUG-031`, `BUG-038` — baixo risco, candidatos a
      "carona" quando o chat tocar os arquivos vizinhos.
 
-**4. Decisões de negócio pendentes da Gestora que destravam fases inteiras:**
-   - `F2-01`: destino de `/hub/step-journey` (remover/redirecionar/manter) +
-     `BUG-043` (`steps-registry.ts` fora de sincronia com os produtos —
-     resolver junto, é a mesma fonte de dado da jornada).
-   - `F2-04`: conectar `consumeQuotaAction` ao fluxo real de booking
-     (`BUG-013`) — hoje a cota só é exibida, não trava agendamento.
-   - `F3-02`: as exceções do Sequence Lock (`onboarding`, `mentocoach`,
-     `offboarding`) ainda refletem a intenção de produto?
-   - `BUG-105`: Pré-Análise Comportamental coletada e nunca entregue — decisão
-     de produto (construir tela de devolutiva ou não), não bug de engenharia.
-   - `BUG-112` escopo C (papel real de "Consultor" + migração) — programado
-     para depois da auditoria, por decisão da Gestora.
+**4. Decisões de negócio da Gestora — RESOLVIDAS em 2026-07-22 (rodada única):**
+   - `F2-01`: destino de `/hub/step-journey` → **REMOVER** (decidido). Vira PR de
+     execução (rota órfã) + `BUG-043` junto.
+   - `F2-04`/`BUG-013`: conectar `consumeQuotaAction` ao booking → **SIM, trava real**
+     (decidido). Área financeira → próxima entrega é **plano+aprovação**, não código.
+   - `F3-02`: exceções do Sequence Lock → **mantêm-se as 3** (decidido). F3-02 fechado,
+     sem código.
+   - `BUG-105`: Pré-Análise "nunca entregue" → **NÃO É BUG** (decidido). Collect-only por
+     desenho (insumo do consultor p/ a devolutiva de Preparação de Carreira); já aparece
+     no quadro "Formulários & Surveys Preenchidos" de `/admin/jornada-cliente` (confirmado
+     por código). Fechado, sem código.
+   - `BUG-112` escopo C (papel real de "Consultor" + migração) — **segue** programado
+     para depois da auditoria, por decisão da Gestora (única deste grupo ainda em aberto).
 
 **5. Iniciar formalmente a Fase 2** (features transversais) — é a fase nominal
    seguinte, e já tem terreno preparado: `F2-05` (categorização de design) está

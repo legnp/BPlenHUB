@@ -240,7 +240,8 @@ eles. Destaques que não se encaixam num único item de fase:
 - **BUG-034** (Baixo, aberto/futuro) — falta 2º componente-base para modais grandes "app-shell"
 - **BUG-045** (Médio, corrigido PR #32) — `npm run test` estava quebrado na `main` desde o PR #19, sem ninguém ver (sessões validavam só com `tsc`+`build`, não `npm run check`)
 - **BUG-085** (Baixo, aberto/adiado) — ~340 docs de eventos passados nunca removidos; correção óbvia é destrutiva (apagaria atas/histórico de carreira)
-- **BUG-097/BUG-098/BUG-105** (aberto, decisão de produto/arquitetura pendente da Gestora)
+- **BUG-097/BUG-098** (aberto, decisão de arquitetura de agenda pendente da Gestora)
+- **BUG-105** (**fechado 2026-07-22 — não é bug**) — Pré-Análise Comportamental é collect-only por desenho (insumo do consultor para a devolutiva de Preparação de Carreira); já aparece no quadro "Formulários & Surveys Preenchidos" de `/admin/jornada-cliente`. Sem código.
 - **BUG-110** (Alto → **Corrigido**, PR #131) — reconciliação de 2026-07-22 o marcou aberto por engano; ver Triagem por severidade acima
 
 ---

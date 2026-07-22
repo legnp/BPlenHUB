@@ -24,6 +24,41 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-22] Chat de execução — 4 decisões de negócio da Gestora resolvidas (grupo 4 da fila)
+
+- Chat/sessão: mesmo chat de execução (Opus 4.8). Levadas à Gestora, numa única rodada (Lição 8), as
+  4 decisões de negócio que destravavam Fase 2/3. Antes de perguntar, os 4 itens foram **confirmados
+  ainda abertos por leitura de código** (Lição do BUG-110 — status herdado é hipótese).
+- **Decisões e o que muda:**
+  1. **F2-01 / `/hub/step-journey` → REMOVER.** Órfã confirmada (0 refs no `src/`). Vira PR de
+     execução (page+layout; `rm -rf .next` antes do type-check) + `BUG-043` junto (mesma fonte de dado).
+  2. **F2-04 / `BUG-013` (cota 1:1 no booking) → SIM, trava real.** Ao esgotar a cota, o agendamento
+     bloqueia. Área financeira → próxima entrega é **plano+aprovação**, não código direto.
+  3. **F3-02 / exceções do Sequence Lock → MANTÊM as 3** (`onboarding`/`mentocoach`/`offboarding`).
+     Ratificadas como intenção de produto. **F3-02 fechado**, sem código.
+  4. **`BUG-105` / Pré-Análise Comportamental → NÃO É BUG.** A Gestora confirmou: é **collect-only por
+     desenho** — os resultados são **insumo do consultor** para a devolutiva do serviço de **Preparação
+     de Carreira** (a entrega ao membro é a reunião estratégica + o DISC, que já chega ao membro). O
+     único lugar de exibição desejado — o quadro **"Formulários & Surveys Preenchidos"** de
+     `/admin/jornada-cliente` — **já mostra a Pré-Análise**: verifiquei que `allSubmissionsList`
+     (`DevolutivaComportamentalView.tsx:580-587`) lista TODAS as submissões de `Surveys`/`Forms` sem
+     filtro, e `submitSurvey` grava a Pré-Análise em `Surveys/pre_analise_comportamental`
+     (`submit-survey.ts:32`). **Exigência já atendida, zero código.** Fechado por decisão de produto.
+- **Investigação registrada (BUG-105):** rastreada a Pré-Análise ponta a ponta — survey
+  `pre_analise_comportamental` ("Preparação para o DISC"), coletada no produto
+  `posicionamento-profissional` (parada 5.1, antes da reunião 5.2); grava em
+  `results/pre_analise_comportamental` (`isReleased:false`) + planilha do Drive; **não tem** branch no
+  reader do membro (`get-user-results.ts`, que só cobre gestao_tempo/aprendizado/reconhecimento/disc)
+  — e isso é **correto por desenho**, não lacuna a corrigir.
+- **Docs atualizados (governança, direto na `main`):** `BUGS.md` (BUG-105 fechado "não é bug";
+  BUG-013 e BUG-015 com decisão registrada), `00-PLAN.md` (F2-01/F2-04/F3-02 + grupo 4 da fila
+  resolvido), `DASHBOARD.md` (BUG-105 fora dos pendentes), este LOG. **Nenhum código de produto.**
+- **Próximos passos de execução** (nesta ordem): (a) PR de remoção da `/hub/step-journey` (+ avaliar
+  `BUG-043`); (b) plano+aprovação da trava de cota 1:1 (`BUG-013`, financeiro); (c) `BUG-089` como PR
+  solo de baixo risco (catch que engole erro de cota no `/agendar`). `BUG-112`-C segue pós-auditoria.
+
+---
+
 ## [2026-07-22] Chat de execução — BUG-110 já estava corrigido (PR #131); correção de status pós-reconciliação
 
 - Chat/sessão: chat de execução (Opus 4.8), retomando após a reconciliação geral (commit `7b05a93`).
