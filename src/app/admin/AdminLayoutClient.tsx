@@ -17,7 +17,7 @@ import {
   FlaskConical,
   Activity,
   QrCode,
-  UserPlus
+  Route
 } from "lucide-react";
 import { HubHeader } from "@/components/hub/HubHeader";
 
@@ -77,13 +77,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
           <NavGroup>Pessoas</NavGroup>
           <NavLink href="/admin/users" icon={<Users size={18} />}>GESTÃO DE USUÁRIOS</NavLink>
+          <NavLink href="/admin/jornada-cliente" icon={<Route size={18} />}>JORNADA DO CLIENTE</NavLink>
 
-          <NavGroup>Instrumentos e Devolutivas</NavGroup>
+          <NavGroup>Instrumentos</NavGroup>
           <NavLink href="/admin/fs" icon={<Activity size={18} />}>F&S</NavLink>
 
           <NavGroup>Sistema e Ferramentas</NavGroup>
           <NavLink href="/admin/sandbox" icon={<FlaskConical size={18} />}>SANDBOX</NavLink>
-          <NavLink href="/admin/migrate-welcome" icon={<UserPlus size={18} />}>MIGRAR ONBOARDING</NavLink>
         </nav>
 
         <div className="mt-auto pt-6 border-t border-[var(--border-primary)]/50">

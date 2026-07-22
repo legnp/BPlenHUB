@@ -362,29 +362,6 @@ export default function UsersManagementPage() {
           tone: "accent",
           icon: <Activity className="w-3 h-3" />,
         }}
-        action={
-          <button
-            onClick={async () => {
-              if (!confirm("Deseja executar a migração de dados legados? Isso irá atualizar todos os perfis para o novo padrão institucional.")) return;
-              try {
-                const { runWelcomeMigration } = await import("@/actions/migration-welcome");
-                const res = await runWelcomeMigration();
-                if (res.success && res.results) {
-                  alert(`Sucesso! ${res.results.migrated} usuários migrados de um total de ${res.results.total}. (${res.results.skipped} pulados).`);
-                  fetchUsersAndProducts();
-                } else {
-                  alert(`Falha na migração de dados.`);
-                }
-              } catch (err: unknown) {
-                alert(`Erro crítico: ${getErrorMessage(err)}`);
-              }
-            }}
-            className="flex items-center gap-2 px-6 py-3 bg-[var(--accent-start)] text-white rounded-full text-[9px] font-bold uppercase tracking-widest hover:bg-[var(--accent-end)] transition-all group shadow-lg shadow-[var(--accent-start)]/20"
-          >
-            <ShieldCheck size={14} className="group-hover:scale-110 transition-transform" />
-            Migrar Dados Legados
-          </button>
-        }
       />
 
       <p className="text-[var(--text-muted)] text-sm font-medium opacity-70 -mt-4 text-left">
