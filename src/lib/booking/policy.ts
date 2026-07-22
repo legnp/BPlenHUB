@@ -31,6 +31,21 @@ export function resolveEventType(summary: string | undefined | null): string {
 }
 
 /**
+ * Um evento e do tipo 1:1 — a UNICA das 5 categorias que consome a carteira
+ * `1-to-1` (BUG-013). Consultoria Individual, Consultoria em Grupo, onboarding e
+ * offboarding NAO tocam essa cota.
+ *
+ * Decide pelo identificador `tipoId` (classificado no sync a partir do
+ * `googleTitle`, Etapa 3.1) — nao pelo texto do titulo (Licao 19: identificador
+ * tem precedencia sobre rotulo editavel). Para eventos ainda nao re-sincronizados
+ * (sem `tipoId`), cai no titulo generico "1 to 1" para a trava valer desde o dia 1.
+ */
+export function isOneToOneEvent(event: { tipoId?: string | null; summary?: string | null }): boolean {
+  if (event.tipoId) return event.tipoId === "1-to-1";
+  return (event.summary || "").toLowerCase().includes("1 to 1");
+}
+
+/**
  * Semana ISO + ano de uma data de evento — a chave do limite semanal.
  *
  * Avaliada no fuso de Brasilia, e nao no do servidor: a Vercel roda em UTC, onde

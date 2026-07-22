@@ -1,7 +1,7 @@
 import { getAdminDb } from "@/lib/firebase-admin";
 import { MemberQuotaWallet, MemberQuota } from "@/types/entitlements";
 import { safeSerialize } from "@/lib/utils/firestore";
-import { normalizeQuotaKey, foldQuotaMap } from "@/lib/quota-keys";
+import { normalizeQuotaKey, foldQuotaMap, consumeQuota } from "@/lib/quota-keys";
 
 /**
  * Camada CRUA da carteira de cotas — sem guard, e de proposito.
@@ -116,26 +116,15 @@ export async function consumeMemberQuota(uid: string, eventTypeId: string) {
     if (!doc.exists) throw new Error("Membro nao possui carteira de cotas.");
 
     const wallet = doc.data() as MemberQuotaWallet;
-    // Normaliza + mescla as chaves (BUG-008) antes de localizar a cota-alvo.
-    const quotas = foldQuotaMap(wallet.quotas);
-
-    const targetKey = normalizeQuotaKey(eventTypeId);
-    const quota = quotas[targetKey];
-
-    if (!quota || quota.used >= quota.total) {
-      throw new Error(`Saldo insuficiente para o servico: ${targetKey}`);
+    // Fonte unica do consumo (BUG-013): a mesma funcao pura usada pela transacao
+    // de agendamento em `booking.ts`. Normaliza + mescla as chaves (BUG-008),
+    // checa saldo e incrementa `used`.
+    const result = consumeQuota(wallet.quotas, eventTypeId);
+    if (!result.ok) {
+      throw new Error(`Saldo insuficiente para o servico: ${normalizeQuotaKey(eventTypeId)}`);
     }
 
-    transaction.update(walletRef, {
-      quotas: {
-        ...quotas,
-        [targetKey]: {
-          ...quota,
-          used: (quota.used || 0) + 1,
-          lastUpdated: new Date().toISOString()
-        }
-      }
-    });
+    transaction.update(walletRef, { quotas: result.quotas });
   });
 
   return { success: true };

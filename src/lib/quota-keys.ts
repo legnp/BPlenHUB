@@ -21,6 +21,9 @@ export function normalizeQuotaKey(key: string): string {
   return k;
 }
 
+/** Chave da carteira consumida por sessoes 1:1 (BUG-013). */
+export const ONE_TO_ONE_QUOTA_KEY = "1-to-1";
+
 /**
  * Normaliza as chaves de um mapa de cotas e mescla duplicatas resultantes do
  * drift de capitalizacao. Politica de merge (aprovada pela Gestora, BUG-008):
@@ -54,4 +57,44 @@ export function foldQuotaMap(
   }
 
   return out;
+}
+
+/**
+ * Consumo puro de 1 credito da cota `eventTypeId` (BUG-013). Retorna o mapa ja
+ * normalizado (`foldQuotaMap`) e `ok` — `false` quando nao ha saldo (chave
+ * ausente ou `used >= total`). NAO toca Firestore: a transacao de agendamento
+ * grava o `quotas` retornado no mesmo commit da reserva (atomicidade). `nowISO`
+ * e injetavel para teste deterministico.
+ */
+export function consumeQuota(
+  raw: Record<string, MemberQuota> | null | undefined,
+  eventTypeId: string,
+  nowISO: string = new Date().toISOString()
+): { ok: boolean; quotas: Record<string, MemberQuota> } {
+  const quotas = foldQuotaMap(raw);
+  const key = normalizeQuotaKey(eventTypeId);
+  const q = quotas[key];
+  if (!q || q.used >= q.total) return { ok: false, quotas };
+  return {
+    ok: true,
+    quotas: { ...quotas, [key]: { ...q, used: q.used + 1, lastUpdated: nowISO } },
+  };
+}
+
+/**
+ * Estorno puro de 1 credito da cota `eventTypeId` (BUG-013), com piso em 0 —
+ * nunca devolve mais do que foi consumido. Chave ausente = no-op. So deve ser
+ * chamado para uma reserva que de fato consumiu (flag `quotaConsumed`), para nao
+ * creditar cancelamento de agendamento anterior a trava. `nowISO` injetavel.
+ */
+export function refundQuota(
+  raw: Record<string, MemberQuota> | null | undefined,
+  eventTypeId: string,
+  nowISO: string = new Date().toISOString()
+): Record<string, MemberQuota> {
+  const quotas = foldQuotaMap(raw);
+  const key = normalizeQuotaKey(eventTypeId);
+  const q = quotas[key];
+  if (!q) return quotas;
+  return { ...quotas, [key]: { ...q, used: Math.max(0, q.used - 1), lastUpdated: nowISO } };
 }

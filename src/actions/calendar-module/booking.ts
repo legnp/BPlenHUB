@@ -10,8 +10,11 @@ import {
   hasReachedWeeklyLimit,
   preservesCredit,
   resolveEventType,
-  resolveEventWeek
+  resolveEventWeek,
+  isOneToOneEvent
 } from "@/lib/booking/policy";
+import { consumeQuota, refundQuota, ONE_TO_ONE_QUOTA_KEY } from "@/lib/quota-keys";
+import { MemberQuota } from "@/types/entitlements";
 import { isBlockerEvent } from "@/lib/booking/blocker";
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 import { GoogleCalendarEvent, AttendeeData } from "@/types/calendar";
@@ -110,6 +113,17 @@ export async function bookEventAction(
       const { week, year } = resolveEventWeek(eventData.start);
       const eventType = resolveEventType(eventData.summary);
 
+      // Trava de cota 1:1 (BUG-013): so o tipo `1-to-1` consome a carteira
+      // `1-to-1`. Consultoria Individual/em Grupo, onboarding e offboarding NAO
+      // entram (isOneToOneEvent decide por `tipoId`, nao por texto). O debito e
+      // aplicado no MESMO commit da reserva (write phase abaixo) — atomico.
+      const oneToOne = isOneToOneEvent(eventData);
+      const walletRef = matricula
+        ? db.doc(`User/${matricula}/User_Permissions/quotas`)
+        : null;
+      let quotaConsumed = false;
+      let newQuotas: Record<string, MemberQuota> | null = null;
+
       // Politica de agendamento do MEMBRO — validada aqui, e nao so escondida na
       // tela. O funil de lead publico (sem matricula) fica de fora de proposito:
       // ele roda com PUBLIC_BOOKING_SETTINGS (janela de 33 dias) e aplicar esta
@@ -144,6 +158,19 @@ export async function bookEventAction(
             `Você já tem uma sessão de ${eventData.summary} nesta semana. Sessões de outros tipos seguem disponíveis.`
           );
         }
+
+        // Ultima leitura antes das escritas: saldo de cota 1:1. Bloqueia sem saldo.
+        if (oneToOne && walletRef) {
+          const walletDoc = await transaction.get(walletRef);
+          const consumed = consumeQuota(walletDoc.data()?.quotas, ONE_TO_ONE_QUOTA_KEY);
+          if (!consumed.ok) {
+            throw new Error(
+              "Você não possui créditos de 1 to 1 disponíveis. Adquira uma sessão para agendar."
+            );
+          }
+          quotaConsumed = true;
+          newQuotas = consumed.quotas;
+        }
       }
 
       const bookingPayload = {
@@ -157,7 +184,11 @@ export async function bookEventAction(
         year,
         eventSummary: eventData.summary || "",
         oneToOneData: oneToOneData || null,
-        leadInfo: leadInfo || null
+        leadInfo: leadInfo || null,
+        // Marca a reserva que DE FATO debitou cota 1:1 (BUG-013). O estorno no
+        // cancelamento so credita reservas com esta flag — nunca as anteriores a
+        // trava (que nunca consumiram), evitando creditar saldo do nada.
+        quotaConsumed
       };
 
       transaction.set(userBookingRef, bookingPayload);
@@ -180,6 +211,13 @@ export async function bookEventAction(
         registeredCount: registeredCount + 1,
         lastUpdated: admin.firestore.FieldValue.serverTimestamp()
       });
+
+      // Debito da cota 1:1 no mesmo commit da reserva (BUG-013): reserva e debito
+      // sobem juntos ou nenhum dos dois. `update` substitui o campo `quotas`
+      // inteiro (mapa ja normalizado por consumeQuota/foldQuotaMap).
+      if (quotaConsumed && walletRef && newQuotas) {
+        transaction.update(walletRef, { quotas: newQuotas });
+      }
 
       return { success: true, eventData, bookingId: userId };
     });
@@ -284,6 +322,19 @@ export async function cancelBookingAction(
       // o que se perde e o credito da sessao. Admin nao perde credito de ninguem.
       const isLate = !session.isAdmin && eventData?.start && !preservesCredit(eventData.start);
 
+      // Estorno de cota 1:1 (BUG-013): so reservas que DEBITARAM (flag
+      // `quotaConsumed`) e canceladas EM TEMPO HABIL recuperam o credito.
+      // Cancelamento tardio perde o credito (a vaga ja nao volta a tempo);
+      // cancelamento por admin nao e "tardio" (isLate=false), entao credita de
+      // volta. A leitura da carteira acontece aqui, antes das escritas.
+      const wasConsumed = bookingData?.quotaConsumed === true;
+      const walletRef = db.doc(`User/${matricula}/User_Permissions/quotas`);
+      let refundedQuotas: Record<string, MemberQuota> | null = null;
+      if (wasConsumed && !isLate) {
+        const walletDoc = await transaction.get(walletRef);
+        refundedQuotas = refundQuota(walletDoc.data()?.quotas, ONE_TO_ONE_QUOTA_KEY);
+      }
+
       transaction.delete(userBookingInEventRef);
       transaction.delete(userBookingSubColRef);
 
@@ -306,6 +357,11 @@ export async function cancelBookingAction(
         registeredCount: admin.firestore.FieldValue.increment(-1),
         lastUpdated: admin.firestore.FieldValue.serverTimestamp()
       });
+
+      // Credita de volta a cota 1:1, no mesmo commit do cancelamento (BUG-013).
+      if (refundedQuotas) {
+        transaction.update(walletRef, { quotas: refundedQuotas });
+      }
 
       return { success: true, eventData, isLate, nickname: bookingData?.displayName || "Membro", email: bookingData?.email };
     });
