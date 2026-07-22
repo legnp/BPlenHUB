@@ -24,6 +24,26 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-22] Chat de execução — BUG-031 já estava corrigido (duplicata do BUG-095, PR #114)
+
+- Chat/sessão: mesmo chat de execução (Opus 4.8). A Gestora autorizou "resolver o BUG-031" (o sync não
+  reconstruir a lista de programação do membro). **Antes de codar** (área sensível + custo, Lição 38),
+  investiguei o custo real de `updateGlobalProgramacaoRegistryAction` — e descobri que **o sync já a
+  chama** (`sync.ts:197`, dentro de `runCalendarSync`, logo após gravar os eventos, em `try/catch`).
+- **BUG-031 é duplicata do BUG-095, corrigido no PR #114** (`b820c2a`): o comentário no próprio código
+  cita o BUG-095 ("a agenda do membro congelava entre sincronizações") — o mesmo problema que o BUG-031
+  descreveu em 2026-07-03. A correção que eu ia fazer já existe. Nenhum código novo.
+- **Padrão confirmado — 5º status desatualizado da reconciliação de 2026-07-22:** BUG-110 (PR #131),
+  BUG-104 (PR #132), BUG-012 (PR #103), `normalize-quota-keys` (rodado 2026-07-19) e agora BUG-031
+  (PR #114) estavam todos **corrigidos/feitos** mas marcados como abertos na fila. A coluna de status
+  da reconciliação claramente **não foi conferida contra código/git** item a item. **Recomendação
+  forte para o chat de plano:** uma passada de re-verificação de status de TODOS os "abertos"
+  remanescentes contra o git, antes de tratá-los como trabalho pendente (todo item de fila é hipótese).
+- Docs atualizados: `BUGS.md` (BUG-031 Corrigido/duplicata), `00-PLAN.md` (fila grupo 3), este LOG,
+  `DASHBOARD.md`. Docs-only.
+
+---
+
 ## [2026-07-22] Chat de execução — varredura de baixo risco do grupo 3 (BUG-012/027/031/038)
 
 - Chat/sessão: mesmo chat de execução (Opus 4.8). Varredura dos 4 candidatos a "carona" que a Gestora

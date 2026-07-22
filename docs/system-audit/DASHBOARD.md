@@ -58,8 +58,10 @@
 > **BUG-110** reclassificados para Corrigido (já estavam, PRs #132/#131 — resíduos da reconciliação).
 > **Varredura grupo 3:** **PR #155** (deploy confirmado) — **BUG-038 Corrigido** (`sizes` na foto).
 > **BUG-012** já estava corrigido (limite semanal enforced via BUG-076/#103). **BUG-027** não é
-> órfão (usado por `_docs/labs/`) e **BUG-031** toca `sync.ts` (custo) — ambos saíram da varredura,
-> anotados para decisão da Gestora / AGENDA-SYNC.
+> órfão (usado por `_docs/labs/`) — sai da varredura, decisão da Gestora sobre limpar o playground.
+> **BUG-031** já estava corrigido (duplicata do BUG-095, PR #114 — o sync já reconstrói o registro).
+> **5 status desatualizados** achados nesta sessão (BUG-110/104/012/031 + normalize-quota-keys) — a
+> reconciliação de 2026-07-22 não conferiu status contra git; recomendada re-verificação dos abertos.
 >
 > _(entrada anterior)_ 2026-07-22 (chat de execução — **Feedback do admin: 9/9
 > itens concluídos**. PRs #145–#149: agenda (modal + lista compacta), "Jornada do

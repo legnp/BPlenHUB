@@ -1451,8 +1451,9 @@ esquecida.
      `sizes` na foto). `BUG-012` **já estava corrigido** (limite semanal enforced via
      `BUG-076`/PR #103). `BUG-027` **não é órfão** (usado por `_docs/labs/` fora de
      `src/`) — remoção acoplada à decisão de limpar o playground `_docs/labs/`, levar à
-     Gestora. `BUG-031` **removido da varredura** — toca `sync.ts` e multiplica custo do
-     sync (Lição 38); vai com o AGENDA-SYNC, não é carona trivial.
+     Gestora. `BUG-031` **já estava corrigido** — é duplicata do `BUG-095` (PR #114): o
+     sync já reconstrói o `Programacao_Registry` (`sync.ts:197`). 5º status desatualizado
+     que a reconciliação de 2026-07-22 não conferiu contra o código/git.
 
 **4. Decisões de negócio da Gestora — RESOLVIDAS em 2026-07-22 (rodada única):**
    - `F2-01`: destino de `/hub/step-journey` → **REMOVER** (decidido) → **FEITO** (PR #152,

@@ -935,16 +935,17 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   `updateGlobalProgramacaoRegistryAction()` para que a lista do membro reflita os
   eventos recém-sincronizados sem depender de um booking posterior. Toca módulo de
   calendário (avaliar impacto/área sensível antes de implementar).
-- Status: Aberto (pendência de melhoria)
-- **Avaliado na varredura de baixo risco (2026-07-22): NÃO é carona trivial — removido da varredura.**
-  A mudança (chamar `updateGlobalProgramacaoRegistryAction()` ao fim de `syncCalendarToFirestore`)
-  toca o `sync.ts` do módulo de calendário — área com histórico de apagão de cota — e **multiplica o
-  custo do sync** (o rebuild do registro faz reads/writes próprios, somados a todo sync). Lição 38:
-  medir o custo do automatismo antes de automatizar. Precisa de avaliação de custo + plano; encaixa
-  melhor com as etapas do `AGENDA-SYNC-DESIGN.md` do que numa varredura.
-- Decisão de execução: Pendente — melhoria priorizada pela Gestora (2026-07-03); implementar com
-  avaliação de custo (junto do AGENDA-SYNC), não como carona.
-- Commit/PR: —
+- Status: **Corrigido — DUPLICATA do `BUG-095`, resolvido no PR #114** (`b820c2a`, "fix(agenda): sync
+  reconstroi o Programacao_Registry"). **[Verificado por leitura/git, 2026-07-22]:** exatamente a
+  correção proposta aqui já foi feita — `runCalendarSync` (o caminho real do sync) chama
+  `updateGlobalProgramacaoRegistryAction()` logo após gravar os eventos (`sync.ts:197`), com o rebuild
+  em `try/catch` (falha do rebuild não invalida o sync). O comentário no código cita o `BUG-095` como
+  o mesmo problema ("a agenda do membro congelava entre sincronizações"). A Gestora autorizou "resolver
+  o BUG-031" (2026-07-22); ao investigar antes de codar (Lição 38, medir o custo), descobriu-se que já
+  estava feito. **A fila do grupo 3 listava como aberto — 5º resíduo desatualizado da reconciliação de
+  2026-07-22** (junto de BUG-110/104/012 e o `normalize-quota-keys`).
+- Decisão de execução: fechado por verificação (duplicata já corrigida). Sem código novo.
+- Commit/PR: **coberto por PR #114** (`b820c2a`, BUG-095).
 
 ### BUG-032 `syncUserPermissionsOnLogin` concede admin a partir de e-mail não-verificado (escalação de privilégio)
 
