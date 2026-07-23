@@ -7,9 +7,17 @@ import { getErrorMessage } from "@/lib/utils/errors";
 import { safeSerialize } from "@/lib/utils/firestore";
 
 /**
- * BPlen HUB — Networking Engine 🌐🧬
+ * BPlen HUB — Networking Engine
  * Busca e consolida dados de membros, profissionais e parceiros para interação.
  */
+
+/**
+ * T1-1 (performance): teto de leitura por abertura da aba. Momento 1 troca o full
+ * scan da colecao por filtro no banco (where) + este teto anti-runaway. Atingir o
+ * teto e o sinal de que a base de perfis visiveis cresceu o bastante para exigir o
+ * Networking_Directory + paginacao real (Momento 2) — ate la, ele bounda o custo.
+ */
+const NETWORKING_READ_CAP = 500;
 
 interface NetworkingContactItem {
   value: string;
@@ -52,13 +60,27 @@ export async function getNetworkingDataAction(
 
     const db = getAdminDb();
 
-    // 1. ABA: PARCEIROS 🤝
+    // 1. ABA: PARCEIROS
     if (tab === "parceiros") {
-      // Busca simples sem compound queries (evita necessidade de índice)
-      const snapshot = await db.collection("Partners").get();
-      let results = snapshot.docs
-        .map(doc => safeSerialize<PartnerData>({ id: doc.id, ...doc.data() }))
-        .filter(p => p.isActive === true); // Filtra client-side
+      // T1-1: filtra isActive no BANCO (antes: full scan + filtro client-side) +
+      // teto de leitura. where(isActive==true) casa exatamente o mesmo conjunto
+      // que o filtro estrito anterior (p.isActive === true); doc sem o campo (ou
+      // com isActive!=true) continua fora, como antes.
+      const snapshot = await db
+        .collection("Partners")
+        .where("isActive", "==", true)
+        .limit(NETWORKING_READ_CAP)
+        .get();
+      if (snapshot.size === NETWORKING_READ_CAP) {
+        console.warn(
+          "[NetworkingAction] teto de leitura atingido em Partners (" +
+            NETWORKING_READ_CAP +
+            "): parceiros alem do teto nao aparecem. Sinal para o Networking_Directory (Momento 2)."
+        );
+      }
+      let results = snapshot.docs.map(doc =>
+        safeSerialize<PartnerData>({ id: doc.id, ...doc.data() })
+      );
 
       // Filtro de ramo de atuação
       if (serviceFilter && serviceFilter !== "Todos") {
@@ -79,19 +101,43 @@ export async function getNetworkingDataAction(
       return { success: true, type: "partners", data: results };
     }
 
-    // 2. ABAS: MEMBROS OU PROFISSIONAIS 🧬
-    // Busca simples + filtro client-side (evita compound queries e índices no Firestore)
-    const snapshot = await db.collection("User").get();
-    
+    // 2. ABAS: MEMBROS OU PROFISSIONAIS
+    // T1-1: filtra a visibilidade (e o recorte de profissionais) no BANCO em vez de
+    // ler a colecao User inteira e descartar ~95% no client (o hotspot member-facing
+    // do plano). where(...==true) usa o indice single-field automatico; a composta
+    // visibilidade & profissional resolve por merge (sem indice composto — confirmado
+    // por sonda read-only na base real, 2026-07-23). + teto de leitura anti-runaway.
+    // A visibilidade na base e boolean:true sem drift (medido na T1-0); doc sem o
+    // campo ja nao aparecia e segue fora (Firestore nao casa doc sem o campo).
+    let userQuery = db
+      .collection("User")
+      .where("profile.networking.networking_visibility", "==", true);
+    if (tab === "profissionais") {
+      userQuery = userQuery.where(
+        "profile.networking.isBPlenProfessional",
+        "==",
+        true
+      );
+    }
+    const snapshot = await userQuery.limit(NETWORKING_READ_CAP).get();
+    if (snapshot.size === NETWORKING_READ_CAP) {
+      console.warn(
+        "[NetworkingAction] teto de leitura atingido em User (" +
+          NETWORKING_READ_CAP +
+          "): perfis alem do teto nao aparecem. Sinal para o Networking_Directory (Momento 2)."
+      );
+    }
+
     let users = snapshot.docs
       .map(doc => {
         const d = doc.data();
         const netProfile = d.profile?.networking || {};
 
-        // Apenas usuários com visibilidade habilitada
+        // Defesa em profundidade: a query ja garante visibilidade e (na aba de
+        // profissionais) o recorte isBPlenProfessional. Os guards abaixo sao
+        // redundantes com a query — mantidos por seguranca, nao rejeitam nada
+        // que a query tenha retornado (sem drift, medido na T1-0).
         if (!netProfile.networking_visibility) return null;
-
-        // Filtro de profissionais
         if (tab === "profissionais" && !netProfile.isBPlenProfessional) return null;
 
         // Privacidade (BUG-033): só exporta ao client o VALOR de contatos/CV/portfólio
@@ -146,7 +192,7 @@ export async function getNetworkingDataAction(
     return { success: true, type: "members", data: users };
 
   } catch (error: unknown) {
-    console.error("❌ [NetworkingAction] Erro:", getErrorMessage(error), error);
+    console.error("[NetworkingAction] Erro:", getErrorMessage(error), error);
     return { success: false, error: getErrorMessage(error), data: [] };
   }
 }
