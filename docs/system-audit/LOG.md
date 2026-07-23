@@ -24,6 +24,29 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-23] Chat de execução — T-01 (performance): plano escrito (T-01-PERFORMANCE-DESIGN.md)
+
+- Chat/sessão: mesmo chat de execução (Opus 4.8). A Gestora pediu o plano do T-01 (autorizado, escala
+  ~10k usuários). Plano fundamentado por inventário de código, escrito em `T-01-PERFORMANCE-DESIGN.md`.
+- **Inventário dos hotspots (full scans O(usuários)):** o pior é `networking.ts:84` —
+  `collection("User").get()` + filtro **client-side** de visibilidade, **member-facing** (a 10k, cada
+  abertura da aba lê 10k docs e joga fora ~95%). Depois os agregados de analytics do admin
+  (`admin-fs`/`admin-surveys`/`admin-forms`/`admin-social-feedback` via `collectionGroup`
+  Surveys/Forms) e a lista de usuários admin (`users-admin` via `collectionGroup User_Permissions`).
+- **Estratégia por classe:** paginar+filtrar+índice as **listas** (networking primeiro — member-facing;
+  users admin depois); **pré-calcular 1×/dia** os **agregados** admin lendo `Admin_Metrics_Daily`
+  (mesma infra do EXP-01).
+- **Restrição-chave achada:** `vercel.json` já tem **1 cron** (`sync-agenda`, 6h UTC) e o Hobby limita
+  crons → o snapshot de métricas **compartilha o slot** (mesmo handler faz sync + snapshot). Sem
+  `firestore.indexes.json` no repo → índice do networking a criar (preferir arquivo commitado).
+- **4 decisões pendentes da Gestora** (seção 6 do doc): (1) networking = filtro+índice+paginação vs
+  coleção projetada; (2) OK compartilhar o cron; (3) começar pela T1-1 (networking); (4) o snapshot
+  adianta parte do EXP-01 — OK. Recomendações registradas.
+- **Nenhum código** — plano para aprovação. Docs: `T-01-PERFORMANCE-DESIGN.md` (novo), `00-PLAN.md`,
+  este LOG.
+
+---
+
 ## [2026-07-22] Chat de execução — F2-02 (gate de contrato) auditada: PASSA, premissa obsoleta
 
 - Chat/sessão: mesmo chat de execução (Opus 4.8). Auditoria read-only do gate de contrato no hub.

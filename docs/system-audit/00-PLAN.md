@@ -1466,8 +1466,10 @@ esquecida.
      confirmado na base real (0/12 tinham `timestamp`, 12/12 `bookedAt`); `getUserBookingsAction`
      passa a ler `bookedAt`. Diagnóstico read-only rodado e apagado (opção b da Gestora).
    - `BUG-017` (**T-01 autorizado 2026-07-22**) — full scans em `admin-fs.ts` sem paginação.
-     Escala esperada ~10k usuários → aguarda **plano do T-01** (pré-calcular snapshot 1×/dia
-     para agregados + paginar listas; casável com EXP-01).
+     Escala esperada ~10k usuários. **Plano escrito (2026-07-23): `T-01-PERFORMANCE-DESIGN.md`**
+     — hotspot pior é `networking.ts` (member-facing); agregados admin viram snapshot diário
+     (`Admin_Metrics_Daily`, infra do EXP-01); cron compartilhado (Hobby, 1 slot). Aguarda 4
+     decisões da Gestora (seção 6 do doc).
    - ~~`BUG-089` (F1-06/agenda) — `catch → []` esconde erro de cota como "tudo
      livre" no `/agendar`~~ **CORRIGIDO (PR #154)** para o sintoma confirmado
      (falsa disponibilidade); residual "sub-mostra" (dias/helper interno) fica com
