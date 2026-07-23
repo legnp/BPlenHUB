@@ -445,19 +445,20 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   **pré-calcular** os números agregados **1×/dia** e a tela ler o snapshot pronto (barato, instantâneo;
   mesma abordagem do EXP-01/`Admin_Metrics_Daily`), para dashboards/contagens; (b) **paginar** onde a
   tela lista usuários (carregar em páginas de N, não todos). Casável com o EXP-01.
-- Status: **Em Progresso — T-01 Momento 1 em execução (2026-07-23).** Plano escrito
-  (`T-01-PERFORMANCE-DESIGN.md`) e as 4 decisões da Gestora aprovadas. **T1-0 (medição) e T1-1
-  (networking, hotspot A CRÍTICO member-facing) concluídas — PR #158**, deploy de produção confirmado.
-  O escopo PRÓPRIO deste bug (`admin-fs.ts`, agregados admin) é a **T1-2** (contadores nativos +
-  snapshot), ainda pendente; a lista de usuários admin é a **T1-3**. Ou seja: o pior hotspot do track
-  (networking) já saiu; `admin-fs.ts` fica para as próximas fases.
+- Status: **Em Progresso — T-01 Momento 1 (2026-07-23), 2 de 3 fases entregues.** Plano
+  (`T-01-PERFORMANCE-DESIGN.md`) + 4 decisões aprovadas. **T1-0 (medição)**, **T1-1 (networking, hotspot
+  A CRÍTICO) — PR #158** e **T1-2 (agregados admin B–E) — PR #159** concluídas, deploy de produção
+  confirmado. O escopo agregado de `admin-fs.ts`/`admin-surveys`/`admin-forms`/`admin-social-feedback`
+  (hotspots B–E) foi resolvido via **snapshot diário** (`Admin_Metrics_Daily`, lido pelas telas; cron
+  compartilhado). **Resta a T1-3:** paginação da **lista de usuários admin** (`users-admin.ts`) + o full
+  scan de `User` do detalhe (`getFSItemDetails`) e o índice do detalhe de respondentes (**BUG-114**).
 - Decisão de execução: Precisa plano+aprovação (mudança de padrão de acesso a dado em produção) —
-  **atendido** (plano aprovado; cada fase é branch+PR próprio). Próxima entrega: **T1-2** (agregados
-  admin B–E via `count`/`sum`/`average` nativos + snapshot diário no slot do cron existente).
-- Medição (T1-0, read-only, descartada): base viva pequena — 49 `Surveys`, 5 `Forms`, 9
-  `User_Permissions`, 6 `User` (o custo real hoje é baixo; o track prepara o padrão para ~10k). As
-  queries `where`+`limit` da T1-1 não exigiram índice composto (sem `firestore.indexes.json`).
-- Commit/PR: **PR #158 (T1-1 networking)** — `45cf291`. `admin-fs.ts` (T1-2/T1-3): —
+  **atendido** (plano aprovado; cada fase é branch+PR próprio). Próxima entrega: **T1-3**.
+- Medição (read-only, descartada — Lição 38): base viva pequena — 49 `Surveys`, 5 `Forms`, 9
+  `User_Permissions`, 6 `User` (custo real hoje baixo; o track prepara o padrão para ~10k). **Achado da
+  T1-2:** contadores nativos exigiriam ~6-10 índices de collection group inexistentes (sem pipeline de
+  deploy) → adotado snapshot diário (varredura sem filtro, sem índice novo); paridade validada.
+- Commit/PR: **PR #158 (T1-1)** `45cf291`, **PR #159 (T1-2)** `1efadc6`. T1-3: —
 
 ### BUG-018 Coleções órfãs mantidas no código (`entitlements`, `User_JourneyMap`)
 
@@ -3442,8 +3443,10 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   funciona é `dados_cadastrais`, que usa o caminho especial de varredura de `User` (não collectionGroup).
   É débito **pré-existente** (independe da T1-2), exposto pela medição. Sem risco de dado — é gap
   funcional admin-facing.
-- Status: **Aberto** — a decidir junto do desenho da T1-2 (o snapshot resolve os AGREGADOS, mas o
-  detalhe/lista de respondentes continua precisando OU do índice OU de outra abordagem de leitura).
+- Status: **Aberto** — a T1-2 (PR #159) resolveu os AGREGADOS via snapshot, mas **não** este detalhe
+  (é lista de respondentes, não agregado). Endereçar na **T1-3** (mesma fase do full scan de `User` do
+  detalhe): OU criar os índices de collection group necessários (via console/`firestore.indexes.json`
+  + deploy) OU trocar a abordagem de leitura do respondente.
 - Decisão de execução: registrar agora (Protocolo item 3). Candidato natural: criar os índices de
   collection group necessários (via console/`firestore.indexes.json` + deploy) — mesma decisão
   operacional que a T1-2 dos contadores nativos exigiria. Vincular à T1-2/T-01.

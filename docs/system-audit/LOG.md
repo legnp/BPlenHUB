@@ -24,6 +24,39 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-23] Chat de execução — T-01 Momento 1: T1-2 (agregados admin → snapshot diário) mergeada (PR #159)
+
+- Chat/sessão: mesmo chat de execução (Opus 4.8). Gestora aprovou os resultados da T1-1 em produção (6/6)
+  e pediu para seguir para a T1-2.
+- **Medição da T1-2 (read-only, descartada — Lição 38)** virou a estratégia de cabeça para baixo: os
+  **contadores nativos** (1ª escolha do plano) exigiriam **~6-10 índices de collection group que NÃO
+  existem** hoje (provado query a query), e **não há pipeline de deploy de índice** no repo — subir
+  `count()`/`average()` sem os índices **quebraria o painel** (`FAILED_PRECONDITION`). Achado colateral:
+  o detalhe de respondentes (`getFSItemDetails`) **já está quebrado em produção** por esse mesmo motivo
+  → registrado como **BUG-114** (é lista, não agregado; tratado à parte).
+- **Decisão da Gestora (nesta sessão):** T1-2 pelo **snapshot diário** (opção 3.3 do plano, cron já
+  aprovado) em vez de contadores nativos.
+- **T1-2 — PR #159, `1efadc6`, deploy de produção confirmado (Vercel success):**
+  - Novo `src/lib/admin/metrics-snapshot.ts` (resolvedor cru, sem guard — Protocolo item 8): computa
+    todos os agregados data-derived numa varredura **sem filtro** (funciona sem índice novo) e grava
+    `Admin_Metrics_Daily/{latest,dateKey}`. A série histórica (`{dateKey}`) **adianta a infra do
+    EXP-01** (não a tela).
+  - Cron `sync-agenda`: passo de snapshot **best-effort e isolado** (try/catch próprio) — nunca afeta o
+    sync (Lição 40); idempotente; **compartilha o slot** (Hobby); **sem mudança em `vercel.json`**.
+  - As 4 telas (`admin-fs`/`admin-surveys`/`admin-forms`/`admin-social-feedback`) leem o snapshot; antes
+    do 1º cron **caem em cálculo ao vivo** (mesmo custo de hoje, sem regressão, tela nunca vazia).
+  - **Paridade validada na base real** (script read-only): todos os 9 números das 4 telas + os mapas
+    por-id **idênticos** entre o método antigo e o snapshot. Semântica de cada tela preservada
+    (surveys ALL vs completed; forms ALL vs submitted|updated; `dados_cadastrais` do perfil; média de
+    rating só finito e > 0).
+  - `responsesLast24h` passa a ser "nas 24h até o último snapshot" (o painel inteiro vira "até a última
+    atualização") — natureza do snapshot diário, aprovada. `getFSItemDetails` intocado (BUG-114).
+    Limpeza de emoji nos arquivos tocados. eslint (tocados)/tsc/test **292/292**/build limpos.
+- **Follow-ups (não bloqueiam):** botão "Recalcular agora" + indicador "atualizado em" (mudança de UI
+  admin, validação própria); BUG-114 (índice do detalhe de respondentes).
+- Itens atualizados: `T-01-PERFORMANCE-DESIGN.md` (seção 9), este LOG, `00-PLAN.md`, `BUGS.md`
+  (BUG-017), `DASHBOARD.md`. **Próximo:** T1-3 (paginação da lista de usuários admin + `admin-fs.ts`).
+
 ## [2026-07-23] Chat de execução — T-01 Momento 1: T1-0 (medição) + T1-1 (networking) mergeada (PR #158)
 
 - Chat/sessão: chat de execução (Opus 4.8). As 4 decisões da seção 7 do `T-01-PERFORMANCE-DESIGN.md`
