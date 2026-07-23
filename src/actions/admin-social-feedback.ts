@@ -3,6 +3,7 @@
 import { getAdminDb } from "@/lib/firebase-admin";
 import { requireAdmin } from "@/lib/auth-guards";
 import { getErrorMessage } from "@/lib/utils/errors";
+import { getAdminMetricsSnapshotOrCompute } from "@/lib/admin/metrics-snapshot";
 
 export interface SocialFeedbackStats {
   /** Média das notas (1 a 5) das avaliações de conteúdo. */
@@ -20,9 +21,10 @@ export interface SocialFeedbackStats {
  * - Sugestões de tema (`submitThemeSuggestion`) vivem como forms com
  *   `formId === "theme_suggestion"`.
  *
- * NOTE: leitura por full scan de `collectionGroup`, o mesmo padrão de
- * `getAdminSurveysAnalytics`/`getAdminFormsAnalytics` (débito T-01 conhecido;
- * otimizar com `where` + índice de collection group se o volume crescer).
+ * T1-2: os agregados (soma/contagem de rating, contagem de tema) vêm do snapshot
+ * diário `Admin_Metrics_Daily` em vez de full scan de `collectionGroup` a cada visita;
+ * antes do 1o cron, cai em cálculo ao vivo (sem regressão). A média é derivada da
+ * soma/contagem preservando a semântica anterior (só rating finito e > 0).
  */
 export async function getSocialFeedbackStats(): Promise<{ stats: SocialFeedbackStats; error?: string }> {
   const empty: SocialFeedbackStats = { avgContentRating: 0, contentRatingCount: 0, themeSuggestionCount: 0 };
@@ -30,31 +32,13 @@ export async function getSocialFeedbackStats(): Promise<{ stats: SocialFeedbackS
     await requireAdmin();
     const db = getAdminDb();
 
-    const surveysSnap = await db.collectionGroup("Surveys").get();
-    let ratingSum = 0;
-    let ratingCount = 0;
-    surveysSnap.forEach((doc) => {
-      const r = doc.data() as { surveyId?: string; data?: Record<string, unknown> };
-      if (typeof r.surveyId === "string" && r.surveyId.startsWith("content_evaluation")) {
-        const rating = Number(r.data?.rating);
-        if (Number.isFinite(rating) && rating > 0) {
-          ratingSum += rating;
-          ratingCount += 1;
-        }
-      }
-    });
-
-    const formsSnap = await db.collectionGroup("Forms").get();
-    let themeSuggestionCount = 0;
-    formsSnap.forEach((doc) => {
-      const r = doc.data() as { formId?: string };
-      if (r.formId === "theme_suggestion") themeSuggestionCount += 1;
-    });
+    const snap = await getAdminMetricsSnapshotOrCompute(db);
+    const { contentRatingSum, contentRatingCount, themeSuggestionCount } = snap.social;
 
     return {
       stats: {
-        avgContentRating: ratingCount > 0 ? ratingSum / ratingCount : 0,
-        contentRatingCount: ratingCount,
+        avgContentRating: contentRatingCount > 0 ? contentRatingSum / contentRatingCount : 0,
+        contentRatingCount,
         themeSuggestionCount,
       },
     };

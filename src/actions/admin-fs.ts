@@ -8,6 +8,7 @@ import { FormRecord } from "@/types/forms";
 import { toSafeDate } from "@/lib/date-utils";
 import { requireAdmin } from "@/lib/auth-guards";
 import { getErrorMessage } from "@/lib/utils/errors";
+import { getAdminMetricsSnapshotOrCompute } from "@/lib/admin/metrics-snapshot";
 
 export interface FSRegistrySummary {
   id: string;
@@ -50,95 +51,46 @@ export async function getAdminFSAnalytics(): Promise<{
   error?: string;
 }> {
   try {
-    // 🛡️ Segurança Real no Servidor
+    // Seguranca real no servidor.
     await requireAdmin();
 
     const db = getAdminDb();
 
-    // 1. Buscar todas as respostas de Pesquisas via Collection Group
-    const surveysSnapshot = await db.collectionGroup("Surveys").where("status", "==", "completed").get();
-    const surveyResponses = surveysSnapshot.docs.map(doc => doc.data() as SurveyResponse);
+    // T1-2: le o snapshot diario (Admin_Metrics_Daily) em vez de varrer a base a cada
+    // visita. Antes do 1o cron, cai em calculo ao vivo (mesmo custo de antes, sem
+    // regressao). A semantica e preservada: aqui contam surveys `completed` e forms
+    // `submitted`/`updated`, mais os cadastros derivados do perfil (dados_cadastrais).
+    const snap = await getAdminMetricsSnapshotOrCompute(db);
 
-    // 2. Buscar todas as respostas de Formulários via Collection Group
-    // Filtramos por 'submitted' ou 'updated' para garantir que apenas dados finais apareçam
-    const formsSnapshot = await db.collectionGroup("Forms").get();
-    let formResponses = formsSnapshot.docs
-      .map(doc => doc.data() as FormRecord)
-      .filter(f => f.status === "submitted" || f.status === "updated");
-
-    // 2.5. Especial: Dados Cadastrais (Soberania de Dados)
-    // Buscamos usuários que tenham a data de atualização do perfil preenchida
-    const usersSnap = await db.collection("User").get();
-    const registrationResponses: FormRecord[] = [];
-    
-    usersSnap.forEach(doc => {
-      const data = doc.data();
-      if (data.profile?.lastRegistrationUpdate) {
-        registrationResponses.push({
-          formId: "dados_cadastrais",
-          matricula: doc.id,
-          userUid: data.uid || "",
-          mode: "submitted",
-          status: "submitted",
-          data: {}, // Metadados apenas para contagem
-          submittedAt: toSafeDate(data.profile.lastRegistrationUpdate) || new Date(),
-        });
-      }
-    });
-
-    // Unificar respostas de formulários (Collection Group + Perfil)
-    formResponses = [...formResponses, ...registrationResponses];
-
-    // 3. Contabilizar respostas por ID
-    const surveyCounts: Record<string, number> = {};
-    surveyResponses.forEach(res => {
-      const id = res.surveyId;
-      surveyCounts[id] = (surveyCounts[id] || 0) + 1;
-    });
-
-    const formCounts: Record<string, number> = {};
-    formResponses.forEach(res => {
-      const id = res.formId;
-      formCounts[id] = (formCounts[id] || 0) + 1;
-    });
-
-    // 4. Calcular respostas nas últimas 24h
-    let responsesLast24h = 0;
-    const now = new Date();
-    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-
-    const checkLast24h = (dateVal: unknown) => {
-      const d = toSafeDate(dateVal);
-      if (d && d >= oneDayAgo) {
-        responsesLast24h++;
-      }
-    };
-
-    surveyResponses.forEach(res => checkLast24h(res.submittedAt));
-    formResponses.forEach(res => checkLast24h(res.submittedAt));
-
-    // 5. Mapear itens disponíveis usando os registros estáticos (Registry)
+    // Mapear itens disponiveis usando os registros estaticos (Registry) + as contagens
+    // data-derived do snapshot. dados_cadastrais soma os cadastros do perfil (como antes,
+    // que os unia aos forms) alem de eventuais docs reais na colecao Forms.
     const items: FSRegistrySummary[] = [
       ...SURVEY_REGISTRY.map(s => ({
         id: s.id,
         title: s.title,
         type: "survey" as const,
-        totalResponses: surveyCounts[s.id] || 0,
+        totalResponses: snap.surveys.completedCountById[s.id] || 0,
       })),
       ...FORMS_REGISTRY.map(f => ({
         id: f.id,
         title: f.title,
         type: "form" as const,
-        totalResponses: formCounts[f.id] || 0,
+        totalResponses:
+          f.id === "dados_cadastrais"
+            ? (snap.forms.submittedUpdatedCountById[f.id] || 0) + snap.registrations.count
+            : snap.forms.submittedUpdatedCountById[f.id] || 0,
       })),
     ];
 
-    // Estatísticas Globais
+    // Estatisticas Globais
     const stats: FSGlobalStats = {
       totalForms: FORMS_REGISTRY.length,
       totalSurveys: SURVEY_REGISTRY.length,
-      totalGlobalResponses: surveyResponses.length + formResponses.length,
-      responsesLast24h,
+      totalGlobalResponses:
+        snap.surveys.completedTotal + snap.forms.submittedUpdatedTotal + snap.registrations.count,
+      responsesLast24h:
+        snap.surveys.last24hCompleted + snap.forms.last24hSubmittedUpdated + snap.registrations.last24h,
     };
 
     return {
@@ -147,7 +99,7 @@ export async function getAdminFSAnalytics(): Promise<{
       items: items.sort((a, b) => b.totalResponses - a.totalResponses), // Ordena por popularidade
     };
   } catch (err: unknown) {
-    console.error("❌ [getAdminFSAnalytics] Erro crítico:", err);
+    console.error("[getAdminFSAnalytics] Erro crítico:", err);
     return {
       success: false,
       error: getErrorMessage(err, "Falha ao processar estatísticas unificadas."),
@@ -167,7 +119,7 @@ export async function getFSItemDetails(
   error?: string;
 }> {
   try {
-    // 🛡️ Segurança Real no Servidor
+    // Seguranca real no servidor.
     await requireAdmin();
 
     const db = getAdminDb();
@@ -293,7 +245,7 @@ export async function getFSItemDetails(
       details,
     };
   } catch (err: unknown) {
-    console.error(`❌ [getFSItemDetails] Erro para ${type} ID ${id}:`, err);
+    console.error(`[getFSItemDetails] Erro para ${type} ID ${id}:`, err);
     return {
       success: false,
       error: getErrorMessage(err, "Falha ao processar detalhes da estrutura selecionada."),

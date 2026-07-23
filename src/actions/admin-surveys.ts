@@ -2,9 +2,10 @@
 
 import { getAdminDb } from "@/lib/firebase-admin";
 import { SURVEY_REGISTRY } from "@/config/surveys";
-import { SurveyResponse, SurveyStatus } from "@/types/survey";
+import { SurveyStatus } from "@/types/survey";
 import { requireAdmin } from "@/lib/auth-guards";
 import { getErrorMessage } from "@/lib/utils/errors";
+import { getAdminMetricsSnapshotOrCompute } from "@/lib/admin/metrics-snapshot";
 
 export interface SurveyAnalyticsSummary {
   id: string;
@@ -21,10 +22,8 @@ export interface GlobalSurveyStats {
   responsesLast24h: number;
 }
 
-import { toSafeDate } from "@/lib/date-utils";
-
 /**
- * BPlen HUB — Admin Survey Strategy (Analytics 📊)
+ * BPlen HUB — Admin Survey Strategy (Analytics)
  */
 export async function getAdminSurveysAnalytics(): Promise<{
   surveys: SurveyAnalyticsSummary[];
@@ -35,51 +34,26 @@ export async function getAdminSurveysAnalytics(): Promise<{
     await requireAdmin();
     const db = getAdminDb();
 
-    // 1. Buscar todas as respostas via Collection Group (Caminho Hierárquico: User/*/Surveys/*)
-    const surveysSnapshot = await db.collectionGroup("Surveys").get();
-    
-    const allResponses = surveysSnapshot.docs.map(doc => doc.data() as SurveyResponse);
-    
-    // 2. Agrupar Respostas por ID de Pesquisa
-    const responseCountMap: Record<string, number> = {};
-    const lastResponseMap: Record<string, string | null> = {};
-    let responsesLast24h = 0;
-    const now = new Date();
-    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    // T1-2: le o snapshot diario (Admin_Metrics_Daily) em vez de varrer a base a cada
+    // visita; antes do 1o cron cai em calculo ao vivo (sem regressao). Semantica
+    // preservada: aqui contam-se TODAS as respostas (sem filtro de status), como antes.
+    const snap = await getAdminMetricsSnapshotOrCompute(db);
 
-    allResponses.forEach(res => {
-      const id = res.surveyId;
-      responseCountMap[id] = (responseCountMap[id] || 0) + 1;
-      
-      // Converter Timestamp para String ISO de forma segura (Governança 🛡️)
-      const subAt = toSafeDate(res.submittedAt);
-
-      if (subAt) {
-        const iso = subAt.toISOString();
-        if (!lastResponseMap[id] || iso > (lastResponseMap[id] || "")) {
-          lastResponseMap[id] = iso;
-        }
-        if (subAt >= oneDayAgo) {
-          responsesLast24h++;
-        }
-      }
-    });
-
-    // 3. Mapear com o Registro de Configurações (SURVEY_REGISTRY)
+    // Mapear com o Registro de Configurações (SURVEY_REGISTRY) + contagens do snapshot
     const surveysSummaries: SurveyAnalyticsSummary[] = SURVEY_REGISTRY.map(config => ({
       id: config.id,
       title: config.title,
-      totalResponses: responseCountMap[config.id] || 0,
+      totalResponses: snap.surveys.countById[config.id] || 0,
       status: "completed", // Simplificado: se está no registry e tem motor, está ativa
-      lastResponseAt: lastResponseMap[config.id] || null,
+      lastResponseAt: snap.surveys.lastResponseAtById[config.id] || null,
       completionRate: 100 // Placeholder analítico: futuramente pode ser (concluidas / iniciadas)
     }));
 
-    // 4. Estatísticas Globais
+    // Estatísticas Globais
     const stats: GlobalSurveyStats = {
-      totalGlobalResponses: allResponses.length,
+      totalGlobalResponses: snap.surveys.total,
       activeSurveysCount: SURVEY_REGISTRY.length,
-      responsesLast24h
+      responsesLast24h: snap.surveys.last24hAll
     };
 
     return {
@@ -87,7 +61,7 @@ export async function getAdminSurveysAnalytics(): Promise<{
       stats
     };
   } catch (err: unknown) {
-    console.error("❌ [getAdminSurveysAnalytics] Erro crítico:", err);
+    console.error("[getAdminSurveysAnalytics] Erro crítico:", err);
     // Falha não vira "0 respostas" mudo (BUG-096): devolve `error` para a página
     // distinguir "sem dados" de "não consegui ler" (ex.: cota do Firestore).
     return {
