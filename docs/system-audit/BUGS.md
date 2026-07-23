@@ -3427,6 +3427,28 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Decisão de execução: Corrigido inline (aprovado pela Gestora junto do R5).
 - Commit/PR: **PR #144** (`61cf8e8`).
 
+### BUG-114 Detalhe de respondentes do admin (F&S) quebrado por índice de collection group inexistente
+
+- Severidade: Médio
+- Área/fase onde foi achado: T-01 (medição da T1-2, 2026-07-23)
+- Arquivo(s) afetado(s): `src/actions/admin-fs.ts:getFSItemDetails` (queries
+  `collectionGroup("Surveys").where("surveyId","==",id).where("status","==","completed")` linha ~198 e
+  `collectionGroup("Forms").where("formId","==",id)` linha ~255)
+- Cenário de falha: **[CONFIRMADO por sonda read-only na base de produção]** ambas as queries `.get()`
+  falham com `FAILED_PRECONDITION: The query requires an index` — não existe índice de **collection
+  group** para `Surveys(status,surveyId)` nem single-field collection-group para `Forms.formId`. Logo,
+  ao abrir o detalhe/respondentes de **qualquer pesquisa** ou de um **formulário** que use o caminho
+  collectionGroup (ex.: `theme_suggestion`), a action cai no catch e devolve erro. O único detalhe que
+  funciona é `dados_cadastrais`, que usa o caminho especial de varredura de `User` (não collectionGroup).
+  É débito **pré-existente** (independe da T1-2), exposto pela medição. Sem risco de dado — é gap
+  funcional admin-facing.
+- Status: **Aberto** — a decidir junto do desenho da T1-2 (o snapshot resolve os AGREGADOS, mas o
+  detalhe/lista de respondentes continua precisando OU do índice OU de outra abordagem de leitura).
+- Decisão de execução: registrar agora (Protocolo item 3). Candidato natural: criar os índices de
+  collection group necessários (via console/`firestore.indexes.json` + deploy) — mesma decisão
+  operacional que a T1-2 dos contadores nativos exigiria. Vincular à T1-2/T-01.
+- Commit/PR: —
+
 
 ---
 
