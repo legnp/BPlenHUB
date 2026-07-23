@@ -445,11 +445,19 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   **pré-calcular** os números agregados **1×/dia** e a tela ler o snapshot pronto (barato, instantâneo;
   mesma abordagem do EXP-01/`Admin_Metrics_Daily`), para dashboards/contagens; (b) **paginar** onde a
   tela lista usuários (carregar em páginas de N, não todos). Casável com o EXP-01.
-- Status: **Aberto — T-01 autorizado (2026-07-22); aguarda plano.**
-- Decisão de execução: Precisa plano+aprovação (mudança de padrão de acesso a dado em produção). A
-  próxima entrega é o **plano do T-01** (qual tela pagina, qual pré-calcula, cron do snapshot), não
-  código direto.
-- Commit/PR: —
+- Status: **Em Progresso — T-01 Momento 1 em execução (2026-07-23).** Plano escrito
+  (`T-01-PERFORMANCE-DESIGN.md`) e as 4 decisões da Gestora aprovadas. **T1-0 (medição) e T1-1
+  (networking, hotspot A CRÍTICO member-facing) concluídas — PR #158**, deploy de produção confirmado.
+  O escopo PRÓPRIO deste bug (`admin-fs.ts`, agregados admin) é a **T1-2** (contadores nativos +
+  snapshot), ainda pendente; a lista de usuários admin é a **T1-3**. Ou seja: o pior hotspot do track
+  (networking) já saiu; `admin-fs.ts` fica para as próximas fases.
+- Decisão de execução: Precisa plano+aprovação (mudança de padrão de acesso a dado em produção) —
+  **atendido** (plano aprovado; cada fase é branch+PR próprio). Próxima entrega: **T1-2** (agregados
+  admin B–E via `count`/`sum`/`average` nativos + snapshot diário no slot do cron existente).
+- Medição (T1-0, read-only, descartada): base viva pequena — 49 `Surveys`, 5 `Forms`, 9
+  `User_Permissions`, 6 `User` (o custo real hoje é baixo; o track prepara o padrão para ~10k). As
+  queries `where`+`limit` da T1-1 não exigiram índice composto (sem `firestore.indexes.json`).
+- Commit/PR: **PR #158 (T1-1 networking)** — `45cf291`. `admin-fs.ts` (T1-2/T1-3): —
 
 ### BUG-018 Coleções órfãs mantidas no código (`entitlements`, `User_JourneyMap`)
 

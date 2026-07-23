@@ -24,6 +24,35 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-23] Chat de execução — T-01 Momento 1: T1-0 (medição) + T1-1 (networking) mergeada (PR #158)
+
+- Chat/sessão: chat de execução (Opus 4.8). As 4 decisões da seção 7 do `T-01-PERFORMANCE-DESIGN.md`
+  foram **aprovadas pela Gestora**. Executado o Momento 1, fase **T1-0 → T1-1**.
+- **T1-0 (medição, read-only, script descartável apagado — Lição 38):** base viva pequena — 6 docs
+  `User` (2 visíveis no networking, ambos `boolean:true`), 1 `Partner` ativo, 49 `Surveys`, 5 `Forms`,
+  9 `User_Permissions`. **Achados que guiaram a T1-1:** (a) **zero drift** — trocar o filtro truthy
+  client-side por `where(networking_visibility==true)` no banco casa exatamente o mesmo conjunto
+  (Lição 34 verificada, nenhum perfil perdido); (b) **nenhuma query da T1-1 exige índice composto** —
+  `where` equality + `limit` (incl. a composta visibilidade & profissional, resolvida por merge de
+  índices single-field automáticos) rodou sem erro de índice na sonda read-only. Logo **não** foi
+  preciso criar `firestore.indexes.json` (evitamos `orderBy` em campo não-filtrado).
+- **Decisão da forma da paginação (levada à Gestora nesta sessão, respondida):** como (i) o ganho de
+  custo está todo no filtro no banco, (ii) o controle "carregar mais" seria um **padrão visual
+  member-facing novo** (sem precedente para reusar → aval + validação visual em produção) e (iii)
+  paginar a **busca substring** só faz sentido com o `Networking_Directory` do Momento 2 — a Gestora
+  escolheu **filtro+índice+teto agora; load-more real casado ao Momento 2**.
+- **T1-1 (CRÍTICO, member-facing) — PR #158, `45cf291`, deploy de produção confirmado (Vercel success):**
+  `getNetworkingDataAction` passa a filtrar **no banco** — `where(profile.networking.networking_visibility
+  ==true)` (+ `isBPlenProfessional==true` na aba de profissionais; `isActive==true` nos parceiros) —
+  em vez de ler `collection("User")`/`Partners` inteira e descartar ~95% no client. + **teto de leitura
+  anti-runaway** (`NETWORKING_READ_CAP=500`) com `console.warn` quando atingido (sem truncamento
+  silencioso; atingir o teto é o gatilho para o `Networking_Directory` do Momento 2). Guards por-doc
+  mantidos como defesa em profundidade. Contrato do client **inalterado** (mesmo shape). Limpeza de
+  emoji no arquivo tocado (Zero Emoji). eslint (tocado)/tsc/test **292/292**/build limpos.
+- Itens do `00-PLAN.md` atualizados: grupo 3 (BUG-017 — T-01 iniciado, T1-1 entregue), seção "Estado"
+  (tracks: T-01 em progresso). `T-01-PERFORMANCE-DESIGN.md` seção 9 atualizada. `DASHBOARD.md` T-01.
+- **Próximo:** T1-2 (agregados admin B–E → contadores nativos + snapshot diário no slot do cron).
+
 ## [2026-07-23] Chat de execução — T-01 revisado: contadores nativos + estrutura de 2 momentos
 
 - Chat/sessão: mesmo chat. A Gestora perguntou se as soluções propostas eram as únicas; expus o mapa

@@ -146,13 +146,15 @@ Blaze e/ou a escala exigir.
 
 - **Estrutura em 2 momentos + Blaze futuro + provedores externos na escala:** **DECIDIDO
   (2026-07-23)** — documentado acima. Blaze será adquirido no futuro; a auditoria prepara o terreno.
-- **Pendentes para iniciar a execução do Momento 1:**
+- **Decisões para iniciar o Momento 1 — TODAS APROVADAS pela Gestora (2026-07-23):**
   1. **Networking (T1-1):** filtro+índice+paginação agora (denormalização/`Networking_Directory` só no
-     Momento 2 se a busca exigir)? _Recomendo sim._
-  2. **Cron (T1-2):** OK o snapshot compartilhar o slot do cron diário enquanto Hobby? _Recomendo sim._
-  3. **Ordem:** começar pela **T1-1 (networking, member-facing)**? _Recomendo sim._
-  4. **EXP-01:** o snapshot/contadores adiantam parte da infra do EXP-01 (represado) — OK adiantar essa
-     camada (não a tela do dashboard)? _Recomendo sim._
+     Momento 2 se a busca exigir). **APROVADO.** _Forma da paginação decidida na execução (2026-07-23):
+     filtro+índice+teto agora; o controle "carregar mais" (padrão visual member-facing novo) fica casado
+     ao `Networking_Directory` do Momento 2 — a busca substring só pagina de verdade com o diretório._
+  2. **Cron (T1-2):** OK o snapshot compartilhar o slot do cron diário enquanto Hobby. **APROVADO.**
+  3. **Ordem:** começar pela **T1-1 (networking, member-facing)**. **APROVADO.**
+  4. **EXP-01:** OK adiantar a camada de snapshot/contadores da infra do EXP-01 (não a tela do
+     dashboard). **APROVADO.**
 
 ## 8. Restrições e validação (regras da máquina)
 
@@ -170,5 +172,8 @@ Blaze e/ou a escala exigir.
 | Inventário dos hotspots | **Concluído (2026-07-22)** |
 | Estrutura 2 momentos + Blaze futuro + externos | **Decidida e documentada (2026-07-23)** |
 | Plano do Momento 1 (contadores nativos + paginação + snapshot) | **Concluído (proposta acima)** |
-| Decisões da Gestora para iniciar (seção 7, itens 1-4) | **Pendentes** |
-| Execução (T1-0..T1-3) | **Não iniciada** — aguarda os 4 itens |
+| Decisões da Gestora para iniciar (seção 7, itens 1-4) | **APROVADAS (2026-07-23)** |
+| **T1-0 — medição** | **Concluída (2026-07-23)** — diagnóstico read-only descartável (apagado). Base viva: 6 `User` (2 visíveis, `boolean:true`, **sem drift**), 1 `Partner` ativo, 49 `Surveys`, 5 `Forms`, 9 `User_Permissions`. Confirmado: `where(visibility==true)` casa o mesmo conjunto que o filtro truthy anterior (Licao 34); as queries da T1-1 (equality + `limit`, incl. composta vis&pro) **não exigem índice composto** — sem `firestore.indexes.json` necessário. |
+| **T1-1 — networking (hotspot A, CRÍTICO)** | **Concluída — PR #158 (`45cf291`), deploy de produção confirmado (2026-07-23).** `getNetworkingDataAction` filtra visibilidade/profissional/`isActive` **no banco** (antes: full scan `User`/`Partners` + filtro client-side) + teto de leitura anti-runaway (`NETWORKING_READ_CAP=500`, com log). Contrato do client inalterado. O load-more real fica para o Momento 2 (com o `Networking_Directory`). |
+| T1-2 — agregados admin (B–E) → contadores nativos + snapshot | **Não iniciada** (próxima). |
+| T1-3 — paginação lista de usuários admin (F) + índices `admin-fs.ts` | **Não iniciada.** |

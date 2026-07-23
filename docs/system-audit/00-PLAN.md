@@ -1429,7 +1429,9 @@ esquecida.
   achados colaterais já linkados (`F2-04`/`F2-05` com progresso parcial via
   Fase 1; `F3-03`/`BUG-022` já corrigido).
 - **Tracks:** `T-02` fechado (17/17), `T-03` em 6/7, `T-06` fechado (2/2).
-  `T-01`/`T-04`/`T-05` nunca iniciados.
+  **`T-01` (performance) EM EXECUÇÃO** — Momento 1: T1-0 (medição) + T1-1 (networking,
+  hotspot A CRÍTICO member-facing) concluídas (PR #158, 2026-07-23); T1-2/T1-3 pendentes.
+  `T-04`/`T-05` nunca iniciados.
 - **Severidade:** **0 `Alto`, 0 `Crítico` aberto.** _(A reconciliação de 2026-07-22 listou o
   `BUG-110` como único `Alto` aberto por engano — o PR #131 já o corrigira em 2026-07-20;
   reclassificado para `Corrigido` na sessão de execução de 2026-07-22. Ver `BUGS.md#bug-110`.)_
@@ -1465,11 +1467,14 @@ esquecida.
    - ~~`BUG-009` (T-03) — `UserBooking.timestamp` sempre nulo~~ **CORRIGIDO (PR #157)** —
      confirmado na base real (0/12 tinham `timestamp`, 12/12 `bookedAt`); `getUserBookingsAction`
      passa a ler `bookedAt`. Diagnóstico read-only rodado e apagado (opção b da Gestora).
-   - `BUG-017` (**T-01 autorizado 2026-07-22**) — full scans em `admin-fs.ts` sem paginação.
-     Escala esperada ~10k usuários. **Plano escrito (2026-07-23): `T-01-PERFORMANCE-DESIGN.md`**
-     — hotspot pior é `networking.ts` (member-facing); agregados admin viram snapshot diário
-     (`Admin_Metrics_Daily`, infra do EXP-01); cron compartilhado (Hobby, 1 slot). Aguarda 4
-     decisões da Gestora (seção 6 do doc).
+   - `BUG-017` (**T-01 EM EXECUÇÃO**) — full scans O(usuários). **Momento 1 iniciado (2026-07-23),
+     4 decisões aprovadas.** **T1-0 (medição) + T1-1 (networking, hotspot A CRÍTICO member-facing)
+     CONCLUÍDAS — PR #158**, deploy confirmado: `getNetworkingDataAction` filtra visibilidade/
+     profissional/`isActive` no banco + teto de leitura (antes: full scan + filtro client-side).
+     Medido: base viva sem drift, `where`+`limit` **não** exigiu índice composto (sem
+     `firestore.indexes.json`). **Pendente:** T1-2 (agregados admin `admin-fs.ts` → contadores
+     nativos + snapshot diário no slot do cron) e T1-3 (paginação da lista de usuários admin).
+     Ver `T-01-PERFORMANCE-DESIGN.md` seção 9.
    - ~~`BUG-089` (F1-06/agenda) — `catch → []` esconde erro de cota como "tudo
      livre" no `/agendar`~~ **CORRIGIDO (PR #154)** para o sintoma confirmado
      (falsa disponibilidade); residual "sub-mostra" (dias/helper interno) fica com
@@ -1509,11 +1514,11 @@ esquecida.
    avançada, `F2-04` parcial. `F2-02` (gate de contrato) e `F2-03` (seletor de
    tema hub/admin) nunca foram tocados.
 
-**6. Tracks nunca iniciados** — `T-01` (performance/concorrência, já tem 2
-   achados conhecidos — `BUG-017`/`BUG-038` — e histórico de 2 apagões de cota
-   reais no processo, reforçando a prioridade), `T-04` (observabilidade —
-   escopo reduzido: só inventariar o gap), `T-05` (integrações externas em
-   sandbox).
+**6. Tracks:** `T-01` (performance) **EM EXECUÇÃO** — Momento 1: T1-0+T1-1
+   (networking) concluídas (PR #158, 2026-07-23); **próximo é T1-2** (agregados
+   admin → contadores nativos + snapshot) e T1-3 (paginação lista de usuários
+   admin). Nunca iniciados: `T-04` (observabilidade — escopo reduzido: só
+   inventariar o gap), `T-05` (integrações externas em sandbox).
 
 **7. Fases 3 (regras de negócio) e 4 (jornadas e2e)** — últimas do checklist
    original; `F3-03` já tem o achado principal corrigido (`BUG-022`), resta

@@ -25,7 +25,17 @@
 > registro permanente e completo de toda sessão está em `LOG.md`, que nunca foi
 > editado e continua a fonte primária de história.
 >
-> **Última atualização:** 2026-07-22 (chat de planejamento — **reconciliação
+> **Última atualização:** 2026-07-23 (chat de execução — **T-01 (performance)
+> Momento 1 iniciado**. 4 decisões da Gestora aprovadas. **T1-0 (medição read-only) +
+> T1-1 (networking, hotspot A CRÍTICO member-facing) concluídas — PR #158**, deploy de
+> produção confirmado: `getNetworkingDataAction` filtra visibilidade/profissional/
+> `isActive` no banco + teto de leitura anti-runaway (antes: full scan + filtro
+> client-side). Medido: base viva sem drift; `where`+`limit` não exigiu índice composto
+> (sem `firestore.indexes.json`). Contrato do client inalterado. eslint/tsc/test
+> 292/292/build limpos. Próximo: T1-2 (agregados admin → contadores nativos + snapshot).
+> Ver `T-01-PERFORMANCE-DESIGN.md` seção 9.)
+>
+> _(entrada anterior)_ 2026-07-22 (chat de planejamento — **reconciliação
 > geral completa**, primeira desde 2026-07-07. Corrigidos: 26 bugs ausentes do
 > índice bug→track do `00-PLAN.md`; 7 status defasados (`BUG-010/040/041/042/
 > 052/053/055`, todos já `Corrigido` há dias/semanas mas ainda "Aberto" nos
@@ -143,13 +153,17 @@ Progresso = bugs mergeados na `main` (ou formalmente aceitos) sobre o total do t
 - ○ Aberto: BUG-009 (`UserBooking.timestamp` provavelmente sempre nulo — **[HIPÓTESE]**, a
   confirmar em produção).
 
-### Outros tracks (ainda não iniciados)
+### Outros tracks
 
-- **T-01** Performance/concorrência — BUG-017 (full scan em `admin-fs.ts`) e BUG-038 (`<Image>`
-  sem `sizes`) abertos; reforçado pelo histórico de 2 apagões de cota reais no processo
-  (BUG-087/088, ambos já corrigidos, mas fora do escopo formal deste track)
-- **T-04** Observabilidade — escopo reduzido (inventariar gap de alertas de erro em produção)
-- **T-05** Integrações externas — escopo misto (sandbox); BUG-046 (links de e-mail quebrados) aberto
+- **T-01** Performance — **EM EXECUÇÃO (Momento 1).** Plano: `T-01-PERFORMANCE-DESIGN.md`
+  (contadores nativos + paginação + snapshot; estrutura de 2 momentos, Blaze futuro). **T1-0
+  (medição) + T1-1 (networking, hotspot A CRÍTICO member-facing) concluídas — PR #158
+  (2026-07-23), deploy confirmado:** filtro de visibilidade no banco + teto de leitura; `where`+
+  `limit` não exigiu índice composto (sem `firestore.indexes.json`). **Pendente:** T1-2 (agregados
+  admin `admin-fs.ts` → `count`/`sum`/`average` nativos + snapshot diário no slot do cron) e T1-3
+  (paginação da lista de usuários admin). BUG-038 (`<Image>` sem `sizes`) já corrigido (PR #155).
+- **T-04** Observabilidade — não iniciado — escopo reduzido (inventariar gap de alertas de erro em produção)
+- **T-05** Integrações externas — não iniciado — escopo misto (sandbox); BUG-046 (links de e-mail quebrados) aberto
 
 ---
 
