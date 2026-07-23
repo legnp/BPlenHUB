@@ -24,6 +24,28 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-22] Chat de execução — BUG-009 corrigido (PR #157) + decisões de BUG-017/097 registradas
+
+- Chat/sessão: mesmo chat de execução (Opus 4.8). Feedbacks da Gestora sobre os 3 bugs "que precisam
+  dela" (009/017/097).
+- **BUG-009 — Corrigido (PR #157, `b4f8283`, deploy confirmado).** A Gestora pediu a **opção b** (script
+  só-de-leitura) + rodar + apagar após confirmar. Escrevi `scratch/diag-bug009-booking-timestamp.js`
+  (descartável, git-ignored), rodei na base real: **0/12 docs de `User_Bookings` com `timestamp`, 12/12
+  com `bookedAt`** → o campo lido era sempre null. Fix de 1 linha: `getUserBookingsAction` (`queries.ts:186`)
+  passa a ler `toISOSafe(data.bookedAt || data.timestamp)`, igual ao `getEventAttendees`. **Script
+  apagado** após o fix, a pedido dela. eslint 0 erros, test 292/292, type-check + build limpos.
+- **BUG-017 — T-01 autorizado.** A Gestora liberou abrir o track de performance e informou a escala:
+  **~10.000 usuários** esperados. Registrada a direção (pré-calcular agregados 1×/dia + paginar listas,
+  casável com o EXP-01/`Admin_Metrics_Daily`). Próxima entrega = **plano do T-01**, não código.
+- **BUG-097 — decisão de modelo registrada.** A Gestora aprovou a regra "não apagar evento com
+  inscritos", mas com o rótulo **"Agenda alterada"** (em vez de "sumiu do Google") — e isso **cria um
+  novo fluxo de trabalho no admin** (fila de eventos com agenda alterada para remarcar/cancelar/avisar).
+  Entra no AGENDA-SYNC com plano (toca `sync.ts` + tela nova).
+- Docs atualizados: `BUGS.md` (BUG-009 Corrigido, BUG-017 T-01, BUG-097 decisão), `00-PLAN.md` (fila
+  grupo 3), este LOG, `DASHBOARD.md`. Um PR de código (#157); o resto são decisões/registro.
+
+---
+
 ## [2026-07-22] Chat de execução — F2-03 (seletor de tema hub vs admin) validada por código
 
 - Chat/sessão: mesmo chat de execução (Opus 4.8). Item de validação (não bug). Confirmado por leitura,

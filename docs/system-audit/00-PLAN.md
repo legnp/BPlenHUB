@@ -1445,16 +1445,20 @@ esquecida.
 **3. Bugs Médios/Baixos abertos sem decisão de negócio pendente (podem ser
    resolvidos assim que o chat de execução tocar os arquivos relacionados, ou
    agrupados numa sessão de limpeza dedicada):**
-   - `BUG-009` (T-03) — confirmar em produção se `UserBooking.timestamp` é
-     sempre nulo (só falta a leitura direta, não tem correção de código óbvia
-     até confirmar).
-   - `BUG-017` (T-01) — full scans em `admin-fs.ts` sem paginação.
+   - ~~`BUG-009` (T-03) — `UserBooking.timestamp` sempre nulo~~ **CORRIGIDO (PR #157)** —
+     confirmado na base real (0/12 tinham `timestamp`, 12/12 `bookedAt`); `getUserBookingsAction`
+     passa a ler `bookedAt`. Diagnóstico read-only rodado e apagado (opção b da Gestora).
+   - `BUG-017` (**T-01 autorizado 2026-07-22**) — full scans em `admin-fs.ts` sem paginação.
+     Escala esperada ~10k usuários → aguarda **plano do T-01** (pré-calcular snapshot 1×/dia
+     para agregados + paginar listas; casável com EXP-01).
    - ~~`BUG-089` (F1-06/agenda) — `catch → []` esconde erro de cota como "tudo
      livre" no `/agendar`~~ **CORRIGIDO (PR #154)** para o sintoma confirmado
      (falsa disponibilidade); residual "sub-mostra" (dias/helper interno) fica com
      o AGENDA-SYNC.
-   - `BUG-097` (agenda) — agendamento fantasma quando o evento some do Google;
-     entra no desenho de uma próxima arquitetura de agenda.
+   - `BUG-097` (agenda) — agendamento fantasma quando o evento some do Google.
+     **Decisão da Gestora (2026-07-22):** cleanup não apaga evento com inscritos —
+     marca "Agenda alterada" + nova fila de trabalho no admin. Entra no AGENDA-SYNC
+     com plano (toca `sync.ts` + tela nova de admin).
    - ~~`BUG-104` (F2-04) — editar cota no painel admin soma em vez de definir~~
      **JÁ CORRIGIDO (PR #132)** — `setMemberQuotas` define; a fila estava
      desatualizada (verificado 2026-07-22).

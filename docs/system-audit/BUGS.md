@@ -290,9 +290,18 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   fluxos ativos — `UserBooking.timestamp` deve retornar sempre `null`/vazio
   para reservas feitas pelo fluxo normal. Confirmar com leitura direta no
   Firestore antes de decidir se afeta alguma UI hoje.
-- Status: Aberto
-- Decisão de execução: Precisa plano+aprovação (toca dado financeiro/booking)
-- Commit/PR: —
+- **[CONFIRMADO na base real, 2026-07-22]** por diagnóstico read-only (script descartável em
+  `scratch/`, rodado com aprovação da Gestora — opção b, e já removido após o fix): **0/12 docs de
+  `User_Bookings` tinham `timestamp`; 12/12 tinham `bookedAt`.** Ou seja, `UserBooking.timestamp`
+  vinha sempre `null`. Impacto: onde a data de "Agendado em" do membro dependia desse campo, vinha em
+  branco. (`getEventAttendees` já lia `bookedAt` — só o `getUserBookingsAction` tinha o defeito.)
+- Status: **Corrigido** — PR #157 (`b4f8283`, 2026-07-22, deploy confirmado). `getUserBookingsAction`
+  (`queries.ts:186`) passa a ler `toISOSafe(data.bookedAt || data.timestamp)`, o mesmo padrão já usado
+  pelo `getEventAttendees` (`l.241`). Fix de 1 linha no caminho de **leitura** — não muda gravação
+  nem dado. eslint 0 erros nos tocados, test 292/292, type-check + build limpos.
+- Decisão de execução: plano+aprovação da Gestora (2026-07-22, opção b: script só-de-leitura para
+  confirmar antes de corrigir; script apagado após o fix confirmado, a pedido dela).
+- Commit/PR: **mergeado** — PR #157 (`b4f8283`, squash).
 
 ### BUG-010 Duas implementações divergentes de `adminAddAttendeeAction`
 
@@ -429,9 +438,17 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   `getFSItemDetails` (`db.collection("User").get()`, sem `where`/paginação)
 - Cenário de falha: custo/latência cresce linearmente com o número de usuários
   cadastrados — risco de performance, não de correção funcional.
-- Status: Aberto
-- Decisão de execução: Precisa plano+aprovação (mudança de padrão de acesso a
-  dado em produção)
+- **Escala confirmada pela Gestora (2026-07-22): expectativa de chegar a ~10.000 usuários.** Nesse
+  volume, um full scan por visita à tela é inviável (custo/latência + cota do plano Spark, que já
+  causou 2 apagões). **T-01 (performance) autorizado a abrir** pela Gestora.
+- **Direção da correção (a detalhar no plano do T-01):** dois padrões, por tipo de tela — (a)
+  **pré-calcular** os números agregados **1×/dia** e a tela ler o snapshot pronto (barato, instantâneo;
+  mesma abordagem do EXP-01/`Admin_Metrics_Daily`), para dashboards/contagens; (b) **paginar** onde a
+  tela lista usuários (carregar em páginas de N, não todos). Casável com o EXP-01.
+- Status: **Aberto — T-01 autorizado (2026-07-22); aguarda plano.**
+- Decisão de execução: Precisa plano+aprovação (mudança de padrão de acesso a dado em produção). A
+  próxima entrega é o **plano do T-01** (qual tela pagina, qual pré-calcula, cron do snapshot), não
+  código direto.
 - Commit/PR: —
 
 ### BUG-018 Coleções órfãs mantidas no código (`entitlements`, `User_JourneyMap`)
@@ -2655,11 +2672,16 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   Editar a **série** no Google pode regenerar instâncias com ids novos; as antigas somem da resposta,
   o cleanup as apaga, e todo agendamento sobre elas vira fantasma. É o "efeito cascata" que a Gestora
   intuiu ao propor parar de editar eventos direto no Google.
-- Status: **Aberto** — registrado; correção entra no desenho da nova arquitetura de agenda (ver
-  proposta da Gestora, 2026-07-18), porque a resposta certa depende do modelo escolhido.
-- Decisão de execução: **Precisa decisão de modelo.** Saída provável: o cleanup deixa de apagar
-  evento **com inscritos** — marca como órfão (`sourceDeleted: true`), preserva o vínculo, e o admin
-  mostra "sumiu do Google" para a Gestora decidir (remarcar/cancelar/avisar o membro).
+- Status: **Aberto — decisão de modelo TOMADA (Gestora, 2026-07-22).** A regra aprovada: o cleanup do
+  sync **não apaga evento que tem inscritos**; em vez disso **marca como "Agenda alterada"**
+  (preservando o vínculo do membro), e isso **cria um novo fluxo de trabalho no admin** — uma fila de
+  eventos "com agenda alterada no Google" para o admin decidir (remarcar / cancelar / avisar o membro).
+  _(A Gestora preferiu o rótulo "Agenda alterada" a "sumiu do Google"/`sourceDeleted".)_ Implementação
+  entra no desenho da nova arquitetura de agenda (`AGENDA-SYNC-DESIGN.md`), pois toca o cleanup do sync
+  + uma tela/fila nova de admin.
+- Decisão de execução: **Precisa plano+aprovação** (toca `sync.ts` + cria fluxo/tela de admin) — a
+  próxima entrega é o plano dessa etapa dentro do AGENDA-SYNC, não código direto. Regra do estado-alvo:
+  evento com inscritos nunca é deletado pelo cleanup; recebe status "Agenda alterada"; admin resolve.
 - Commit/PR: —
 
 ### BUG-098 Campo de dado `mentor` mantém a nomenclatura antiga (rótulo já é "Consultor")
