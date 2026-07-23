@@ -24,6 +24,24 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-22] Chat de execução — F2-03 (seletor de tema hub vs admin) validada por código
+
+- Chat/sessão: mesmo chat de execução (Opus 4.8). Item de validação (não bug). Confirmado por leitura,
+  sem tocar no sistema de tema (regra da máquina):
+  - **Motor global:** `ThemeContext.applyTheme` aplica a classe do tema no `document.body` — hub,
+    admin e público recebem o tema de forma idêntica. `ThemeProvider` montado na raiz (`app/layout.tsx`).
+  - **Mesmo seletor nas duas áreas:** o `HubHeader` (com o botão de tema) é renderizado no hub via
+    `HubShell` (dentro de `hub/layout.tsx`, que envolve TODAS as páginas do hub, incondicionalmente) e
+    no admin via `AdminLayoutClient`. Nenhuma página "esquece" o header — ele vive no shell/layout.
+  - **7 temas** definidos uma vez (`BPlenTheme`) e compartilhados.
+  - Observação menor (não é defeito): `HubShell` reaplica a classe de tema na própria `div` além do
+    `body`; redundante e inócuo. Não mexido.
+  - **F2-03 validada por código; sem mudança.** Conferência visual dos 7 temas nas duas áreas fica com
+    a Gestora (BUG-030); o redesign do admin (R0–R5) já exercitou os temas no admin.
+- Docs: `00-PLAN.md` (F2-03), este LOG. Docs-only.
+
+---
+
 ## [2026-07-22] Chat de execução — BUG-027: remoção do playground _docs/labs + ThemeSelector (PR #156)
 
 - Chat/sessão: mesmo chat de execução (Opus 4.8). A Gestora perguntou primeiro se o `ThemeSelector`

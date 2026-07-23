@@ -892,12 +892,23 @@ sem copy hardcoded fora do que o guia permitir).
 - Categoria(s) de qualidade: Usabilidade
 - Critério de aceite: as 7 opções de tema funcionam identicamente nas duas áreas,
   sem página que "esqueça" de herdar o `HubHeader`
-- Modo de validação: PENDENTE
+- Modo de validação: Automatizado (código) + Requer execução humana (conferência visual em produção)
 - Decisão: —
-- Execução: Não iniciada
-- Resultado: —
+- Execução: **Validada por código (2026-07-22) — sem mudança necessária.** Confirmado por leitura:
+  (1) o **motor** de tema aplica a classe globalmente no `document.body` (`ThemeContext.applyTheme`),
+  então hub, admin e público recebem o tema de forma idêntica; (2) o **seletor real** é o mesmo
+  componente `HubHeader`, renderizado no hub via `HubShell` (dentro de `hub/layout.tsx`, que envolve
+  **todas** as páginas do hub) e no admin via `AdminLayoutClient` — nenhuma página "esquece" o header
+  porque ele vive no shell/layout, não por página; (3) os **7 temas** (`light`/`dark`/`rosa-pitaya`/
+  `lavanda-azulado`/`amarelo-sol`/`cinza-nublado`/`daltonico`) são definidos uma vez em `BPlenTheme` e
+  compartilhados. **Nenhum código tocado** (regra da máquina: não mexer no seletor/paleta).
+- Resultado: consistência estrutural garantida por construção (motor global + header no shell das duas
+  áreas + 7 temas únicos). Observação menor (não é defeito): o `HubShell` reaplica a classe de tema na
+  própria `div` além do `body` — redundante e inócuo; o admin confia só no `body`. Conferência visual
+  dos 7 temas nas duas áreas fica com a Gestora (BUG-030); o redesign do admin (R0–R5) já exercitou os
+  temas no admin, validado.
 - Bug(s) vinculado(s): —
-- Log: —
+- Log: [2026-07-22] validada por código — ver `LOG.md`
 
 ### [F2-04] Consistência de Cotas/Entitlements
 - Categoria(s) de qualidade: Adequação funcional / Confiabilidade
