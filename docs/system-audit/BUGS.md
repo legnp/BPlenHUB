@@ -772,10 +772,15 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   decisão maior: limpar (ou não) o playground `_docs/labs/` inteiro. Removida da varredura de baixo
   risco (não é carona trivial). Lição reforçada: verificar o **repo inteiro**, não só `src/` (mesmo
   padrão do `step-journey`/BUG-110).
-- Status: **Aberto** — premissa corrigida; remoção depende da decisão sobre o `_docs/labs/`.
-- Decisão de execução: **não remover isolado.** Levar à Gestora a decisão sobre o `_docs/labs/`
-  (playground de dev) antes; se ela quiser limpá-lo, ThemeSelector sai junto.
-- Commit/PR: —
+- Status: **Corrigido** — PR #156 (`19901b7`, 2026-07-22, deploy confirmado). A Gestora autorizou
+  limpar o playground: removidos os **5 arquivos de `_docs/labs/`** (`auth`/`forms`/`google`/`surveys`)
+  + o **`ThemeSelector`** (o único consumidor era `_docs/labs/forms/page.tsx`). **Confirmado antes por
+  leitura que o ThemeSelector NÃO afeta a troca de tema** (o motor é o `ThemeContext`; o seletor real
+  vive no `HubHeader`, ativo em hub+admin) — a regra do `CLAUDE.md` sobre o seletor sempre acionável
+  fica intacta. `_docs/workflows/` (notas .md/.txt) preservado. Validado: type-check limpo (0
+  referências pendentes), test 292/292, build limpo.
+- Decisão de execução: aprovada pela Gestora (2026-07-22). Sem impacto em rota nem no sistema de tema.
+- Commit/PR: **mergeado** — PR #156 (`19901b7`, squash).
 
 ### BUG-028 Login com Google falha sem fallback quando o popup é bloqueado (`auth/popup-blocked`)
 

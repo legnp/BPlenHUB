@@ -1449,9 +1449,9 @@ esquecida.
      desatualizada (verificado 2026-07-22).
    - **Varredura de baixo risco (2026-07-22):** `BUG-038` **corrigido** (PR #155,
      `sizes` na foto). `BUG-012` **já estava corrigido** (limite semanal enforced via
-     `BUG-076`/PR #103). `BUG-027` **não é órfão** (usado por `_docs/labs/` fora de
-     `src/`) — remoção acoplada à decisão de limpar o playground `_docs/labs/`, levar à
-     Gestora. `BUG-031` **já estava corrigido** — é duplicata do `BUG-095` (PR #114): o
+     `BUG-076`/PR #103). `BUG-027` **CORRIGIDO** (PR #156): playground
+     `_docs/labs/` + `ThemeSelector` removidos (Gestora aprovou; não afeta a troca de
+     tema — motor no `ThemeContext`, seletor real no `HubHeader`). `BUG-031` **já estava corrigido** — é duplicata do `BUG-095` (PR #114): o
      sync já reconstrói o `Programacao_Registry` (`sync.ts:197`). 5º status desatualizado
      que a reconciliação de 2026-07-22 não conferiu contra o código/git.
 

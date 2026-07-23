@@ -24,6 +24,26 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-22] Chat de execução — BUG-027: remoção do playground _docs/labs + ThemeSelector (PR #156)
+
+- Chat/sessão: mesmo chat de execução (Opus 4.8). A Gestora perguntou primeiro se o `ThemeSelector`
+  afetava a troca de tema; **confirmei por leitura que NÃO** — o motor é o `ThemeContext` (provider +
+  `useTheme`/`setTheme`, montado na raiz) e o seletor real que o usuário clica vive no `HubHeader`
+  (ativo em hub e admin, via o mesmo `ThemeContext`). O `ThemeSelector` era só uma peça duplicada de
+  teste ("Componente de Teste UI"), não renderizada em nenhuma tela real. Com isso ela autorizou
+  apagar o playground.
+- **Entrega: PR #156 (`19901b7`, squash, deploy confirmado).** Removidos os 5 arquivos de `_docs/labs/`
+  (`auth`/`forms`/`google`/`surveys` — scaffolding fora de `src/app/`, não roteável, só type-checkado)
+  + `src/components/ui/ThemeSelector.tsx` (único consumidor era `_docs/labs/forms/page.tsx`).
+  `_docs/workflows/` (notas .md/.txt) **preservado** (não é playground). 909 linhas removidas.
+- Antes de remover: confirmado que **nada em `src/` referencia `_docs/labs`** e que o type-check passa
+  (0 referências pendentes) — a lição do step-journey (verificar repo inteiro, não só `src/`) foi o que
+  pegou a dependência na primeira tentativa. Fecha **BUG-027**.
+- Validado: type-check limpo, test 292/292, build limpo. Sem impacto em rota nem no sistema de tema.
+- Itens atualizados: `BUGS.md` (BUG-027 Corrigido), `00-PLAN.md` (fila grupo 3), este LOG, `DASHBOARD.md`.
+
+---
+
 ## [2026-07-22] Chat de execução — BUG-031 já estava corrigido (duplicata do BUG-095, PR #114)
 
 - Chat/sessão: mesmo chat de execução (Opus 4.8). A Gestora autorizou "resolver o BUG-031" (o sync não
