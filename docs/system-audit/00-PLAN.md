@@ -881,12 +881,29 @@ sem copy hardcoded fora do que o guia permitir).
 - Categoria(s) de qualidade: Adequação funcional / Segurança
 - Critério de aceite: `ContractGateModal` bloqueia consistentemente em todas as
   páginas do hub quando há pendência, sem exceção não documentada
-- Modo de validação: PENDENTE
-- Decisão: —
-- Execução: Não iniciada
-- Resultado: —
-- Bug(s) vinculado(s): —
-- Log: —
+- Modo de validação: Automatizado (auditoria de código, read-only)
+- Decisão: **Premissa atualizada (auditoria 2026-07-22)** — o `ContractGateModal` (modal hub-wide)
+  **não existe mais**. O gating de contrato foi redesenhado (CONTRACTS-DESIGN CT-*, ACCESS-MODEL) para
+  um modelo **por-serviço via entitlement**, não um modal bloqueando o hub inteiro.
+- Execução: **Auditada — PASSA (2026-07-22), sem código.** O contrato é enforced **estruturalmente na
+  camada de entitlement**, em 3 pontos:
+  1. **Concessão** (`lib/checkout.ts:maybeReleaseService`, l.263-285): só concede o serviço com
+     **pagamento aprovado E contrato `status:"assinado"`** (a "Condição 2"). Sem assinatura, não há grant.
+  2. **Entrega** (`actions/delivery.ts:57`): recusa (`"Você não possui acesso a este serviço"`) se o
+     membro não tem `User_Permissions/access.services[serviceCode]`.
+  3. **Navegação/jornada** (`lib/access/resolve-access.ts:resolverAcesso`, engine PURO único, consumido
+     via `journey-adapter` → `useJourney`): sem o entitlement → `UPSELL`/`PREVIA` (bloqueia a entrada).
+- Resultado: sem entitlement não há acesso; sem contrato assinado não há entitlement. **Nenhuma "fresta"
+  encontrada** nos 3 pontos principais (grant/entrega/navegação). O gate deixou de ser "um modal que
+  uma página pode esquecer" e virou uma **trava estrutural** (engine único + check no grant e na
+  entrega). Parte disto já fora auditado no `BUG-055` (PR #66, "trava de acesso por-serviço:
+  pago+assinado via entitlement"). **Nota de escopo:** o hub em si (dashboard/visao_geral/networking/
+  perfil) é acessível a todo membro com selo (`member_area_access`) por design — o gate é por-SERVIÇO,
+  não hub-wide; não foi feito um grep exaustivo de TODA action que lê conteúdo de serviço, mas a
+  arquitetura (entitlement único) torna um bypass estruturalmente improvável.
+- Bug(s) vinculado(s): BUG-002 (Corrigido, PR #48 — trava de preço), BUG-055 (Corrigido, PR #66 — trava
+  por-serviço auditada)
+- Log: [2026-07-22] auditada por código — PASSA, premissa (modal) obsoleta — ver `LOG.md`
 
 ### [F2-03] Consistência do seletor de tema entre hub e admin
 - Categoria(s) de qualidade: Usabilidade

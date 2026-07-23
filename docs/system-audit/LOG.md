@@ -24,6 +24,27 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-22] Chat de execução — F2-02 (gate de contrato) auditada: PASSA, premissa obsoleta
+
+- Chat/sessão: mesmo chat de execução (Opus 4.8). Auditoria read-only do gate de contrato no hub.
+- **Premissa do checklist estava obsoleta:** o `ContractGateModal` (modal hub-wide) **não existe mais**
+  (0 refs no `src/`). O gating foi redesenhado (CONTRACTS-DESIGN CT-* + ACCESS-MODEL) para um modelo
+  **por-serviço via entitlement**, não um modal bloqueando o hub inteiro.
+- **Resultado: PASSA — sem código.** O contrato é enforced estruturalmente na camada de entitlement:
+  (1) **grant** — `maybeReleaseService` (checkout.ts:263-285) só concede com pagamento aprovado **E**
+  contrato `status:"assinado"`; (2) **entrega** — `delivery.ts:57` recusa sem
+  `access.services[serviceCode]`; (3) **navegação** — `resolverAcesso` (engine puro único via
+  `useJourney`) devolve UPSELL/PREVIA sem entitlement. Sem contrato assinado → sem entitlement → sem
+  acesso, em todos os 3 pontos. **Nenhuma fresta** nos surfaces principais; parte já auditada no
+  BUG-055 (PR #66). O gate deixou de ser "um modal que uma página pode esquecer" e virou trava
+  estrutural (engine único + checks no grant e na entrega).
+- **Escopo honesto:** o hub em si (dashboard/visao_geral/networking/perfil) é aberto a todo membro com
+  selo por design — o gate é por-serviço, não hub-wide. Não foi feito grep exaustivo de TODA action que
+  lê conteúdo de serviço, mas a arquitetura (entitlement único) torna bypass estruturalmente improvável.
+- Docs: `00-PLAN.md` (F2-02 auditada/PASSA), este LOG. Docs-only, sem código.
+
+---
+
 ## [2026-07-22] Chat de execução — BUG-009 corrigido (PR #157) + decisões de BUG-017/097 registradas
 
 - Chat/sessão: mesmo chat de execução (Opus 4.8). Feedbacks da Gestora sobre os 3 bugs "que precisam
