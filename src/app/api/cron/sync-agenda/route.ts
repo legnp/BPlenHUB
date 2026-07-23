@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { serverEnv } from "@/env";
 import { runCalendarSync } from "@/actions/calendar-module/sync";
+import { getAdminDb } from "@/lib/firebase-admin";
+import { refreshAdminMetricsSnapshot } from "@/lib/admin/metrics-snapshot";
 
 /**
  * Sincronizacao automatica da agenda (cron diario da Vercel).
@@ -52,6 +54,22 @@ async function alertarFalha(detalhe: string) {
   }
 }
 
+/**
+ * T1-2: snapshot diario de metricas do admin (`Admin_Metrics_Daily`) partilhando o
+ * mesmo slot de cron (plano Hobby, 1 slot — decisao da Gestora). Best-effort e
+ * isolado: a falha do snapshot NUNCA invalida o sync nem derruba o cron (Licao 40).
+ * Idempotente — recalcula do zero e sobrescreve.
+ */
+async function atualizarSnapshotMetricas() {
+  try {
+    const db = getAdminDb();
+    const snap = await refreshAdminMetricsSnapshot(db);
+    console.log(`[Cron] Snapshot de metricas do admin atualizado (${snap.dateKey}).`);
+  } catch (err) {
+    console.error("[Cron] Falha ao atualizar o snapshot de metricas (ignorada):", err);
+  }
+}
+
 export async function GET(request: NextRequest) {
   const secret = process.env.CRON_SECRET;
 
@@ -67,6 +85,10 @@ export async function GET(request: NextRequest) {
 
   try {
     const result = await runCalendarSync({ guardMassDeletion: true });
+
+    // Snapshot de metricas do admin (T1-2): isolado e independente da agenda —
+    // roda mesmo que o sync recuse, e sua falha e absorvida (nao afeta a resposta).
+    await atualizarSnapshotMetricas();
 
     if (!result.success) {
       // Inclui o caso da trava anti-apagao: e uma recusa deliberada, e a Gestora
