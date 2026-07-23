@@ -179,7 +179,11 @@ export async function getUserBookingsAction(matricula: string): Promise<UserBook
         week: data.week,
         year: data.year,
         category: data.category || "geral",
-        timestamp: data.timestamp?.toDate?.()?.toISOString() || null,
+        // BUG-009: os agendamentos gravam `bookedAt`, nunca `timestamp` — ler
+        // `data.timestamp` retornava sempre null. Le `bookedAt` primeiro (com
+        // fallback ao `timestamp` legado), igual ao `getEventAttendees` (l.237).
+        // Confirmado na base real: 0/12 docs tinham `timestamp`, 12/12 tinham `bookedAt`.
+        timestamp: toISOSafe(data.bookedAt || data.timestamp),
         rating: data.rating || 0,
         feedback: data.feedback || "",
         evaluatedAt: data.evaluatedAt?.toDate?.()?.toISOString() || null,
