@@ -24,6 +24,26 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-23] Chat de execução — T-01 revisado: contadores nativos + estrutura de 2 momentos
+
+- Chat/sessão: mesmo chat. A Gestora perguntou se as soluções propostas eram as únicas; expus o mapa
+  completo (contadores nativos, incrementais, plano Blaze, provedores externos, cache) e ela pediu para
+  **revisar o plano** incorporando os contadores nativos e **separar em 2 momentos**, documentando o
+  Blaze como aquisição futura (a auditoria deixa o terreno preparado).
+- **Revisão do `T-01-PERFORMANCE-DESIGN.md`:**
+  - **Contadores nativos** (`count`/`sum`/`average` do Firestore) viram a **1ª escolha** para os
+    números do admin — ~1 leitura/1000 docs, **em tempo real**, sem cron. O **snapshot diário** deixa
+    de ser o padrão e vira exceção (só agregados complexos + série histórica do EXP-01).
+  - **Estrutura em 2 momentos** (decisão da Gestora, 2026-07-23): **Momento 1** — otimizar leituras na
+    infra atual (contadores nativos + paginação + filtro/índice + snapshot pontual), sobreviver à cota
+    gratuita e **preparar o terreno**; **Momento 2 (futuro)** — adquirir o **Blaze** (remove o apagão;
+    leitura passa a custar, não derrubar) e, na escala, **provedores externos** (Algolia/Meilisearch p/
+    busca do diretório; BigQuery p/ relatórios) — só quando o número real exigir.
+  - Princípio registrado: o Momento 1 controla custo **no gratuito e no pago** — nada é jogado fora
+    quando o Blaze chegar.
+- **Blaze documentado como aquisição futura confirmada.** Nenhum código — plano para aprovação.
+- Docs: `T-01-PERFORMANCE-DESIGN.md` (revisado), este LOG.
+
 ## [2026-07-23] Chat de execução — T-01 (performance): plano escrito (T-01-PERFORMANCE-DESIGN.md)
 
 - Chat/sessão: mesmo chat de execução (Opus 4.8). A Gestora pediu o plano do T-01 (autorizado, escala
