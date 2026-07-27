@@ -1429,9 +1429,11 @@ esquecida.
   achados colaterais já linkados (`F2-04`/`F2-05` com progresso parcial via
   Fase 1; `F3-03`/`BUG-022` já corrigido).
 - **Tracks:** `T-02` fechado (17/17), `T-03` em 6/7, `T-06` fechado (2/2).
-  **`T-01` (performance) EM EXECUÇÃO** — Momento 1: T1-0 (medição), T1-1 (networking,
-  hotspot A, PR #158) e T1-2 (agregados admin B–E → snapshot diário, PR #159) concluídas
-  (2026-07-23); **resta a T1-3** (paginação lista de usuários admin). `T-04`/`T-05` nunca iniciados.
+  **`T-01` (performance) — Momento 1 CONCLUÍDO** (2026-07-23): T1-0 (medição), T1-1 (networking,
+  hotspot A, PR #158), T1-2 (agregados admin B–E → snapshot diário, PR #159) e T1-3 (índices de
+  collection group versionados, PR #160). Paginação da lista de usuários admin → **Momento 2** (busca
+  substring não pagina sem índice externo). Pendência operacional: deploy manual dos índices (fecha
+  BUG-114/115). `T-04`/`T-05` nunca iniciados.
 - **Severidade:** **0 `Alto`, 0 `Crítico` aberto.** _(A reconciliação de 2026-07-22 listou o
   `BUG-110` como único `Alto` aberto por engano — o PR #131 já o corrigira em 2026-07-20;
   reclassificado para `Corrigido` na sessão de execução de 2026-07-22. Ver `BUGS.md#bug-110`.)_
@@ -1467,14 +1469,14 @@ esquecida.
    - ~~`BUG-009` (T-03) — `UserBooking.timestamp` sempre nulo~~ **CORRIGIDO (PR #157)** —
      confirmado na base real (0/12 tinham `timestamp`, 12/12 `bookedAt`); `getUserBookingsAction`
      passa a ler `bookedAt`. Diagnóstico read-only rodado e apagado (opção b da Gestora).
-   - `BUG-017` (**T-01 EM EXECUÇÃO**) — full scans O(usuários). **Momento 1 (2026-07-23), 2 de 3 fases
-     entregues, deploy confirmado.** **T1-1 (networking, hotspot A CRÍTICO) — PR #158:**
-     `getNetworkingDataAction` filtra no banco + teto (sem índice composto — medido). **T1-2 (agregados
-     admin B–E) — PR #159:** contadores nativos exigiriam ~6-10 índices de collection group inexistentes
-     (sem pipeline de deploy → quebrariam o painel), então adotado **snapshot diário**
-     (`Admin_Metrics_Daily`) no cron compartilhado; telas leem 1 doc; paridade validada. Achado
-     colateral: detalhe de respondentes já quebrado por índice = **BUG-114**. **Pendente:** T1-3
-     (paginação da lista de usuários admin `users-admin.ts`). Ver `T-01-PERFORMANCE-DESIGN.md` seção 9.
+   - `BUG-017` (**T-01 Momento 1 CONCLUÍDO**) — full scans O(usuários). **3 de 3 fases entregues
+     (2026-07-23), deploy confirmado.** **T1-1 (networking, hotspot A CRÍTICO) — PR #158:** filtra no
+     banco + teto. **T1-2 (agregados admin B–E) — PR #159:** snapshot diário `Admin_Metrics_Daily` (cron
+     compartilhado; telas leem 1 doc; paridade validada). **T1-3 (índices) — PR #160:**
+     `firestore.indexes.json` versionado fecha BUG-114/115 após deploy manual. Paginação da lista de
+     usuários admin → **Momento 2** (busca substring não pagina sem índice externo). Ver
+     `T-01-PERFORMANCE-DESIGN.md` seção 9. **Pendência operacional:** deploy dos índices; follow-ups de
+     UI do T1-2 (botão "Recalcular" + selo "atualizado em").
    - ~~`BUG-089` (F1-06/agenda) — `catch → []` esconde erro de cota como "tudo
      livre" no `/agendar`~~ **CORRIGIDO (PR #154)** para o sintoma confirmado
      (falsa disponibilidade); residual "sub-mostra" (dias/helper interno) fica com
@@ -1514,11 +1516,12 @@ esquecida.
    avançada, `F2-04` parcial. `F2-02` (gate de contrato) e `F2-03` (seletor de
    tema hub/admin) nunca foram tocados.
 
-**6. Tracks:** `T-01` (performance) **EM EXECUÇÃO** — Momento 1: T1-0, T1-1
-   (networking, PR #158) e T1-2 (agregados admin → snapshot diário, PR #159)
-   concluídas (2026-07-23); **próximo é a T1-3** (paginação da lista de usuários
-   admin `users-admin.ts`). Nunca iniciados: `T-04` (observabilidade — escopo
-   reduzido: só inventariar o gap), `T-05` (integrações externas em sandbox).
+**6. Tracks:** `T-01` (performance) — **Momento 1 CONCLUÍDO** (2026-07-23):
+   T1-0, T1-1 (networking, PR #158), T1-2 (agregados admin → snapshot, PR #159),
+   T1-3 (índices versionados, PR #160). Paginação da lista de usuários admin →
+   Momento 2. Pendência operacional: deploy manual dos índices (fecha BUG-114/115).
+   Nunca iniciados: `T-04` (observabilidade — escopo reduzido: só inventariar o
+   gap), `T-05` (integrações externas em sandbox).
 
 **7. Fases 3 (regras de negócio) e 4 (jornadas e2e)** — últimas do checklist
    original; `F3-03` já tem o achado principal corrigido (`BUG-022`), resta

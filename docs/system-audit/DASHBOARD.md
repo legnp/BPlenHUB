@@ -25,7 +25,18 @@
 > registro permanente e completo de toda sessão está em `LOG.md`, que nunca foi
 > editado e continua a fonte primária de história.
 >
-> **Última atualização:** 2026-07-23 (chat de execução — **T-01 Momento 1: T1-2
+> **Última atualização:** 2026-07-23 (chat de execução — **T-01 Momento 1 CONCLUÍDO:
+> T1-3 (índices) — PR #160**, deploy Vercel confirmado (config-only). Medição: a paginação
+> da lista de usuários admin (~25k leituras/abertura a 10k) não cabe no Momento 1 (busca
+> substring client-side sobre a base inteira, sem filtro para reduzir; paginar regrediria a
+> busca do admin) → **Momento 2**. A parte de índices foi entregue: `firestore.indexes.json`
+> versionado (enumerado o estado real antes — 0 compostos, só `Surveys.status` customizado,
+> preservado) + `firebase.json`, fechando **BUG-114** e **BUG-115** (novo — anti-lockout de
+> admin quebrado por índice) **após o deploy manual dos índices**. **Momento 1 do T-01
+> completo:** T1-1/T1-2/T1-3. Pendências operacionais: deploy dos índices; validação de amanhã
+> dos 2 itens do snapshot do T1-2.)
+>
+> _(entrada anterior)_ 2026-07-23 (chat de execução — **T-01 Momento 1: T1-2
 > (agregados admin) concluída — PR #159**, deploy confirmado. A medição mostrou que
 > contadores nativos exigiriam ~6-10 índices de collection group inexistentes (sem
 > pipeline de deploy → quebrariam o painel), então as 4 telas de analytics do admin
@@ -164,14 +175,16 @@ Progresso = bugs mergeados na `main` (ou formalmente aceitos) sobre o total do t
 
 ### Outros tracks
 
-- **T-01** Performance — **EM EXECUÇÃO (Momento 1), 2 de 3 fases.** Plano: `T-01-PERFORMANCE-DESIGN.md`
-  (contadores nativos + paginação + snapshot; 2 momentos, Blaze futuro). **T1-1 (networking, hotspot A
-  CRÍTICO) — PR #158:** filtro no banco + teto (sem índice composto). **T1-2 (agregados admin B–E) —
-  PR #159:** contadores nativos exigiriam índices de collection group inexistentes → **snapshot diário**
-  `Admin_Metrics_Daily` no cron compartilhado; telas leem 1 doc; paridade validada; série histórica
-  adianta o EXP-01. Ambas deploy confirmado (2026-07-23). Achado colateral: **BUG-114** (detalhe de
-  respondentes já quebrado por índice). **Pendente:** T1-3 (paginação lista de usuários admin). BUG-038
-  já corrigido (PR #155).
+- **T-01** Performance — **Momento 1 CONCLUÍDO (2026-07-23).** Plano: `T-01-PERFORMANCE-DESIGN.md`
+  (2 momentos, Blaze futuro). **T1-1 (networking, hotspot A CRÍTICO) — PR #158:** filtro no banco + teto.
+  **T1-2 (agregados admin B–E) — PR #159:** **snapshot diário** `Admin_Metrics_Daily` (cron compartilhado;
+  telas leem 1 doc; paridade validada; adianta a série do EXP-01). **T1-3 (índices) — PR #160:**
+  `firestore.indexes.json` versionado fecha **BUG-114** (detalhe de respondentes) e **BUG-115** (anti-lockout
+  de admin) **após deploy manual**. Paginação da lista de usuários admin → **Momento 2** (busca substring
+  não pagina sem índice externo). Todos deploy confirmado. **Pendências operacionais:** deploy dos índices;
+  follow-ups de UI do T1-2 (botão "Recalcular" + selo "atualizado em"). **Momento 2** (futuro):
+  `Networking_Directory` + paginação da lista de usuários; Blaze; provedores externos. BUG-038 já corrigido
+  (PR #155).
 - **T-04** Observabilidade — não iniciado — escopo reduzido (inventariar gap de alertas de erro em produção)
 - **T-05** Integrações externas — não iniciado — escopo misto (sandbox); BUG-046 (links de e-mail quebrados) aberto
 

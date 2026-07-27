@@ -24,6 +24,38 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-23] Chat de execução — T-01 Momento 1 CONCLUÍDO: T1-3 (índices) mergeada (PR #160)
+
+- Chat/sessão: mesmo chat de execução (Opus 4.8). Gestora validou o Momento 1 do T1-2 em produção (5/5,
+  os 2 itens do "Momento 2 de validação" ficam para amanhã) e pediu para seguir à T1-3.
+- **Medição da T1-3 (read-only, descartada — Lição 38):** `getAdminUsersList` custa ~15 leituras hoje
+  (6 `User` + 9 `User_Permissions`), projetando **~25k/abertura a 10k**. Achado colateral: a query
+  anti-lockout de `updateUserPermissions` (`collectionGroup("User_Permissions").where("admin","==",true)`)
+  **falha por índice inexistente** → rebaixar um admin está quebrado hoje = **BUG-115** (registrado).
+- **Decisão da Gestora:** índices agora (BUG-114/115) + **paginação da lista de usuários → Momento 2**.
+  Motivo: a tela faz busca substring client-side sobre a base inteira e **não há filtro para reduzir no
+  banco** (o admin precisa achar/gerenciar qualquer usuário); paginar sem índice de busca externo
+  regrediria a busca do admin. Mesma razão do `Networking_Directory` do Momento 2.
+- **T1-3 — PR #160, `257a65e`, deploy Vercel confirmado (config-only, app inalterado):**
+  - Antes de escrever o arquivo, **enumerei o estado real dos índices** (read-only, via Admin API):
+    **0 índices compostos**; único override customizado = `Surveys.status` (collection-group). Isso
+    evita que o deploy remova índice existente (montei um arquivo completo).
+  - Novo `firestore.indexes.json` versionado: composto `Surveys(surveyId,status)` + field overrides
+    `Forms.formId` e `User_Permissions.admin` (collection-group), **preservando `Surveys.status`**. +
+    referência `"indexes"` no `firebase.json` (que só fazia deploy das rules).
+  - Fecha **BUG-114** (detalhe de respondentes) e **BUG-115** (anti-lockout) — mas só **após o deploy
+    manual dos índices** (`firebase deploy --only firestore:indexes` ou os 3 links de criação do console;
+    sem pipeline de índice no projeto). Lição 31: config sem o passo operacional é inerte.
+  - Sem mudança de código de app (config de infra Firestore, fora do build do Next) — eslint/tsc/test/
+    build inalterados; JSON validado.
+- **Momento 1 do T-01 CONCLUÍDO:** T1-0 + T1-1 (PR #158) + T1-2 (PR #159) + T1-3 (PR #160). Pendências
+  **operacionais**: (a) deploy manual dos índices → fecha BUG-114/115; (b) Gestora valida amanhã os 2
+  itens do "Momento 2 de validação" do T1-2 (números via snapshot após o 1º cron + coleção
+  `Admin_Metrics_Daily`). **Momento 2 (futuro):** `Networking_Directory` + paginação da lista de usuários
+  com busca server-side; Blaze; provedores externos.
+- Itens atualizados: `T-01-PERFORMANCE-DESIGN.md` (seção 9 + fecho do Momento 1), este LOG, `00-PLAN.md`,
+  `BUGS.md` (BUG-017 Momento 1 completo; BUG-114/115 aguardam deploy), `DASHBOARD.md`.
+
 ## [2026-07-23] Chat de execução — T-01 Momento 1: T1-2 (agregados admin → snapshot diário) mergeada (PR #159)
 
 - Chat/sessão: mesmo chat de execução (Opus 4.8). Gestora aprovou os resultados da T1-1 em produção (6/6)
