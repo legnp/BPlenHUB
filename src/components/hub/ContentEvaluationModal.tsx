@@ -175,7 +175,7 @@ export function ContentEvaluationModal({ isOpen, onClose, uid, matricula }: Cont
               {loading ? (
                 <div className="py-24 flex flex-col items-center justify-center gap-4 text-[var(--text-muted)]">
                   <Loader2 className="animate-spin" size={32} />
-                  <p className="text-[10px] font-black uppercase tracking-widest opacity-40">Sincronizando com a base BPlen...</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest opacity-40">Carregando conteúdo</p>
                 </div>
               ) : filteredPosts.length === 0 ? (
                 <div className="py-24 text-center opacity-40">
