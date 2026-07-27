@@ -34,7 +34,8 @@ de cobertura dos mapas**: os 5 mapas estão **completos**.
   padrão do `BUG-032`, corrigido em <24h) e o `BUG-108` (convite sem vínculo ao
   token). **Refechado em 2026-07-20**, agora conferido por padrão (invariante
   executável `server-action-surface.test.ts`), não bug a bug.
-- **Track T-03 (Integridade de dados): 6/7 (~86%)** — só `BUG-009` aberto.
+- **Track T-03 (Integridade de dados): 7/7 (100%), fechado** — `BUG-009` corrigido (PR #157,
+  2026-07-22); recálculo de 2026-07-23 (o agregador ainda marcava 6/7). Nenhum bug aberto.
 - **Track T-06 (Compliance): 2/2 (100%), fechado.**
 - **Track T-01 (Performance): Momento 1 concluído** (2026-07-23, PRs #158/#159/#160;
   paginação da lista de usuários admin → Momento 2). **Track T-04 (Observabilidade):
@@ -1450,7 +1451,7 @@ esquecida.
 - **Fases 2, 3 e 4:** **não iniciadas** como fases formais — o que existe são
   achados colaterais já linkados (`F2-04`/`F2-05` com progresso parcial via
   Fase 1; `F3-03`/`BUG-022` já corrigido).
-- **Tracks:** `T-02` fechado (17/17), `T-03` em 6/7, `T-06` fechado (2/2).
+- **Tracks:** `T-02` fechado (17/17), `T-03` fechado (7/7 — `BUG-009` corrigido PR #157), `T-06` fechado (2/2).
   **`T-01` (performance) — Momento 1 CONCLUÍDO** (2026-07-23): T1-0 (medição), T1-1 (networking,
   hotspot A, PR #158), T1-2 (agregados admin B–E → snapshot diário, PR #159) e T1-3 (índices de
   collection group versionados, PR #160). Paginação da lista de usuários admin → **Momento 2** (busca

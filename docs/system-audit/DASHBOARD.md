@@ -162,7 +162,7 @@ Progresso = bugs mergeados na `main` (ou formalmente aceitos) sobre o total do t
 - ✓ Mergeados: BUG-023 (rotas debug removidas, PR #3), BUG-001 (`Support_Tickets` PII em
   subcoleção privada, PR #70 — rules publicadas + coleção raiz apagada pela Gestora, 2026-07-11)
 
-### T-03 — Integridade de dados · **6 / 7 (~86%)**  `████████░░`
+### T-03 — Integridade de dados · **7 / 7 (100%)** · fechado  `██████████`
 
 - ✓ BUG-018 — consolidação de jornada completa (`User_Journey` v3 mantido, `User_JourneyMap`
   legado removido de todos os clientes, PRs #22/#23/#24/#25).
@@ -170,8 +170,9 @@ Progresso = bugs mergeados na `main` (ou formalmente aceitos) sobre o total do t
 - ✓ BUG-008 (PR #71) — chave de cota `1-to-1` unificada em minúsculo canônico.
 - ✓ BUG-040/041/042 (Trilha 3, scripts locais, 2026-07-08) — ~50 coleções de backup removidas,
   14 produtos legados excluídos, chaves de entitlement de 4 clientes normalizadas.
-- ○ Aberto: BUG-009 (`UserBooking.timestamp` provavelmente sempre nulo — **[HIPÓTESE]**, a
-  confirmar em produção).
+- ✓ BUG-009 (PR #157, 2026-07-22) — **[CONFIRMADO]** na base real (0/12 tinham `timestamp`, 12/12
+  `bookedAt`); `getUserBookingsAction` passa a ler `bookedAt`. _(Recálculo 2026-07-23: o agregador
+  ainda marcava 6/7 com BUG-009 "aberto"; BUGS.md já o registrava Corrigido — Track fechado.)_
 
 ### Outros tracks
 
