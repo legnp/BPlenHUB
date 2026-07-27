@@ -24,6 +24,21 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-24] Chat de execução — ITEM 1 (deploy dos índices) bloqueado por credencial; devolvido à Gestora
+
+- Chat/sessão: chat de execução (Opus 4.8). Lição 45 aplicada primeiro: `git log --grep` confirmou que
+  BUG-114/115 e os índices seguem intocados desde a reconciliação (`f2a31e0`) — nada já resolvido.
+- **ITEM 1 — tentativa de deploy dos índices (`firestore.indexes.json`, PR #160):** inspecionei o
+  formato real (read-only) e tentei criar os 3 índices via Admin API (aditivo, espelhando o override
+  existente `Surveys.status`). **Bloqueado:** o service account do Firebase Admin SDK **não tem
+  permissão de índice** (`The caller does not have permission` — só leitura; por isso enumerar funciona,
+  criar não). O login cacheado do `firebase-tools` **expirou** (`Failed to authenticate`), e
+  `firebase login` é interativo (não roda na shell). **Conclusão: o deploy de índice não é automatizável
+  pelo agente — exige credencial da Gestora** (`firebase login` + `firebase deploy --only
+  firestore:indexes`, ou os 3 links de criação do console). BUG-114/115 seguem abertos, com o bloqueio
+  preciso registrado para não repetir a tentativa. Nenhuma mutação de infra feita.
+- Próximo: ITEM 2 (F2-05, categorização formal de design) — inventário + plano por lote antes de codar.
+
 ## [2026-07-23] Chat de planejamento — reconciliação geral (2ª desde 2026-07-07)
 
 - Chat/sessão: chat de planejamento (Sonnet 5), a pedido explícito da Gestora.

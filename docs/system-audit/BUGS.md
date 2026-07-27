@@ -3443,12 +3443,15 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   funciona é `dados_cadastrais`, que usa o caminho especial de varredura de `User` (não collectionGroup).
   É débito **pré-existente** (independe da T1-2), exposto pela medição. Sem risco de dado — é gap
   funcional admin-facing.
-- Status: **Índice versionado — AGUARDA DEPLOY MANUAL (T1-3, PR #160).** O `firestore.indexes.json`
-  já declara os índices necessários (`Surveys(surveyId,status)` composto + `Forms.formId` collection-
-  group). Fica **corrigido assim que** alguém rodar `firebase deploy --only firestore:indexes` (ou os
-  links de criação do console) — sem pipeline de índice no projeto (Lição 31: config sem o passo
-  operacional é inerte). Full scan de `User` do detalhe (`getFSItemDetails`) fica como otimização
-  menor de follow-up (constante, não assintótica).
+- Status: **Índice versionado — AGUARDA DEPLOY MANUAL DA GESTORA (T1-3, PR #160).** O
+  `firestore.indexes.json` já declara os índices necessários (`Surveys(surveyId,status)` composto +
+  `Forms.formId` collection-group). Fica **corrigido assim que** rodar `firebase deploy --only
+  firestore:indexes` (ou os links de criação do console). **[2026-07-24] Confirmado que o deploy NÃO é
+  automatizável pelo agente:** o service account do Admin SDK **não tem permissão de índice**
+  (`The caller does not have permission` ao criar via Admin API — só leitura), e o login cacheado do
+  firebase-tools **expirou** (`firebase login` é interativo). Exige credencial da Gestora (rodar
+  `firebase login` + deploy) ou os 3 links do console. Lição 31: config sem o passo operacional é inerte.
+  Full scan de `User` do detalhe (`getFSItemDetails`) fica como otimização menor de follow-up.
 - Decisão de execução: índice versionado entregue na T1-3; **falta o deploy manual** para fechar.
 - Commit/PR: **PR #160** (`257a65e`) — `firestore.indexes.json`.
 
@@ -3464,9 +3467,11 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   try e lança **antes** da contagem, a operação inteira falha com erro genérico. Efeito: **não é possível
   rebaixar/mudar o papel de um usuário admin** pelo painel (a própria trava "não remover o último admin"
   quebra a operação). Débito **pré-existente**, exposto pela medição da T1-3. Sem risco de dado.
-- Status: **Índice versionado — AGUARDA DEPLOY MANUAL (T1-3, PR #160).** O `firestore.indexes.json`
-  já declara o field override collection-group para `User_Permissions.admin`. Fica **corrigido assim
-  que** rodar `firebase deploy --only firestore:indexes` (ou o link de criação do console).
+- Status: **Índice versionado — AGUARDA DEPLOY MANUAL DA GESTORA (T1-3, PR #160).** O
+  `firestore.indexes.json` já declara o field override collection-group para `User_Permissions.admin`.
+  Fica **corrigido assim que** rodar `firebase deploy --only firestore:indexes` (ou o link do console).
+  **[2026-07-24]** Mesmo bloqueio do BUG-114: o deploy **não é automatizável pelo agente** (SA do Admin
+  SDK sem permissão de índice; login CLI cacheado expirado) — exige credencial da Gestora.
 - Decisão de execução: índice versionado entregue na T1-3; **falta o deploy manual** para fechar.
 - Commit/PR: **PR #160** (`257a65e`) — `firestore.indexes.json`.
 
