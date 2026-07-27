@@ -433,7 +433,50 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
     antes de endurecer** — endurecer copias em paralelo e como elas divergiram em primeiro lugar
     (Licao 21/37).
 
+45. **Status numa fila de prioridade e hipotese herdada, nao fato — confirme contra `git log` antes de
+    agir, mesmo no item 1 recomendado.** A reconciliacao geral de 2026-07-22 listou o `BUG-110` como
+    unico Alto aberto; ele ja estava corrigido havia 2 dias (PR #131), e a checagem so leu o texto do
+    `BUGS.md` sem cruzar com o git. A sessao de execucao seguinte pegou o erro **antes de codar**
+    (parada obrigatoria: "o achado e o bug ja estava corrigido"), confirmou com `git merge-base
+    --is-ancestor` que o commit do fix era ancestral do commit da reconciliacao, e corrigiu os docs.
+    **O padrao se repetiu MAIS 5 VEZES na mesma sessao** (`BUG-012/027/031/038/104` tambem listados
+    "abertos" por engano) — nao e acidente raro, e o modo padrao como uma lista de status degrada
+    entre sessoes. Regra pratica: antes de comecar a trabalhar num item herdado de fila (nao so bugs —
+    qualquer "proximo passo" registrado por outra sessao), rode `git log --grep="BUG-XXX"` e, se achar
+    candidato a fix, confirme a ordem cronologica antes de tratar como aberto. _(Caso real: `BUG-110`,
+    reconciliacao de 2026-07-22, e o eco de 5 casos irmaos na mesma sessao de execucao seguinte.)_
 
+46. **Meca a base real ANTES de trocar um padrao de acesso a dado — a medicao pode inverter a
+    estrategia planejada.** O plano do T-01 previa contadores nativos do Firestore como 1a escolha
+    para os agregados do admin. Medir a base real (query a query, read-only, descartavel) revelou que
+    essas queries exigiriam **6-10 indices de collection group inexistentes** — sem eles, ligar
+    `count()`/`average()` teria **quebrado o painel em producao** (`FAILED_PRECONDITION`). A estrategia
+    escolhida (snapshot diario) so foi a certa porque a medicao aconteceu antes do codigo, nao depois.
+    Generalizacao da Licao 38 (meca o custo do automatismo) para o caso mais amplo de "trocar QUALQUER
+    padrao de leitura/escrita estabelecido": a base real decide, o plano so propoe. _(Caso real: T-01
+    Momento 1, T1-2, PR #159.)_
+
+47. **Contador nativo do Firestore precisa de indice que pode nao existir — sem pipeline de deploy de
+    indice, o snapshot pre-calculado e a alternativa mais segura, nao a mais simples.** `count()`/
+    `sum()`/`average()` sao baratos (~1 leitura por 1000 docs) e em tempo real, mas dependem de um
+    indice que cubra a query exatamente — e este projeto nao tem `firestore.indexes.json` versionado
+    nem pipeline de deploy automatico de indice (o deploy e sempre manual, um passo operacional a
+    parte — Licao 31). Ligar um contador nativo sem confirmar que o indice existe **hoje** em producao
+    e apostar que ninguem vai abrir aquela tela antes do proximo deploy manual. Quando a medicao mostra
+    que faltam varios indices, prefira um snapshot pre-calculado (roda sem `where` composto, sem
+    indice novo) a uma aposta em indices que ainda nao existem. _(Caso real: T-01 T1-2, PR #159 — achou
+    de quebra que `getFSItemDetails` ja estava quebrado em producao pelo mesmo motivo, `BUG-114`.)_
+
+48. **Paginar uma lista com busca de texto livre exige indice de busca EXTERNO — paginar sem ele
+    regride a propria busca.** A lista de usuarios do admin faz busca substring client-side sobre a
+    base inteira porque o admin precisa achar/gerenciar qualquer usuario por nome/e-mail parcial.
+    Paginar essa lista no Firestore (limit+cursor) sem um indice de busca dedicado (Algolia/Meilisearch/
+    etc.) teria resolvido o custo de leitura e **quebrado a capacidade de busca** — o admin so acharia
+    usuarios na pagina carregada. A mesma logica vale para o networking (`Networking_Directory`
+    planejado para o Momento 2). Regra: antes de paginar uma lista, pergunte se ela tambem e um
+    mecanismo de busca — se for, a paginacao de verdade so vem junto com o indice de busca, nao antes
+    dele. _(Caso real: T-01 T1-3 — paginacao da lista de usuarios admin remetida ao Momento 2 por essa
+    razao, nao por falta de tempo.)_
 
 ---
 
@@ -481,6 +524,13 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
 
 ## Registro de revisões deste documento
 
+- 2026-07-23 — Lições 45 (status de fila é hipótese herdada — confirme contra
+  `git log` antes de agir; recorreu 6× numa sessão), 46 (meça antes de trocar
+  padrão de acesso a dado), 47 (contador nativo precisa de índice que pode não
+  existir; snapshot é alternativa mais segura sem pipeline de deploy) e 48
+  (paginar lista com busca livre exige índice de busca externo, senão regride
+  a busca) adicionadas, a partir da reconciliação de 2026-07-22 (BUG-110) e do
+  track T-01 (PRs #158/#159/#160).
 - 2026-07-22 — reconciliação geral do chat de planejamento: Lições 31 (merge não
   é deploy) e 44 ("tem guard?" é só metade da pergunta de segurança) promovidas
   a itens 13-14 do Protocolo do `00-PLAN.md`; a Lição 13 (contagem fracionária)

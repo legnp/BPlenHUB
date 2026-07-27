@@ -24,6 +24,87 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-23] Chat de planejamento — reconciliação geral (2ª desde 2026-07-07)
+
+- Chat/sessão: chat de planejamento (Sonnet 5), a pedido explícito da Gestora.
+  Estado de entrada: `main` == `origin/main` em `c18bd35`, árvore limpa (só
+  `.claude/` untracked), suíte 292/292 (confirmada em LOGs anteriores),
+  nenhum PR aberto. Bugs até `BUG-115`. Commits mergeados desde a última
+  reconciliação (`7b05a93`): 32, entre docs e código.
+- Escopo: leitura integral de `00-PLAN.md` (esp. a seção final "Estado da
+  auditoria"), as ~20 entradas mais recentes do `LOG.md` (2026-07-22/23),
+  `BUGS.md`, `DASHBOARD.md`, `RETROSPECTIVE.md`, `T-01-PERFORMANCE-DESIGN.md`,
+  `T-04-OBSERVABILITY-FINDINGS.md` e `T-05-INTEGRATIONS-FINDINGS.md`. Checagem
+  cruzada de todos os bugs candidatos a correção contra `BUGS.md` (fonte de
+  verdade) antes de editar qualquer agregador — nenhum status foi tratado como
+  fato sem essa checagem (aplicação direta da Lição 45, ver abaixo). **Nenhuma
+  linha de código de produto foi tocada.**
+- Achado de abertura (auto-crítica): confirmado via
+  `git merge-base --is-ancestor 8757777 7b05a93` que o PR #131 (fix do
+  `BUG-110`) já estava na `main` **antes** do commit da minha própria
+  reconciliação de 2026-07-22 — ou seja, o erro relatado nos LOGs de execução
+  seguintes (ter listado o `BUG-110` como único Alto aberto) é real e meu.
+  Registrado como nova **Lição 45** do `RETROSPECTIVE.md`, generalizando o
+  padrão: o mesmo tipo de erro recorreu **mais 5 vezes na mesma sessão de
+  execução seguinte** (`BUG-012/027/031/038/104`), todos "abertos" na fila por
+  engano quando já estavam corrigidos.
+- Contexto do período reconciliado: entre 2026-07-22 e 2026-07-23 a execução
+  fechou os 3 tracks restantes — **T-01 (Momento 1: T1-0 medição, T1-1
+  networking PR #158, T1-2 agregados admin→snapshot PR #159, T1-3 índices PR
+  #160)**, **T-04 (observabilidade, escopo reduzido)**, **T-05 (integrações
+  externas, escopo misto)** — e concluiu **F2-01/F2-02/F2-03/F2-04** e
+  **F3-02**. 2 bugs novos surgiram da medição do T-01: `BUG-114`/`BUG-115`
+  (índice de collection group faltante, código pronto, aguardando deploy
+  manual).
+- Achados e correções desta reconciliação:
+  1. **10 status do índice bug→track ainda defasados** (diziam "Aberto" quando
+     `BUGS.md` já registrava fechado/corrigido, cada um verificado
+     individualmente antes de editar): `BUG-009` (PR #157), `BUG-012` (via
+     `BUG-076`/PR #103), `BUG-013` (PR #153), `BUG-015` (PR #152), `BUG-017`
+     (Momento 1 do T-01), `BUG-027` (PR #156), `BUG-031` (duplicata do
+     `BUG-095`, PR #114), `BUG-038` (PR #155), `BUG-089` (PR #154), `BUG-104`
+     (PR #132), `BUG-105` (fechado — não é bug) e `BUG-110` (PR #131). Todos
+     corrigidos + 2 linhas novas para `BUG-114`/`BUG-115`.
+  2. **A tabela de Triagem por severidade** (não só a nota textual acima dela)
+     ainda tinha uma linha para o `BUG-110` — esvaziada.
+  3. **Item `[T-01]` nunca tinha saído do template original** ("Execução: Não
+     iniciada", "Decisão: —") apesar do Momento 1 estar concluído — reescrito
+     por completo com decisão, execução, resultado e bugs vinculados.
+  4. **Item `[T-03]`** dizia "6/7 (~86%)", defasado desde o fechamento do
+     `BUG-009` (PR #157) — recalculado para **7/7 (100%), fechado**.
+  5. **Item `[F3-01]`** não registrava que `BUG-012` fora resolvido de carona
+     pelo `BUG-076` — atualizado para "Parcial" (BUG-011 segue hipótese).
+  6. **Nova Lição 45** (status de fila é hipótese herdada, confirme contra
+     git) + Lições **46** (medir antes de trocar padrão de acesso a dado),
+     **47** (contador nativo precisa de índice; snapshot é alternativa mais
+     segura sem pipeline de deploy) e **48** (paginar lista com busca livre
+     exige índice de busca externo) — as 3 últimas distiladas do trabalho do
+     T-01. Lição 45 incorporada como **item 15 do Protocolo**.
+  7. Seção **"Estado da auditoria e próximos itens de execução"** reescrita
+     por completo — quase tudo que era "próximo passo" na versão de
+     2026-07-22 já foi feito; nova lista prioriza o deploy manual dos
+     índices, `F2-05` (categorização de design), `BUG-011` (investigar antes
+     de decidir), e a Fase 4 (único trabalho inteiramente novo que resta).
+  8. Confirmado que `T-01-PERFORMANCE-DESIGN.md`, `T-04-OBSERVABILITY-FINDINGS.md`
+     e `T-05-INTEGRATIONS-FINDINGS.md` já estavam com o estado correto em seus
+     próprios documentos (as sessões de execução mantiveram excelente
+     disciplina de atualização) — nenhuma defasagem interna a corrigir neles.
+- Itens atualizados: `00-PLAN.md` (parágrafo de status do topo, novo parágrafo
+  de reconciliação, Protocolo item 15, item `[T-01]` reescrito, item `[T-03]`
+  recalculado, item `[F3-01]` atualizado, Triagem por severidade esvaziada,
+  índice bug→track — 10 status corrigidos + 2 linhas novas, seção "Estado da
+  auditoria" reescrita). `DASHBOARD.md` (nota de "Última atualização", contagem
+  de bugs 113→115 + destaques novos). `RETROSPECTIVE.md` (Lições 45-48 + registro
+  de revisão). Este LOG. Nenhuma alteração necessária em `BUGS.md` (já
+  consistente com a realidade em todos os casos verificados).
+- Nada bloqueado para a próxima sessão de execução — sugestão de ordem: (1)
+  deploy manual dos índices do Firestore (fecha BUG-114/115, trivial); (2)
+  `F2-05` (categorização de design, terreno preparado); (3) investigar
+  `BUG-011` antes de decidir enforcement; (4) Fase 4 (mapeamento de jornadas
+  e2e), o único trabalho inteiramente novo que resta no checklist original.
+
+---
+
 ## [2026-07-23] Chat de execução — T-05 (Integrações externas) concluído no escopo misto
 
 - Chat/sessão: mesmo chat de execução (Opus 4.8). Após o T-04, a Gestora pediu para seguir ao **T-05**

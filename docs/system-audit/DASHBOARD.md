@@ -25,7 +25,24 @@
 > registro permanente e completo de toda sessão está em `LOG.md`, que nunca foi
 > editado e continua a fonte primária de história.
 >
-> **Última atualização:** 2026-07-23 (chat de execução — **T-01 Momento 1 CONCLUÍDO:
+> **Última atualização:** 2026-07-23 (chat de planejamento — **reconciliação geral**,
+> a 2ª desde 2026-07-07. Entre esta e a anterior (2026-07-22), a execução fechou os 3
+> tracks restantes (T-01 Momento 1, T-04, T-05) e concluiu F2-01/02/03/04 + F3-02 — e
+> já se autocorrigiu ao vivo sobre um erro da reconciliação anterior (`BUG-110`
+> reintroduzido sem checar o git; corrigido pela própria sessão de execução seguinte
+> em minutos). Esta reconciliação confirma esse trabalho e corrige o que sobrou:
+> **10 status do índice bug→track** ainda defasados (`BUG-009/012/013/015/017/027/
+> 031/038/089/104/105/110`, todos já corrigidos/fechados mas listados "Aberto"); a
+> **tabela de Triagem por severidade** (não só a nota textual) ainda listava o
+> `BUG-110`; o **item `[T-01]`** nunca tinha saído do template original; o **item
+> `[T-03]`** dizia "6/7" (defasado desde o fechamento do `BUG-009`); **2 linhas
+> novas** para `BUG-114`/`BUG-115`. Nova **Lição 45** no `RETROSPECTIVE.md` (status
+> numa fila de prioridade é hipótese herdada — confirme contra `git log` antes de
+> agir; o padrão recorreu 6× na mesma sessão de execução) + item 15 do Protocolo.
+> Seção "Estado da auditoria" do `00-PLAN.md` reescrita — quase tudo que era
+> "próximo passo" já foi feito. Nenhuma mudança de código.
+>
+> _(entrada anterior)_ 2026-07-23 (chat de execução — **T-01 Momento 1 CONCLUÍDO:
 > T1-3 (índices) — PR #160**, deploy Vercel confirmado (config-only). Medição: a paginação
 > da lista de usuários admin (~25k leituras/abertura a 10k) não cabe no Momento 1 (busca
 > substring client-side sobre a base inteira, sem filtro para reduzir; paginar regrediria a
@@ -297,17 +314,24 @@ _Nenhuma no momento._
 
 ## Bugs registrados (resumo)
 
-113 bugs registrados até `BUG-113`. Ver `BUGS.md` para o registro completo e
+115 bugs registrados até `BUG-115`. Ver `BUGS.md` para o registro completo e
 `00-PLAN.md#índice--bug--itemtrack` para a associação bug→item/track de todos
 eles. Destaques que não se encaixam num único item de fase:
 
+- **BUG-011** (Médio, aberto — **[HIPÓTESE]**) — antecedência mínima de agendamento não reforçada na gravação; nunca reproduzido em execução real
 - **BUG-030** (Baixo, **aceito**) — auth não funciona em preview Vercel (limitação conhecida de Firebase Auth + domínio efêmero)
 - **BUG-034** (Baixo, aberto/futuro) — falta 2º componente-base para modais grandes "app-shell"
+- **BUG-043** (Médio, aberto) — `steps-registry.ts` fora de sincronia com os produtos canônicos da jornada
 - **BUG-045** (Médio, corrigido PR #32) — `npm run test` estava quebrado na `main` desde o PR #19, sem ninguém ver (sessões validavam só com `tsc`+`build`, não `npm run check`)
+- **BUG-046** (Baixo, aberto) — links de e-mail de booking para rota inexistente
 - **BUG-085** (Baixo, aberto/adiado) — ~340 docs de eventos passados nunca removidos; correção óbvia é destrutiva (apagaria atas/histórico de carreira)
-- **BUG-097/BUG-098** (aberto, decisão de arquitetura de agenda pendente da Gestora)
+- **BUG-094** (Baixo, aberto/adiado) — `resolveEventWeek` mistura semana ISO com ano civil
+- **BUG-097** (Médio, aberto) — agendamento fantasma quando o evento some do Google; decisão de modelo tomada ("Agenda alterada"), falta o plano de implementação
+- **BUG-098** (Baixo, aberto de propósito) — campo `mentor` com nomenclatura antiga; pendência a pedido da Gestora
 - **BUG-105** (**fechado 2026-07-22 — não é bug**) — Pré-Análise Comportamental é collect-only por desenho (insumo do consultor para a devolutiva de Preparação de Carreira); já aparece no quadro "Formulários & Surveys Preenchidos" de `/admin/jornada-cliente`. Sem código.
-- **BUG-110** (Alto → **Corrigido**, PR #131) — reconciliação de 2026-07-22 o marcou aberto por engano; ver Triagem por severidade acima
+- **BUG-110** (Alto → **Corrigido**, PR #131) — reconciliação de 2026-07-22 o marcou aberto por engano (Lição 45); ver Triagem por severidade acima
+- **BUG-112 escopo C** (Melhoria, adiado) — papel real de "Consultor" + migração, programado para depois da auditoria
+- **BUG-114/BUG-115** (Médio, **aguardam deploy manual do índice** — PR #160) — código pronto, falta `firebase deploy --only firestore:indexes`
 
 ---
 
