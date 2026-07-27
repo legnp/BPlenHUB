@@ -743,7 +743,7 @@ export default function UsersManagementPage() {
                         {loadingAssessments ? (
                           <div className="flex flex-col items-center justify-center py-20 gap-4">
                              <Loader2 size={32} className="animate-spin text-[var(--accent-start)]" />
-                             <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Mapeando Pesquisas... (Admin)</p>
+                             <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Carregando pesquisas</p>
                           </div>
                         ) : userAssessments.length > 0 ? (
                            <div className="grid grid-cols-1 gap-4">

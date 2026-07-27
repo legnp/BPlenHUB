@@ -356,7 +356,7 @@ export default function PortfolioCommandCenter() {
               >
                 <div className="w-8 h-8 border-2 border-t-[var(--accent-start)] border-transparent rounded-full animate-spin" />
                 <div>
-                  <h3 className="text-xs font-black uppercase tracking-widest">Processando Arquivos</h3>
+                  <h3 className="text-xs font-black uppercase tracking-widest">Carregando arquivos</h3>
                   <p className="text-[10px] text-[var(--text-muted)] mt-1">Carregando as planilhas de precificação e convertendo o copywriting...</p>
                 </div>
               </motion.div>
