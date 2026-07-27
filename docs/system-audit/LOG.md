@@ -24,6 +24,28 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-23] Chat de execução — T-04 (Observabilidade) concluído no escopo reduzido
+
+- Chat/sessão: mesmo chat de execução (Opus 4.8). Após fechar o Momento 1 do T-01, a Gestora pediu para
+  seguir ao **T-04** (observabilidade — escopo reduzido: inventariar + documentar gap + recomendar, não
+  implementar). Inventário read-only por leitura de código; achados em `T-04-OBSERVABILITY-FINDINGS.md`.
+- **Inventário:** **nenhum** SDK de error tracking (Sentry/Datadog/etc. — verificado no `package.json`);
+  sem `instrumentation.ts`, sem `global-error.tsx`; os `error.tsx` de rota (`/admin`, `/hub`) são só UX
+  (não reportam). Logging = **336 `console.error` + 34 `console.warn`** → log de função da Vercel, efêmero
+  no Hobby, sem drain/alerta. `next.config.ts` sem nada de observabilidade. **Único alerta proativo de
+  erro:** o e-mail Resend do cron `sync-agenda` (`alertarFalha`); os demais `notificacao@bplen.com` são
+  transacionais (booking/convite/FAQ), não alertas.
+- **Gap:** erro de runtime é **invisível à equipe sem um usuário reportar** — a mesma classe reativa que
+  mordeu o processo (`BUG-087` apagão de cota, `BUG-089` `catch→[]`, Lição 31 merge-sem-deploy). Cobertura
+  de UX de erro existe; de OPERAÇÃO não.
+- **Recomendação (não implementada — decisão da Gestora pós-auditoria):** Sentry (`@sentry/nextjs`, free
+  tier ~5k/mês) como 1ª opção (captura automática em action/rota/render + alerta); alternativas: log drain
+  Vercel → Axiom/Better Stack; ou DIY mínimo reusando o Resend. Prioridade: cota/permissão Firestore, cron,
+  throw não tratado. **Restrição:** scrub obrigatório de PII (LGPD / `CLAUDE.md` 4 e 7) — e-mails,
+  matrículas, e-mail do Master.
+- **Estado:** T-04 concluído no escopo reduzido definido. Sem código. Itens atualizados: `00-PLAN.md`
+  (item T-04 + linhas de tracks), `DASHBOARD.md`, este LOG, `T-04-OBSERVABILITY-FINDINGS.md` (novo).
+
 ## [2026-07-23] Chat de execução — T-01 Momento 1 CONCLUÍDO: T1-3 (índices) mergeada (PR #160)
 
 - Chat/sessão: mesmo chat de execução (Opus 4.8). Gestora validou o Momento 1 do T1-2 em produção (5/5,

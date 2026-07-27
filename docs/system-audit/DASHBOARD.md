@@ -185,7 +185,11 @@ Progresso = bugs mergeados na `main` (ou formalmente aceitos) sobre o total do t
   follow-ups de UI do T1-2 (botão "Recalcular" + selo "atualizado em"). **Momento 2** (futuro):
   `Networking_Directory` + paginação da lista de usuários; Blaze; provedores externos. BUG-038 já corrigido
   (PR #155).
-- **T-04** Observabilidade — não iniciado — escopo reduzido (inventariar gap de alertas de erro em produção)
+- **T-04** Observabilidade — **CONCLUÍDO no escopo reduzido** (2026-07-23) — inventário read-only:
+  **gap confirmado** (sem error tracker/`instrumentation.ts`/`global-error.tsx`; `error.tsx` só UX;
+  336 `console.error` em log efêmero sem alerta; único alerta proativo = e-mail do cron). Recomendado
+  Sentry (`@sentry/nextjs`, free tier) + scrub de PII. Implementação = decisão da Gestora pós-auditoria.
+  Ver `T-04-OBSERVABILITY-FINDINGS.md`.
 - **T-05** Integrações externas — não iniciado — escopo misto (sandbox); BUG-046 (links de e-mail quebrados) aberto
 
 ---

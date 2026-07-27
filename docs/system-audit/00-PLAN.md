@@ -36,7 +36,10 @@ de cobertura dos mapas**: os 5 mapas estão **completos**.
   executável `server-action-surface.test.ts`), não bug a bug.
 - **Track T-03 (Integridade de dados): 6/7 (~86%)** — só `BUG-009` aberto.
 - **Track T-06 (Compliance): 2/2 (100%), fechado.**
-- **Tracks T-01/T-04/T-05: não iniciados.**
+- **Track T-01 (Performance): Momento 1 concluído** (2026-07-23, PRs #158/#159/#160;
+  paginação da lista de usuários admin → Momento 2). **Track T-04 (Observabilidade):
+  concluído no escopo reduzido** (inventário + gap + recomendação, `T-04-OBSERVABILITY-FINDINGS.md`).
+  **Track T-05: não iniciado.**
 - **Triagem por severidade: 1 único Alto aberto — `BUG-110`** (Drive/backup,
   planilha de survey sobrescreve avaliação anterior). Nenhum Crítico aberto.
 - **EXP-01 (dashboard de KPIs do `/admin`)** é uma **expansão de plataforma**
@@ -1211,10 +1214,19 @@ O mapeamento das jornadas abaixo é entregável desta fase (não pré-existente)
 - Modo de validação: Requer execução humana / ferramenta externa — **escopo
   reduzido**: inventariar e documentar gap, não implementar
 - Decisão: —
-- Execução: Não iniciada
-- Resultado: —
-- Bug(s) vinculado(s): —
-- Log: —
+- Execução: **Concluída (escopo reduzido) — 2026-07-23.** Inventário read-only por
+  leitura de código; achados em `T-04-OBSERVABILITY-FINDINGS.md`. Sem código.
+- Resultado: **Gap confirmado.** Não há error tracker (Sentry/etc.), `instrumentation.ts`
+  nem `global-error.tsx`; os `error.tsx` de rota são só UX (não reportam). O "log" são
+  336 `console.error` + 34 `console.warn` → log efêmero da Vercel, sem drain/alerta. O
+  **único** alerta proativo de erro é o e-mail do cron `sync-agenda` (`alertarFalha`); os
+  demais `notificacao@bplen.com` são transacionais. **Erro de runtime é invisível à equipe
+  sem um usuário reportar** — a mesma classe reativa que mordeu o processo (`BUG-087`
+  apagão de cota, `BUG-089` `catch→[]`, Lição 31 merge-sem-deploy). **Recomendado:** Sentry
+  (`@sentry/nextjs`, free tier), com scrub obrigatório de PII (LGPD / `CLAUDE.md` 4 e 7).
+  Implementação fica fora do escopo da auditoria (decisão da Gestora, pós-auditoria).
+- Bug(s) vinculado(s): — (gap sistêmico documentado; não gera bug pontual)
+- Log: [2026-07-23] inventário concluído — ver `LOG.md` e `T-04-OBSERVABILITY-FINDINGS.md`
 
 ### [T-05] Integrações externas em condição real
 - Categoria(s) de qualidade: Compatibilidade / Confiabilidade
@@ -1433,7 +1445,9 @@ esquecida.
   hotspot A, PR #158), T1-2 (agregados admin B–E → snapshot diário, PR #159) e T1-3 (índices de
   collection group versionados, PR #160). Paginação da lista de usuários admin → **Momento 2** (busca
   substring não pagina sem índice externo). Pendência operacional: deploy manual dos índices (fecha
-  BUG-114/115). `T-04`/`T-05` nunca iniciados.
+  BUG-114/115). **`T-04` (observabilidade): CONCLUÍDO no escopo reduzido** (2026-07-23, inventário +
+  gap + recomendação em `T-04-OBSERVABILITY-FINDINGS.md`; implementação = decisão da Gestora
+  pós-auditoria). `T-05` nunca iniciado.
 - **Severidade:** **0 `Alto`, 0 `Crítico` aberto.** _(A reconciliação de 2026-07-22 listou o
   `BUG-110` como único `Alto` aberto por engano — o PR #131 já o corrigira em 2026-07-20;
   reclassificado para `Corrigido` na sessão de execução de 2026-07-22. Ver `BUGS.md#bug-110`.)_
@@ -1520,8 +1534,10 @@ esquecida.
    T1-0, T1-1 (networking, PR #158), T1-2 (agregados admin → snapshot, PR #159),
    T1-3 (índices versionados, PR #160). Paginação da lista de usuários admin →
    Momento 2. Pendência operacional: deploy manual dos índices (fecha BUG-114/115).
-   Nunca iniciados: `T-04` (observabilidade — escopo reduzido: só inventariar o
-   gap), `T-05` (integrações externas em sandbox).
+   **`T-04` (observabilidade): CONCLUÍDO no escopo reduzido** (2026-07-23) — inventário
+   + gap + recomendação em `T-04-OBSERVABILITY-FINDINGS.md`; implementação (Sentry
+   recomendado) é decisão da Gestora pós-auditoria. Nunca iniciado: `T-05` (integrações
+   externas em sandbox).
 
 **7. Fases 3 (regras de negócio) e 4 (jornadas e2e)** — últimas do checklist
    original; `F3-03` já tem o achado principal corrigido (`BUG-022`), resta
