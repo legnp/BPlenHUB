@@ -3452,6 +3452,23 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   operacional que a T1-2 dos contadores nativos exigiria. Vincular à T1-2/T-01.
 - Commit/PR: —
 
+### BUG-115 Proteção anti-lockout de admin quebrada por índice de collection group inexistente
+
+- Severidade: Médio
+- Área/fase onde foi achado: T-01 (medição da T1-3, 2026-07-23)
+- Arquivo(s) afetado(s): `src/actions/users-admin.ts:updateUserPermissions` (query
+  `collectionGroup("User_Permissions").where("admin","==",true).limit(2)`, linha ~226)
+- Cenário de falha: **[CONFIRMADO por sonda read-only na base de produção]** a query falha com
+  `FAILED_PRECONDITION: requires a COLLECTION_GROUP_ASC index for User_Permissions field admin`. Ela roda
+  quando um admin rebaixa OUTRO admin (`updates.role && updates.role !== "admin"`): como está dentro do
+  try e lança **antes** da contagem, a operação inteira falha com erro genérico. Efeito: **não é possível
+  rebaixar/mudar o papel de um usuário admin** pelo painel (a própria trava "não remover o último admin"
+  quebra a operação). Débito **pré-existente**, exposto pela medição da T1-3. Sem risco de dado.
+- Status: **Aberto** — resolver na **T1-3** junto com o BUG-114 (mesmo remédio: criar o índice de
+  collection group para `User_Permissions.admin`, via `firestore.indexes.json` versionado + deploy).
+- Decisão de execução: registrar agora (Protocolo item 3). Vincular à T1-3/T-01.
+- Commit/PR: —
+
 
 ---
 
