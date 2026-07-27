@@ -190,7 +190,12 @@ Progresso = bugs mergeados na `main` (ou formalmente aceitos) sobre o total do t
   336 `console.error` em log efêmero sem alerta; único alerta proativo = e-mail do cron). Recomendado
   Sentry (`@sentry/nextjs`, free tier) + scrub de PII. Implementação = decisão da Gestora pós-auditoria.
   Ver `T-04-OBSERVABILITY-FINDINGS.md`.
-- **T-05** Integrações externas — não iniciado — escopo misto (sandbox); BUG-046 (links de e-mail quebrados) aberto
+- **T-05** Integrações externas — **CONCLUÍDO no escopo misto** (2026-07-23) — verificação read-only
+  (condição real, sem efeito): **Google (Calendar/Drive) e Mercado Pago confirmados vivos** (auth ok;
+  MP token válido + webhook HMAC ativo + código sólido); **Resend inconclusivo por read-only** (401 em
+  `/domains` = provável chave sending-only, não falha; produto envia em prod). Recomendações: confirmar
+  token MP de prod na Vercel (`APP_USR-`; local é `TEST-`/sandbox); E2E com custo → protocolo humano.
+  BUG-046 (links de e-mail p/ rota inexistente) segue Aberto (Baixo). Ver `T-05-INTEGRATIONS-FINDINGS.md`.
 
 ---
 

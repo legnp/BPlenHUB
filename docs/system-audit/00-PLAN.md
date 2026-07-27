@@ -39,7 +39,8 @@ de cobertura dos mapas**: os 5 mapas estão **completos**.
 - **Track T-01 (Performance): Momento 1 concluído** (2026-07-23, PRs #158/#159/#160;
   paginação da lista de usuários admin → Momento 2). **Track T-04 (Observabilidade):
   concluído no escopo reduzido** (inventário + gap + recomendação, `T-04-OBSERVABILITY-FINDINGS.md`).
-  **Track T-05: não iniciado.**
+  **Track T-05 (Integrações externas): concluído no escopo misto** (Google/MP verificados vivos
+  read-only; Resend presumido-ok; E2E com custo → protocolo humano — `T-05-INTEGRATIONS-FINDINGS.md`).
 - **Triagem por severidade: 1 único Alto aberto — `BUG-110`** (Drive/backup,
   planilha de survey sobrescreve avaliação anterior). Nenhum Crítico aberto.
 - **EXP-01 (dashboard de KPIs do `/admin`)** é uma **expansão de plataforma**
@@ -1237,10 +1238,19 @@ O mapeamento das jornadas abaixo é entregável desta fase (não pré-existente)
 - Modo de validação: misto — parte automatizável em sandbox, parte **escopo
   reduzido** (exige credencial/ambiente de teste dedicado)
 - Decisão: —
-- Execução: Não iniciada
-- Resultado: —
-- Bug(s) vinculado(s): —
-- Log: —
+- Execução: **Concluída (escopo misto) — 2026-07-23.** Verificação read-only (condição
+  real, sem efeito); achados em `T-05-INTEGRATIONS-FINDINGS.md`. Sem código.
+- Resultado: **Google (Calendar/Drive) e Mercado Pago confirmados vivos** por check
+  read-only (Calendar `events.list` e Drive `files.get` autenticam; MP token válido +
+  webhook HMAC ATIVO + código sólido — re-fetch do pagamento, idempotente). **Resend
+  inconclusivo por read-only** (401 em `/domains` = provável chave sending-only, não
+  falha; produto envia e-mails em produção). **2 recomendações à Gestora:** (1) confirmar
+  que o token MP de PRODUÇÃO na Vercel é `APP_USR-` (o local é `TEST-`/sandbox, correto p/
+  dev); (2) escopo da chave Resend local. **E2E com custo/efeito** (pagamento real, envio
+  real, escrita no Drive) documentado como protocolo de execução humana (seção 4 do doc).
+- Bug(s) vinculado(s): BUG-046 (Aberto, Baixo — links de e-mail p/ rota inexistente
+  `/hub/membro/dashboard`; candidato a fix rápido quando tocar os templates de e-mail)
+- Log: [2026-07-23] verificação concluída — ver `LOG.md` e `T-05-INTEGRATIONS-FINDINGS.md`
 
 ### [T-06] Compliance / LGPD (parte técnica)
 - Categoria(s) de qualidade: Segurança / Compatibilidade
@@ -1447,7 +1457,10 @@ esquecida.
   substring não pagina sem índice externo). Pendência operacional: deploy manual dos índices (fecha
   BUG-114/115). **`T-04` (observabilidade): CONCLUÍDO no escopo reduzido** (2026-07-23, inventário +
   gap + recomendação em `T-04-OBSERVABILITY-FINDINGS.md`; implementação = decisão da Gestora
-  pós-auditoria). `T-05` nunca iniciado.
+  pós-auditoria). **`T-05` (integrações externas): CONCLUÍDO no escopo misto** (2026-07-23) —
+  Google/MP verificados vivos (read-only), Resend presumido-ok; E2E com custo → protocolo humano;
+  ver `T-05-INTEGRATIONS-FINDINGS.md`. **Todos os tracks (T-01 a T-06) agora concluídos** (T-01
+  Momento 1; T-04/T-05 escopo reduzido/misto).
 - **Severidade:** **0 `Alto`, 0 `Crítico` aberto.** _(A reconciliação de 2026-07-22 listou o
   `BUG-110` como único `Alto` aberto por engano — o PR #131 já o corrigira em 2026-07-20;
   reclassificado para `Corrigido` na sessão de execução de 2026-07-22. Ver `BUGS.md#bug-110`.)_
@@ -1536,8 +1549,10 @@ esquecida.
    Momento 2. Pendência operacional: deploy manual dos índices (fecha BUG-114/115).
    **`T-04` (observabilidade): CONCLUÍDO no escopo reduzido** (2026-07-23) — inventário
    + gap + recomendação em `T-04-OBSERVABILITY-FINDINGS.md`; implementação (Sentry
-   recomendado) é decisão da Gestora pós-auditoria. Nunca iniciado: `T-05` (integrações
-   externas em sandbox).
+   recomendado) é decisão da Gestora pós-auditoria. **`T-05` (integrações externas):
+   CONCLUÍDO no escopo misto** (2026-07-23) — Google/MP verificados vivos read-only,
+   Resend presumido-ok; E2E com custo → protocolo humano (`T-05-INTEGRATIONS-FINDINGS.md`).
+   **Nenhum track pendente** — T-01 a T-06 concluídos.
 
 **7. Fases 3 (regras de negócio) e 4 (jornadas e2e)** — últimas do checklist
    original; `F3-03` já tem o achado principal corrigido (`BUG-022`), resta

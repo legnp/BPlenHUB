@@ -24,6 +24,32 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-23] Chat de execução — T-05 (Integrações externas) concluído no escopo misto
+
+- Chat/sessão: mesmo chat de execução (Opus 4.8). Após o T-04, a Gestora pediu para seguir ao **T-05**
+  (integrações externas — escopo misto: testar em condição real/sandbox o seguro, documentar o E2E com
+  custo/efeito). Achados em `T-05-INTEGRATIONS-FINDINGS.md`.
+- **Inventário:** Mercado Pago (checkout `mp-checkout.ts` + webhook `api/webhooks/mercadopago` +
+  `lib/mercadopago.ts`), Resend (e-mails: booking/convite/checkout/cron), Google Calendar/Drive/Sheets
+  (via `lib/google-auth.ts`, JWT service account). Todas as chaves presentes no `.env.local`.
+- **Verificação read-only (condição real, SEM efeito — nada de pagamento/e-mail/escrita):**
+  - **Google Calendar** ✅ `events.list` autenticou (SA JWT, escopo readonly). **Drive** ✅ `files.get`
+    na raiz autenticou. Integração Google viva.
+  - **Mercado Pago** ✅ token válido (`GET /v1/payment_methods` → 18 métodos); **webhook HMAC ATIVO**
+    (secret presente; handler valida assinatura timing-safe + re-fetch do pagamento, não confia no body;
+    idempotente). Token **local** é `TEST-` (sandbox, correto p/ dev).
+  - **Resend** ⚠️ `GET /domains` → 401: **inconclusivo**, não prova falha (chave sending-only dá 401 em
+    /domains e envia normalmente; não há check read-only sem enviar). Produto envia e-mails em prod.
+- **Recomendações à Gestora (2):** (1) confirmar que o token MP de **produção** na Vercel é `APP_USR-`
+  (não `TEST-`) — se fosse sandbox, checkouts reais não cobrariam; (2) esclarecer o escopo da chave
+  Resend local (se o teste local de e-mail falhar, é por aqui).
+- **Escopo reduzido (protocolo humano, seção 4 do doc):** pagamento E2E (MP sandbox/real), envio de
+  e-mail E2E (Resend), escrita no Drive/Sheets E2E — não executados por terem efeito colateral (dinheiro/
+  e-mail/escrita); ficam como validação da Gestora quando desejar.
+- **Estado:** T-05 concluído no escopo misto. Sem código. `BUG-046` (links de e-mail p/ rota inexistente,
+  Baixo) segue Aberto — candidato a fix rápido quando tocar os templates. Itens atualizados: `00-PLAN.md`,
+  `DASHBOARD.md`, este LOG, `T-05-INTEGRATIONS-FINDINGS.md` (novo). **Todos os tracks (T-01 a T-06) concluídos.**
+
 ## [2026-07-23] Chat de execução — T-04 (Observabilidade) concluído no escopo reduzido
 
 - Chat/sessão: mesmo chat de execução (Opus 4.8). Após fechar o Momento 1 do T-01, a Gestora pediu para
