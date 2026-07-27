@@ -24,6 +24,27 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-24] Chat de execução — F2-05 concluído (categorização de design hub+admin) → Fase 2 completa
+
+- Chat/sessão: mesma sessão de execução (Opus 4.8), após devolver o ITEM 1 à Gestora.
+- **ITEM 2 — F2-05 (categorização formal de design).** Inventário por leitura de código de todas as
+  rotas logadas. **Hub:** 8 Gestão Funcional (já com `FunctionalPageHeader`), 3 BPlen Journey
+  (`journey/[stepId]`, `servicos/[slug]`, `journey` índice), 2 Autênticas (`/hub`, `/hub/membro`),
+  Fullscreen a nível de componente (tourguide/welcome_survey), + 4 redirects legados. A Gestora
+  **ampliou o escopo para incluir o admin** e pediu **verificação de conformância**.
+- **Admin categorizado:** cabe nos 4 conceitos — **nenhum 5º necessário** — 16 Gestão Funcional (todas
+  com `FunctionalPageHeader`) + 2 Fullscreen (previews de survey/form em tela cheia).
+- **Verificação de conformância:** header OK (todas as GF com o header canônico; previews corretamente
+  sem). Loading (regra 8): 3 telas com palavra proibida — **corrigidas no PR #161** (`eb46ef7`, deploy
+  confirmado): `ContentEvaluationModal` ("Sincronizando…"→"Carregando conteúdo"), `admin/users`
+  ("Mapeando…"→"Carregando pesquisas"), `admin/products` ("Processando Arquivos"→"Carregando arquivos").
+  Decisão da Gestora: só as violações claras — spinners inline de botão, loads de seção e "…" residual
+  ficam como estão. eslint(tocados)/test 292/292/build limpos.
+- **Doc novo:** `F2-05-DESIGN-CATEGORIZATION.md` (4 conceitos + padrão canônico + página de referência +
+  categorização completa hub/admin + resultado da conformância). **F2-05 concluído → Fase 2 COMPLETA.**
+- Pendência: validação visual da Gestora em produção das 3 copies (BUG-030). Itens atualizados:
+  `F2-05-DESIGN-CATEGORIZATION.md` (novo), `00-PLAN.md` (F2-05 + Fase 2), `DASHBOARD.md`, este LOG.
+
 ## [2026-07-24] Chat de execução — ITEM 1 (deploy dos índices) bloqueado por credencial; devolvido à Gestora
 
 - Chat/sessão: chat de execução (Opus 4.8). Lição 45 aplicada primeiro: `git log --grep` confirmou que

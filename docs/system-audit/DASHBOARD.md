@@ -25,7 +25,16 @@
 > registro permanente e completo de toda sessão está em `LOG.md`, que nunca foi
 > editado e continua a fonte primária de história.
 >
-> **Última atualização:** 2026-07-23 (chat de planejamento — **reconciliação geral**,
+> **Última atualização:** 2026-07-24 (chat de execução — **F2-05 concluído → Fase 2 COMPLETA**.
+> Categorização formal de todas as rotas logadas (hub + admin) nos 4 conceitos de design
+> (`F2-05-DESIGN-CATEGORIZATION.md`); o admin coube nos 4 (16 Gestão Funcional + 2 Fullscreen,
+> nenhum 5º). Verificação de conformância: header OK; 3 violações de loading da regra 8 corrigidas
+> (**PR #161**, deploy confirmado — "Sincronizando/Mapeando/Processando" → "Carregando"). **ITEM 1
+> (deploy dos índices, BUG-114/115) bloqueado:** o agente não tem credencial com permissão de índice
+> (SA do Admin SDK só lê; login CLI expirado) — devolvido à Gestora (`firebase login` + deploy, ou os
+> 3 links do console). Pendente: validação visual das 3 copies (BUG-030).)
+>
+> _(entrada anterior)_ 2026-07-23 (chat de planejamento — **reconciliação geral**,
 > a 2ª desde 2026-07-07. Entre esta e a anterior (2026-07-22), a execução fechou os 3
 > tracks restantes (T-01 Momento 1, T-04, T-05) e concluiu F2-01/02/03/04 + F3-02 — e
 > já se autocorrigiu ao vivo sobre um erro da reconciliação anterior (`BUG-110`

@@ -24,13 +24,13 @@ de cobertura dos mapas**: os 5 mapas estão **completos**.
   fluxos de contrato (F1-02), programada para depois da limpeza da base de
   teste, e débitos de design menores (modal cru de `partners`, loadings fora
   do `AtmosphericLoading`).
-- **Fase 2 — `F2-01`, `F2-02`, `F2-03` e `F2-04` concluídos** (2026-07-22).
-  `F2-01`: `/hub/step-journey` removida (PR #152). `F2-02`: auditada — a trava
-  de contrato virou estrutural por-serviço (entitlement), sem código. `F2-03`:
-  validada por código (motor de tema global + mesmo `HubHeader` no shell das
-  duas áreas). `F2-04`: trava real da cota 1:1 ligada ao booking (PR #153).
-  Resta só `F2-05` (categorização formal dos conceitos a/b/d das páginas ainda
-  não migradas — parcial desde 2026-07-10).
+- **Fase 2 — COMPLETA** (`F2-01` a `F2-05`). `F2-01`: `/hub/step-journey` removida
+  (PR #152). `F2-02`: auditada — a trava de contrato virou estrutural por-serviço
+  (entitlement), sem código. `F2-03`: validada por código (motor de tema global +
+  mesmo `HubHeader` no shell das duas áreas). `F2-04`: trava real da cota 1:1 ligada
+  ao booking (PR #153). **`F2-05`: concluído (2026-07-24)** — categorização formal de
+  todas as rotas logadas (hub + admin) nos 4 conceitos (`F2-05-DESIGN-CATEGORIZATION.md`);
+  admin coube nos 4 (nenhum 5º); 3 violações de loading corrigidas (PR #161).
 - **Fase 3 — `F3-02` concluído** (Gestora ratificou as 3 exceções do Sequence
   Lock). `F3-01` parcial (`BUG-012` resolvido de carona; `BUG-011` segue
   hipótese). `F3-03` não iniciado formalmente (achado principal `BUG-022` já
@@ -1054,16 +1054,21 @@ sem copy hardcoded fora do que o guia permitir).
   (`src/components/layout/FunctionalPageHeader.tsx`, PR #58) e aplicado às telas de
   contrato (avulso + checkout) e checkout. Categorização formal das demais páginas e
   aplicação do padrão a elas: pendente.
-- Execução: **Avançada** — o padrão Gestão Funcional (`FunctionalPageHeader`) já está aplicado a:
-  contrato + checkout (PR #58), `contratos` (CT-4), `visao_geral`/`gestao_agenda`/`gestao_carreira`
-  (PR #74) e `profile_settings`/`networking` (PR #78 — categorizados como Gestão Funcional pela
-  Gestora). Restam de Gestão Funcional só as telas de **contrato/checkout** já cobertas; a
-  categorização formal dos conceitos **a/b/d** (Fullscreen/Journey/Autênticas) das demais páginas
-  logadas segue pendente.
-- Resultado: 8 páginas de Gestão Funcional já no header canônico. Conferência visual em produção.
-- Bug(s) vinculado(s): BUG-056 (Corrigido, PR #58); BUG-063 (Corrigido, PR #74); + PR #78 (perfil/networking)
+- Execução: **Concluída — 2026-07-24.** Categorização formal de **todas as rotas logadas (hub +
+  admin**, escopo ampliado pela Gestora) nos 4 conceitos, documentada em
+  `F2-05-DESIGN-CATEGORIZATION.md` com padrão canônico + página de referência por conceito. **O admin
+  coube nos 4 conceitos — nenhum 5º necessário** (16 Gestão Funcional + 2 Fullscreen/preview).
+  Verificação de conformância: header OK (todas as GF com `FunctionalPageHeader`); 3 violações de
+  loading da regra 8 corrigidas (**PR #161**, `eb46ef7`: "Sincronizando/Mapeando/Processando" →
+  "Carregando"). Demais telas já conformam (Journey tem o nav; Autênticas são únicas por desenho;
+  loads de seção e `...` mantidos por decisão da Gestora — só violações claras).
+- Resultado: hub — 8 Gestão Funcional, 3 BPlen Journey, 2 Autênticas, Fullscreen a nível de
+  componente, + redirects legados; admin — 16 Gestão Funcional, 2 Fullscreen. Pendência: validação
+  visual da Gestora em produção das 3 copies de loading (BUG-030). Detalhe em `F2-05-DESIGN-CATEGORIZATION.md`.
+- Bug(s) vinculado(s): BUG-056 (Corrigido, PR #58); BUG-063 (Corrigido, PR #74); + PR #78 (perfil/networking); + PR #161 (copy de loading)
 - Log: [2026-07-10] conceitos definidos + contrato/checkout (PR #58); [2026-07-11] visao_geral/
-  gestao_agenda/gestao_carreira (PR #74) + profile_settings/networking (PR #78)
+  gestao_agenda/gestao_carreira (PR #74) + profile_settings/networking (PR #78); [2026-07-24]
+  categorização formal hub+admin + conformância de loading (PR #161) — **F2-05 concluído**
 
 ---
 
