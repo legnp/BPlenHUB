@@ -31,10 +31,11 @@ de cobertura dos mapas**: os 5 mapas estão **completos**.
   ao booking (PR #153). **`F2-05`: concluído (2026-07-24)** — categorização formal de
   todas as rotas logadas (hub + admin) nos 4 conceitos (`F2-05-DESIGN-CATEGORIZATION.md`);
   admin coube nos 4 (nenhum 5º); 3 violações de loading corrigidas (PR #161).
-- **Fase 3 — `F3-02` concluído** (Gestora ratificou as 3 exceções do Sequence
-  Lock). `F3-01` parcial (`BUG-012` resolvido de carona; `BUG-011` segue
-  hipótese). `F3-03` não iniciado formalmente (achado principal `BUG-022` já
-  corrigido desde a Fase 1).
+- **Fase 3 — `F3-01` e `F3-02` concluídos.** `F3-02`: Gestora ratificou as 3
+  exceções do Sequence Lock. `F3-01`: `BUG-012` (limite semanal) e `BUG-011`
+  (antecedência mínima) ambos enforçados na gravação — BUG-011 investigado e o
+  resíduo do funil público corrigido (PR #162, 2026-07-28). `F3-03` não iniciado
+  formalmente (achado principal `BUG-022` já corrigido desde a Fase 1).
 - **Fase 4 — não iniciada.**
 - **Todos os 6 tracks (T-01 a T-06) concluídos:** T-02 fechado/reaberto/
   refechado (17/17, ver histórico abaixo); T-03 fechado (7/7 — `BUG-009`
@@ -1079,20 +1080,21 @@ sem copy hardcoded fora do que o guia permitir).
 - Critério de aceite: decisão tomada (implementar enforcement ou remover a
   configuração morta) para `MAX_BOOKINGS_PER_WEEK` e antecedência mínima na
   gravação (não só na listagem)
-- Modo de validação: PENDENTE (parte de `BUG-011` — sem decisão/investigação ainda)
-- Decisão: **Parcial** — `MAX_BOOKINGS_PER_WEEK` (BUG-012): resolvido de carona
-  pelo trabalho de política de agendamento (`BUG-076`). Antecedência mínima na
-  gravação (BUG-011): segue **Pendente**.
-- Execução: **Parcial** — BUG-012 corrigido sem PR próprio (efeito colateral do
-  `BUG-076`/PR #103, verificado por leitura em 2026-07-22). BUG-011 não iniciado.
-- Resultado: ✓ BUG-012 — `hasReachedWeeklyLimit` (`policy.ts:126`) usa
-  `MAX_BOOKINGS_PER_WEEK` e é chamado por `bookEventAction`, por tipo de sessão;
-  a constante deixou de ser órfã. ○ BUG-011 — ainda não investigado/reproduzido
-  em execução real.
-- Bug(s) vinculado(s): BUG-011 (**[HIPÓTESE]** — exploit teórico via chamada
-  direta da action, não reproduzido em execução real), BUG-012 (**Corrigido**,
-  via BUG-076/PR #103)
-- Log: [2026-07-22] BUG-012 confirmado corrigido por leitura — ver `LOG.md`
+- Modo de validação: **Automatizado** (investigação read-only de control-flow, conclusiva)
+- Decisão: **Concluída** — `MAX_BOOKINGS_PER_WEEK` (BUG-012) e antecedência mínima
+  (BUG-011) ambos enforçados na gravação. A investigação do BUG-011 (2026-07-28)
+  confirmou que a parte do membro já era enforçada e o resíduo do funil público foi
+  corrigido (decisão da Gestora: fechar + corrigir).
+- Execução: **Concluída** — BUG-012 corrigido de carona (`BUG-076`/PR #103); BUG-011:
+  membro já coberto (PRs #102/#103/#111), resíduo público corrigido (**PR #162**).
+- Resultado: ✓ BUG-012 — `hasReachedWeeklyLimit` (`policy.ts:126`) chamado por
+  `bookEventAction`, por tipo de sessão. ✓ BUG-011 — `bookEventAction` chama
+  `getBookingWindowError` na transação (membro); `bookPublicMeetingAction` revalida a
+  janela pública de 3 dias no write (PR #162). **F3-01 concluído.**
+- Bug(s) vinculado(s): BUG-011 (**Corrigido** — investigado + resíduo público via PR #162),
+  BUG-012 (**Corrigido**, via BUG-076/PR #103)
+- Log: [2026-07-22] BUG-012 confirmado por leitura; [2026-07-28] BUG-011 investigado +
+  resíduo público corrigido (PR #162) — ver `LOG.md`
 
 ### [F3-02] Exceções do Sequence Lock ainda fazem sentido de negócio?
 - Categoria(s) de qualidade: Adequação funcional
@@ -1402,7 +1404,7 @@ sessões): `BUG-010` (PR #69, desde 2026-07-11), `BUG-040`/`041`/`042` (Trilha
 | BUG-008 | Alto | Corrigido (PR #71) | F2-04, T-03 — chave de cota 1-to-1 unificada |
 | BUG-009 | Médio | **Corrigido (PR #157)** | F0-02, T-03 — `[CONFIRMADO]` timestamp lido era `timestamp`, gravado é `bookedAt` *(corrigido nesta sessão — estava "Aberto", defasado desde 2026-07-22)* |
 | BUG-010 | Alto | **Corrigido (PR #69)** | T-03 — `adminAddAttendeeAction` morta removida *(corrigido nesta sessão — estava "Aberto", defasado desde 2026-07-11)* |
-| BUG-011 | Médio | Aberto | F3-01 — **[HIPÓTESE]** |
+| BUG-011 | Médio | Corrigido (PR #162) | F3-01 — membro já enforçado; resíduo público corrigido |
 | BUG-012 | Baixo | **Corrigido (via BUG-076, PR #103)** | F3-01 — limite semanal passou a ser enforced por tipo de sessão em `policy.ts` *(corrigido nesta sessão — estava "Aberto")* |
 | BUG-013 | Médio | **Corrigido (PR #153)** | F2-04 — trava real da cota 1:1 no booking (consome ao agendar, estorna se cancelado em tempo hábil) *(corrigido nesta sessão — estava "Aberto")* |
 | BUG-014 | Baixo | Corrigido (PR #26) | F1-01 — import morto removido |
@@ -1556,8 +1558,8 @@ esquecida.
   (categorização formal dos conceitos Fullscreen/Journey/Autênticas nas
   páginas ainda não migradas ao padrão Gestão Funcional — parcial desde
   2026-07-10, nunca retomada).
-- **Fase 3: `F3-02` concluído.** `F3-01` parcial (`BUG-012` resolvido de
-  carona; `BUG-011` segue hipótese, nunca investigado). `F3-03` não iniciado
+- **Fase 3: `F3-01` e `F3-02` concluídos** (`BUG-011` investigado + resíduo
+  público corrigido, PR #162, 2026-07-28; `BUG-012` de carona). `F3-03` não iniciado
   formalmente como auditoria (o achado prático, `BUG-022`, já foi corrigido
   na Fase 1 — falta só a confirmação formal da cláusula de reembolso e dos 2
   bypasses de pagamento como regra de negócio documentada).
@@ -1603,10 +1605,10 @@ esquecida.
 **3. Bugs Médios/Baixos abertos, sem decisão de negócio pendente (candidatos
    a "carona" quando o chat de execução tocar os arquivos vizinhos, ou a uma
    sessão de limpeza dedicada):**
-   - `BUG-011` (F3-01) — antecedência mínima de agendamento não reforçada na
-     gravação. Nunca foi investigado/reproduzido em execução real —
-     **[HIPÓTESE]** ainda. Primeiro passo é confirmar se o exploit teórico é
-     real antes de decidir enforcement vs. remoção da regra.
+   - ~~`BUG-011` (F3-01)~~ **CORRIGIDO (2026-07-28, PR #162).** Investigado por
+     leitura: a parte do membro já era enforçada (`bookEventAction`, estava stale
+     como o BUG-012); o resíduo do funil público foi corrigido (revalidação da
+     janela no write). **F3-01 concluído.**
    - `BUG-043` (F2-01/Fase A) — `steps-registry.ts` fora de sincronia com os
      produtos canônicos da jornada. Independente da remoção do
      `/hub/step-journey` (já feita); é a mesma fonte de dado importada por

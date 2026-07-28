@@ -24,6 +24,26 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-28] Chat de execução — BUG-011 investigado + resíduo do funil público corrigido (PR #162) → F3-01 concluído
+
+- Chat/sessão: mesma sessão (Opus 4.8). ITEM 3: investigar BUG-011 (antecedência mínima de agendamento
+  não reforçada na gravação) — era [HIPÓTESE], nunca reproduzido.
+- **Investigação read-only (control-flow conclusivo, sem simulação runtime — o caminho é inequívoco):**
+  - **Membro: BUG-011 já estava RESOLVIDO** (stale, como o BUG-012). `bookEventAction` (`booking.ts:132`),
+    dentro da transação e antes de qualquer escrita, chama `getBookingWindowError(eventData.start)` e
+    lança se o slot estiver fora da janela [MIN=3, MAX=20] dias — quando há `matricula`. Enforce no
+    servidor, não só na listagem. Fechado pelo trabalho de `policy.ts` (BUG-076/093, PRs #102/#103/#111).
+  - **Resíduo — funil público:** `bookPublicMeetingAction` roteia pelo mesmo `bookEventAction` **sem
+    matrícula** (checagem `if (matricula)` pulada), então a janela pública de 3 dias
+    (`PUBLIC_BOOKING_SETTINGS.minDaysInFuture`) só existia na listagem (`getPublicSlotsAction`), não no
+    write — chamável direto com um `eventId` de slot dentro da janela.
+- **Decisão da Gestora:** fechar como resolvido + corrigir o resíduo. **PR #162 (`da576f7`, deploy
+  confirmado):** `bookPublicMeetingAction` revalida a janela no write com a MESMA regra/config da
+  listagem (`isAfter(start, now + minDays)`, fonte única `PUBLIC_BOOKING_SETTINGS` — sem fuso novo).
+  Stakes baixos (lead/reunião gratuita, capacidade já enforçada). eslint(tocado)/test 292/292/build limpos.
+- **F3-01 concluído** (BUG-011 + BUG-012). Itens atualizados: `BUGS.md` (BUG-011 Corrigido), `00-PLAN.md`
+  (F3-01 + índice bug→track + resumos de fase), `DASHBOARD.md`, este LOG.
+
 ## [2026-07-28] Chat de execução — validações da Gestora (F2-05 loading + T1-2 snapshot) passaram
 
 - Chat/sessão: mesma sessão. A Gestora validou em produção: **F2-05** — as 3 copies de loading

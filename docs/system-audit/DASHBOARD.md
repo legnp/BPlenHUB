@@ -25,7 +25,14 @@
 > registro permanente e completo de toda sessão está em `LOG.md`, que nunca foi
 > editado e continua a fonte primária de história.
 >
-> **Última atualização:** 2026-07-24 (chat de execução — **BUG-114 e BUG-115 CORRIGIDOS**. A Gestora
+> **Última atualização:** 2026-07-28 (chat de execução — **BUG-011 CORRIGIDO → F3-01 concluído** (PR #162).
+> Investigado por leitura: a antecedência mínima de 3 dias já era enforçada na gravação para o membro
+> (`bookEventAction`; estava stale como o BUG-012); o resíduo do funil público (write não revalidava a
+> janela, só a listagem) foi corrigido. Também nesta sessão: **BUG-114/115 fechados** (índices criados
+> pela Gestora, queries confirmadas); **F2-05 e snapshot T1-2 validados** em produção; credencial MP
+> esclarecida (teste até pós-auditoria). Deploy de todos confirmado.)
+>
+> _(entrada anterior)_ 2026-07-24 (chat de execução — **BUG-114 e BUG-115 CORRIGIDOS**. A Gestora
 > criou os 3 índices no Firebase Console (composto `Surveys(surveyId,status)` via link + isenções
 > `Forms.formId` e `User_Permissions.admin`), todos READY. Sonda read-only confirmou o EFEITO (Lição 31):
 > as 3 queries que davam FAILED_PRECONDITION funcionam (4/1/2 docs). Fecha a última pendência operacional
@@ -334,7 +341,7 @@ _Nenhuma no momento._
 `00-PLAN.md#índice--bug--itemtrack` para a associação bug→item/track de todos
 eles. Destaques que não se encaixam num único item de fase:
 
-- **BUG-011** (Médio, aberto — **[HIPÓTESE]**) — antecedência mínima de agendamento não reforçada na gravação; nunca reproduzido em execução real
+- **BUG-011** (Médio) — **CORRIGIDO (PR #162, 2026-07-28).** Investigado: a parte do membro já era enforçada (`bookEventAction`, estava stale como o BUG-012); resíduo do funil público (write não revalidava a janela de 3 dias) corrigido. F3-01 concluído.
 - **BUG-030** (Baixo, **aceito**) — auth não funciona em preview Vercel (limitação conhecida de Firebase Auth + domínio efêmero)
 - **BUG-034** (Baixo, aberto/futuro) — falta 2º componente-base para modais grandes "app-shell"
 - **BUG-043** (Médio, aberto) — `steps-registry.ts` fora de sincronia com os produtos canônicos da jornada

@@ -334,9 +334,21 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Cenário de falha: um client que já tenha um `eventId` de um slot fora da
   janela mínima (3 dias) poderia teoricamente reservar chamando a action
   diretamente, pulando a checagem que só existe na função de listagem de slots.
-- Status: Aberto
-- Decisão de execução: Precisa plano+aprovação (regra de agendamento)
-- Commit/PR: —
+- Status: **Corrigido — 2026-07-28 (investigado + fix do resíduo, PR #162).**
+  **[CONFIRMADO por leitura]** A parte do **membro já estava resolvida** e o bug estava **stale**
+  (mesmo padrão do BUG-012): `bookEventAction` (`booking.ts:132`), dentro da transação e antes de
+  qualquer escrita, chama `getBookingWindowError(eventData.start)` e lança se o slot estiver fora da
+  janela [MIN=3, MAX=20] dias — quando há `matricula`. Enforce no servidor, não só na listagem;
+  fechado pelo trabalho de `policy.ts` (BUG-076/093, PRs #102/#103/#111). **Resíduo do funil público
+  corrigido (PR #162):** `bookPublicMeetingAction` roteava pelo mesmo `bookEventAction` **sem
+  matrícula** (checagem `if (matricula)` pulada), então a janela pública de 3 dias
+  (`PUBLIC_BOOKING_SETTINGS.minDaysInFuture`) só existia na listagem; agora é revalidada no write com a
+  mesma regra/config (`isAfter(start, now + minDays)`, fonte única). Stakes do resíduo eram baixos
+  (lead/reunião gratuita, sem dinheiro/cota/dado; capacidade já enforçada). Decisão da Gestora
+  (2026-07-28): fechar como resolvido + corrigir o resíduo.
+- Decisão de execução: investigação read-only (leitura de control-flow, conclusiva) + fix pequeno do
+  resíduo público, plano+aprovação da Gestora (regra de agendamento) atendido.
+- Commit/PR: **PR #162** (`da576f7`) — resíduo público; membro já coberto por PRs #102/#103/#111.
 
 ### BUG-012 Limite de 1 agendamento/semana declarado mas nunca aplicado
 
