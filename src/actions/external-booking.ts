@@ -144,6 +144,25 @@ export async function bookPublicMeetingAction(formData: {
   slot: string; // Este é o ID do evento (eventId)
 }) {
   try {
+    // Revalida a janela publica no WRITE (BUG-011): a listagem (getPublicSlotsAction)
+    // ja filtra por minDaysInFuture, mas esta action era chamavel direto com um
+    // eventId de um slot dentro da janela minima, pulando a checagem que so existia
+    // na listagem. Enforca no servidor o que a tela ja mostra, com a MESMA regra e
+    // config (fonte unica: PUBLIC_BOOKING_SETTINGS) — `isAfter(start, now + minDays)`,
+    // identico ao getPublicSlotsAction. O fluxo de MEMBRO tem trava propria em
+    // bookEventAction (via matricula); o funil publico nao passa matricula, entao a
+    // janela dele e reforcada aqui.
+    const db = getAdminDb();
+    const evSnap = await db.collection("Calendar_Events").doc(formData.slot).get();
+    const startISO = evSnap.exists ? (evSnap.data()?.start as string | undefined) : undefined;
+    const minAllowed = addDays(new Date(), CALENDAR_CONFIG.PUBLIC_BOOKING_SETTINGS.minDaysInFuture);
+    if (!startISO || !isAfter(parseISO(startISO), minAllowed)) {
+      return {
+        success: false,
+        message: `Este horário precisa ser agendado com no mínimo ${CALENDAR_CONFIG.PUBLIC_BOOKING_SETTINGS.minDaysInFuture} dias de antecedência.`,
+      };
+    }
+
     const userId = `lead_${Buffer.from(formData.email).toString('base64').substring(0, 10)}`;
 
     // 1. Persistência Institucional da Triagem (Forms_Global - Já usa Admin Action)
