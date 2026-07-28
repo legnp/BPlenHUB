@@ -25,7 +25,13 @@
 > registro permanente e completo de toda sessão está em `LOG.md`, que nunca foi
 > editado e continua a fonte primária de história.
 >
-> **Última atualização:** 2026-07-24 (chat de execução — **F2-05 concluído → Fase 2 COMPLETA**.
+> **Última atualização:** 2026-07-24 (chat de execução — **BUG-114 e BUG-115 CORRIGIDOS**. A Gestora
+> criou os 3 índices no Firebase Console (composto `Surveys(surveyId,status)` via link + isenções
+> `Forms.formId` e `User_Permissions.admin`), todos READY. Sonda read-only confirmou o EFEITO (Lição 31):
+> as 3 queries que davam FAILED_PRECONDITION funcionam (4/1/2 docs). Fecha a última pendência operacional
+> do T-01 Momento 1. Detalhe/respondentes do admin e rebaixar admin voltam a funcionar.)
+>
+> _(entrada anterior)_ 2026-07-24 (chat de execução — **F2-05 concluído → Fase 2 COMPLETA**.
 > Categorização formal de todas as rotas logadas (hub + admin) nos 4 conceitos de design
 > (`F2-05-DESIGN-CATEGORIZATION.md`); o admin coube nos 4 (16 Gestão Funcional + 2 Fullscreen,
 > nenhum 5º). Verificação de conformância: header OK; 3 violações de loading da regra 8 corrigidas
@@ -206,10 +212,11 @@ Progresso = bugs mergeados na `main` (ou formalmente aceitos) sobre o total do t
   (2 momentos, Blaze futuro). **T1-1 (networking, hotspot A CRÍTICO) — PR #158:** filtro no banco + teto.
   **T1-2 (agregados admin B–E) — PR #159:** **snapshot diário** `Admin_Metrics_Daily` (cron compartilhado;
   telas leem 1 doc; paridade validada; adianta a série do EXP-01). **T1-3 (índices) — PR #160:**
-  `firestore.indexes.json` versionado fecha **BUG-114** (detalhe de respondentes) e **BUG-115** (anti-lockout
-  de admin) **após deploy manual**. Paginação da lista de usuários admin → **Momento 2** (busca substring
-  não pagina sem índice externo). Todos deploy confirmado. **Pendências operacionais:** deploy dos índices;
-  follow-ups de UI do T1-2 (botão "Recalcular" + selo "atualizado em"). **Momento 2** (futuro):
+  `firestore.indexes.json` versionado + **índices criados no console pela Gestora (2026-07-24), READY —
+  BUG-114 e BUG-115 CORRIGIDOS** (queries confirmadas por sonda, Lição 31). Paginação da lista de usuários
+  admin → **Momento 2** (busca substring não pagina sem índice externo). Todos deploy confirmado.
+  **Pendência operacional restante:** follow-ups de UI do T1-2 (botão "Recalcular" + selo "atualizado em").
+  **Momento 2** (futuro):
   `Networking_Directory` + paginação da lista de usuários; Blaze; provedores externos. BUG-038 já corrigido
   (PR #155).
 - **T-04** Observabilidade — **CONCLUÍDO no escopo reduzido** (2026-07-23) — inventário read-only:

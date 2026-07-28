@@ -3443,17 +3443,16 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   funciona é `dados_cadastrais`, que usa o caminho especial de varredura de `User` (não collectionGroup).
   É débito **pré-existente** (independe da T1-2), exposto pela medição. Sem risco de dado — é gap
   funcional admin-facing.
-- Status: **Índice versionado — AGUARDA DEPLOY MANUAL DA GESTORA (T1-3, PR #160).** O
-  `firestore.indexes.json` já declara os índices necessários (`Surveys(surveyId,status)` composto +
-  `Forms.formId` collection-group). Fica **corrigido assim que** rodar `firebase deploy --only
-  firestore:indexes` (ou os links de criação do console). **[2026-07-24] Confirmado que o deploy NÃO é
-  automatizável pelo agente:** o service account do Admin SDK **não tem permissão de índice**
-  (`The caller does not have permission` ao criar via Admin API — só leitura), e o login cacheado do
-  firebase-tools **expirou** (`firebase login` é interativo). Exige credencial da Gestora (rodar
-  `firebase login` + deploy) ou os 3 links do console. Lição 31: config sem o passo operacional é inerte.
-  Full scan de `User` do detalhe (`getFSItemDetails`) fica como otimização menor de follow-up.
-- Decisão de execução: índice versionado entregue na T1-3; **falta o deploy manual** para fechar.
-- Commit/PR: **PR #160** (`257a65e`) — `firestore.indexes.json`.
+- Status: **Corrigido — 2026-07-24.** Os índices foram criados pela Gestora no console do Firebase
+  (composto `Surveys(surveyId,status)` via link; field override `Forms.formId` collection-group via
+  "Adicionar isenção"), ambos **READY**. **[CONFIRMADO por sonda read-only na base de produção,
+  Lição 31 — verificado o EFEITO, não só a config]:** as queries que davam `FAILED_PRECONDITION` agora
+  **funcionam** — `Surveys where surveyId==check_in & status==completed` → 4 docs; `Forms where
+  formId==theme_suggestion` → 1 doc. O detalhe/respondentes do admin (`getFSItemDetails`) volta a
+  funcionar. Full scan de `User` do detalhe fica como otimização menor de follow-up (não bloqueia).
+- Decisão de execução: índice versionado entregue na T1-3 (PR #160); deploy manual feito pela Gestora
+  (2026-07-24), confirmado por sonda.
+- Commit/PR: **PR #160** (`257a65e`, `firestore.indexes.json`) + criação dos índices no console (2026-07-24).
 
 ### BUG-115 Proteção anti-lockout de admin quebrada por índice de collection group inexistente
 
@@ -3467,13 +3466,14 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   try e lança **antes** da contagem, a operação inteira falha com erro genérico. Efeito: **não é possível
   rebaixar/mudar o papel de um usuário admin** pelo painel (a própria trava "não remover o último admin"
   quebra a operação). Débito **pré-existente**, exposto pela medição da T1-3. Sem risco de dado.
-- Status: **Índice versionado — AGUARDA DEPLOY MANUAL DA GESTORA (T1-3, PR #160).** O
-  `firestore.indexes.json` já declara o field override collection-group para `User_Permissions.admin`.
-  Fica **corrigido assim que** rodar `firebase deploy --only firestore:indexes` (ou o link do console).
-  **[2026-07-24]** Mesmo bloqueio do BUG-114: o deploy **não é automatizável pelo agente** (SA do Admin
-  SDK sem permissão de índice; login CLI cacheado expirado) — exige credencial da Gestora.
-- Decisão de execução: índice versionado entregue na T1-3; **falta o deploy manual** para fechar.
-- Commit/PR: **PR #160** (`257a65e`) — `firestore.indexes.json`.
+- Status: **Corrigido — 2026-07-24.** O field override collection-group para `User_Permissions.admin`
+  foi criado pela Gestora no console ("Adicionar isenção" → escopo de grupo de coleções, Crescente),
+  **READY**. **[CONFIRMADO por sonda read-only, Lição 31]:** a query anti-lockout
+  `collectionGroup("User_Permissions").where("admin","==",true).limit(2)` agora **funciona** → 2 docs.
+  Rebaixar/mudar o papel de um admin pelo painel volta a funcionar.
+- Decisão de execução: índice versionado entregue na T1-3 (PR #160); deploy manual feito pela Gestora
+  (2026-07-24), confirmado por sonda.
+- Commit/PR: **PR #160** (`257a65e`, `firestore.indexes.json`) + criação do índice no console (2026-07-24).
 
 
 ---

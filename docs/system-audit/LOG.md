@@ -24,6 +24,23 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-24] Chat de execução — BUG-114 e BUG-115 corrigidos (índices criados pela Gestora, confirmados)
+
+- Chat/sessão: mesma sessão. Após o ITEM 1 ser devolvido à Gestora (deploy não automatizável pelo
+  agente), ela criou os índices no Firebase Console. O link do índice **composto** (`Surveys(surveyId,
+  status)`, BUG-114 detalhe de survey) funcionou de primeira; os 2 **field overrides** (isenções) não
+  abriam botão de criar pelo link — guiei a criação manual via "Adicionar isenção" (coleção + campo +
+  escopo de grupo de coleções Crescente): `Forms.formId` (BUG-114 detalhe de form) e
+  `User_Permissions.admin` (BUG-115).
+- **Verificação (Lição 31 — o EFEITO, não só a config), sonda read-only na base de produção:** os 3
+  índices estão **READY**, e as 3 queries que davam `FAILED_PRECONDITION` agora **funcionam** —
+  `Surveys where surveyId==check_in & status==completed` → 4 docs; `Forms where formId==theme_suggestion`
+  → 1 doc; `User_Permissions where admin==true limit 2` → 2 docs. **BUG-114 e BUG-115 CORRIGIDOS.**
+- Fecha a **última pendência operacional do T-01 Momento 1**. Nota para o futuro: deploy de índice não é
+  automatizável pelo agente (SA do Admin SDK só lê índices; CLI exige login interativo) — sempre passo
+  manual da Gestora. Itens atualizados: `BUGS.md` (BUG-114/115 Corrigido), `00-PLAN.md`, `DASHBOARD.md`,
+  este LOG. Nenhum código de produto tocado (índices são infra do Firestore).
+
 ## [2026-07-24] Chat de execução — F2-05 concluído (categorização de design hub+admin) → Fase 2 completa
 
 - Chat/sessão: mesma sessão de execução (Opus 4.8), após devolver o ITEM 1 à Gestora.

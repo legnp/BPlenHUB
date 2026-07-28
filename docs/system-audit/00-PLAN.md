@@ -1577,13 +1577,15 @@ esquecida.
 
 ### Lista priorizada do que resta (para o chat de execução retomar)
 
-**1. Pendência operacional mais simples — deploy manual dos índices do
-   Firestore.** `firestore.indexes.json` já está versionado e commitado (PR
-   #160); rodar `firebase deploy --only firestore:indexes` (ou os 3 links de
-   criação do console) fecha `BUG-114` (detalhe de respondentes do admin) e
-   `BUG-115` (anti-lockout ao rebaixar outro admin) de uma vez. Sem código,
-   sem decisão — só execução do comando (a Gestora ou quem tiver acesso ao
-   Firebase Console).
+**1. ~~Pendência operacional — deploy dos índices do Firestore~~ CONCLUÍDA
+   (2026-07-24).** A Gestora criou os 3 índices no Firebase Console (composto
+   `Surveys(surveyId,status)` via link + field overrides `Forms.formId` e
+   `User_Permissions.admin` via "Adicionar isenção"), todos **READY**. Sonda
+   read-only confirmou o EFEITO (Lição 31): as 3 queries que davam
+   `FAILED_PRECONDITION` agora funcionam. **`BUG-114` e `BUG-115` corrigidos.**
+   Nota operacional para o futuro: o deploy de índice **não é automatizável pelo
+   agente** (o SA do Admin SDK só lê índices; a CLI exige login interativo) — é
+   sempre um passo manual da Gestora via console/CLI autenticada.
 
 **2. Ações que só a Gestora pode fazer (sem bloqueio de código):**
    - Validação manual dos 3 fluxos de contrato (grátis/pago/avulso) em
