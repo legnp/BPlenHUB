@@ -29,12 +29,12 @@ Google (SA + IDs de Calendar/Drive), Firebase Admin.
 
 ## 3. Achados e recomendações
 
-1. **MP — confirmar o ambiente de PRODUÇÃO.** O token **local** é `TEST-` (sandbox, correto
-   para dev). O token de **produção** vive nas env vars da Vercel (não visível daqui).
-   **Recomendação (Gestora):** confirmar que a env `MERCADOPAGO_ACCESS_TOKEN` na Vercel é
-   `APP_USR-` (produção). Se estivesse `TEST-`, checkouts reais não cobrariam e liberariam
-   serviço sem pagamento de verdade — risco financeiro. Quase certamente já é produção (o
-   produto vende), mas é uma confirmação de 1 minuto que vale fazer.
+1. **MP — ambiente de produção: ESCLARECIDO pela Gestora (2026-07-28).** O token **local** é
+   `TEST-` (sandbox). **A produção TAMBÉM está em credencial de TESTE por ora, de forma
+   deliberada** — a troca para a credencial de produção (`APP_USR-`) será feita **após a
+   conclusão da auditoria**. Portanto NÃO é um risco em aberto: é um estado intencional. Item
+   fechado; nota de transição: ao ligar a produção pós-auditoria, confirmar `APP_USR-` na Vercel
+   e refazer o teste E2E de pagamento (seção 4) com a credencial real.
 2. **Resend — esclarecer o escopo da chave local.** O 401 em `/domains` sugere chave
    sending-only. Se o **teste local** de e-mail um dia falhar, é por aqui. Sem ação
    necessária se os envios de produção estão saindo (estão).

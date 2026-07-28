@@ -24,6 +24,20 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-28] Chat de execução — snapshot T1-2 confirmado em produção + credencial MP esclarecida
+
+- Chat/sessão: mesma sessão de execução (Opus 4.8), preparando o checklist de validação da Gestora.
+- **Snapshot do T1-2 (`Admin_Metrics_Daily`) — CONFIRMADO funcionando em produção** (sonda read-only):
+  o cron gerou o snapshot **diariamente** (docs de 2026-07-24 a 07-28 + `latest`), com os números certos
+  (`surveys.total=49`, `forms.total=5`, batendo com a base). Os 2 itens do "Momento 2 de validação" do
+  T1-2 estão confirmados por leitura; falta só o olhar visual da Gestora nas 4 telas de analytics.
+- **Credencial Mercado Pago — ESCLARECIDO pela Gestora:** a produção está **deliberadamente** em
+  credencial de **TESTE** por ora; a troca para produção (`APP_USR-`) será feita **após a auditoria**.
+  Fecha a recomendação #1 do T-05 (não é risco aberto — estado intencional). Nota de transição registrada
+  em `T-05-INTEGRATIONS-FINDINGS.md#3`.
+- Sem código. Itens atualizados: `T-05-INTEGRATIONS-FINDINGS.md`, `00-PLAN.md` (lista de pendências da
+  Gestora), este LOG.
+
 ## [2026-07-24] Chat de execução — BUG-114 e BUG-115 corrigidos (índices criados pela Gestora, confirmados)
 
 - Chat/sessão: mesma sessão. Após o ITEM 1 ser devolvido à Gestora (deploy não automatizável pelo

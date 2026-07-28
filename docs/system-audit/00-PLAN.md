@@ -1590,11 +1590,16 @@ esquecida.
 **2. Ações que só a Gestora pode fazer (sem bloqueio de código):**
    - Validação manual dos 3 fluxos de contrato (grátis/pago/avulso) em
      produção (F1-02) — programada para depois da limpeza da base de teste.
-   - Validar em produção os 2 itens do snapshot do T1-2 (`Admin_Metrics_Daily`)
-     após o 1º cron rodar.
-   - Confirmar que o token `MERCADOPAGO_ACCESS_TOKEN` de **produção** na
-     Vercel é `APP_USR-` (não `TEST-`) — recomendação do T-05, 1 minuto,
-     risco financeiro se estiver errado.
+   - Validação **visual** das 3 copies de loading do F2-05 (BUG-030) — a lógica
+     já está em produção (PR #161).
+   - ~~Validar os 2 itens do snapshot do T1-2~~ **CONFIRMADO por sonda read-only
+     (2026-07-28):** `Admin_Metrics_Daily` populado pelo cron diariamente (24–28/07,
+     `latest` + dated), números batendo (49 surveys / 5 forms). Falta só o olhar
+     visual nas 4 telas de analytics.
+   - ~~Confirmar token MP de produção `APP_USR-`~~ **ESCLARECIDO (Gestora,
+     2026-07-28):** a produção está **deliberadamente** em credencial de TESTE por
+     ora; a troca para `APP_USR-` será feita **após a auditoria**. Não é risco
+     aberto — estado intencional. Ver `T-05-INTEGRATIONS-FINDINGS.md#3`.
 
 **3. Bugs Médios/Baixos abertos, sem decisão de negócio pendente (candidatos
    a "carona" quando o chat de execução tocar os arquivos vizinhos, ou a uma
