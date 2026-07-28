@@ -63,7 +63,7 @@ instrumento em tela cheia, só interação — corretamente sem header canônico
   3 telas usavam palavras proibidas — **corrigidas no PR #161** (`eb46ef7`):
   `ContentEvaluationModal` ("Sincronizando…" → "Carregando conteúdo"), `admin/users`
   ("Mapeando…" → "Carregando pesquisas"), `admin/products` ("Processando Arquivos" →
-  "Carregando arquivos"). Aguarda validação visual da Gestora em produção (BUG-030).
+  "Carregando arquivos"). **Validado em produção pela Gestora (2026-07-28) — os 3 passaram** (BUG-030).
 - **Fora de escopo (decisão da Gestora, 2026-07-24 — só as violações claras):**
   - Spinners inline de botão ("Salvando…", "Processando…" no botão *Simular*) — **não** são
     tela de carregamento; ficam como estão.
@@ -78,6 +78,6 @@ instrumento em tela cheia, só interação — corretamente sem header canônico
 **F2-05 concluído.** Categorização formal de todas as rotas logadas (hub + admin) nos 4
 conceitos, com padrão canônico + página de referência por conceito, e verificação de
 conformância (header OK; 3 violações de loading corrigidas no PR #161). O admin coube nos
-4 conceitos — nenhum 5º conceito foi necessário. Pendência: validação visual da Gestora em
-produção das 3 mudanças de copy de loading (BUG-030). Sem outros ajustes de código
-pendentes — as demais telas já conformam ao padrão do seu conceito.
+4 conceitos — nenhum 5º conceito foi necessário. **As 3 mudanças de copy de loading foram
+validadas em produção pela Gestora (2026-07-28) — sem pendência.** As demais telas já
+conformam ao padrão do seu conceito. **F2-05 fechado, sem resíduo.**

@@ -1590,12 +1590,11 @@ esquecida.
 **2. Ações que só a Gestora pode fazer (sem bloqueio de código):**
    - Validação manual dos 3 fluxos de contrato (grátis/pago/avulso) em
      produção (F1-02) — programada para depois da limpeza da base de teste.
-   - Validação **visual** das 3 copies de loading do F2-05 (BUG-030) — a lógica
-     já está em produção (PR #161).
-   - ~~Validar os 2 itens do snapshot do T1-2~~ **CONFIRMADO por sonda read-only
-     (2026-07-28):** `Admin_Metrics_Daily` populado pelo cron diariamente (24–28/07,
-     `latest` + dated), números batendo (49 surveys / 5 forms). Falta só o olhar
-     visual nas 4 telas de analytics.
+   - ~~Validação visual das 3 copies de loading do F2-05 (BUG-030)~~ **VALIDADA pela
+     Gestora (2026-07-28) — os 3 passaram.** F2-05 fechado sem resíduo.
+   - ~~Validar os 2 itens do snapshot do T1-2~~ **CONFIRMADO** — por sonda read-only
+     (`Admin_Metrics_Daily` populado diariamente, números batendo) **e validação visual
+     da Gestora nas 4 telas de analytics (2026-07-28, passou).**
    - ~~Confirmar token MP de produção `APP_USR-`~~ **ESCLARECIDO (Gestora,
      2026-07-28):** a produção está **deliberadamente** em credencial de TESTE por
      ora; a troca para `APP_USR-` será feita **após a auditoria**. Não é risco

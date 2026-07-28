@@ -24,6 +24,15 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-28] Chat de execução — validações da Gestora (F2-05 loading + T1-2 snapshot) passaram
+
+- Chat/sessão: mesma sessão. A Gestora validou em produção: **F2-05** — as 3 copies de loading
+  (`Carregando conteúdo` em `/conteudo`; `Carregando pesquisas` em `/admin/users`; `Carregando arquivos`
+  em `/admin/products`) **passaram** (BUG-030) → **F2-05 fechado sem resíduo**. **T1-2 snapshot** — as 4
+  telas de analytics do admin com os números do `Admin_Metrics_Daily` **passaram** → validação visual
+  completa (já estava confirmada por sonda). Sem código. Docs: `F2-05-DESIGN-CATEGORIZATION.md`,
+  `00-PLAN.md`, este LOG. Próximo: ITEM 3 (BUG-011).
+
 ## [2026-07-28] Chat de execução — snapshot T1-2 confirmado em produção + credencial MP esclarecida
 
 - Chat/sessão: mesma sessão de execução (Opus 4.8), preparando o checklist de validação da Gestora.
