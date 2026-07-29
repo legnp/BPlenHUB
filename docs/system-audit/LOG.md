@@ -24,6 +24,24 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-29] Chat de planejamento — decisão da Gestora: auditoria permanece formalmente aberta
+
+- Chat/sessão: mesmo chat de planejamento, logo após a reconciliação geral
+  registrada abaixo. A Gestora respondeu à pergunta em aberto deixada nessa
+  reconciliação.
+- **Decisão:** a auditoria **permanece formalmente aberta** até a rodada de
+  validação humana diferida (Caminho B — corrida e2e ao vivo da Fase 4,
+  validação dos 3 fluxos de contrato, virada da credencial MP) ser concluída.
+  Não fecha só com `F3-03` + código completo. Critério de fechamento formal
+  passa a ser: `F3-03` concluído **E** os 3 itens da rodada validados.
+- Itens atualizados: `00-PLAN.md` (seção "Lista de validação humana pendente"
+  — pergunta substituída pela decisão registrada), `DASHBOARD.md` (linha da
+  Fase 4 na tabela "Fases 2-4 · progresso"). Este LOG.
+- Sessão encerrada por limite de contexto — próxima sessão de planejamento
+  deve ler este LOG + `00-PLAN.md` (Estado da auditoria) antes de agir.
+
+---
+
 ## [2026-07-29] Chat de planejamento — reconciliação geral (3ª desde 2026-07-07)
 
 - Chat/sessão: chat de planejamento (Sonnet 5), a pedido explícito da Gestora.

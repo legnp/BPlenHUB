@@ -1658,9 +1658,7 @@ sem decisão pendente ou adiados de propósito.
 A Gestora optou por **diferir** toda validação que depende de dado/ambiente
 real, agrupando-a numa rodada só, a fazer **após a limpeza da base do usuário
 de teste** (+ possíveis correções/implementações adicionais que surgirem até
-lá). **Ela não decidiu ainda se essa rodada é pós-auditoria ou uma etapa
-formal antes de fechar a auditoria** — isso é uma decisão em aberto que só ela
-pode tomar (ver pergunta ao final desta seção). Itens que compõem a rodada:
+lá). Itens que compõem a rodada:
 
 1. **Corrida e2e AO VIVO das 3 jornadas** (Fase 4) — login real, pagamento
    real (depende também da virada da credencial MP para produção — item 3
@@ -1673,13 +1671,13 @@ pode tomar (ver pergunta ao final desta seção). Itens que compõem a rodada:
 4. O que mais a limpeza da base revelar precisar de validação (não
    antecipável — registrar aqui quando surgir).
 
-**Pergunta para a Gestora, a levar na próxima interação:** com o checklist
-funcionalmente completo (só falta `F3-03` como trabalho de auditoria formal),
-a auditoria **fecha agora** (com esta rodada de validação humana registrada
-como pendência pós-auditoria, fora do escopo formal) — **ou** ela permanece
-formalmente aberta até essa rodada acontecer? Nenhuma das duas opções muda o
-trabalho de código a fazer; muda só o que conta como "auditoria concluída"
-nos relatórios/DASHBOARD.
+**Decisão da Gestora (2026-07-29): a auditoria PERMANECE FORMALMENTE ABERTA**
+até esta rodada de validação humana acontecer — não fecha com `F3-03` +
+código completo sozinhos. O critério de fechamento formal da auditoria passa
+a ser: `F3-03` concluído **E** os 3 itens desta rodada validados. Isso não
+muda o trabalho de código a fazer, só o que conta como "auditoria concluída"
+nos relatórios/DASHBOARD — enquanto esta seção tiver itens sem `~~riscado~~`,
+a auditoria segue aberta.
 
 ### Lista priorizada do que resta (para o chat de execução retomar)
 

@@ -357,7 +357,7 @@ O `BUG-110` (planilha do Drive apagava avaliação anterior) **já estava corrig
 | | F3-03 regras financeiras | ○ **Não iniciado** — único item do checklist original ainda sem trabalho |
 | | **Fase 3** | **2/3** |
 | **Fase 4** | F4-01/02/03 jornadas e2e | ✓ **Mapeadas por código** (`F4-JOURNEYS-MAP.md`, 2026-07-28) — gates sólidos, sem armadilha nova |
-| | Corrida e2e AO VIVO | ○ **Diferida (Caminho B)** — pós-limpeza da base de teste; Gestora não decidiu se pré ou pós-fechamento formal da auditoria |
+| | Corrida e2e AO VIVO | ○ **Diferida (Caminho B)** — pós-limpeza da base de teste; **auditoria permanece formalmente aberta até esta rodada concluir** (decisão da Gestora, 2026-07-29) |
 
 ---
 
