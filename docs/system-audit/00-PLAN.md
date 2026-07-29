@@ -36,7 +36,10 @@ de cobertura dos mapas**: os 5 mapas estão **completos**.
   (antecedência mínima) ambos enforçados na gravação — BUG-011 investigado e o
   resíduo do funil público corrigido (PR #162, 2026-07-28). `F3-03` não iniciado
   formalmente (achado principal `BUG-022` já corrigido desde a Fase 1).
-- **Fase 4 — não iniciada.**
+- **Fase 4 — as 3 jornadas MAPEADAS** (2026-07-28, `F4-JOURNEYS-MAP.md`): F4-01
+  (lead→membro→offboarding), F4-02 (convite→membro), F4-03 (financeira). Sem armadilha de
+  código nova; e2e ao vivo = execução humana da Gestora. F4-03 tem 1 premissa de critério a
+  ratificar (checkout público removido).
 - **Todos os 6 tracks (T-01 a T-06) concluídos:** T-02 fechado/reaberto/
   refechado (17/17, ver histórico abaixo); T-03 fechado (7/7 — `BUG-009`
   corrigido PR #157); T-06 fechado (2/2); **T-01 (Performance) — Momento 1
@@ -1140,34 +1143,42 @@ O mapeamento das jornadas abaixo é entregável desta fase (não pré-existente)
 - Critério de aceite: usuário fictício percorre desde `/servicos` até
   conclusão de todas as etapas da jornada sem travar em nenhum ponto não
   documentado
-- Modo de validação: PENDENTE
+- Modo de validação: **Mapa Automatizado (leitura de código); e2e ao vivo = execução humana**
 - Decisão: —
-- Execução: Não iniciada
-- Resultado: —
+- Execução: **Mapeada — 2026-07-28** (`F4-JOURNEYS-MAP.md`). Traçada rota→gate→terminal:
+  `/servicos`→`MatriculaGuard`→`/hub/checkout`→`maybeReleaseService` (gate duplo)→`/hub/membro`
+  (`member_area_access`)→jornada (`resolverAcesso`)→offboarding (stage 7). Sem armadilha de código nova.
+- Resultado: gates centrais sólidos. Observação: virada "membro pleno" = concessão de `member_area_access`.
 - Bug(s) vinculado(s): —
-- Log: —
+- Log: [2026-07-28] mapeada — ver `LOG.md` e `F4-JOURNEYS-MAP.md`
 
 ### [F4-02] Jornada: Convidado de evento exclusivo → Membro
 - Categoria(s) de qualidade: Adequação funcional
 - Critério de aceite: fluxo completo de `/convites/[slug]` até criação de
   matrícula e primeiro acesso ao `/hub`
-- Modo de validação: PENDENTE
+- Modo de validação: **Mapa Automatizado; e2e ao vivo = execução humana**
 - Decisão: —
-- Execução: Não iniciada
-- Resultado: —
+- Execução: **Mapeada — 2026-07-28** (`F4-JOURNEYS-MAP.md`). `/convites/[slug]`→validar token→login→
+  `claimInvitationTokenAction` (transação atômica: matrícula sequencial + perfil + permissões)→
+  `submitInvitationSurveyAction` (identidade da sessão verificada, BUG-108)→`/hub` (onboarding).
+- Resultado: fluxo atômico e seguro. Terminal = onboarding (não membro pleno) — costura com F4-01.
 - Bug(s) vinculado(s): —
-- Log: —
+- Log: [2026-07-28] mapeada — ver `LOG.md` e `F4-JOURNEYS-MAP.md`
 
 ### [F4-03] Jornada financeira: Compra → Contrato → Cancelamento
 - Categoria(s) de qualidade: Adequação funcional / Segurança
 - Critério de aceite: fluxo completo testado em ambas as variações de checkout
   (pública e de membro) até geração de contrato e um cenário de cancelamento
-- Modo de validação: PENDENTE
-- Decisão: —
-- Execução: Não iniciada
-- Resultado: —
+- Modo de validação: **Mapa Automatizado; e2e de pagamento ao vivo = execução humana (pós-virada MP)**
+- Decisão: — **[PENDENTE Gestora: critério menciona checkout "público" que foi removido (BUG-002) —
+  atualizar para superfície única logada?]**
+- Execução: **Mapeada — 2026-07-28** (`F4-JOURNEYS-MAP.md`). `/hub/checkout`→MP (webhook HMAC + re-fetch)
+  ou grátis→contrato (`assinado`)→`maybeReleaseService`→entitlement. Cancelamento: agendamento
+  (`cancelBookingAction`, grace 24h) + contrato (status `cancelado`).
+- Resultado: gate duplo sólido. **Lacuna:** checkout público órfão removido (BUG-002); sem estorno MP
+  self-service (manual/admin). Pagamento em credencial de TESTE (produção pós-auditoria, T-05).
 - Bug(s) vinculado(s): —
-- Log: —
+- Log: [2026-07-28] mapeada — ver `LOG.md` e `F4-JOURNEYS-MAP.md`
 
 ---
 
@@ -1563,8 +1574,11 @@ esquecida.
   formalmente como auditoria (o achado prático, `BUG-022`, já foi corrigido
   na Fase 1 — falta só a confirmação formal da cláusula de reembolso e dos 2
   bypasses de pagamento como regra de negócio documentada).
-- **Fase 4 (jornadas e2e): não iniciada.** Nenhum dos 3 mapeamentos
-  (lead→membro, convite→membro, financeira) foi feito.
+- **Fase 4 (jornadas e2e): as 3 MAPEADAS** (2026-07-28, `F4-JOURNEYS-MAP.md`).
+  Lead→membro→offboarding, convite→membro e financeira traçadas por leitura de
+  código (rota→gate→terminal); gates centrais sólidos, sem armadilha nova. E2e ao
+  vivo (login/pagamento/evento) = execução humana da Gestora; F4-03 tem 1 premissa
+  de critério a ratificar (checkout público removido no BUG-002).
 - **Todos os 6 tracks concluídos:** `T-02` (17/17, fechado/reaberto/
   refechado), `T-03` (7/7), `T-06` (2/2), `T-01` (Momento 1, 2026-07-23 —
   Momento 2 é trabalho futuro fora desta auditoria), `T-04` (escopo

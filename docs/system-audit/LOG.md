@@ -24,6 +24,27 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-28] Chat de execução — Fase 4: as 3 jornadas e2e mapeadas (F4-JOURNEYS-MAP.md)
+
+- Chat/sessão: mesma sessão (Opus 4.8). ITEM 4: mapear as 3 jornadas e2e por leitura de código
+  (entregável da Fase 4). Doc novo: `F4-JOURNEYS-MAP.md`.
+- **F4-01 (Lead→Cliente→Membro→Offboarding):** `/servicos`→`MatriculaGuard`→`/hub/checkout`→
+  `maybeReleaseService` (gate duplo: pago E contrato assinado)→`/hub/membro` (`member_area_access`)→
+  jornada (`resolverAcesso`: LIBERADO/SEQUENCE_LOCK/PREVIA/UPSELL)→offboarding (stage 7, gated).
+- **F4-02 (Convite→Membro):** `/convites/[slug]`→validar token→login→`claimInvitationTokenAction`
+  (transação atômica: matrícula sequencial via contador + perfil + permissões `survey_welcome`)→
+  `submitInvitationSurveyAction` (identidade da sessão verificada, BUG-108)→`/hub` onboarding.
+  Terminal = onboarding, não membro pleno (costura com F4-01). Segurança sólida.
+- **F4-03 (Financeira):** `/hub/checkout`→MP (webhook HMAC + re-fetch) ou grátis→contrato
+  (`assinado`)→`maybeReleaseService`→entitlement. Cancelamento: agendamento (grace 24h) + contrato
+  (status `cancelado`). **Lacuna:** o critério fala em "checkout público E de membro", mas o público
+  órfão foi REMOVIDO (BUG-002/PR #48) — premissa a ratificar. Sem estorno MP self-service.
+- **Resultado:** nenhuma armadilha de código nova; gates centrais sólidos (gate duplo, atomicidade do
+  convite, identidade verificada, janela de agendamento enforçada). E2e AO VIVO (login/pagamento/evento
+  reais) = execução humana da Gestora, casada com a virada da credencial MP p/ produção (pós-auditoria).
+  1 decisão pendente: atualizar o critério do F4-03 (checkout único logado). Itens atualizados:
+  `F4-JOURNEYS-MAP.md` (novo), `00-PLAN.md` (F4-01/02/03 + resumos de fase), este LOG.
+
 ## [2026-07-28] Chat de execução — BUG-011 investigado + resíduo do funil público corrigido (PR #162) → F3-01 concluído
 
 - Chat/sessão: mesma sessão (Opus 4.8). ITEM 3: investigar BUG-011 (antecedência mínima de agendamento
