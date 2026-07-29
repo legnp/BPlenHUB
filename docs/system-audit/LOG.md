@@ -24,6 +24,24 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-29] Chat de planejamento — checkpoint: sem execução desde a reconciliação (9027c83)
+
+- Chat/sessão: chat de planejamento (Opus 4.8), nova sessão continuando da anterior
+  encerrada por limite de contexto. Estado de entrada: `main` == `9027c83`, árvore limpa
+  (só `.claude/` untracked).
+- Verificação: `git log 9027c83..HEAD` vazio; nenhuma sessão de execução rodou desde a
+  reconciliação geral de 2026-07-29. Nenhum doc novo/modificado. `F3-03` não avançou;
+  nenhum sinal da Gestora sobre limpeza da base de teste; nenhum doc de design/findings
+  novo. Aplicada a Lição 45 (confirmado contra git, não só contra o texto herdado).
+- Achados: nenhuma defasagem a corrigir — `00-PLAN.md` (Estado da auditoria), `DASHBOARD.md`
+  (Última atualização 2026-07-29), `BUGS.md` e `RETROSPECTIVE.md` (Lições 49-50) já
+  internamente consistentes. Nenhuma lição nova reutilizável surgiu.
+- Entregue: visualização show_widget atualizada do estado do plano e lista priorizada
+  de próximos itens (`F3-03` > bugs Médio/Baixo > aguardar sinal Caminho B).
+- Nenhuma alteração de código nem de doc de plano. Auditoria segue formalmente aberta.
+
+---
+
 ## [2026-07-29] Chat de planejamento — decisão da Gestora: auditoria permanece formalmente aberta
 
 - Chat/sessão: mesmo chat de planejamento, logo após a reconciliação geral
