@@ -1138,6 +1138,14 @@ sem copy hardcoded fora do que o guia permitir).
 
 O mapeamento das jornadas abaixo é entregável desta fase (não pré-existente).
 
+**Estado (2026-07-28, decisão da Gestora — "Caminho B"):** as 3 jornadas foram **mapeadas e
+verificadas por código** (`F4-JOURNEYS-MAP.md`) — gates centrais sólidos, sem armadilha nova. A
+**corrida e2e AO VIVO** (login/pagamento/evento reais) fica **diferida**: será feita **após a limpeza
+da base do usuário de teste + mais correções/implementações**, seja pós-auditoria, seja como uma
+**etapa adicional antes de fechar a auditoria**. O mapa não é bloqueante; a corrida ao vivo é o passo
+de execução humana que resta. A parte de pagamento depende também da virada da credencial MP para
+produção (ver `T-05-INTEGRATIONS-FINDINGS.md`).
+
 ### [F4-01] Jornada: Lead → Cliente → Membro pleno → Offboarding
 - Categoria(s) de qualidade: Adequação funcional / Confiabilidade
 - Critério de aceite: usuário fictício percorre desde `/servicos` até
@@ -1167,11 +1175,12 @@ O mapeamento das jornadas abaixo é entregável desta fase (não pré-existente)
 
 ### [F4-03] Jornada financeira: Compra → Contrato → Cancelamento
 - Categoria(s) de qualidade: Adequação funcional / Segurança
-- Critério de aceite: fluxo completo testado em ambas as variações de checkout
-  (pública e de membro) até geração de contrato e um cenário de cancelamento
+- Critério de aceite: fluxo completo na **superfície única de checkout logada** (`/hub/checkout`),
+  cobrindo grátis/cupom-100% e pago (MP), até geração de contrato e um cenário de cancelamento.
+  _(Atualizado 2026-07-28: o critério original citava um checkout "público" que foi removido no
+  `BUG-002`/PR #48 — a compra hoje é uma só, logada. Ratificado pela Gestora.)_
 - Modo de validação: **Mapa Automatizado; e2e de pagamento ao vivo = execução humana (pós-virada MP)**
-- Decisão: — **[PENDENTE Gestora: critério menciona checkout "público" que foi removido (BUG-002) —
-  atualizar para superfície única logada?]**
+- Decisão: **Critério atualizado (superfície única logada), ratificado pela Gestora (2026-07-28).**
 - Execução: **Mapeada — 2026-07-28** (`F4-JOURNEYS-MAP.md`). `/hub/checkout`→MP (webhook HMAC + re-fetch)
   ou grátis→contrato (`assinado`)→`maybeReleaseService`→entitlement. Cancelamento: agendamento
   (`cancelBookingAction`, grace 24h) + contrato (status `cancelado`).

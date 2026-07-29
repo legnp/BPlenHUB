@@ -44,6 +44,12 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
   reais) = execução humana da Gestora, casada com a virada da credencial MP p/ produção (pós-auditoria).
   1 decisão pendente: atualizar o critério do F4-03 (checkout único logado). Itens atualizados:
   `F4-JOURNEYS-MAP.md` (novo), `00-PLAN.md` (F4-01/02/03 + resumos de fase), este LOG.
+- **Decisão da Gestora (2026-07-28) — "Caminho B":** fechar a Fase 4 como **mapeada e verificada por
+  código**; a **corrida e2e AO VIVO** (login/pagamento/evento reais) fica **diferida** — será feita
+  **após a limpeza da base do usuário de teste + mais correções/implementações**, seja pós-auditoria,
+  seja como etapa adicional antes de fechar a auditoria. Critério do F4-03 **atualizado** (superfície
+  única de checkout logada — o "público" foi removido no BUG-002), ratificado pela Gestora. O mapa não
+  é bloqueante; a corrida ao vivo (financeira) também depende da virada da credencial MP p/ produção.
 
 ## [2026-07-28] Chat de execução — BUG-011 investigado + resíduo do funil público corrigido (PR #162) → F3-01 concluído
 
