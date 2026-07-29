@@ -478,6 +478,33 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
     dele. _(Caso real: T-01 T1-3 — paginacao da lista de usuarios admin remetida ao Momento 2 por essa
     razao, nao por falta de tempo.)_
 
+    **Adendo a Licao 45 (2026-07-29):** o padrao "status de fila e hipotese herdada" recorreu de novo —
+    o `BUG-011` chegou marcado como `[HIPOTESE]` havia sessoes, e a investigacao mostrou que a parte
+    principal (membro) **ja estava resolvida**, exatamente como o `BUG-012` (mesmo item de fase,
+    `F3-01`). So restava um residuo real (funil publico). Reforca que vale reler HIPOTESES antigas
+    antes de investir tempo nelas do zero, nao so itens marcados "Aberto".
+
+49. **Deploy de indice do Firestore NAO e automatizavel pelo agente — e sempre passo manual da
+    Gestora.** Tentativa real: o service account do Admin SDK so tem permissao de LEITURA de indice
+    (`enumerar` funciona, `criar` da `permission denied`); a `firebase-tools` CLI exige `firebase
+    login` interativo, que nao roda numa shell nao-interativa. Isso vale para qualquer operacao que
+    dependa de credencial de proprietario do projeto Firebase/GCP (nao so indice) — nao gaste ciclos
+    tentando contornar via API antes de checar se a operacao exige esse nivel de permissao. Ao bater
+    nesse tipo de bloqueio, devolva o passo exato (link do console ou comando exato da CLI) para a
+    Gestora executar, em vez de insistir programaticamente. _(Caso real: `BUG-114`/`BUG-115`, T-01
+    T1-3 — bloqueio registrado e devolvido; a Gestora criou os indices pelo console em minutos.)_
+
+50. **Um criterio de aceite pode ficar obsoleto quando a superficie que ele cita e removida — nao so
+    o status de bug fica stale, o proprio criterio tambem.** O criterio original do `F4-03` exigia
+    testar "ambas as variacoes de checkout (publica e de membro)". A variacao publica **ja tinha sido
+    removida** havia sessoes (`BUG-002`/PR #48, Fase 1) — o criterio nunca foi atualizado para
+    refletir isso, entao continuava pedindo a validacao de uma rota que nao existe mais. Ao mapear a
+    jornada (Fase 4), a leitura direta do codigo expos a divergencia. Regra: ao revisitar um item de
+    checklist antigo, releia o **criterio de aceite** contra o estado atual do sistema, nao so o
+    "Bug(s) vinculado(s)" — o criterio em si e um enunciado sobre o sistema, e enunciados sobre um
+    sistema em mudanca tem prazo de validade. _(Caso real: `F4-03`, `F4-JOURNEYS-MAP.md`, criterio
+    atualizado e ratificado pela Gestora em 2026-07-28.)_
+
 ---
 
 ## Melhorias sugeridas para o PLANO (para o chat de planejamento refinar)
@@ -524,6 +551,14 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
 
 ## Registro de revisões deste documento
 
+- 2026-07-29 — Lições 49 (deploy de índice do Firestore não é automatizável
+  pelo agente — sempre passo manual da Gestora, mesmo padrão vale para
+  qualquer operação que exija credencial de proprietário do projeto) e 50 (um
+  critério de aceite pode ficar obsoleto quando a superfície que ele cita é
+  removida — releia o critério, não só o status de bug, ao revisitar um item
+  antigo) adicionadas, a partir do `BUG-114`/`BUG-115` (T-01 T1-3) e do `F4-03`
+  (`F4-JOURNEYS-MAP.md`). Adendo à Lição 45 registrando a recorrência do
+  `BUG-011`.
 - 2026-07-23 — Lições 45 (status de fila é hipótese herdada — confirme contra
   `git log` antes de agir; recorreu 6× numa sessão), 46 (meça antes de trocar
   padrão de acesso a dado), 47 (contador nativo precisa de índice que pode não

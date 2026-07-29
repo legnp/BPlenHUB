@@ -24,6 +24,87 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-29] Chat de planejamento — reconciliação geral (3ª desde 2026-07-07)
+
+- Chat/sessão: chat de planejamento (Sonnet 5), a pedido explícito da Gestora.
+  Estado de entrada: `main` == `origin/main` em `785746a`, árvore limpa (só
+  `.claude/` untracked). Commits mergeados desde a última reconciliação
+  (`f2a31e0`): 10.
+- Escopo: leitura integral de `00-PLAN.md` (esp. "Estado da auditoria"), as
+  ~8 entradas mais recentes do `LOG.md` (2026-07-24 e 2026-07-28), `BUGS.md`,
+  `DASHBOARD.md`, `RETROSPECTIVE.md`, `T-01-PERFORMANCE-DESIGN.md`,
+  `T-04-OBSERVABILITY-FINDINGS.md`, `T-05-INTEGRATIONS-FINDINGS.md` e os 2
+  docs novos (`F2-05-DESIGN-CATEGORIZATION.md`, `F4-JOURNEYS-MAP.md`).
+  Aplicada a Lição 45 antes de tratar qualquer item da lista como fato:
+  verificado por leitura direta do `BUGS.md` que `BUG-114`/`BUG-115`/`BUG-011`
+  realmente estão `Corrigido` (não apenas confiado no resumo do prompt).
+  **Nenhuma linha de código de produto foi tocada.**
+- Contexto do período reconciliado: a execução fechou a **última pendência
+  operacional do T-01** (`BUG-114`/`BUG-115` — a Gestora criou os 3 índices no
+  console do Firebase em 2026-07-24, efeito confirmado por sonda read-only),
+  concluiu **`F2-05`** (categorização formal de design hub+admin, PR #161,
+  validada em produção em 2026-07-28) — **fechando a Fase 2 por completo** —,
+  concluiu **`F3-01`** (`BUG-011` investigado: parte do membro já estava
+  enforçada, stale como o `BUG-012`; resíduo do funil público corrigido no PR
+  #162), e **mapeou as 3 jornadas e2e da Fase 4** por leitura de código
+  (`F4-JOURNEYS-MAP.md`) — sem armadilha de código nova, 1 critério
+  desatualizado no `F4-03` (checkout público, removido há sessões no
+  `BUG-002`, ratificado e corrigido). A Gestora decidiu **"Caminho B"**: a
+  corrida e2e ao vivo fica diferida para depois da limpeza da base de teste,
+  numa rodada única junto com a validação dos 3 fluxos de contrato (F1-02) e
+  a virada da credencial Mercado Pago para produção — sem decidir ainda se
+  isso acontece antes ou depois do fechamento formal da auditoria.
+- Achados e correções desta reconciliação:
+  1. **2 linhas do índice bug→track** (`BUG-114`/`BUG-115`) ainda diziam
+     "Aguarda deploy manual do índice" — `BUGS.md` já as registrava
+     `Corrigido` desde 2026-07-24. Corrigidas.
+  2. **Item `[T-01]`** e o próprio `T-01-PERFORMANCE-DESIGN.md` (seção 9,
+     Estado) ainda listavam o deploy dos índices e a validação do snapshot
+     como pendências — ambos reescritos para refletir que o Momento 1 está
+     concluído **sem nenhum resíduo**.
+  3. **Seção "Estado da auditoria e próximos itens de execução"** só tinha
+     sido parcialmente atualizada pelas sessões de execução (itens 1-3 da
+     lista antiga riscados/corrigidos corretamente, mas o resumo "Onde a
+     auditoria está" e os itens 5-6 continuavam pedindo `F2-05` e
+     `BUG-011`/F3-01 como pendentes, já concluídos). Reescrita por completo.
+     **Nova seção dedicada "Lista de validação humana pendente (Caminho B)"**
+     consolidando os 3 itens que a Gestora diferiu + a pergunta explícita
+     sobre fechamento formal da auditoria, registrada para a próxima
+     interação com ela (pedido do item 4 da tarefa desta sessão).
+  4. **`DASHBOARD.md`**: linha do resumo de bugs corrigida (`BUG-114`/`115`);
+     nova seção **"Fases 2-4 · progresso"** adicionada — o painel nunca teve
+     uma tabela para essas fases (só Fase 0/1), apesar do progresso real
+     acumulado desde a reconciliação anterior.
+  5. **2 lições novas no `RETROSPECTIVE.md`**: 49 (deploy de índice do
+     Firestore não é automatizável pelo agente — sempre passo manual da
+     Gestora, generalizado para qualquer operação que exija credencial de
+     proprietário do projeto) e 50 (um critério de aceite pode ficar
+     obsoleto quando a superfície que ele cita é removida — releia o
+     critério, não só o status de bug, ao revisitar um item antigo, caso do
+     `F4-03`). Lição 50 incorporada como **item 16 do Protocolo**. Adendo à
+     Lição 45 registrando a recorrência do `BUG-011` (mesmo padrão do
+     `BUG-012`, mesmo item de fase).
+- Itens atualizados: `00-PLAN.md` (parágrafo de reconciliação, Protocolo item
+  16, item `[T-01]`, 2 linhas do índice bug→track, seção "Estado da
+  auditoria" reescrita com a lista de validação humana consolidada).
+  `T-01-PERFORMANCE-DESIGN.md` (seção 9, Estado, sem resíduo). `DASHBOARD.md`
+  (nota de atualização, linha de bugs, nova seção Fases 2-4). `RETROSPECTIVE.md`
+  (Lições 49-50 + registro de revisão). Este LOG. Nenhuma alteração necessária
+  em `BUGS.md`, `F2-05-DESIGN-CATEGORIZATION.md` ou `F4-JOURNEYS-MAP.md` (já
+  consistentes com a realidade em todos os casos verificados).
+- Nada bloqueado para a próxima sessão de execução — o checklist original está
+  funcionalmente completo por código em 5/5 fases; sugestão de ordem: (1)
+  `F3-03` (majoritariamente perguntas à Gestora, não investigação de código —
+  fecha a última lacuna formal do checklist); (2) bugs Médios/Baixos sem
+  decisão pendente (`BUG-043`/`046`/`097`); (3) aguardar sinal da Gestora
+  sobre a limpeza da base de teste para a rodada de validação humana
+  diferida. **Pergunta em aberto para a Gestora** (registrada em
+  `00-PLAN.md`): a auditoria fecha formalmente agora (com a rodada de
+  validação humana como pendência pós-auditoria) ou permanece aberta até essa
+  rodada acontecer?
+
+---
+
 ## [2026-07-28] Chat de execução — Fase 4: as 3 jornadas e2e mapeadas (F4-JOURNEYS-MAP.md)
 
 - Chat/sessão: mesma sessão (Opus 4.8). ITEM 4: mapear as 3 jornadas e2e por leitura de código

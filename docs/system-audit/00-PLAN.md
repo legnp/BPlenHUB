@@ -213,6 +213,39 @@ Alto aberto sem checagem contra o git; já estava corrigido desde o PR #131,
    feito; a lista priorizada agora reflete o que realmente resta (F2-05,
    F3-01/03, Fase 4, deploy dos índices, validação de contratos, EXP-01).
 
+**Reconciliação desta sessão** (chat de planejamento, 2026-07-29, ver entrada
+correspondente no `LOG.md`): entre esta reconciliação e a anterior
+(2026-07-23), a execução fechou a **última pendência operacional do T-01**
+(`BUG-114`/`BUG-115`, índices criados pela Gestora), concluiu **`F2-05`**
+(fechando a **Fase 2 por completo**), concluiu **`F3-01`** (`BUG-011`
+investigado e corrigido), e **mapeou a Fase 4 inteira** por código
+(`F4-JOURNEYS-MAP.md`) — a Gestora decidiu diferir a corrida e2e ao vivo
+("Caminho B"). O checklist original está agora **funcionalmente completo por
+código em todas as 5 fases**, restando só `F3-03` como item de auditoria
+nunca iniciado. Achados desta reconciliação:
+1. **Índice bug→track**: 2 linhas (`BUG-114`/`BUG-115`) ainda diziam "Aguarda
+   deploy manual" — corrigidas para `Corrigido`.
+2. **Item `[T-01]`** e o próprio `T-01-PERFORMANCE-DESIGN.md` ainda listavam o
+   deploy dos índices como pendência — ambos atualizados, sem nenhum resíduo
+   restante no track.
+3. **Seção "Estado da auditoria"** estava só parcialmente atualizada pelas
+   sessões de execução — os itens 1/2/3 da lista priorizada tinham sido
+   riscados/corrigidos, mas o resumo "Onde a auditoria está" e os itens
+   5/6 (que já pediam coisas concluídas — `F2-05` e o `BUG-011`/F3-01) não
+   tinham sido revisitados. Reescrita por completo, com a **lista de
+   validação humana pendente (Caminho B) consolidada numa seção própria** —
+   pedido explícito da Gestora, incluindo a pergunta em aberto sobre se a
+   auditoria fecha formalmente antes ou depois dessa rodada.
+4. **`DASHBOARD.md`**: linha do resumo de bugs ainda dizia `BUG-114`/`115`
+   pendentes; nova seção "Fases 2-4" adicionada (o painel nunca teve uma
+   tabela para essas fases, só Fase 0/1, apesar do progresso real).
+5. **2 lições novas** (49 — deploy de índice é sempre manual da Gestora,
+   generalizado para qualquer operação que exija credencial de proprietário
+   do projeto; 50 — um critério de aceite pode ficar obsoleto quando a
+   superfície que ele cita é removida, caso do `F4-03`) + item 16 do
+   Protocolo (releia o critério de aceite, não só o status de bug, ao
+   revisitar um item antigo).
+
 ---
 
 ## Protocolo entre chats
@@ -337,6 +370,16 @@ Alto aberto sem checagem contra o git; já estava corrigido desde o PR #131,
     "abertos" na fila por engano) — o volume mostra que isto não é acidente
     raro, é o modo padrão de degradação de uma lista de status entre sessões
     (Lição 45 do `RETROSPECTIVE.md`).
+16. **Ao revisitar um item de checklist antigo, releia o próprio "Critério de
+    aceite" contra o estado atual do sistema — não só o status dos bugs
+    vinculados.** Um critério é um enunciado sobre o sistema, e o sistema
+    muda: uma rota citada no critério pode ter sido removida, uma regra pode
+    ter sido substituída por outra. O `F4-03` pedia validar "checkout público
+    e de membro"; o checkout público tinha sido removido sessões antes
+    (`BUG-002`) e o critério nunca foi atualizado para refletir isso — só
+    apareceu ao remapear a jornada por código. Verificar só o campo "Bug(s)
+    vinculado(s)" não pega esse tipo de defasagem (Lição 50 do
+    `RETROSPECTIVE.md`).
 
 ---
 
@@ -1219,19 +1262,25 @@ produção (ver `T-05-INTEGRATIONS-FINDINGS.md`).
   sem filtro para reduzir no banco — paginar sem índice de busca externo
   regrediria a busca do admin).
 - Resultado: ✓ `BUG-017` corrigido no que o Momento 1 cobre (networking +
-  agregados admin + índices). ○ **Pendências operacionais** (não bloqueiam o
-  fechamento do track — são passos de infra, não código): deploy manual dos
-  índices (`firebase deploy --only firestore:indexes`) fecha `BUG-114`/`BUG-115`;
-  Gestora valida os 2 itens do snapshot do T1-2 após o 1º cron. **Momento 2**
-  (futuro, pós-Blaze/na escala, fora do escopo desta auditoria):
+  agregados admin + índices). ✓ **Índices deployados pela Gestora (2026-07-24)**
+  — os 3 índices (`Surveys(surveyId,status)`, `Forms.formId`,
+  `User_Permissions.admin`) criados no console do Firebase; verificado por
+  sonda read-only que as 3 queries voltaram a funcionar. Fecha `BUG-114`/
+  `BUG-115` — **última pendência operacional do Momento 1 resolvida**. ✓
+  Snapshot do T1-2 confirmado rodando em produção (cron gerando
+  `Admin_Metrics_Daily` diariamente) e validado visualmente pela Gestora nas 4
+  telas de analytics (2026-07-28). **T-01 Momento 1 sem nenhum resíduo.**
+  **Momento 2** (futuro, pós-Blaze/na escala, fora do escopo desta auditoria):
   `Networking_Directory` + paginação da lista de usuários com busca
   server-side; adoção do plano Blaze; provedores externos (Algolia/BigQuery) se
   a escala exigir.
 - Bug(s) vinculado(s): BUG-017 (Corrigido — Momento 1), BUG-038 (Corrigido, PR
-  #155 — achado colateral, perf da home pública), BUG-114/BUG-115 (aguardam
-  deploy manual do índice, PR #160)
+  #155 — achado colateral, perf da home pública), BUG-114 (Corrigido,
+  2026-07-24), BUG-115 (Corrigido, 2026-07-24)
 - Log: [2026-07-23] plano escrito + revisado (2 momentos) + T1-0/1/2/3 (PRs
-  #158/#159/#160) — ver `LOG.md` e `T-01-PERFORMANCE-DESIGN.md`
+  #158/#159/#160); [2026-07-24] índices deployados pela Gestora, BUG-114/115
+  fechados; [2026-07-28] snapshot T1-2 validado em produção — ver `LOG.md` e
+  `T-01-PERFORMANCE-DESIGN.md`
 
 ### [T-02] Segurança sistemática (matriz de guards)
 - Categoria(s) de qualidade: Segurança
@@ -1527,8 +1576,8 @@ sessões): `BUG-010` (PR #69, desde 2026-07-11), `BUG-040`/`041`/`042` (Trilha
 | BUG-111 | Melhoria | Corrigido (PR #137) | F1-04 — `visao_geral`: data prevista (real onde há; estimativa pelo ritmo do membro, rotulada) + ordenação por data em Próximas/Em Foco |
 | BUG-112 | Melhoria | Escopo A Corrigido (PR #136); C adiado | F1-05 — networking: rótulo "Profissional" → "Consultor" (escopo A, label-only). Escopo C (papel real + migração) programado p/ após a auditoria |
 | BUG-113 | Baixo | Corrigido (PR #144) | F1-06/redesign — cores hardcoded brancas em `partners` recoloridas para vars de tema (legível em temas claros); scrims preservados |
-| BUG-114 | Médio | **Aguarda deploy manual do índice (PR #160)** | T-01 — detalhe de respondentes do admin (F&S) quebrado por índice de collection group inexistente; índice já versionado, falta `firebase deploy --only firestore:indexes` |
-| BUG-115 | Médio | **Aguarda deploy manual do índice (PR #160)** | T-01 — anti-lockout de admin (rebaixar outro admin) quebrado pelo mesmo motivo; mesmo índice, mesmo deploy pendente |
+| BUG-114 | Médio | **Corrigido (2026-07-24)** | T-01 — detalhe de respondentes do admin (F&S); índices criados pela Gestora no console do Firebase, verificado por sonda read-only (query voltou a funcionar) *(corrigido nesta sessão — estava "Aguarda deploy manual")* |
+| BUG-115 | Médio | **Corrigido (2026-07-24)** | T-01 — anti-lockout de admin (rebaixar outro admin); field override criado pela Gestora, verificado por sonda read-only *(corrigido nesta sessão — estava "Aguarda deploy manual")* |
 
 ---
 
@@ -1563,75 +1612,90 @@ esquecida.
 
 ## Estado da auditoria e próximos itens de execução
 
-*(Seção viva — atualizar a cada reconciliação geral. Última: 2026-07-23.)*
+*(Seção viva — atualizar a cada reconciliação geral. Última: 2026-07-29.)*
 
 ### Onde a auditoria está
+
+O checklist original (Fases 0-4 + Tracks T-01 a T-06) está **funcionalmente
+completo por código/leitura**, restando só: **1** item de auditoria formal não
+iniciado (`F3-03`), **1** rodada de validação humana **diferida** pela Gestora
+(Caminho B — ver seção dedicada abaixo), e um punhado de bugs Médios/Baixos
+sem decisão pendente ou adiados de propósito.
 
 - **Fase 0 (fundamentos):** completa, 6/6. Só resta o `BUG-034` (2º componente-
   base para modais grandes, esforço futuro, não bloqueante).
 - **Fase 1 (validação por página):** as 6 páginas/clusters **validadas em
-  produção pela Gestora**, incluindo o **redesign completo do admin** (R0–R5) +
-  9/9 itens de feedback + validação da sidebar recolhida/flyout (2026-07-22).
-  Resta só a validação manual dos 3 fluxos de contrato (F1-02), programada
-  para depois da limpeza da base de teste — sem bloqueador de código.
-- **Fase 2: `F2-01`/`F2-02`/`F2-03`/`F2-04` concluídos.** Resta só `F2-05`
-  (categorização formal dos conceitos Fullscreen/Journey/Autênticas nas
-  páginas ainda não migradas ao padrão Gestão Funcional — parcial desde
-  2026-07-10, nunca retomada).
-- **Fase 3: `F3-01` e `F3-02` concluídos** (`BUG-011` investigado + resíduo
-  público corrigido, PR #162, 2026-07-28; `BUG-012` de carona). `F3-03` não iniciado
-  formalmente como auditoria (o achado prático, `BUG-022`, já foi corrigido
-  na Fase 1 — falta só a confirmação formal da cláusula de reembolso e dos 2
-  bypasses de pagamento como regra de negócio documentada).
-- **Fase 4 (jornadas e2e): as 3 MAPEADAS** (2026-07-28, `F4-JOURNEYS-MAP.md`).
-  Lead→membro→offboarding, convite→membro e financeira traçadas por leitura de
-  código (rota→gate→terminal); gates centrais sólidos, sem armadilha nova. E2e ao
-  vivo (login/pagamento/evento) = execução humana da Gestora; F4-03 tem 1 premissa
-  de critério a ratificar (checkout público removido no BUG-002).
-- **Todos os 6 tracks concluídos:** `T-02` (17/17, fechado/reaberto/
-  refechado), `T-03` (7/7), `T-06` (2/2), `T-01` (Momento 1, 2026-07-23 —
-  Momento 2 é trabalho futuro fora desta auditoria), `T-04` (escopo
-  reduzido), `T-05` (escopo misto).
+  produção pela Gestora**, incluindo o redesign completo do admin (R0–R5) + 9/9
+  itens de feedback. Resta só a validação manual dos 3 fluxos de contrato
+  (F1-02) — **diferida** (Caminho B, ver abaixo).
+- **Fase 2: COMPLETA — `F2-01` a `F2-05` concluídos.** `F2-05` (categorização
+  formal de design hub+admin, `F2-05-DESIGN-CATEGORIZATION.md`) fechou em
+  2026-07-24 e foi validada em produção em 2026-07-28 (3 copies de loading).
+- **Fase 3: `F3-01` e `F3-02` concluídos.** `F3-03` (regras financeiras —
+  cláusula de reembolso, 2 bypasses de pagamento) **segue não iniciado como
+  auditoria formal** — é o único item do checklist original ainda sem
+  nenhum trabalho, embora o achado prático que o motivou (`BUG-022`) já
+  esteja corrigido desde a Fase 1.
+- **Fase 4 (jornadas e2e): as 3 MAPEADAS por código** (2026-07-28,
+  `F4-JOURNEYS-MAP.md`) — gates centrais sólidos, nenhuma armadilha nova. A
+  **corrida ao vivo** (login/pagamento/evento reais) está **diferida** (Caminho
+  B, ver abaixo). `F4-03` teve o critério atualizado (checkout público removido
+  no `BUG-002` — superfície única logada), ratificado pela Gestora.
+- **Todos os 6 tracks concluídos, sem resíduo:** `T-02` (17/17), `T-03` (7/7),
+  `T-06` (2/2), `T-01` (Momento 1 — índices deployados pela Gestora em
+  2026-07-24, snapshot validado em produção em 2026-07-28; Momento 2 é
+  trabalho futuro fora desta auditoria), `T-04` (escopo reduzido), `T-05`
+  (escopo misto).
 - **Severidade: fila vazia — 0 `Alto`, 0 `Crítico` aberto**, confirmado por
   checagem cruzada dos 115 bugs registrados nesta reconciliação.
-- **2 bugs novos (`BUG-114`/`BUG-115`, Médio)** — código pronto (índice
-  versionado no PR #160), aguardando só o **deploy manual do índice**
-  (`firebase deploy --only firestore:indexes`) para fechar de fato.
+- **`BUG-114`/`BUG-115` corrigidos** (2026-07-24) — índices criados pela
+  Gestora no console do Firebase, efeito confirmado por sonda read-only.
 - **EXP-01:** fora do checklist da auditoria; represado por decisão da
   Gestora até o fim desta.
 
+### Lista de validação humana pendente (Caminho B — decisão da Gestora, 2026-07-28)
+
+A Gestora optou por **diferir** toda validação que depende de dado/ambiente
+real, agrupando-a numa rodada só, a fazer **após a limpeza da base do usuário
+de teste** (+ possíveis correções/implementações adicionais que surgirem até
+lá). **Ela não decidiu ainda se essa rodada é pós-auditoria ou uma etapa
+formal antes de fechar a auditoria** — isso é uma decisão em aberto que só ela
+pode tomar (ver pergunta ao final desta seção). Itens que compõem a rodada:
+
+1. **Corrida e2e AO VIVO das 3 jornadas** (Fase 4) — login real, pagamento
+   real (depende também da virada da credencial MP para produção — item 3
+   abaixo), evento real de convite/agenda.
+2. **Validação manual dos 3 fluxos de contrato** grátis/pago/avulso (F1-02) —
+   sem bloqueador de código, só precisa de um usuário de teste limpo.
+3. **Virada da credencial Mercado Pago para produção** (`APP_USR-`) —
+   deliberadamente adiada pela Gestora (2026-07-28); sem ela, nenhum pagamento
+   real pode ser exercitado (item 1 depende disto).
+4. O que mais a limpeza da base revelar precisar de validação (não
+   antecipável — registrar aqui quando surgir).
+
+**Pergunta para a Gestora, a levar na próxima interação:** com o checklist
+funcionalmente completo (só falta `F3-03` como trabalho de auditoria formal),
+a auditoria **fecha agora** (com esta rodada de validação humana registrada
+como pendência pós-auditoria, fora do escopo formal) — **ou** ela permanece
+formalmente aberta até essa rodada acontecer? Nenhuma das duas opções muda o
+trabalho de código a fazer; muda só o que conta como "auditoria concluída"
+nos relatórios/DASHBOARD.
+
 ### Lista priorizada do que resta (para o chat de execução retomar)
 
-**1. ~~Pendência operacional — deploy dos índices do Firestore~~ CONCLUÍDA
-   (2026-07-24).** A Gestora criou os 3 índices no Firebase Console (composto
-   `Surveys(surveyId,status)` via link + field overrides `Forms.formId` e
-   `User_Permissions.admin` via "Adicionar isenção"), todos **READY**. Sonda
-   read-only confirmou o EFEITO (Lição 31): as 3 queries que davam
-   `FAILED_PRECONDITION` agora funcionam. **`BUG-114` e `BUG-115` corrigidos.**
-   Nota operacional para o futuro: o deploy de índice **não é automatizável pelo
-   agente** (o SA do Admin SDK só lê índices; a CLI exige login interativo) — é
-   sempre um passo manual da Gestora via console/CLI autenticada.
+**1. `F3-03` — único item do checklist original de auditoria ainda não
+   iniciado.** Confirmar que a cláusula de reembolso (7 dias, textual no PDF
+   do contrato) tem processo manual real por trás (pergunta à Gestora — não é
+   algo que o código revele sozinho), e documentar se os 2 bypasses de
+   pagamento (`bplen_free_bypass` em `checkout.ts`, `retroactive_bypass` em
+   `retroactive-contract.ts`) são comportamento de negócio intencional e
+   aprovado (não é preciso investigar de novo — o padrão já apareceu no
+   `BUG-022`, corrigido; falta só a ratificação formal como regra de negócio
+   documentada, não um achado de código novo).
 
-**2. Ações que só a Gestora pode fazer (sem bloqueio de código):**
-   - Validação manual dos 3 fluxos de contrato (grátis/pago/avulso) em
-     produção (F1-02) — programada para depois da limpeza da base de teste.
-   - ~~Validação visual das 3 copies de loading do F2-05 (BUG-030)~~ **VALIDADA pela
-     Gestora (2026-07-28) — os 3 passaram.** F2-05 fechado sem resíduo.
-   - ~~Validar os 2 itens do snapshot do T1-2~~ **CONFIRMADO** — por sonda read-only
-     (`Admin_Metrics_Daily` populado diariamente, números batendo) **e validação visual
-     da Gestora nas 4 telas de analytics (2026-07-28, passou).**
-   - ~~Confirmar token MP de produção `APP_USR-`~~ **ESCLARECIDO (Gestora,
-     2026-07-28):** a produção está **deliberadamente** em credencial de TESTE por
-     ora; a troca para `APP_USR-` será feita **após a auditoria**. Não é risco
-     aberto — estado intencional. Ver `T-05-INTEGRATIONS-FINDINGS.md#3`.
-
-**3. Bugs Médios/Baixos abertos, sem decisão de negócio pendente (candidatos
+**2. Bugs Médios/Baixos abertos, sem decisão de negócio pendente (candidatos
    a "carona" quando o chat de execução tocar os arquivos vizinhos, ou a uma
    sessão de limpeza dedicada):**
-   - ~~`BUG-011` (F3-01)~~ **CORRIGIDO (2026-07-28, PR #162).** Investigado por
-     leitura: a parte do membro já era enforçada (`bookEventAction`, estava stale
-     como o BUG-012); o resíduo do funil público foi corrigido (revalidação da
-     janela no write). **F3-01 concluído.**
    - `BUG-043` (F2-01/Fase A) — `steps-registry.ts` fora de sincronia com os
      produtos canônicos da jornada. Independente da remoção do
      `/hub/step-journey` (já feita); é a mesma fonte de dado importada por
@@ -1639,58 +1703,46 @@ esquecida.
    - `BUG-046` (T-05) — links de e-mail de booking apontam para
      `/hub/membro/dashboard`, rota inexistente. Baixo risco, candidato a fix
      rápido quando alguém tocar os templates de e-mail.
-   - `BUG-085` (T-03/F1-06, adiado de propósito) — ~340 docs de eventos
-     passados nunca removidos; a correção óbvia (apagar) é destrutiva (perde
-     atas/histórico de carreira) — não mexer sem um plano de arquivamento.
-   - `BUG-094` (F2-04, adiado de propósito) — `resolveEventWeek` mistura
-     semana ISO com ano civil; mudaria a semântica de uma chave já gravada.
    - `BUG-097` (agenda) — agendamento fantasma quando o evento some do
      Google. **Decisão de modelo já tomada** (Gestora, 2026-07-22): não
      apagar evento com inscritos, marcar "Agenda alterada" + nova fila de
      trabalho no admin. Falta o **plano de implementação** (toca `sync.ts` +
      tela nova) — é trabalho de execução, não decisão pendente.
+
+**3. Adiados de propósito — não mexer sem sinal da Gestora:**
+   - `BUG-085` (T-03/F1-06) — ~340 docs de eventos passados nunca removidos;
+     a correção óbvia (apagar) é destrutiva (perde atas/histórico de
+     carreira).
+   - `BUG-094` (F2-04) — `resolveEventWeek` mistura semana ISO com ano civil;
+     mudaria a semântica de uma chave já gravada.
    - `BUG-098` (agenda) — campo `mentor` com nomenclatura antiga (rótulo já é
-     "Consultor"). Pendência registrada **de propósito**, a pedido da
-     Gestora — não mexer sem sinal dela.
+     "Consultor"). Pendência registrada de propósito, a pedido da Gestora.
+   - `BUG-112` escopo C (networking: papel real de "Consultor" + migração) —
+     programado para depois da auditoria, por decisão explícita da Gestora.
 
-**4. Trabalho que exige plano+aprovação de área sensível antes de codar:**
-   - `BUG-112` escopo C (networking: papel real de "Consultor" + migração,
-     não só o rótulo) — **programado para depois da auditoria**, por decisão
-     explícita da Gestora.
-   - Implementação de observabilidade (`T-04`, Sentry recomendado) —
-     decisão da Gestora, pós-auditoria (custo + escolha de ferramenta +
-     scrub de PII).
-
-**5. Concluir `F2-05`** (categorização formal de design) — terreno já
-   preparado (8 páginas de Gestão Funcional já no header canônico); falta
-   categorizar formalmente as páginas que ainda não foram migradas nos
-   conceitos Fullscreen/Journey/Autênticas e aplicar o padrão correspondente
-   a elas.
-
-**6. Fase 3 residual e Fase 4 (não iniciadas):** `F3-01` (decidir
-   enforcement do `BUG-011` depois de investigado), `F3-03` (confirmar
-   formalmente a cláusula de reembolso e os 2 bypasses de pagamento como
-   regra de negócio aprovada — o achado prático já foi corrigido, falta a
-   auditoria formal), e o mapeamento das 3 jornadas e2e da Fase 4 (é
-   entregável desta fase, não pré-existente).
-
-**Fora do checklist:** `EXP-01` (dashboard de KPIs do `/admin`) aguarda o
-fim da auditoria por decisão da Gestora — não compete com os itens acima.
-Momento 2 do `T-01` (Blaze, `Networking_Directory`, provedores externos)
-também é trabalho futuro, fora desta auditoria.
+**4. Trabalho que exige plano+aprovação de área sensível, fora do escopo
+   desta auditoria (decisão da Gestora, pós-auditoria):**
+   - Implementação de observabilidade (`T-04`, Sentry recomendado) — custo +
+     escolha de ferramenta + scrub de PII.
+   - `EXP-01` (dashboard de KPIs do `/admin`) — represado até o fim da
+     auditoria.
+   - Momento 2 do `T-01` (Blaze, `Networking_Directory`, paginação com busca
+     externa, provedores externos).
 
 ### Recomendação de por onde começar
 
-Com a fila de severidade **vazia** e todos os 6 tracks fechados, não há mais
-nenhum item furando a ordem por urgência — o processo está numa posição
-tranquila. **Sugestão de ordem:** (a) o deploy manual dos índices (item 1) é
-trivial e fecha 2 bugs de uma vez — bom primeiro passo; (b) `F2-05` (item 5)
-é o trabalho de maior alavancagem restante da Fase 2, com terreno já
-preparado; (c) `BUG-011`/`F3-01` precisa só de uma investigação read-only
-(reproduzir ou refutar o exploit teórico) antes de virar decisão de negócio;
-(d) a Fase 4 (mapeamento de jornadas e2e) é o único trabalho **inteiramente
-novo** que resta no checklist original — bom candidato para quando as
-pontas soltas de Fase 2/3 fecharem. **Antes de tratar qualquer item acima
-como "aberto e pronto para atacar", confirme contra `git log` — o Protocolo
-item 15 (Lição 45) existe exatamente porque essa lista já se mostrou
-propensa a carregar status defasado de uma sessão para outra.**
+Com a fila de severidade **vazia**, todos os 6 tracks fechados e as Fases 0-2
+completas, o que resta do checklist formal é pequeno: **(a) `F3-03`** é o
+único item de auditoria nunca tocado — é majoritariamente uma pergunta à
+Gestora (reembolso, bypasses), não investigação de código, e fechá-lo deixa a
+auditoria **completa por código e leitura em todas as 5 fases**; **(b)** os
+bugs do grupo 2 (sem decisão pendente) podem ser resolvidos em paralelo,
+individualmente ou como sessão de limpeza; **(c)** depois disso, o único
+trabalho que resta é a **rodada de validação humana diferida** (Fase 4 ao
+vivo + contratos + credencial MP), que depende da limpeza da base de teste e
+da resposta da Gestora à pergunta de fechamento formal feita acima — não é
+trabalho do chat de execução até que ela sinalize que a base está pronta.
+**Antes de tratar qualquer item acima como "aberto e pronto para atacar",
+confirme contra `git log`** — o Protocolo item 15 (Lição 45) existe
+exatamente porque essa lista já se mostrou propensa a carregar status
+defasado de uma sessão para outra.

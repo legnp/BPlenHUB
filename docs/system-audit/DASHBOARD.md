@@ -1,4 +1,4 @@
-# Painel de Progresso — Auditoria BPlen (Fase 0 + Fase 1 + Tracks associados)
+# Painel de Progresso — Auditoria BPlen (Fases 0-4 + Tracks associados)
 
 > **Visão de uma olhada** do progresso. **Fonte de verdade:** `BUGS.md` (status de
 > cada bug) + `00-PLAN.md` (itens de fase e tracks, incluindo a seção "Estado da
@@ -25,7 +25,20 @@
 > registro permanente e completo de toda sessão está em `LOG.md`, que nunca foi
 > editado e continua a fonte primária de história.
 >
-> **Última atualização:** 2026-07-28 (chat de execução — **BUG-011 CORRIGIDO → F3-01 concluído** (PR #162).
+> **Última atualização:** 2026-07-29 (chat de planejamento — **reconciliação geral**,
+> a 3ª desde 2026-07-07. Checklist original **funcionalmente completo por código**,
+> restando só `F3-03` (nunca iniciado) e a rodada de validação humana diferida
+> (Caminho B — Fase 4 ao vivo + 3 fluxos de contrato + virada MP, ver `00-PLAN.md`).
+> Corrigido: linha do resumo de bugs ainda dizia `BUG-114`/`BUG-115` "aguardando
+> deploy manual" (já `Corrigido` desde 2026-07-24); item `[T-01]` do `00-PLAN.md`
+> e o próprio `T-01-PERFORMANCE-DESIGN.md` idem; seção "Estado da auditoria" do
+> `00-PLAN.md` ainda listava `F2-05`/`BUG-011` como pendentes (concluídos em
+> 2026-07-24/28) — reescrita. Nova seção **"Fases 2-4"** abaixo (este painel nunca
+> tinha uma tabela para elas, só para 0/1). Lições 49-50 no `RETROSPECTIVE.md`
+> (deploy de índice é sempre manual da Gestora; critério de aceite pode ficar
+> obsoleto quando a superfície que ele cita é removida). Nenhuma mudança de código.
+>
+> _(entrada anterior)_ 2026-07-28 (chat de execução — **BUG-011 CORRIGIDO → F3-01 concluído** (PR #162).
 > Investigado por leitura: a antecedência mínima de 3 dias já era enforçada na gravação para o membro
 > (`bookEventAction`; estava stale como o BUG-012); o resíduo do funil público (write não revalidava a
 > janela, só a listagem) foi corrigido. Também nesta sessão: **BUG-114/115 fechados** (índices criados
@@ -329,6 +342,25 @@ O `BUG-110` (planilha do Drive apagava avaliação anterior) **já estava corrig
 
 ---
 
+## Fases 2-4 · progresso
+
+| Fase | Item | Estado |
+|---|---|---|
+| **Fase 2** | F2-01 destino do step-journey | ✓ Removida (PR #152) |
+| | F2-02 gate de contrato | ✓ Auditada — PASSA (trava estrutural por-serviço, sem código) |
+| | F2-03 seletor de tema hub/admin | ✓ Validado por código (motor global + mesmo header nas 2 áreas) |
+| | F2-04 cotas/entitlements | ✓ Trava real da cota 1:1 no booking (PR #153) |
+| | F2-05 categorização de design | ✓ Hub+admin categorizados nos 4 conceitos (PR #161); validado em produção (2026-07-28) |
+| | **Fase 2** | **COMPLETA — 5/5** |
+| **Fase 3** | F3-01 regras de agendamento | ✓ `BUG-012`+`BUG-011` enforçados (PR #162) |
+| | F3-02 exceções do Sequence Lock | ✓ Ratificadas pela Gestora (mantêm-se as 3) |
+| | F3-03 regras financeiras | ○ **Não iniciado** — único item do checklist original ainda sem trabalho |
+| | **Fase 3** | **2/3** |
+| **Fase 4** | F4-01/02/03 jornadas e2e | ✓ **Mapeadas por código** (`F4-JOURNEYS-MAP.md`, 2026-07-28) — gates sólidos, sem armadilha nova |
+| | Corrida e2e AO VIVO | ○ **Diferida (Caminho B)** — pós-limpeza da base de teste; Gestora não decidiu se pré ou pós-fechamento formal da auditoria |
+
+---
+
 ## Em andamento (PRs abertas)
 
 _Nenhuma no momento._
@@ -354,7 +386,7 @@ eles. Destaques que não se encaixam num único item de fase:
 - **BUG-105** (**fechado 2026-07-22 — não é bug**) — Pré-Análise Comportamental é collect-only por desenho (insumo do consultor para a devolutiva de Preparação de Carreira); já aparece no quadro "Formulários & Surveys Preenchidos" de `/admin/jornada-cliente`. Sem código.
 - **BUG-110** (Alto → **Corrigido**, PR #131) — reconciliação de 2026-07-22 o marcou aberto por engano (Lição 45); ver Triagem por severidade acima
 - **BUG-112 escopo C** (Melhoria, adiado) — papel real de "Consultor" + migração, programado para depois da auditoria
-- **BUG-114/BUG-115** (Médio, **aguardam deploy manual do índice** — PR #160) — código pronto, falta `firebase deploy --only firestore:indexes`
+- **BUG-114/BUG-115** (Médio, **Corrigido**, 2026-07-24) — índices criados pela Gestora no console do Firebase; efeito confirmado por sonda read-only
 
 ---
 
