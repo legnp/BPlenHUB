@@ -24,6 +24,50 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-29] Chat de planejamento — varredura do fluxo de auth: caso "abre-sem-concluir welcome" declarado não-bug + design da aba de Autenticações
+
+- Chat/sessão: mesmo chat de planejamento. A Gestora reportou "novos usuários
+  fizeram login, passaram pela welcome survey, e nenhum dado ficou salvo em
+  User/Drive/admin". Varredura **read-only** do fluxo de autenticação +
+  welcome survey (nenhuma linha de código tocada).
+- **Fluxo mapeado:** login (Google client) -> `onAuthStateChanged` cria cookie
+  de sessão assinado (`createSignedSessionCookie`) -> `/hub` detecta welcome
+  pendente -> `SurveyEngine`. Ao **abrir** a welcome, `resolveOwnIdentityAction`
+  (montagem) já **cunha a matrícula** e grava `_AuthMap/{uid}` + incrementa
+  `_internal/counters/user/global`. O doc raiz `User/{matricula}` e a sync do
+  Drive só nascem no **submit** (dentro de `handleWelcomeSurveyEffect`).
+- **Achado estrutural:** o admin lista usuários com `collection("User").get()`,
+  que só retorna docs que existem; escrever em `User/{mat}/Surveys/...` não cria
+  o pai `User/{mat}` (fica "fantasma"). O doc raiz é criado **só** pelo efeito
+  de submit. Hipóteses da varredura (registradas para referência): H1 balde
+  anônimo `BP-ANON` por `userUid` falsy no submit; H2 falha silenciosa do efeito
+  (dispatcher engole erro); H3 cisão uid-cliente vs. sessão; H4 falha isolada do
+  Drive. Válidas para o sintoma "dado na coleção errada", **não** para os casos
+  abaixo.
+- **Decisão da Gestora (2026-07-29): NÃO É BUG.** A Gestora inspecionou o
+  `_AuthMap` e achou os uids `g6KowzH8s8X6OoJitOltHgQwcgd2` e
+  `jWpK2s4gqsdtGHJFJfvKtGIygLI3`; conversou com o usuário, que confirmou **não
+  ter concluído** a welcome. Estado `_AuthMap` sem `User/{mat}` = autenticou +
+  abriu welcome + abandonou = comportamento **por design**, sem perda de dado.
+  H1/H2 ficam descartadas para este sintoma específico.
+- **Ressalva de design (não bloqueante):** cunhar a matrícula na *abertura*
+  queima um número sequencial do contador e deixa `_AuthMap` órfão a cada
+  abandono. Refino opcional futuro: adiar a cunhagem para o submit. Registrado,
+  não agendado.
+- **Nova feature aprovada pela Gestora: aba "Autenticações" (funil de
+  onboarding) no admin**, paralela à de Usuários — para dar visibilidade de
+  quem autenticou e não concluiu (hoje só visível inspecionando o `_AuthMap`).
+  Design completo em `AUTH-TRACKING-DESIGN.md` (fonte = `listUsers()` do
+  Firebase Auth + join com `_AuthMap`/`User`, retroativo, sem write novo;
+  funil de 3 estágios; sub-aba estilo `FSTabs`; máscara de identidade interna;
+  read-only v1; histórico por evento = fase 2 pós-auditoria). **É código =
+  sessão de execução com branch/PR + plano aprovado** — este chat só produziu
+  o design.
+- Itens atualizados: `AUTH-TRACKING-DESIGN.md` (novo), este LOG. Sem alteração
+  de código, `BUGS.md` (não é bug), `00-PLAN.md` ou `DASHBOARD.md`.
+
+---
+
 ## [2026-07-29] Chat de planejamento — checkpoint: sem execução desde a reconciliação (9027c83)
 
 - Chat/sessão: chat de planejamento (Opus 4.8), nova sessão continuando da anterior
