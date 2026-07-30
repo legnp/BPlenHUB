@@ -63,8 +63,15 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
   não resolveu deste ambiente (`bplen.com` resolveu) — vale conferir se o link admin
   está correto; (c) emojis legados em comentários/`console.log` de vários arquivos de
   e-mail (regra Zero Emoji) permanecem — limpeza dedicada, fora do bucket 1.
-- Itens atualizados: código (rename + callers), `EMAIL-DESIGN-V01.md` (nota de
-  execução), este LOG. Sem mudança de schema/índice/`firestore.rules`/env.
+- **Ajuste pós-validação (2026-07-30):** na conferência dos 4 e-mails de teste, o
+  rótulo textual da categoria (AGENDA/PAGAMENTO/...) apareceu colado à cinta e à
+  borda esquerda (ficava fora do padding do cartão) e a Gestora decidiu que o texto
+  não deve existir. **Removido o `<p>` do eyebrow** em `getCardHeaderHtml`; mantém-se
+  só a fita de acento (a categoria/`danger` do caller continua sinalizando a fita e
+  a cor). Callers inalterados. type-check exit 0; 4 e-mails de teste reenviados.
+- Itens atualizados: código (rename + callers + remoção do rótulo textual),
+  `EMAIL-DESIGN-V01.md` (nota de execução), este LOG. Sem mudança de
+  schema/índice/`firestore.rules`/env.
 
 ## [2026-07-30] Chat de planejamento — design do Padrão de E-mail BPlen V01 (redesign do template global)
 

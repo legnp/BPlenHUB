@@ -109,11 +109,14 @@ function getBaseUrl(): string {
   return clientEnv.NEXT_PUBLIC_APP_URL || "https://bplen.com";
 }
 
-/** Fita de acento + rotulo de categoria no topo do cartao. */
-function getCardHeaderHtml(eyebrow: string, danger: boolean = false): string {
+/**
+ * Fita de acento (cinta) no topo do cartao. O rotulo textual de categoria foi
+ * removido a pedido da Gestora (2026-07-30) — mantem-se apenas a fita. `danger`
+ * pinta a fita em vermelho (cancelamento/falha).
+ */
+function getCardHeaderHtml(danger: boolean = false): string {
   return `
     <div style="${danger ? EMAIL_STYLES.accentBarDanger : EMAIL_STYLES.accentBar}"></div>
-    <p style="${danger ? EMAIL_STYLES.eyebrowDanger : EMAIL_STYLES.eyebrow}">${eyebrow}</p>
   `;
 }
 
@@ -135,8 +138,9 @@ function getFooterIconHtml(): string {
 
 /**
  * Monta o layout centralizado do Padrao de E-mail BPlen V01.
- * `eyebrow` renderiza a fita de acento + rotulo de categoria; sem ele o cartao
- * fica sem fita. `danger: true` pinta fita e rotulo em vermelho (cancelamento/falha).
+ * `eyebrow` (a categoria do e-mail) sinaliza que o cartao leva a fita de acento no
+ * topo; sem ele o cartao fica sem fita. O rotulo textual da categoria nao e mais
+ * exibido (decisao da Gestora, 2026-07-30). `danger: true` pinta a fita em vermelho.
  */
 export function buildEmailLayout(
   contentHtml: string,
@@ -148,7 +152,7 @@ export function buildEmailLayout(
     <div style="${EMAIL_STYLES.container}">
       ${getLogoHtml()}
       <div style="background-color: #FFFFFF; border-radius: 20px; overflow: hidden; box-shadow: 0 24px 48px -24px rgba(29,29,31,0.22), 0 2px 8px rgba(29,29,31,0.04); text-align: left;">
-        ${eyebrow ? getCardHeaderHtml(eyebrow, danger) : ""}
+        ${eyebrow ? getCardHeaderHtml(danger) : ""}
         <div style="${EMAIL_STYLES.card}">
           ${contentHtml}
         </div>

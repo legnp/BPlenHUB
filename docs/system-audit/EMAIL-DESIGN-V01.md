@@ -38,6 +38,12 @@ acabamento premium:
 - **Logo real** (`public/logo_bplen/logo.png`) no cabeçalho, substituindo o
   wordmark de texto; **ícone da marca** (`favicon.png`) no rodapé.
 - **Rótulo eyebrow** por categoria acima do título (ex.: "AGENDA").
+  **[Execução 2026-07-30] Rótulo textual REMOVIDO:** na validação visual (teste
+  real), a Gestora decidiu que o texto da categoria não deve aparecer — mantém-se
+  apenas a **fita de acento** (cinta). A categoria/`danger` passada por cada caller
+  segue sinalizando que o cartão leva a fita e sua cor; o `<p>` do rótulo saiu do
+  `getCardHeaderHtml`. (O rótulo também estava colado à borda/cinta por ficar fora
+  do padding do cartão — a remoção resolve os dois pontos.)
 - **Botão primário sólido** `#044159`, formato pílula (`border-radius: 999px`)
   com sombra — decisão final da Gestora (degradê no botão foi descartado).
 - **Rodapé** com divisor + ícone + texto + domínio `bplen.com`.
