@@ -2,7 +2,7 @@ import { Resend } from "resend";
 import { serverEnv, clientEnv } from "@/env";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { buildSoberanaEmail, EMAIL_STYLES } from "./emails/soberana-layout";
+import { buildEmailLayout, EMAIL_STYLES } from "./emails/email-layout";
 
 /**
  * BPlen HUB — Premium Email Engine (📧💎)
@@ -35,7 +35,7 @@ export async function sendOrderRequestedEmail(user: UserDetails, order: OrderDet
       from: "BPlen Financeiro <financeiro@bplen.com>",
       to: user.email,
       subject: `[BPlen HUB] Solicitação de compra recebida: ${order.productTitle}`,
-      html: buildSoberanaEmail(`
+      html: buildEmailLayout(`
         <h2 style="${EMAIL_STYLES.h2}">Olá, ${user.name || "Membro"}.</h2>
         <p style="${EMAIL_STYLES.p}">
           Recebemos a sua solicitação para a contratação da <strong>${order.productTitle}</strong>. 
@@ -49,7 +49,7 @@ export async function sendOrderRequestedEmail(user: UserDetails, order: OrderDet
         <p style="${EMAIL_STYLES.p}">
           Você receberá uma nova confirmação assim que o pagamento for aprovado.
         </p>
-      `)
+      `, "BPlen HUB - Departamento Financeiro", { eyebrow: "PAGAMENTO" })
     });
     console.log(`✉️ [E-mail] "Compra Solicitada" enviado para ${user.email}`);
   } catch (error) {
@@ -69,7 +69,7 @@ export async function sendPaymentApprovedEmail(user: UserDetails, order: OrderDe
       from: "BPlen Financeiro <financeiro@bplen.com>",
       to: user.email,
       subject: `[BPlen HUB] Confirmação de Pagamento: ${order.productTitle}`,
-      html: buildSoberanaEmail(`
+      html: buildEmailLayout(`
         <h2 style="${EMAIL_STYLES.h2}">Seu pagamento foi aprovado.</h2>
         <p style="${EMAIL_STYLES.p}">
           Confirmamos o recebimento do pagamento para a <strong>${order.productTitle}</strong>. 
@@ -94,7 +94,7 @@ export async function sendPaymentApprovedEmail(user: UserDetails, order: OrderDe
         <p style="${EMAIL_STYLES.p}">
           Seus acessos já foram processados. Nossa equipe financeira enviará a nota fiscal em breve.
         </p>
-      `, "BPlen HUB - Departamento Financeiro")
+      `, "BPlen HUB - Departamento Financeiro", { eyebrow: "PAGAMENTO" })
     });
     console.log(`✉️ [E-mail] "Pagamento Aprovado" enviado para ${user.email}`);
   } catch (error) {
@@ -115,7 +115,7 @@ export async function sendServiceGrantedEmail(user: UserDetails, productTitle: s
       from: "BPlen HUB <hub@bplen.com>",
       to: user.email,
       subject: `[BPlen HUB] Acesso Liberado: ${productTitle}`,
-      html: buildSoberanaEmail(`
+      html: buildEmailLayout(`
         <h2 style="${EMAIL_STYLES.h2}">Sua jornada começou.</h2>
         <p style="${EMAIL_STYLES.p}">
           Olá, <strong>${user.name || "Membro"}</strong>. 
@@ -130,7 +130,7 @@ export async function sendServiceGrantedEmail(user: UserDetails, productTitle: s
         <p style="font-size: 12px; color: #94A3B8; margin-top: 20px;">
           Recomendamos que você inicie pela aba de Serviços para visualizar sua trilha personalizada.
         </p>
-      `, "Equipe BPlen HUB")
+      `, "Equipe BPlen HUB", { eyebrow: "ACESSO" })
     });
     console.log(`✉️ [E-mail] "Serviço Liberado" enviado para ${user.email}`);
   } catch (error) {
@@ -151,7 +151,7 @@ export async function sendFreeOrderApprovedEmail(user: UserDetails, order: Order
       from: "BPlen Financeiro <financeiro@bplen.com>",
       to: user.email,
       subject: `${user.name || "Membro"}, sua contratação foi confirmada.`,
-      html: buildSoberanaEmail(`
+      html: buildEmailLayout(`
         <h2 style="${EMAIL_STYLES.h2}">Acesso Liberado!</h2>
         <p style="${EMAIL_STYLES.p}">
           Confirmamos a contratação gratuita para a <strong>${order.productTitle}</strong>. 
@@ -170,7 +170,7 @@ export async function sendFreeOrderApprovedEmail(user: UserDetails, order: Order
         <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #F0F0F0; font-size: 12px; color: #94A3B8;">
           Ao realizar esta contratação, você concordou com os nossos <a href="https://bplen.com/termos-e-condicoes" style="color: #1D1D1F; text-decoration: underline;">Termos e Condições</a> e com a nossa <a href="https://bplen.com/politica-de-privacidade" style="color: #1D1D1F; text-decoration: underline;">Política de Privacidade</a>.
         </div>
-      `, "BPlen HUB - Departamento Financeiro")
+      `, "BPlen HUB - Departamento Financeiro", { eyebrow: "CONTRATO" })
     });
     console.log(`✉️ [E-mail] "Compra Gratuita Aprovada" enviado para ${user.email}`);
   } catch (error) {
@@ -195,7 +195,7 @@ export async function sendCouponRedeemedEmail(
       to: user.email,
       cc: "promo@bplen.com",
       subject: `Confirmado: Seu cupom BPlen foi resgatado`,
-      html: buildSoberanaEmail(`
+      html: buildEmailLayout(`
         <h2 style="${EMAIL_STYLES.h2}">Cupom resgatado.</h2>
         <p style="${EMAIL_STYLES.p}">Olá, <b>${user.name || "Membro BPlen"}</b>.</p>
         
@@ -221,7 +221,7 @@ export async function sendCouponRedeemedEmail(
         <p style="font-size: 12px; color: #64748B; text-align: left; line-height: 1.5;">
           Equipe BPlen HUB
         </p>
-      `, "Equipe BPlen HUB")
+      `, "Equipe BPlen HUB", { eyebrow: "CUPOM" })
     });
     console.log(`[E-mail] Cupom resgatado enviado para ${user.email}`);
   } catch (error) {
@@ -245,7 +245,7 @@ export async function sendCouponExpiredEmail(
       to: user.email,
       cc: "promo@bplen.com",
       subject: `Aviso: Seu cupom BPlen expirou`,
-      html: buildSoberanaEmail(`
+      html: buildEmailLayout(`
         <h2 style="${EMAIL_STYLES.h2}">Cupom expirado.</h2>
         <p style="${EMAIL_STYLES.p}">Olá, <b>${user.name || "Membro BPlen"}</b>.</p>
         
@@ -269,7 +269,7 @@ export async function sendCouponExpiredEmail(
         <p style="font-size: 12px; color: #64748B; text-align: left; line-height: 1.5;">
           Equipe BPlen HUB
         </p>
-      `, "Equipe BPlen HUB")
+      `, "Equipe BPlen HUB", { eyebrow: "CUPOM" })
     });
     console.log(`[E-mail] Cupom expirado enviado para ${user.email}`);
   } catch (error) {

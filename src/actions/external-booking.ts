@@ -14,7 +14,7 @@ import {
 import { CALENDAR_CONFIG } from "@/config/calendarConfig";
 import { bookEventAction } from "./calendar";
 import { Resend } from "resend";
-import { buildSoberanaEmail, EMAIL_STYLES } from "@/lib/emails/soberana-layout";
+import { buildEmailLayout, EMAIL_STYLES } from "@/lib/emails/email-layout";
 import { getTeamProposalNotificationEmail } from "@/lib/email-templates";
 import { GoogleCalendarEvent } from "@/types/calendar";
 
@@ -316,7 +316,7 @@ export async function submitBookingProposalAction(formData: {
         from: `BPlen HUB <hub@bplen.com>`,
         to: formData.email,
         subject: `${formData.name}, recebemos sua proposta de agenda.`,
-        html: buildSoberanaEmail(`
+        html: buildEmailLayout(`
           <h2 style="${EMAIL_STYLES.h2}">Proposta recebida.</h2>
           <p style="${EMAIL_STYLES.p}">Olá, <b>${formData.name}</b>.</p>
           
@@ -339,7 +339,7 @@ export async function submitBookingProposalAction(formData: {
           <p style="font-size: 12px; color: #94A3B8; text-align: left; margin-top: 30px;">
             Obrigado por querer descomplicar o desenvolvimento humano conosco.
           </p>
-        `, "BPlen HUB - Inteligência em Gestão e Desenvolvimento")
+        `, "BPlen HUB - Inteligência em Gestão e Desenvolvimento", { eyebrow: "AGENDA" })
       });
 
       try {

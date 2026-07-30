@@ -4,6 +4,7 @@ import { serverEnv } from "@/env";
 import { runCalendarSync } from "@/actions/calendar-module/sync";
 import { getAdminDb } from "@/lib/firebase-admin";
 import { refreshAdminMetricsSnapshot } from "@/lib/admin/metrics-snapshot";
+import { buildEmailLayout, EMAIL_STYLES } from "@/lib/emails/email-layout";
 
 /**
  * Sincronizacao automatica da agenda (cron diario da Vercel).
@@ -38,15 +39,17 @@ async function alertarFalha(detalhe: string) {
       from: "BPlen HUB <hub@bplen.com>",
       to: TEAM_ALERT_TO,
       subject: "Falha na sincronizacao automatica da agenda",
-      html: `
-        <p>A sincronizacao automatica da agenda (03:00) <b>nao foi concluida</b>.</p>
-        <p style="background:#FFF0F6;border-left:4px solid #ff2c8d;padding:12px;border-radius:8px;font-size:13px;">
-          ${detalhe}
+      html: buildEmailLayout(`
+        <h2 style="${EMAIL_STYLES.h2}; color: #ef4444;">Falha na sincronizacao automatica.</h2>
+        <p style="${EMAIL_STYLES.p}">A sincronizacao automatica da agenda (03:00) <b>nao foi concluida</b>.</p>
+        <div style="${EMAIL_STYLES.dangerBox}">
+          <p style="margin: 0; font-size: 13px; color: #1D1D1F;">${detalhe}</p>
+        </div>
+        <p style="font-size: 13px; color: #64748B;">
+          A agenda segue com os dados da ultima sincronizacao bem-sucedida — nada foi corrompido.
+          Para atualizar agora, use o botao <b>Sincronizar</b> em Admin &gt; Sincronizar Agenda.
         </p>
-        <p style="font-size:13px;">A agenda segue com os dados da ultima sincronizacao bem-sucedida —
-        nada foi corrompido. Para atualizar agora, use o botao <b>Sincronizar</b> em
-        Admin &gt; Sincronizar Agenda.</p>
-      `,
+      `, "BPlen HUB - Central de Notificacoes", { eyebrow: "SISTEMA", danger: true }),
     });
   } catch (mailErr) {
     // O alerta falhar nao pode mascarar a falha original nos logs.

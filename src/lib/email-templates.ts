@@ -4,7 +4,7 @@
  * Refatorado para utilizar o motor Soberana v3.1 de E-mails.
  */
 
-import { buildSoberanaEmail, EMAIL_STYLES } from "./emails/soberana-layout";
+import { buildEmailLayout, EMAIL_STYLES } from "./emails/email-layout";
 
 interface BookingEmailData {
   displayName: string;
@@ -24,7 +24,7 @@ interface BookingEmailData {
 export function getBookingConfirmationEmail(data: BookingEmailData) {
   const { displayName, summary, dateStr, timeStr, mentor, theme, oneToOneInfo, htmlLink, cancelLink } = data;
   
-  return buildSoberanaEmail(`
+  return buildEmailLayout(`
     <h2 style="${EMAIL_STYLES.h2}">Agendamento confirmado.</h2>
     <p style="${EMAIL_STYLES.p}">Olá, <b>${displayName}</b>.</p>
     
@@ -55,7 +55,7 @@ export function getBookingConfirmationEmail(data: BookingEmailData) {
       Deseja reagendar ou cancelar? <br/>
       <a href="${cancelLink}" style="color: #1D1D1F; font-weight: bold;">Gerenciar minha agenda no HUB</a>
     </p>
-  `, "BPlen HUB - Suporte de Agenda");
+  `, "BPlen HUB - Suporte de Agenda", { eyebrow: "AGENDA" });
 }
 
 /**
@@ -64,7 +64,7 @@ export function getBookingConfirmationEmail(data: BookingEmailData) {
 export function getAdminInclusionEmail(data: Omit<BookingEmailData, 'cancelLink' | 'oneToOneInfo'>) {
   const { displayName, summary, dateStr, timeStr, mentor, htmlLink } = data;
 
-  return buildSoberanaEmail(`
+  return buildEmailLayout(`
     <h2 style="${EMAIL_STYLES.h2}">Inclusão confirmada.</h2>
     <p style="${EMAIL_STYLES.p}">Olá, <b>${displayName}</b>.</p>
     <p style="${EMAIL_STYLES.p}">Você foi adicionado manualmente a um evento por nossa equipe administrativa.</p>
@@ -79,7 +79,7 @@ export function getAdminInclusionEmail(data: Omit<BookingEmailData, 'cancelLink'
     <a href="${htmlLink}" style="${EMAIL_STYLES.button}">
       Acessar Reunião
     </a>
-  `, "BPlen HUB - Suporte de Agenda");
+  `, "BPlen HUB - Suporte de Agenda", { eyebrow: "AGENDA" });
 }
 
 /**
@@ -88,7 +88,7 @@ export function getAdminInclusionEmail(data: Omit<BookingEmailData, 'cancelLink'
 export function getCancellationEmail(data: { nickname: string; eventSummary: string; platformLink: string }) {
   const { nickname, eventSummary, platformLink } = data;
 
-  return buildSoberanaEmail(`
+  return buildEmailLayout(`
     <h2 style="${EMAIL_STYLES.h2}; color: #ef4444;">Agendamento cancelado.</h2>
     <p style="${EMAIL_STYLES.p}">Olá, <b>${nickname}</b>.</p>
     
@@ -110,7 +110,7 @@ export function getCancellationEmail(data: { nickname: string; eventSummary: str
     <p style="font-size: 12px; color: #94A3B8; text-align: left; line-height: 1.5;">
       Se você não solicitou este cancelamento, entre em contato imediatamente com o seu Pós-Venda ou Mentor.
     </p>
-  `, "BPlen HUB - Suporte de Agenda");
+  `, "BPlen HUB - Suporte de Agenda", { eyebrow: "AGENDA", danger: true });
 }
 
 /**
@@ -129,7 +129,7 @@ export function getRescheduleEmail(data: {
 }) {
   const { participantName, eventName, oldDateStr, oldTimeStr, oldMentor, newDateStr, newTimeStr, newMentor, platformLink } = data;
 
-  return buildSoberanaEmail(`
+  return buildEmailLayout(`
     <h2 style="${EMAIL_STYLES.h2}">Alteração de agendamento confirmada.</h2>
     <p style="${EMAIL_STYLES.p}">Olá, <b>${participantName}</b>.</p>
     
@@ -160,7 +160,7 @@ export function getRescheduleEmail(data: {
     <p style="font-size: 12px; color: #94A3B8; text-align: left; line-height: 1.5;">
       Recomendamos atualizar este compromisso na sua agenda pessoal. Caso tenha dúvidas ou precise gerenciar seus horários, acesse o painel do HUB.
     </p>
-  `, "BPlen HUB - Suporte de Agenda");
+  `, "BPlen HUB - Suporte de Agenda", { eyebrow: "AGENDA" });
 }
 
 // 1. Notificacao de Novo Agendamento
@@ -178,7 +178,7 @@ export interface TeamBookingNotificationData {
 
 export function getTeamBookingNotificationEmail(data: TeamBookingNotificationData) {
   const { displayName, userEmail, summary, dateStr, timeStr, mentor, theme, oneToOneInfo, isLead } = data;
-  return buildSoberanaEmail(`
+  return buildEmailLayout(`
     <h2 style="${EMAIL_STYLES.h2}; color: #16a34a;">Novo agendamento realizado</h2>
     <p style="${EMAIL_STYLES.p}">Olá equipe BPlen,</p>
     <p style="${EMAIL_STYLES.p}">
@@ -204,7 +204,7 @@ export function getTeamBookingNotificationEmail(data: TeamBookingNotificationDat
     <a href="https://hub.bplen.com/admin/fs/agenda" style="${EMAIL_STYLES.button}">
       Acessar Painel de Agenda
     </a>
-  `, "BPlen HUB - Notificacoes Internas");
+  `, "BPlen HUB - Notificacoes Internas", { eyebrow: "EQUIPE" });
 }
 
 // 2. Notificacao de Cancelamento
@@ -216,7 +216,7 @@ export interface TeamCancellationNotificationData {
 
 export function getTeamCancellationNotificationEmail(data: TeamCancellationNotificationData) {
   const { nickname, email, eventSummary } = data;
-  return buildSoberanaEmail(`
+  return buildEmailLayout(`
     <h2 style="${EMAIL_STYLES.h2}; color: #ef4444;">Agendamento cancelado</h2>
     <p style="${EMAIL_STYLES.p}">Olá equipe BPlen,</p>
     <p style="${EMAIL_STYLES.p}">
@@ -233,7 +233,7 @@ export function getTeamCancellationNotificationEmail(data: TeamCancellationNotif
     <a href="https://hub.bplen.com/admin/fs/agenda" style="${EMAIL_STYLES.button}">
       Acessar Painel de Agenda
     </a>
-  `, "BPlen HUB - Notificacoes Internas");
+  `, "BPlen HUB - Notificacoes Internas", { eyebrow: "EQUIPE", danger: true });
 }
 
 // 3. Notificacao de Inclusao Administrativa
@@ -248,7 +248,7 @@ export interface TeamInclusionNotificationData {
 
 export function getTeamInclusionNotificationEmail(data: TeamInclusionNotificationData) {
   const { displayName, userEmail, summary, dateStr, timeStr, mentor } = data;
-  return buildSoberanaEmail(`
+  return buildEmailLayout(`
     <h2 style="${EMAIL_STYLES.h2}; color: #1e40af;">Inclusao administrativa realizada</h2>
     <p style="${EMAIL_STYLES.p}">Olá equipe BPlen,</p>
     <p style="${EMAIL_STYLES.p}">
@@ -271,7 +271,7 @@ export function getTeamInclusionNotificationEmail(data: TeamInclusionNotificatio
     <a href="https://hub.bplen.com/admin/fs/agenda" style="${EMAIL_STYLES.button}">
       Acessar Painel de Agenda
     </a>
-  `, "BPlen HUB - Notificacoes Internas");
+  `, "BPlen HUB - Notificacoes Internas", { eyebrow: "EQUIPE" });
 }
 
 // 4. Notificacao de Reagendamento Administrativo
@@ -289,7 +289,7 @@ export interface TeamRescheduleNotificationData {
 
 export function getTeamRescheduleNotificationEmail(data: TeamRescheduleNotificationData) {
   const { participantName, email, eventName, oldDateStr, oldTimeStr, oldMentor, newDateStr, newTimeStr, newMentor } = data;
-  return buildSoberanaEmail(`
+  return buildEmailLayout(`
     <h2 style="${EMAIL_STYLES.h2}; color: #d97706;">Reagendamento de evento realizado</h2>
     <p style="${EMAIL_STYLES.p}">Olá equipe BPlen,</p>
     <p style="${EMAIL_STYLES.p}">
@@ -318,7 +318,7 @@ export function getTeamRescheduleNotificationEmail(data: TeamRescheduleNotificat
     <a href="https://hub.bplen.com/admin/fs/agenda" style="${EMAIL_STYLES.button}">
       Acessar Nova Reuniao
     </a>
-  `, "BPlen HUB - Notificacoes Internas");
+  `, "BPlen HUB - Notificacoes Internas", { eyebrow: "EQUIPE" });
 }
 
 // 5. Notificacao de Nova Proposta Externa de Agenda
@@ -332,7 +332,7 @@ export interface TeamProposalNotificationData {
 
 export function getTeamProposalNotificationEmail(data: TeamProposalNotificationData) {
   const { name, email, phone, optionsHtml, screeningHtml } = data;
-  return buildSoberanaEmail(`
+  return buildEmailLayout(`
     <h2 style="${EMAIL_STYLES.h2}; color: #c026d3;">Nova proposta de agenda externa recebida</h2>
     <p style="${EMAIL_STYLES.p}">Olá equipe BPlen,</p>
     <p style="${EMAIL_STYLES.p}">
@@ -361,6 +361,6 @@ export function getTeamProposalNotificationEmail(data: TeamProposalNotificationD
     <a href="https://hub.bplen.com/admin/fs/agenda" style="${EMAIL_STYLES.button}">
       Acessar Painel de Agenda
     </a>
-  `, "BPlen HUB - Notificacoes Internas");
+  `, "BPlen HUB - Notificacoes Internas", { eyebrow: "EQUIPE" });
 }
 

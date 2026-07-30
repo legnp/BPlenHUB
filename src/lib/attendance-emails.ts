@@ -1,6 +1,6 @@
 import { Resend } from "resend";
 import { serverEnv, clientEnv } from "@/env";
-import { buildSoberanaEmail, EMAIL_STYLES } from "./emails/soberana-layout";
+import { buildEmailLayout, EMAIL_STYLES } from "./emails/email-layout";
 
 const resend = new Resend(serverEnv.RESEND_API_KEY);
 
@@ -26,7 +26,7 @@ export async function sendAttendanceRegisteredEmail(user: AttendeeEmailDetails, 
       from: "BPlen HUB <hub@bplen.com>",
       to: user.email,
       subject: `Presença confirmada: ${eventTitle}`,
-      html: buildSoberanaEmail(`
+      html: buildEmailLayout(`
         <h2 style="${EMAIL_STYLES.h2}">Sua presença foi registrada.</h2>
         <p style="${EMAIL_STYLES.p}">
           Olá, <strong>${user.name || "Membro"}</strong>.
@@ -43,7 +43,7 @@ export async function sendAttendanceRegisteredEmail(user: AttendeeEmailDetails, 
         <p style="font-size: 12px; color: #94A3B8; margin-top: 20px;">
           Se tiver alguma dúvida sobre o conteúdo do evento, entre em contato com seu mentor ou consultor através do portal.
         </p>
-      `, "Equipe BPlen HUB")
+      `, "Equipe BPlen HUB", { eyebrow: "PRESENÇA" })
     });
     console.log(`✉️ [E-mail] "Presença Registrada" enviado para ${user.email}`);
   } catch (error) {
@@ -68,7 +68,7 @@ export async function sendAbsenceRegisteredEmail(user: AttendeeEmailDetails, eve
       from: "BPlen HUB <hub@bplen.com>",
       to: user.email,
       subject: `Registro de ausência: ${eventTitle}`,
-      html: buildSoberanaEmail(`
+      html: buildEmailLayout(`
         <h2 style="${EMAIL_STYLES.h2}">Sua ausência foi registrada.</h2>
         <p style="${EMAIL_STYLES.p}">
           Olá, <strong>${user.name || "Membro"}</strong>.
@@ -85,7 +85,7 @@ export async function sendAbsenceRegisteredEmail(user: AttendeeEmailDetails, eve
         <p style="font-size: 12px; color: #94A3B8; margin-top: 20px;">
           Caso prefira, você também pode abrir um ticket de suporte diretamente no portal BPlen HUB.
         </p>
-      `, "Equipe BPlen HUB")
+      `, "Equipe BPlen HUB", { eyebrow: "PRESENÇA" })
     });
     console.log(`✉️ [E-mail] "Falta Registrada" enviado para ${user.email}`);
   } catch (error) {

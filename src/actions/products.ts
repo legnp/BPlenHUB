@@ -9,7 +9,7 @@ import { PRODUCTS_COLLECTION, COUPONS_COLLECTION, BACKUP_NAMESPACE_COLLECTION } 
 import { backupPortfolioCollections } from "@/lib/portfolio-backup";
 import { Resend } from "resend";
 import { serverEnv } from "@/env";
-import { buildSoberanaEmail, EMAIL_STYLES } from "@/lib/emails/soberana-layout";
+import { buildEmailLayout, EMAIL_STYLES } from "@/lib/emails/email-layout";
 import fs from "fs";
 import path from "path";
 import { PortfolioPayloadSchema, CouponsPayloadSchema } from "@/lib/validations/portfolio";
@@ -210,7 +210,7 @@ export async function registerFaqQuestionAction(data: {
     const resend = new Resend(serverEnv.RESEND_API_KEY);
 
     // 1. Enviar e-mail de confirmação para o Usuário
-    const userEmailHtml = buildSoberanaEmail(`
+    const userEmailHtml = buildEmailLayout(`
       <h2 style="${EMAIL_STYLES.h2}">Sua dúvida foi registrada.</h2>
       <p style="${EMAIL_STYLES.p}">
         Olá, <strong>${name}</strong>.
@@ -225,7 +225,7 @@ export async function registerFaqQuestionAction(data: {
       <p style="${EMAIL_STYLES.p}">
         Agradecemos o seu contato e o seu interesse em descomplicar o desenvolvimento humano conosco.
       </p>
-    `, "Equipe BPlen HUB");
+    `, "Equipe BPlen HUB", { eyebrow: "SUPORTE" });
 
     await resend.emails.send({
       from: "BPlen HUB <hub@bplen.com>",
@@ -235,7 +235,7 @@ export async function registerFaqQuestionAction(data: {
     });
 
     // 2. Enviar e-mail de notificação para a equipe BPlen (notificacao@bplen.com)
-    const adminEmailHtml = buildSoberanaEmail(`
+    const adminEmailHtml = buildEmailLayout(`
       <h2 style="${EMAIL_STYLES.h2}; color: #ff2c8d;">Nova dúvida registrada no FAQ</h2>
       <p style="${EMAIL_STYLES.p}">
         Olá equipe BPlen,
@@ -253,7 +253,7 @@ export async function registerFaqQuestionAction(data: {
         <p style="margin: 0 0 8px 0; font-size: 11px; color: #E11D48; font-weight: bold; text-transform: uppercase;">Mensagem / Dúvida</p>
         <p style="margin: 4px 0; font-size: 14px; line-height: 1.6; color: #1D1D1F; white-space: pre-line;">${message}</p>
       </div>
-    `, "BPlen HUB - Notificações Internas");
+    `, "BPlen HUB - Notificações Internas", { eyebrow: "EQUIPE" });
 
     await resend.emails.send({
       from: "BPlen HUB <hub@bplen.com>",
