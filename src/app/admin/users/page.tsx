@@ -41,6 +41,7 @@ import { getErrorMessage } from "@/lib/utils/errors";
 import type { UserAssessment } from "@/actions/admin-assessments";
 import type { AdminContractRow } from "@/actions/admin/contract-invoice";
 import { FunctionalPageHeader } from "@/components/layout/FunctionalPageHeader";
+import { UsersTabs } from "@/components/admin/UsersTabs";
 
 /**
  * BPlen HUB — Gestão de Usuários e Governança
@@ -353,6 +354,8 @@ export default function UsersManagementPage() {
 
   return (
     <div className="space-y-8 pb-20">
+      <UsersTabs />
+
       <FunctionalPageHeader
         eyebrow="Pessoas"
         title="Gestão de Usuários"

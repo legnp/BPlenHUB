@@ -24,6 +24,48 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-29] Chat de execução — implementação da aba "Autenticações" (funil de onboarding) no admin
+
+- Chat/sessão: chat de execução dedicado. Branch `feat/admin-auth-funnel` +
+  PR (código de produto nunca vai direto na `main`). Ponto de partida confirmado:
+  `main == origin/main` em `46989f1` (Lição 45).
+- Escopo: implementada a v1 read-only descrita em `AUTH-TRACKING-DESIGN.md`. A
+  decisão de não-bug ("abre-sem-concluir welcome") NÃO foi reaberta — a aba só dá
+  visibilidade desse estado, que hoje só se enxerga inspecionando o `_AuthMap`.
+- Arquivos novos: `src/types/auth-funnel.ts` (tipos + entradas cruas do builder);
+  `src/lib/auth-funnel.ts` (`classifyFunnelStage` + `buildAuthFunnel` — puro, sem
+  SDK, testável); `src/actions/auth-tracking.ts` (`getAuthFunnelAction`,
+  `requireAdmin` + `listUsers` com loop de `pageToken` + join `_AuthMap`/`User`);
+  `src/components/admin/AuthFunnelView.tsx` (StatTiles + tabela + filtros, reusa
+  `FunctionalPageHeader`/`StatTile`/`AtmosphericLoading`);
+  `src/components/admin/UsersTabs.tsx` (sub-abas estilo `FSTabs`);
+  `src/app/admin/users/autenticacoes/page.tsx` (rota). `src/__tests__/auth-funnel.test.ts`
+  (10 casos: 3 estágios + auto-healing por uid + `_AuthMap` órfão + `User` sem
+  login + não-duplicação + máscara de identidade interna). Editado (mínimo):
+  `src/app/admin/users/page.tsx` — só monta `<UsersTabs/>` no topo, sem tocar na
+  lógica de Membros.
+- Decisões de implementação (refino do design, registrado em `AUTH-TRACKING-DESIGN.md`):
+  (1) separei uma camada PURA (`lib/auth-funnel.ts`) da action de rede para testar
+  a classificação/join com a função de produção, não uma cópia (Lição 18); (2) a
+  resolução de matrícula também cai no `User.uid` quando o `_AuthMap` falta,
+  espelhando o auto-healing por uid de `find-matricula.ts`; (3) a máscara
+  `maskInternalContact` é aplicada DENTRO do builder puro (garantia + cobertura de
+  teste, risco 3 do design). Sem `firestore.rules`, sem write novo, sem índice novo.
+  Fase 2 (histórico de login por evento) NÃO implementada, como combinado.
+- Validação (`npm run check` = lint + test + type-check + build):
+  - **lint**: baseline vermelha PRÉ-EXISTENTE do repo (299 erros / 385 avisos —
+    ondas de `any`-cleanup em curso, Lição 43). Confirmado contra a `main` por
+    `git stash -u`: contagem IDÊNTICA (299/385) com e sem a feature; lint dirigido
+    aos 7 arquivos novos = limpo. A feature adiciona ZERO ao baseline.
+  - **test**: 302/302 (38 arquivos). **type-check**: limpo. **build**: compila e
+    finaliza (precisou `NODE_OPTIONS=--max-old-space-size=8192` — a passada de
+    TypeScript do `next build` estourava o heap de 2GB desta máquina; é limite de
+    memória do ambiente, não erro de código; o `type-check` isolado já passava).
+- Pendências operacionais: validação VISUAL em produção fica com a Gestora — telas
+  logadas não autenticam no preview da Vercel (BUG-030). PR aberto para preview/merge.
+- Itens do 00-PLAN.md atualizados: nenhum (feature de observabilidade do admin, fora
+  da grade de fases/bugs da auditoria; `BUGS.md` não se aplica — não é bug).
+
 ## [2026-07-29] Chat de planejamento — varredura do fluxo de auth: caso "abre-sem-concluir welcome" declarado não-bug + design da aba de Autenticações
 
 - Chat/sessão: mesmo chat de planejamento. A Gestora reportou "novos usuários

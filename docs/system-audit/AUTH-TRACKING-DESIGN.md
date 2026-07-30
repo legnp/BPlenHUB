@@ -131,6 +131,27 @@ sub-aba dentro de `/admin/users` casa melhor e mantém as duas visões juntas.
   (mudança mínima, não mexe na lógica atual da tela de Membros).
 - Sem alteração em `firestore.rules` (tudo via Admin SDK server-side).
 
+### 8.1 Como ficou na execução (2026-07-29, branch `feat/admin-auth-funnel`)
+
+Três refinos sobre o desenho acima, todos consistentes com ele:
+
+- **Camada pura separada** `src/lib/auth-funnel.ts` (`classifyFunnelStage` +
+  `buildAuthFunnel`) — sem `"use server"` e sem SDK. A action só lê/normaliza as
+  três fontes e delega o join/classificação/máscara/agregados para essa função
+  pura, que é a exercida pelo teste (Lição 18: testar a função de produção, não
+  uma cópia). Tipos e entradas cruas do builder em `src/types/auth-funnel.ts`.
+- **Resolução de matrícula com fallback por `User.uid`**: quando o `_AuthMap/{uid}`
+  falta, o builder ainda resolve a matrícula pelo campo `uid` do doc `User`,
+  espelhando o auto-healing por uid de `lib/identity/find-matricula.ts`. Evita
+  marcar como "Autenticado (só)" quem já tem `User` mas cujo `_AuthMap` ainda não
+  foi curado.
+- **Máscara dentro do builder**: `maskInternalContact` é aplicada em `email` e
+  `displayName` dentro de `buildAuthFunnel` (não só na view), fechando o risco 3
+  (vazamento de identidade interna em campo derivado) e ficando coberta por teste.
+
+Read-only confirmado: nenhuma escrita, nenhum índice novo, nenhuma mudança de
+schema, nenhum toque em `firestore.rules`. Fase 2 (seção 9) não implementada.
+
 ## 9. Fora de escopo (fase 2, se a Gestora quiser)
 
 - **Histórico de login por evento** (série temporal): gravar um doc a cada
