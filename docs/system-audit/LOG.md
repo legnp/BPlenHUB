@@ -24,6 +24,90 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-30] Chat de EXECUÇÃO — Padrão de E-mail BPlen V01 (bucket 1) implementado
+
+- Chat/sessão: chat de execução (Opus 4.8). Branch `feat/email-layout-v01` a partir
+  da `main`. Implementa o plano de `EMAIL-DESIGN-V01.md` (bucket 1 apenas).
+- Escopo entregue:
+  - **Rename** `src/lib/emails/soberana-layout.ts` -> `email-layout.ts`;
+    `buildSoberanaEmail` -> `buildEmailLayout`. Portado o V01 (fita de acento,
+    sombra, logo real `public/logo_bplen/logo.png`, favicon no rodapé, eyebrow por
+    categoria, botão sólido `#044159` em pílula, rodapé com divisor + domínio).
+  - **4 correções da seção 3 aplicadas na porta:** (1) reintroduzido o token
+    `EMAIL_STYLES.footer` (o rodapé o referenciava mas o objeto do canvas o havia
+    removido); (2) `background-color` sólido antes do `background` em `accentBar`
+    (`#044159`), `accentBarDanger` e `buttonDanger` (`#ef4444`), p/ fallback de
+    degradê no Outlook; (3) **defeito #3 resolvido** — `https://bplen.com` serve
+    `/logo_bplen/logo.png` e `/favicon.png` (HTTP 200) **e** `/hub/membro` (200),
+    logo o domínio de produção que serve o `public/` é o próprio `bplen.com`
+    (fallback do código), sem 404; (4) assets já versionados, não copiados.
+  - **Todos os callers** atualizados (rename do import + eyebrow por categoria,
+    `danger` nos cancelamentos), 23 chamadas ao todo: `email-templates.ts` (9),
+    `checkout-emails.ts` (6), `attendance-emails.ts` (2), `invitations.ts` (2),
+    `external-booking.ts` (1), `products.ts` (2) e o patch do cron
+    `sync-agenda/route.ts` (1, `SISTEMA` + `danger`, antes era HTML inline solto).
+    3 `danger`: cancelamento do membro, cancelamento da equipe, alerta do cron.
+- Validação: **type-check, test (302/302) e build** exit 0 (rodados isolados). O
+  `npm run check` não fecha por causa da **baseline vermelha pré-existente do lint**
+  (299 erros, quase todos em `scratch/` com `any`) — confirmado que os 8 arquivos
+  tocados somam **0 erros** (só warnings pré-existentes de `baseUrl`/`admin` não
+  usados); baseline mantida (Lição 43). Envio de **4 e-mails de teste reais** via
+  Resend para `lisandra.lencina@bplen.com` (agenda c/ eyebrow, cancelamento danger,
+  pagamento, convite), com o logo apontando p/ `bplen.com` — usando as funções REAIS
+  de produção (Lição 18). Aguardando validação visual da Gestora no Gmail/Outlook
+  antes do merge.
+- Observações fora de escopo (registradas, não corrigidas neste PR): (a)
+  `checkout-emails.ts` vaza "Google Drive"/"Drive" em copy de e-mail ao cliente
+  (regra 6 infra-invisível) — bucket próprio; (b) e-mails de notificação de equipe
+  em `email-templates.ts` linkam `https://hub.bplen.com/admin/...`, e `hub.bplen.com`
+  não resolveu deste ambiente (`bplen.com` resolveu) — vale conferir se o link admin
+  está correto; (c) emojis legados em comentários/`console.log` de vários arquivos de
+  e-mail (regra Zero Emoji) permanecem — limpeza dedicada, fora do bucket 1.
+- **Ajuste pós-validação (2026-07-30):** na conferência dos 4 e-mails de teste, o
+  rótulo textual da categoria (AGENDA/PAGAMENTO/...) apareceu colado à cinta e à
+  borda esquerda (ficava fora do padding do cartão) e a Gestora decidiu que o texto
+  não deve existir. **Removido o `<p>` do eyebrow** em `getCardHeaderHtml`; mantém-se
+  só a fita de acento (a categoria/`danger` do caller continua sinalizando a fita e
+  a cor). Callers inalterados. type-check exit 0; 4 e-mails de teste reenviados.
+- Itens atualizados: código (rename + callers + remoção do rótulo textual),
+  `EMAIL-DESIGN-V01.md` (nota de execução), este LOG. Sem mudança de
+  schema/índice/`firestore.rules`/env.
+
+## [2026-07-30] Chat de planejamento — design do Padrão de E-mail BPlen V01 (redesign do template global)
+
+- Chat/sessão: mesmo chat de planejamento. A Gestora redesenhou o template global
+  de e-mails no canvas de Design do Claude (prototipagem, sem acesso ao repo) e
+  pediu orientação de implementação. **Nenhuma linha de código tocada** — só
+  investigação read-only + doc de plano.
+- Esclarecido: o canvas de Design **não faz deploy**; a implementação é aqui via
+  branch + PR -> Vercel. Template central real = `src/lib/emails/soberana-layout.ts`
+  (`buildSoberanaEmail`); **todos** os e-mails transacionais passam por ele (via
+  `email-templates.ts` e os callers), então reestilizar o motor reestiliza todos.
+- Design entregue pela Gestora em `Downloads/Novo padrao email bplen/code/`
+  (Soberana v3.3). Investigação apontou 4 pontos a corrigir na implementação:
+  (1) `EMAIL_STYLES.footer` referenciado mas removido do objeto -> `style=undefined`;
+  (2) degradê (fita de acento, buttonDanger) some no Outlook sem fallback sólido;
+  (3) fita+eyebrow só renderizam se cada caller passar `options.eyebrow`;
+  (4) verificar `NEXT_PUBLIC_APP_URL` em produção (logo 404). Assets do logo já
+  estão no repo (`public/logo_bplen/`).
+- **Decisões da Gestora (2026-07-30):** (a) scope **A** — aplicar em todos os
+  callers com eyebrow por categoria; (b) versionar como **V01** (primeiro modelo
+  padrão oficial); (c) **depreciar o termo "soberano/soberana"** (sensacionalista,
+  fora do tom de voz) — renomear `soberana-layout.ts` -> `email-layout.ts`,
+  `buildSoberanaEmail` -> `buildEmailLayout`; (d) separar em **3 buckets** para
+  não misturar escopos: 1 (e-mail V01, agora), 2 (2 strings de UI com "Soberania",
+  uma vaza "Google Drive"), 3 (~100 comentários/logs internos com "soberan*",
+  limpeza dedicada à parte).
+- Entregue: `EMAIL-DESIGN-V01.md` (plano completo — correções técnicas, mapa de
+  eyebrow por e-mail, rename V01, arquivos afetados, validação por envio de teste
+  real via Resend, buckets 2/3 registrados). É **código = sessão de execução com
+  branch/PR + plano aprovado** (design system compartilhado). Comando de execução
+  entregue à Gestora.
+- Itens atualizados: `EMAIL-DESIGN-V01.md` (novo), memória do projeto
+  (`project_email_design_v01`), este LOG. Sem alteração de código, `BUGS.md`,
+  `00-PLAN.md` ou `DASHBOARD.md` (feature/refino fora da grade da auditoria, como
+  a aba de Autenticações).
+
 ## [2026-07-30] Chat de planejamento — reconciliação pós-execução da aba "Autenticações"
 
 - Chat/sessão: chat de planejamento (Opus 4.8). Estado de entrada: `main ==

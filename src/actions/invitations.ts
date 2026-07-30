@@ -5,7 +5,7 @@ import * as admin from "firebase-admin";
 import { Resend } from "resend";
 import { serverEnv } from "@/env";
 import { InvitationEvent, InvitationToken } from "@/types/invitations";
-import { buildSoberanaEmail, EMAIL_STYLES } from "@/lib/emails/soberana-layout";
+import { buildEmailLayout, EMAIL_STYLES } from "@/lib/emails/email-layout";
 import { getServerSession } from "@/lib/server-session";
 
 const resend = new Resend(serverEnv.RESEND_API_KEY);
@@ -452,7 +452,7 @@ async function sendInvitationRsvpEmails(
       `;
     }
 
-    const guestEmailBody = buildSoberanaEmail(guestContent, "BPlen HUB - Desenvolvimento Humano");
+    const guestEmailBody = buildEmailLayout(guestContent, "BPlen HUB - Desenvolvimento Humano", { eyebrow: "CONVITE" });
     await resend.emails.send({
       from: "BPlen HUB <hub@bplen.com>",
       to: userEmail,
@@ -492,7 +492,7 @@ async function sendInvitationRsvpEmails(
       </div>
     `;
 
-    const staffEmailBody = buildSoberanaEmail(staffContent, "BPlen HUB - Central de Notificacoes");
+    const staffEmailBody = buildEmailLayout(staffContent, "BPlen HUB - Central de Notificacoes", { eyebrow: "EQUIPE" });
     await resend.emails.send({
       from: "BPlen HUB <hub@bplen.com>",
       to: "notificacao@bplen.com",
