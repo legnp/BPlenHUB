@@ -1,9 +1,10 @@
 /**
  * BPlen HUB — Tipos do Funil de Autenticacoes (aba Autenticacoes do admin)
  *
- * Snapshot read-only do funil de onboarding: junta as contas que autenticaram
- * (Firebase Auth), o `_AuthMap` (identidade cunhada) e o `User` (onboarding
- * concluido). Ver `docs/system-audit/AUTH-TRACKING-DESIGN.md`.
+ * Snapshot read-only do funil de recepcao: junta as contas que autenticaram
+ * (Firebase Auth), o `_AuthMap` (identidade cunhada) e o `User` (recepcao
+ * concluida). O conceito "recepcao" e distinto do onboarding da jornada de
+ * membro (etapas diferentes). Ver `docs/system-audit/AUTH-TRACKING-DESIGN.md`.
  *
  * IMPORTANTE (rotulos neutros, regra 6 do CLAUDE.md): nenhum campo/valor aqui
  * expoe o nome da infraestrutura. Para a UI, tudo vive "no BPlen HUB".
@@ -13,7 +14,7 @@
 export type AuthFunnelStage =
   | "authenticated" // autenticou, nunca abriu welcome/cadastro (sem matricula)
   | "identity_generated" // abriu welcome/cadastro, nao concluiu
-  | "onboarding_complete"; // User existe com hasCompletedWelcome === true
+  | "reception_complete"; // User existe com hasCompletedWelcome === true (Recepcao concluida)
 
 /**
  * Marcador de caso de borda de higiene (nao e um estagio do funil):
@@ -56,9 +57,9 @@ export interface AuthFunnelSummary {
   totalAuthenticated: number;
   /** Pessoas em "identidade gerada" (abriram e nao concluiram). */
   identityGenerated: number;
-  /** Pessoas com onboarding concluido. */
-  onboardingComplete: number;
-  /** Conversao = onboardingComplete / totalAuthenticated (0..1). */
+  /** Pessoas com a Recepcao concluida. */
+  receptionComplete: number;
+  /** Conversao = receptionComplete / totalAuthenticated (0..1). */
   conversionRate: number;
   /** Identidades orfas (sem conta de login). */
   orphanAuthMaps: number;

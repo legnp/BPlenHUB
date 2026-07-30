@@ -22,7 +22,7 @@ import { StatTile } from "@/components/admin/StatTile";
 import AtmosphericLoading from "@/components/shared/AtmosphericLoading";
 
 /**
- * BPlen HUB — Aba Autenticacoes (funil de onboarding).
+ * BPlen HUB — Aba Autenticacoes (funil de recepcao).
  *
  * Snapshot read-only de quem autenticou e onde parou no funil. Reusa o header,
  * StatTiles e loading canonicos do redesign do admin. Rotulos neutros: nenhuma
@@ -40,8 +40,8 @@ const STAGE_META: Record<AuthFunnelStage, { label: string; badge: string }> = {
     label: "Identidade gerada",
     badge: "bg-amber-500/10 text-amber-600 border-amber-500/20",
   },
-  onboarding_complete: {
-    label: "Onboarding completo",
+  reception_complete: {
+    label: "Recepção completa",
     badge: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
   },
 };
@@ -50,7 +50,7 @@ const STAGE_FILTERS: { id: StageFilter; label: string }[] = [
   { id: "all", label: "Todos" },
   { id: "authenticated", label: "Autenticado" },
   { id: "identity_generated", label: "Identidade gerada" },
-  { id: "onboarding_complete", label: "Onboarding completo" },
+  { id: "reception_complete", label: "Recepção completa" },
 ];
 
 function formatDate(iso: string | null): string {
@@ -113,14 +113,14 @@ export function AuthFunnelView() {
         title="Autenticacoes"
         icon={<Fingerprint size={24} />}
         statusTag={{
-          label: "Funil de Onboarding",
+          label: "Funil de Recepção",
           tone: "accent",
           icon: <Activity className="w-3 h-3" />,
         }}
       />
 
       <p className="text-[var(--text-muted)] text-sm font-medium opacity-70 -mt-4 text-left">
-        Quem autenticou e onde parou no funil de onboarding. A contagem difere da aba Membros por design:
+        Quem autenticou e onde parou no funil de recepção. A contagem difere da aba Membros por design:
         aqui a base sao as autenticacoes; la, os cadastros concluidos.
       </p>
 
@@ -172,8 +172,8 @@ export function AuthFunnelView() {
           detail="Abriram e nao concluiram"
         />
         <StatTile
-          label="Onboarding completo"
-          value={loading ? "-" : summary?.onboardingComplete ?? 0}
+          label="Recepção completa"
+          value={loading ? "-" : summary?.receptionComplete ?? 0}
           icon={<CheckCircle2 size={18} />}
           tone="success"
           detail={

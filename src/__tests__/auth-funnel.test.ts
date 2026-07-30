@@ -35,15 +35,15 @@ describe("classifyFunnelStage — os 3 estagios", () => {
 
   it("matricula + User existe mas hasCompletedWelcome=false = identity_generated", () => {
     // Caso discriminante (Licao 15): so a flag de conclusao separa este estagio
-    // do onboarding completo — inverter a flag muda a resposta.
+    // da Recepcao completa — inverter a flag muda a resposta.
     expect(classifyFunnelStage({ matricula: "BP-002-PF-260701", userExists: true, hasCompletedWelcome: false })).toBe(
       "identity_generated"
     );
   });
 
-  it("matricula + User existe + hasCompletedWelcome=true = onboarding_complete", () => {
+  it("matricula + User existe + hasCompletedWelcome=true = reception_complete", () => {
     expect(classifyFunnelStage({ matricula: "BP-003-PF-260701", userExists: true, hasCompletedWelcome: true })).toBe(
-      "onboarding_complete"
+      "reception_complete"
     );
   });
 });
@@ -53,7 +53,7 @@ describe("buildAuthFunnel — join das tres fontes", () => {
     const authUsers: RawAuthUser[] = [
       authUser({ uid: "uidA" }), // authenticated (sem AuthMap)
       authUser({ uid: "uidB" }), // identity_generated (AuthMap sem User completo)
-      authUser({ uid: "uidC" }), // onboarding_complete
+      authUser({ uid: "uidC" }), // reception_complete
     ];
     const authMaps: RawAuthMap[] = [
       { uid: "uidB", matricula: "BP-002-PF-260701", recovered: false },
@@ -68,11 +68,11 @@ describe("buildAuthFunnel — join das tres fontes", () => {
     const byUid = Object.fromEntries(rows.map((r) => [r.uid, r]));
     expect(byUid.uidA.stage).toBe("authenticated");
     expect(byUid.uidB.stage).toBe("identity_generated");
-    expect(byUid.uidC.stage).toBe("onboarding_complete");
+    expect(byUid.uidC.stage).toBe("reception_complete");
 
     expect(summary.totalAuthenticated).toBe(3);
     expect(summary.identityGenerated).toBe(1);
-    expect(summary.onboardingComplete).toBe(1);
+    expect(summary.receptionComplete).toBe(1);
     expect(summary.conversionRate).toBeCloseTo(1 / 3);
   });
 
@@ -86,7 +86,7 @@ describe("buildAuthFunnel — join das tres fontes", () => {
     const { rows } = buildAuthFunnel({ authUsers, authMaps, users });
     expect(rows).toHaveLength(1);
     expect(rows[0].matricula).toBe("BP-004-PF-260701");
-    expect(rows[0].stage).toBe("onboarding_complete");
+    expect(rows[0].stage).toBe("reception_complete");
   });
 
   it("borda: _AuthMap orfao sem conta de login vira linha de higiene", () => {
@@ -115,7 +115,7 @@ describe("buildAuthFunnel — join das tres fontes", () => {
     expect(rows).toHaveLength(1);
     expect(rows[0].hasAuthAccount).toBe(false);
     expect(rows[0].note).toBe("user_without_auth");
-    expect(rows[0].stage).toBe("onboarding_complete");
+    expect(rows[0].stage).toBe("reception_complete");
     expect(summary.usersWithoutAuth).toBe(1);
   });
 
