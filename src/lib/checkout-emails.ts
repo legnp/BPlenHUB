@@ -211,10 +211,10 @@ export async function sendCouponRedeemedEmail(
         </div>
 
         <p style="${EMAIL_STYLES.p}">
-          O termo de aceitação digital contendo as regras de uso foi registrado no sistema e uma cópia em texto foi armazenada na pasta <strong>5.Documentos</strong> do seu Google Drive pessoal.
+          O termo de aceitação digital contendo as regras de uso foi registrado no sistema e uma cópia em texto foi arquivada na sua área de documentos do BPlen HUB.
         </p>
         
-        ${termsPdfUrl ? `<p style="${EMAIL_STYLES.p}">Você também pode acessar as regras do termo através do link: <a href="${termsPdfUrl}" style="color: #1D1D1F; font-weight: bold; text-decoration: underline;">Visualizar Documento no Drive</a></p>` : ""}
+        ${termsPdfUrl ? `<p style="${EMAIL_STYLES.p}">Você também pode acessar as regras do termo através do link: <a href="${termsPdfUrl}" style="color: #1D1D1F; font-weight: bold; text-decoration: underline;">Visualizar Documento</a></p>` : ""}
 
         <hr style="border: 0; border-top: 1px solid #E2E8F0; margin: 30px 0;" />
         
