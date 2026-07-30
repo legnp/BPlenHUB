@@ -25,7 +25,19 @@
 > registro permanente e completo de toda sessão está em `LOG.md`, que nunca foi
 > editado e continua a fonte primária de história.
 >
-> **Última atualização:** 2026-07-29 (chat de planejamento — **reconciliação geral**,
+> **Última atualização:** 2026-07-30 (chat de planejamento — **reconciliação
+> pós-execução da aba "Autenticações"**). Investigação read-only do fluxo de auth:
+> caso "abre-sem-concluir welcome" declarado **não-bug** (abandono da welcome,
+> decisão da Gestora — `_AuthMap` órfão sem `User`). Entregue em produção a aba
+> **"Autenticações" (funil de Recepção) do admin** (PRs #163/#164, read-only,
+> `AUTH-TRACKING-DESIGN.md`) — **feature fora da grade** de fases/tracks/bugs
+> (como `EXP-01`), reconhecida na seção "Estado da auditoria" do `00-PLAN.md`,
+> **sem** abrir item graduado nem alterar % de nenhum track. `BUGS.md` inalterado
+> (não é bug). Follow-up **guardado** (não agendado): captura de `origin` na fonte
+> (write novo, forward-only, área sensível — grupo 4 da lista priorizada).
+> Reconciliado contra git (HEAD `29f5a1c`, `main == origin/main`).
+>
+> **Reconciliação anterior:** 2026-07-29 (chat de planejamento — **reconciliação geral**,
 > a 3ª desde 2026-07-07. Checklist original **funcionalmente completo por código**,
 > restando só `F3-03` (nunca iniciado) e a rodada de validação humana diferida
 > (Caminho B — Fase 4 ao vivo + 3 fluxos de contrato + virada MP, ver `00-PLAN.md`).

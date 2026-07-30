@@ -246,6 +246,26 @@ nunca iniciado. Achados desta reconciliação:
    Protocolo (releia o critério de aceite, não só o status de bug, ao
    revisitar um item antigo).
 
+**Reconciliação desta sessão** (chat de planejamento, 2026-07-30, ver entrada
+correspondente no `LOG.md`): entre esta e a anterior (2026-07-29), (a) a
+investigação read-only do fluxo de auth concluiu que o caso "abre-sem-concluir
+welcome" é **por design, não bug** (decisão da Gestora — `_AuthMap` órfão sem
+`User` = abandono da welcome), e (b) uma sessão de execução entregou em
+produção a **aba "Autenticações" (funil de Recepção) do admin** (PRs #163
+`5545320` e #164 `29f5a1c`, deploy de produção confirmado, validada pela
+Gestora) — feature read-only de observabilidade, `AUTH-TRACKING-DESIGN.md`.
+Reconciliado contra git (Lição 45): HEAD em `29f5a1c`, ambos PRs ancestrais,
+`main == origin/main`. Achados: **nenhuma defasagem em `BUGS.md`** (não é bug,
+nenhuma entrada criada). A aba é **feature fora da grade de fases/tracks/bugs**
+(como `EXP-01`) — decisão desta reconciliação: **não entra como item graduado**,
+mas é reconhecida na seção "Estado da auditoria" (entregas fora-de-grade) e na
+nota do `DASHBOARD.md`, para a fonte de verdade refletir a realidade. Novo
+follow-up **guardado** (não agendado): captura de `origin` na fonte (write
+novo, forward-only, toca fluxo de identidade = área sensível; a Gestora diferiu
+para outra sessão) — registrado no grupo 4 da lista priorizada, ao lado do
+`T-04`/`EXP-01`. Nenhuma lição nova reutilizável (a execução já registrou o
+que aprendeu).
+
 ---
 
 ## Protocolo entre chats
@@ -1612,7 +1632,7 @@ esquecida.
 
 ## Estado da auditoria e próximos itens de execução
 
-*(Seção viva — atualizar a cada reconciliação geral. Última: 2026-07-29.)*
+*(Seção viva — atualizar a cada reconciliação geral. Última: 2026-07-30.)*
 
 ### Onde a auditoria está
 
@@ -1652,6 +1672,14 @@ sem decisão pendente ou adiados de propósito.
   Gestora no console do Firebase, efeito confirmado por sonda read-only.
 - **EXP-01:** fora do checklist da auditoria; represado por decisão da
   Gestora até o fim desta.
+- **Aba "Autenticações" (funil de Recepção) do admin — ENTREGUE EM PRODUÇÃO**
+  (2026-07-29/30, PRs #163/#164, `AUTH-TRACKING-DESIGN.md`). Feature read-only
+  de observabilidade **fora da grade** de fases/tracks/bugs (como `EXP-01`):
+  não entra em nenhuma % nem abre item graduado; registrada aqui só para a
+  fonte de verdade refletir a entrega. Originou-se da investigação que
+  declarou o caso "abre-sem-concluir welcome" **não-bug** (abandono da welcome,
+  decisão da Gestora). Fase 2 (histórico de login por evento) e a captura de
+  `origin` na fonte ficaram para depois (ver grupo 4 abaixo).
 
 ### Lista de validação humana pendente (Caminho B — decisão da Gestora, 2026-07-28)
 
@@ -1726,6 +1754,15 @@ a auditoria segue aberta.
      auditoria.
    - Momento 2 do `T-01` (Blaze, `Networking_Directory`, paginação com busca
      externa, provedores externos).
+   - **Captura de `origin` na fonte da autenticação** (convite/hub/futuras) —
+     para segmentar e-mail de lembrete a quem autenticou e não completou a
+     Recepção. A origem **não é dado gravado hoje**; fazê-lo à prova de futuras
+     origens exige um campo `origin` explícito **no momento em que a identidade
+     é cunhada** = write novo, **forward-only** (não backfilla quem já existe),
+     tocando o fluxo de identidade = área sensível → plano+aprovação. A Gestora
+     diferiu para outra sessão (2026-07-29). Guardado como o `T-04`; detalhe em
+     `AUTH-TRACKING-DESIGN.md` seção 8.3. O público-alvo do lembrete já é
+     visível pelos estágios do funil sem depender da origem.
 
 ### Recomendação de por onde começar
 

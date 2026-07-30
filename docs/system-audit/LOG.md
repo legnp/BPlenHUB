@@ -24,6 +24,42 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-30] Chat de planejamento — reconciliação pós-execução da aba "Autenticações"
+
+- Chat/sessão: chat de planejamento (Opus 4.8). Estado de entrada: `main ==
+  origin/main` em `29f5a1c`, árvore limpa (só `.claude/` untracked). Confirmado
+  contra git (Lição 45): PRs #163 (`5545320`, feature) e #164 (`29f5a1c`,
+  terminologia "Recepção") ambos ancestrais de HEAD; commit de docs `20c03ff`
+  no meio. **Nenhuma linha de código tocada** — só reconciliação de docs.
+- Contexto reconciliado: a sessão de execução entregou em produção a **aba
+  "Autenticações" (funil de Recepção)** do admin (read-only: `getAuthFunnelAction`
+  com `listUsers`+pageToken + join `_AuthMap`/`User`; classificador puro
+  `src/lib/auth-funnel.ts` testado 10 casos; `AuthFunnelView`+`UsersTabs`+rota
+  `/admin/users/autenticacoes`; máscara de identidade interna). Validada
+  visualmente em produção pela Gestora. A execução já documentou tudo em
+  `LOG.md` (2 entradas de 2026-07-29) e `AUTH-TRACKING-DESIGN.md` (seções 8.1
+  implementação, 8.2 terminologia "Recepção", 8.3 origem) — sem defasagem interna
+  a corrigir.
+- **Decisão de reconciliação (pedido 1 da Gestora):** a aba é **feature de
+  observabilidade fora da grade** de fases/tracks/bugs (mesma natureza do
+  `EXP-01`). Portanto **não entra como item graduado** e não altera nenhuma % —
+  mas é **reconhecida na seção "Estado da auditoria"** do `00-PLAN.md` (bloco de
+  entregas fora-de-grade) e na nota do `DASHBOARD.md`, para a fonte de verdade
+  refletir a entrega. `BUGS.md` **inalterado** (não é bug — a decisão de não-bug
+  do caso "abre-sem-concluir welcome" não foi reaberta).
+- **Decisão de reconciliação (pedido 2 da Gestora):** a **captura de `origin` na
+  fonte** (write novo, forward-only, toca fluxo de identidade = área sensível)
+  fica **guardada como o `T-04`/observabilidade** — registrada no **grupo 4** da
+  lista priorizada do `00-PLAN.md`, **não agendada**. A Gestora já a diferiu para
+  outra sessão; não é bloqueante e o público-alvo do lembrete já é visível pelos
+  estágios do funil sem depender da origem. Quando quiser, vira uma fase de
+  design própria (plano+aprovação antes de codar).
+- Itens atualizados: `00-PLAN.md` (parágrafo de reconciliação 2026-07-30; seção
+  "Estado da auditoria" — data da seção viva, bullet da aba entregue, item novo
+  no grupo 4), `DASHBOARD.md` (nota "Última atualização"), memória do projeto
+  (`project_auth_onboarding_funnel`), este LOG. Nenhuma alteração em `BUGS.md`,
+  `AUTH-TRACKING-DESIGN.md` ou código.
+
 ## [2026-07-29] Chat de execução — aba Autenticações: terminologia "Recepção" + investigação da "origem" (não implementada)
 
 - Chat/sessão: mesmo chat de execução, follow-up após a Gestora validar a aba em
