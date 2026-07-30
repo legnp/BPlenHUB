@@ -61,8 +61,14 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
     finaliza (precisou `NODE_OPTIONS=--max-old-space-size=8192` — a passada de
     TypeScript do `next build` estourava o heap de 2GB desta máquina; é limite de
     memória do ambiente, não erro de código; o `type-check` isolado já passava).
-- Pendências operacionais: validação VISUAL em produção fica com a Gestora — telas
-  logadas não autenticam no preview da Vercel (BUG-030). PR aberto para preview/merge.
+- Entrega: PR #163 **mergeado** na `main` (squash `5545320`) e **deploy de Production
+  confirmado** (commit `5545320`, status Vercel = success — Lição 31). A rota
+  `/admin/users/autenticacoes` está no bundle de produção. Nota: o middleware de
+  `/admin/*` redireciona todo request não autenticado para `/?auth=required` ANTES
+  do roteamento, então probe HTTP anônimo não distingue rota-existe de 404 — a
+  validação da tela renderizada (logada) fica com a Gestora. O 404 que a Gestora
+  via era o build de produção ANTIGO (pré-merge): logada, passava o gate e o Next
+  devolvia 404 porque a rota ainda não existia. Resolver com hard-refresh.
 - Itens do 00-PLAN.md atualizados: nenhum (feature de observabilidade do admin, fora
   da grade de fases/bugs da auditoria; `BUGS.md` não se aplica — não é bug).
 
