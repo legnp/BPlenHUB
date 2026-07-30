@@ -28,7 +28,7 @@ import type {
  * |-----------|-------------|---------------------|-----------------------|
  * | ausente   | -           | -                   | authenticated         |
  * | presente  | nao / sim   | false               | identity_generated    |
- * | presente  | sim         | true                | onboarding_complete   |
+ * | presente  | sim         | true                | reception_complete    |
  */
 export function classifyFunnelStage(input: {
   matricula: string | null;
@@ -36,7 +36,7 @@ export function classifyFunnelStage(input: {
   hasCompletedWelcome: boolean;
 }): AuthFunnelStage {
   if (!input.matricula) return "authenticated";
-  if (input.userExists && input.hasCompletedWelcome) return "onboarding_complete";
+  if (input.userExists && input.hasCompletedWelcome) return "reception_complete";
   return "identity_generated";
 }
 
@@ -144,7 +144,7 @@ export function buildAuthFunnel(input: {
   // Agregados. O funil tem por base as contas que de fato autenticaram; os
   // casos de borda entram como contadores de higiene separados.
   const totalAuthenticated = rows.filter((r) => r.hasAuthAccount).length;
-  const onboardingComplete = rows.filter((r) => r.stage === "onboarding_complete").length;
+  const receptionComplete = rows.filter((r) => r.stage === "reception_complete").length;
   const identityGenerated = rows.filter((r) => r.stage === "identity_generated").length;
   const orphanAuthMaps = rows.filter((r) => r.note === "orphan_authmap").length;
   const usersWithoutAuth = rows.filter((r) => r.note === "user_without_auth").length;
@@ -154,8 +154,8 @@ export function buildAuthFunnel(input: {
     summary: {
       totalAuthenticated,
       identityGenerated,
-      onboardingComplete,
-      conversionRate: totalAuthenticated > 0 ? onboardingComplete / totalAuthenticated : 0,
+      receptionComplete,
+      conversionRate: totalAuthenticated > 0 ? receptionComplete / totalAuthenticated : 0,
       orphanAuthMaps,
       usersWithoutAuth,
     },

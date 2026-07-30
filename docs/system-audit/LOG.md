@@ -24,6 +24,34 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-29] Chat de execução — aba Autenticações: terminologia "Recepção" + investigação da "origem" (não implementada)
+
+- Chat/sessão: mesmo chat de execução, follow-up após a Gestora validar a aba em
+  produção. Branch `feat/auth-funnel-recepcao` + PR.
+- Terminologia (pedido da Gestora): "Onboarding" -> "Recepção" na aba, porque
+  colidia com o onboarding da **jornada de membro** (etapas distintas). Trocado na
+  UI ("Recepção completa", "Funil de Recepção", subtítulo) e no identificador
+  interno (`reception_complete`/`receptionComplete`, era `onboarding_complete`/
+  `onboardingComplete`) — feature nova, sem consumidor externo. Detalhe em
+  `AUTH-TRACKING-DESIGN.md` seção 8.2.
+- Investigação da "origem" da autenticação (pedido da Gestora): **não implementada
+  nesta sessão** (decisão da Gestora: só a terminologia agora). Achado read-only
+  (Lições 2/18): a origem **não é dado gravado hoje**. Só a welcome/cadastro e o
+  claim de convite criam `_AuthMap`; **checkout não cria identidade** (só lê, exige
+  matrícula — a variação pública foi removida no BUG-002); login no hub não cria
+  `_AuthMap`. Logo a origem só é parcialmente inferível de forma retroativa e
+  heurística. O correto (à prova de futuras origens) = capturar um campo `origin`
+  explícito na FONTE (write novo, forward-only, toca fluxo de identidade = área
+  sensível, plano + aprovação). Registrado em `AUTH-TRACKING-DESIGN.md` seção 8.3
+  para uma sessão futura. Público-alvo do e-mail de lembrete ("autenticados que não
+  completaram a Recepção") já é visível pelos estágios, sem depender da origem.
+- Validação: test 10/10 (arquivo do funil), lint dos arquivos alterados limpo
+  (baseline do repo inalterado), type-check limpo, build OK
+  (`--max-old-space-size=8192`, ver [[reference_build_oom_heap]] — quirk de memória
+  do ambiente).
+- Itens do 00-PLAN.md atualizados: nenhum (feature de observabilidade, fora da grade
+  de fases/bugs).
+
 ## [2026-07-29] Chat de execução — implementação da aba "Autenticações" (funil de onboarding) no admin
 
 - Chat/sessão: chat de execução dedicado. Branch `feat/admin-auth-funnel` +

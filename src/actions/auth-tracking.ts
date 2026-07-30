@@ -13,7 +13,7 @@ import type {
 } from "@/types/auth-funnel";
 
 /**
- * BPlen HUB — Aba Autenticacoes (funil de onboarding), leitura read-only.
+ * BPlen HUB — Aba Autenticacoes (funil de recepcao), leitura read-only.
  *
  * Junta em tempo de leitura tres fontes ja existentes (contas de login +
  * `_AuthMap` + `User`), classifica cada pessoa nos 3 estagios do funil e aplica

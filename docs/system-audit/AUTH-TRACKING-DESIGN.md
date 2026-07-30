@@ -152,6 +152,44 @@ Três refinos sobre o desenho acima, todos consistentes com ele:
 Read-only confirmado: nenhuma escrita, nenhum índice novo, nenhuma mudança de
 schema, nenhum toque em `firestore.rules`. Fase 2 (seção 9) não implementada.
 
+### 8.2 Terminologia: "Recepção" (não "Onboarding") — ajuste da Gestora (2026-07-29)
+
+A pedido da Gestora, o conceito e os textos de UI usam **"Recepção"** no lugar de
+"Onboarding" — porque "onboarding" aqui colidia com o **onboarding da jornada de
+membro**, que é uma etapa distinta do fluxo. Concretamente: o estágio final passou
+a ser **"Recepção completa"** (antes "Onboarding completo") e a tag do header
+**"Funil de Recepção"** (antes "Funil de Onboarding"). O identificador interno do
+estágio também foi renomeado (`reception_complete`, era `onboarding_complete`) e o
+campo do resumo (`receptionComplete`) — feature nova, sem consumidor externo. As
+demais menções a "onboarding" neste documento referem-se ao conceito do funil em
+si (nome histórico) e não à jornada de membro.
+
+### 8.3 Origem da autenticação — pedido registrado, NÃO implementado (2026-07-29)
+
+A Gestora pediu visibilidade da **origem** de cada autenticação (convite / hub /
+futuras) para segmentar e-mails de lembrete a quem parou antes da welcome.
+Achado da investigação read-only: **a origem não é um dado gravado hoje.**
+
+- Fluxos que CRIAM identidade (`_AuthMap`): abertura da welcome/cadastro
+  (`resolveUserIdentity` → `{matricula, createdAt}`) e claim de convite
+  (`invitations.ts` → `{matricula, email, createdAt|linkedAt}` + `User` sem
+  `hasCompletedWelcome` + marca `Invitation_Tokens`).
+- **Checkout NÃO cria identidade** — só lê `_AuthMap` (`requireMatricula`); logo
+  não é uma "origem de autenticação" no sistema atual (a variação pública de
+  checkout foi removida no BUG-002). Login no hub não cria `_AuthMap` → estágio
+  "Autenticado (só)".
+- Portanto a origem só é **parcialmente inferível** de forma retroativa (convite
+  via `Invitation_Tokens`/`_AuthMap.email`; hub-login vs welcome-aberto pela
+  presença/forma do `_AuthMap`), de modo heurístico e incompleto.
+
+Fazer isso à prova de futuras origens exige **capturar um campo `origin` explícito
+na fonte** (no momento em que a identidade é cunhada), como registro/enum
+extensível — **write novo, forward-only** (não backfilla quem já existe) e que
+**toca o fluxo de identidade** = área sensível do `CLAUDE.md` (plano + aprovação
+antes de codar). Decisão da Gestora (2026-07-29): **fica para outra sessão**; nesta
+só entrou a terminologia. Público-alvo do lembrete ("autenticados que não
+completaram a Recepção") já é visível pelos estágios sem depender da origem.
+
 ## 9. Fora de escopo (fase 2, se a Gestora quiser)
 
 - **Histórico de login por evento** (série temporal): gravar um doc a cada
