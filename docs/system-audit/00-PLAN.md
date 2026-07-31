@@ -1774,7 +1774,22 @@ a auditoria segue aberta.
      tocando o fluxo de identidade = área sensível → plano+aprovação. A Gestora
      diferiu para outra sessão (2026-07-29). Guardado como o `T-04`; detalhe em
      `AUTH-TRACKING-DESIGN.md` seção 8.3. O público-alvo do lembrete já é
-     visível pelos estágios do funil sem depender da origem.
+     visível pelos estágios do funil sem depender da origem. **Absorvido pela
+     expansão de autenticação abaixo** (capturar `provider/origin` junto).
+   - **Expansão dos meios de autenticação + página de login + consentimento**
+     (`AUTH-PROVIDERS-EXPANSION.md`, plano de 2026-07-30). Adicionar **Microsoft**
+     + **fluxo próprio via magic link** (sem senha, sem "esqueci a senha"),
+     mantendo Google; **sem Apple** (custo) **e sem Discord** (não-nativo).
+     Unicidade de conta em 2 camadas: linking do Firebase por e-mail ("uma conta
+     por e-mail" + fluxo de vínculo) + **trava de CPF** no cadastro (hash, bloqueio
+     + contato, sem merge automático). Nova **página `/entrar`** (protótipo dark
+     aprovado, herda o tema do home) com **`returnTo` unificado** e validação
+     same-origin (fecha a lacuna dos `redirect("/")` sem destino). **Gate de
+     "Boas-vindas"** (primeiro acesso, logo após o 1º login) com aceite versionado
+     de Termos/Privacidade/18+ (opt-in, LGPD) + banner de cookies global. **Área
+     sensível (identidade/sessão + legal), forward-only, por fases, com suíte de
+     não-regressão dos invariantes BUG-032/106.** Custo de plataforma zero (tudo
+     Firebase Auth clássico). Terminologia: "Boas-vindas" (não "onboarding").
 
 ### Recomendação de por onde começar
 

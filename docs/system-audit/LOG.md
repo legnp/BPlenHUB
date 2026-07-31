@@ -24,6 +24,40 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-30] Chat de planejamento — design: expansão de autenticação + página de login (protótipo)
+
+- Chat/sessão: mesmo chat de planejamento. **Docs-only** (planejamento/design);
+  nenhuma linha de código de produto tocada. Protótipo visual em `scratch/`
+  (gitignored), não vai para produção — a implementação real é sessão de execução.
+- **Pedido da Gestora:** estender os meios de login e criar uma página de login
+  dedicada. Análise de viabilidade + plano em `AUTH-PROVIDERS-EXPANSION.md`.
+- **Decisões da Gestora (2026-07-30):** (a) provedores = Google (existente) +
+  **Microsoft** + **magic link** (fluxo próprio, sem senha → sem "esqueci a
+  senha"); **sem Apple** (custo US$99/ano + relay) **e sem Discord** (não-nativo);
+  (b) unicidade de conta em 2 camadas: linking por e-mail ("uma conta por e-mail"
+  + fluxo de vínculo) + **trava de CPF** no cadastro (hash, bloqueio + contato,
+  sem merge automático); (c) **página `/entrar`** dedicada (não modal) com
+  **`returnTo` unificado** + validação same-origin — fecha a lacuna dos
+  `redirect("/")` sem destino (caso "favoritou página protegida e deslogou");
+  (d) **gate de "Boas-vindas"** no primeiro acesso (logo após 1º login) com aceite
+  versionado de Termos/Privacidade/18+ (opt-in LGPD) + banner de cookies global;
+  (e) terminologia **"Boas-vindas"**, nunca "onboarding" (reservado à jornada de
+  membro, mesmo espírito de Onboarding→Recepção).
+- **Protótipo de front-end** (a pedido da Gestora, já que o canvas de Design não
+  agradou): tela de login dark herdando o tema do home (fundo preto, acento
+  magenta `#ff2c8d→#ff006e`, partículas do `ParticleNexus`, Suporte via WhatsApp
+  `wa.me/5511945152088`, sem seletor de idioma). Layout inspirado numa referência
+  (hero à esquerda, card compacto à direita). Aprovado "quase perfeito"; ajustes
+  pedidos: usar o **logo real** (o `logo.png` tem wordmark navy que some no preto
+  → usar ícone + adaptação clara; recomendar logo branco oficial) e **reduzir/
+  afinar** botões e inputs do card. Tela de **Boas-vindas** herda do login.
+- **Governança:** área sensível (identidade/sessão + legal) → forward-only, por
+  fases, com plano+aprovação e suíte de não-regressão (BUG-032/106). Registrado
+  no **grupo 4** da lista priorizada do `00-PLAN.md` (guardado, pós-auditoria);
+  a captura de `origin` foi absorvida por este item. Custo de plataforma zero.
+- Itens atualizados: `AUTH-PROVIDERS-EXPANSION.md` (novo), `00-PLAN.md` (grupo 4),
+  este LOG. Sem alteração de código, `BUGS.md` ou `DASHBOARD.md`.
+
 ## [2026-07-30] Chat de planejamento — reconciliação: Padrão de E-mail BPlen V01 entregue (PRs #165/#166)
 
 - Chat/sessão: mesmo chat de planejamento. A Gestora sinalizou "template de e-mail
