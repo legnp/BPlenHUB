@@ -1,13 +1,18 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { buildEntrarPath } from '@/lib/auth/identity-guards';
 
 /**
- * BPlen HUB — Proxy de Proteção de Rotas 🛡️
- * Implementa a Soberania de Acesso via servidor para otimizar a performance
- * e garantir que rotas privadas não sejam acessadas por usuários não autenticados.
- * 
- * Nota: O proxy verifica apenas a EXISTÊNCIA do cookie.
- * A validação CRIPTOGRÁFICA ocorre no server-session.ts via verifySessionCookie().
+ * BPlen HUB — Proxy de Protecao de Rotas
+ * Soberania de acesso via servidor: rotas privadas nao sao servidas a usuarios
+ * sem sessao. O proxy verifica apenas a EXISTENCIA do cookie; a validacao
+ * CRIPTOGRAFICA ocorre no server-session.ts via verifySessionCookie().
+ *
+ * Retorno a origem unificado (secao 6 do plano): sessao ausente numa rota
+ * protegida redireciona para a superficie canonica de login preservando o destino
+ * (`/entrar?returnTo=<rota>`), com `returnTo` sanitizado (anti open-redirect).
+ * Alem disso expoe o caminho atual no header `x-bplen-pathname` para os layouts
+ * protegidos montarem o mesmo redirecionamento no fallback de sessao stale.
  */
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -15,27 +20,27 @@ export function proxy(request: NextRequest) {
   // 1. Definir Rotas Protegidas
   const isProtectedPath = pathname.startsWith('/hub') || pathname.startsWith('/admin');
 
-  // 2. Verificar Sessão (Cookie assinado ou legado)
+  // 2. Verificar Sessao (cookie assinado ou legado)
   const hasSignedCookie = request.cookies.has('bplen_session');
   const hasLegacyCookie = request.cookies.has('bplen_session_uid');
   const hasSession = hasSignedCookie || hasLegacyCookie;
 
-  // 3. Lógica de Redirecionamento Autoritário
+  // 3. Redirecionamento autoritario para a superficie canonica de login,
+  //    preservando a origem de forma segura.
   if (isProtectedPath && !hasSession) {
-    // Redireciona para a home se não estiver autenticado
-    // Adicionamos um query param para que a interface possa saber que o acesso foi negado
-    const url = new URL('/', request.url);
-    url.searchParams.set('auth', 'required');
-    url.searchParams.set('returnTo', pathname);
+    const url = new URL(buildEntrarPath(pathname), request.url);
     return NextResponse.redirect(url);
   }
 
-  return NextResponse.next();
+  // 4. Expor o caminho atual para os layouts (fallback de sessao stale).
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-bplen-pathname', pathname);
+  return NextResponse.next({ request: { headers: requestHeaders } });
 }
 
 /**
- * Configuração de Matcher
- * Garante que o proxy só rode em requisições de página e não em assets/estáticos.
+ * Configuracao de Matcher
+ * Garante que o proxy so rode em requisicoes de pagina e nao em assets/estaticos.
  */
 export const config = {
   matcher: [

@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ScrollText, AlertCircle, Clock, ShieldCheck, XCircle, FileSignature, ArrowRight, ReceiptText } from "lucide-react";
 import { getServerSession } from "@/lib/server-session";
+import { entrarRedirectTarget } from "@/lib/auth/entrar-redirect-server";
 import { redirect } from "next/navigation";
 import { getMemberContractsPanelAction, type ContractCard } from "@/actions/member-contracts";
 import { FunctionalPageHeader, type StatusTone } from "@/components/layout/FunctionalPageHeader";
@@ -61,7 +62,7 @@ function CardBadge({ state }: { state: ContractCard["cardState"] }) {
 
 export default async function ContratosPage() {
   const session = await getServerSession();
-  if (!session) redirect("/");
+  if (!session) redirect(await entrarRedirectTarget("/hub"));
 
   const result = await getMemberContractsPanelAction();
   const cards = result.cards || [];

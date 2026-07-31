@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getServerSession } from "@/lib/server-session";
+import { entrarRedirectTarget } from "@/lib/auth/entrar-redirect-server";
 import AdminLayoutClient from "./AdminLayoutClient";
 
 export const metadata: Metadata = {
@@ -21,8 +22,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const session = await getServerSession();
 
   if (!session || session.role === "suspended" || !session.isAdmin) {
-    console.log("🚦 [Admin Gate] Acesso não autorizado. Redirecionamento Server-Side...");
-    redirect("/");
+    console.log("[Admin Gate] Acesso nao autorizado. Redirecionamento Server-Side...");
+    // Sem sessao valida -> login com retorno. Sessao valida mas sem papel admin
+    // tambem cai aqui; o returnTo apenas preserva a rota pedida.
+    redirect(await entrarRedirectTarget("/admin"));
   }
 
   return <AdminLayoutClient>{children}</AdminLayoutClient>;

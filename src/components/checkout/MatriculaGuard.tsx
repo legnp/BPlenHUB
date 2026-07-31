@@ -7,6 +7,7 @@ import { WelcomeRedirectModal } from "./WelcomeRedirectModal";
 import { ChevronRight, Loader2 } from "lucide-react";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { buildEntrarPath } from "@/lib/auth/identity-guards";
 
 interface MatriculaGuardProps {
   productSlug: string;
@@ -46,9 +47,10 @@ export function MatriculaGuard({ productSlug, className, children }: MatriculaGu
 
   function handleModalConfirm() {
     setIsModalOpen(false);
-    // Redireciona para login e volta para o checkout do produto (ou Posicionamento de Carreira se Junior)
+    // Redireciona para a superficie canonica de login e volta para o checkout do
+    // produto (ou Posicionamento de Carreira se Junior) — returnTo sanitizado.
     const targetPath = productSlug === "junior" ? "/hub/journey/posicionamento-profissional" : `/hub/checkout/${productSlug}`;
-    router.push(`/?auth=required&returnTo=${encodeURIComponent(targetPath)}`);
+    router.push(buildEntrarPath(targetPath));
   }
 
   return (

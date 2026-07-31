@@ -259,3 +259,37 @@ a fonte até caber, adicionar um pequeno "fit-to-width" em JS (opcional, registr
 `<link>` do Google Fonts); `ParticleNexus` real (não a cópia inline); logo via
 `next/image` ou `<img>` do asset branco renomeado; magic link real via Admin SDK
 (`generateSignInWithEmailLink`) + envio pelo Resend com o template V01.
+
+## 14. Nota de execução — Fase 0 + Fase 1 (2026-07-31)
+
+Implementado em branch + PR (forward-only). O desenho da seção 13 não mudou; a
+execução seguiu o spec. Mapa do que foi entregue:
+
+- **Guards puros de identidade + testes:** `src/lib/auth/identity-guards.ts`
+  (`sanitizeReturnTo`, `verifiedEmailForHealing`, `callerOwnsUid`,
+  `buildEntrarPath`, `normalizeEmail/Provider`) e a suíte
+  `src/__tests__/auth-identity.test.ts` (não-regressão de BUG-032/106 + open-redirect).
+- **Provedores:** `signInWith(provider)` genérico em `src/hooks/use-auth.ts`
+  (Google + Microsoft) + fluxo de vínculo `account-exists-with-different-credential`;
+  finalização unificada em `src/lib/auth/finalize-session.ts`.
+- **Magic link:** `src/actions/auth-magic-link.ts` (Admin SDK + Resend V01) e a
+  conclusão em `src/app/entrar/verificar/page.tsx` (`signInWithEmailLink`).
+- **Telas:** `src/app/entrar/page.tsx` + `EntrarClient.tsx` + `entrar.module.css`
+  (CSS Module escopado, tema dark do protótipo, `ParticleNexus` real, Inter via
+  `--font-inter`). Logo: `public/logo_bplen/logo-branco.png` (renomeado URL-safe).
+- **Retorno à origem unificado:** `src/proxy.ts` (redireciona protegidas para
+  `/entrar?returnTo=` e expõe `x-bplen-pathname`); layouts protegidos +
+  `MatriculaGuard` via `buildEntrarPath`/`entrarRedirectTarget`.
+- **Captura origin/provider:** `src/actions/auth-login-metadata.ts` — provider do
+  claim verificado; só anota `_AuthMap` existente (não cria, para não sombrear o
+  auto-heal-por-e-mail).
+
+**Pré-requisitos de console (Gestora), fora do código:** habilitar "uma conta por
+e-mail" (linking); habilitar "Email link (passwordless)"; registrar app no Azure
+AD (Microsoft); incluir o domínio de produção nos domínios autorizados (para o
+continue-URL do magic link). Enquanto não configurados, Microsoft e magic link
+renderizam mas não completam.
+
+**Ainda pendente (fases seguintes, inalteradas):** trava de CPF (Fase 1b),
+consentimento/gate de Boas-vindas + banner de cookies de conta (Fase 2), admin de
+transferência (Fase 3).

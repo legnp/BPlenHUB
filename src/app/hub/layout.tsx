@@ -2,7 +2,8 @@ import React from "react";
 import { redirect } from "next/navigation";
 import { HubShell } from "@/components/hub/HubShell";
 import { Metadata } from "next";
-import { verifySignedSession, clearSessionCookie } from "@/actions/auth-session";
+import { verifySignedSession } from "@/actions/auth-session";
+import { entrarRedirectTarget } from "@/lib/auth/entrar-redirect-server";
 
 export const metadata: Metadata = {
   title: {
@@ -22,9 +23,10 @@ export default async function HubLayout({ children }: { children: React.ReactNod
   const session = await verifySignedSession();
 
   if (!session) {
-    // Cookie ausente, inválido ou forjado → redirecionar
-    console.log("🚦 [Route Gate] Sessão inválida ou ausente. Redirecionamento Server-Side...");
-    redirect("/");
+    // Cookie ausente, inválido ou forjado → redirecionar para a superficie
+    // canonica de login preservando o destino (retorno a origem unificado).
+    console.log("[Route Gate] Sessao invalida ou ausente. Redirecionamento Server-Side...");
+    redirect(await entrarRedirectTarget("/hub"));
   }
 
   // Sessão verificada criptograficamente → permitir renderização 

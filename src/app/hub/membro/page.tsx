@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { fetchUserPermissionsStatus } from "@/actions/auth-permissions";
 import { verifySignedSession } from "@/actions/auth-session";
+import { entrarRedirectTarget } from "@/lib/auth/entrar-redirect-server";
 import MemberDashboardView from "@/components/hub/MemberDashboardView";
 
 export const metadata: Metadata = {
@@ -21,7 +22,7 @@ export default async function MemberAreaPage() {
 
   // 1. Gate de Autenticação Primário
   if (!session) {
-    redirect("/");
+    redirect(await entrarRedirectTarget("/hub"));
   }
 
   // 2. Gate de Autorização Granular (Soberania de Permissões) 🛡️

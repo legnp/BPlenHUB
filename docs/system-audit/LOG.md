@@ -24,6 +24,63 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-31] Chat de EXECUÇÃO — Fase 0 + Fase 1 da expansão de autenticação (branch + PR)
+
+- Chat/sessão: chat de execução (área sensível: identidade/sessão). Branch
+  `feat/auth-fase-0`, forward-only, PR (nunca direto na `main`).
+- Escopo entregue (Fase 0 fundação + Fase 1 provedores no MESMO PR, como o doc
+  permite — "Fase 1 pode ser o mesmo PR"):
+  - **Guards puros de identidade** (`src/lib/auth/identity-guards.ts`): fonte única
+    de `sanitizeReturnTo` (anti open-redirect same-origin), `verifiedEmailForHealing`
+    (e-mail só da sessão dona do uid — BUG-106), `callerOwnsUid` (BUG-032),
+    `buildEntrarPath`, `normalizeEmail/Provider`. **Suíte de não-regressão de
+    identidade** (`src/__tests__/auth-identity.test.ts`, 21 casos) rodando ANTES do
+    merge, exercendo as funções reais (Lição 18).
+  - **`signInWith(provider)` genérico** + fluxo de vínculo
+    `account-exists-with-different-credential` (`fetchSignInMethodsForEmail` +
+    `linkWithCredential`) em `use-auth.ts`; `signInWithGoogle` vira wrapper.
+    Finalização de sessão unificada em `src/lib/auth/finalize-session.ts`.
+  - **Página `/entrar`** (design seção 13) com `ParticleNexus` real, Inter via
+    `next/font` (herdado do layout raiz, `--font-inter`), logo branco renomeado
+    para `public/logo_bplen/logo-branco.png` (URL-safe, no git). CSS Module
+    escopado replicando o protótipo (sem novo padrão global). Estados de magic link
+    (form → "verifique seu e-mail") + painel de vínculo.
+  - **Retorno à origem unificado**: proxy redireciona rotas protegidas para
+    `/entrar?returnTo=<rota>` e expõe `x-bplen-pathname`; os `redirect("/")` dos
+    layouts protegidos (`hub/layout`, `admin/layout`, `membro/layout`, `membro/page`,
+    `contratos/page`, `HubShell`) e o `MatriculaGuard` passam a mandar
+    `/entrar?returnTo=` (via `buildEntrarPath`/`entrarRedirectTarget`), com
+    `returnTo` sanitizado.
+  - **Microsoft** (`OAuthProvider('microsoft.com')`) + **magic link real**
+    (`src/actions/auth-magic-link.ts`: Admin SDK `generateSignInWithEmailLink` +
+    Resend template V01) com página de conclusão `/entrar/verificar`
+    (`signInWithEmailLink`). **Captura origin/provider** em
+    `src/actions/auth-login-metadata.ts` — provider do claim VERIFICADO da sessão;
+    metadado best-effort que **só anota `_AuthMap` existente, nunca cria** (para não
+    sombrear o auto-heal-por-e-mail).
+- Achados/decisões:
+  - Teste de governança (`server-action-surface.test.ts`) pegou `requestMagicLink`
+    como action sem guard — **correto**: é pré-auth por design (não concede sessão,
+    a identidade só se prova no clique via `signInWithEmailLink`). Declarada em
+    `PUBLICAS_POR_DESIGN` com o motivo, no espírito do "token é a credencial".
+  - Endurecimento de identidade: `recordLoginOrigin` mudou de `set(merge)` para
+    `update` só-se-existe, para não criar mapeamento sem matrícula.
+  - Baseline de lint da `main` já tem 299 erros / 385 warnings (dívida
+    pré-existente em `scripts/`/configs/legado). O diff desta branch **não adiciona
+    erro** (0 erros novos; 1 warning a menos). type-check, 323 testes e build
+    passam (`NODE_OPTIONS=--max-old-space-size=8192`). `/entrar` verificada no
+    preview (render + acentos + sem erro de console).
+- **Pré-requisitos de console (Gestora), como o deploy de índices:** habilitar
+  "uma conta por e-mail" (linking) no Firebase Auth; habilitar "Email link
+  (passwordless)"; registrar o app no Azure AD (Microsoft); incluir o domínio de
+  produção nos domínios autorizados (necessário para o continue-URL do magic link).
+  Sem isso os botões renderizam mas Microsoft/magic link só funcionam após a config.
+- Fora desta rodada (por decisão do doc): trava de CPF (Fase 1b), consentimento/
+  gate de Boas-vindas + banner de cookies de conta (Fase 2), admin de transferência
+  (Fase 3), Apple/Discord.
+- Itens atualizados: código (ver PR), este LOG, `AUTH-PROVIDERS-EXPANSION.md`
+  (nota de execução na seção 13).
+
 ## [2026-07-31] Chat de planejamento — design das telas de login + Boas-vindas APROVADO
 
 - Chat/sessão: mesmo chat de planejamento. **Docs-only**; protótipos em `scratch/`

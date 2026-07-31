@@ -58,6 +58,13 @@ const PUBLICAS_POR_DESIGN: Record<string, string> = {
   "OneToOneActions.ts:getOneToOneTypes": "config de razoes do 1 to 1 — catalogo, sem dado de usuario",
   "calendar-event-types.ts:getCalendarEventTypes": "config de tipos de evento — catalogo, sem dado de usuario",
 
+  // Magic link (login sem senha): pre-autenticacao por design. Nao concede
+  // sessao — apenas gera e envia o link por e-mail; a identidade so se prova no
+  // clique, validada por `signInWithEmailLink` (posse da caixa). O link enviado E
+  // a credencial, no mesmo espirito do token de convite. Preserva BUG-032/106: o
+  // e-mail acaba verificado pelo proprio fluxo, nunca vira sessao por parametro.
+  "auth-magic-link.ts:requestMagicLink": "magic link pre-auth — envia o link; a sessao so nasce no clique verificado (posse do e-mail)",
+
   // Fluxo de convite: o TOKEN e a credencial.
   "invitations.ts:getInvitationEventAction": "pagina publica de convite — le o evento pelo slug",
   "invitations.ts:validateInvitationTokenAction": "o token E a credencial",

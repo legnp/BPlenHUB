@@ -5,7 +5,8 @@ import { HubHeader } from "@/components/hub/HubHeader";
 import { FloatingHubActions } from "@/components/hub/FloatingHubActions";
 import { useTheme } from "@/context/ThemeContext";
 import { useAuthContext } from "@/context/AuthContext";
-import { redirect } from "next/navigation";
+import { redirect, usePathname } from "next/navigation";
+import { buildEntrarPath } from "@/lib/auth/identity-guards";
 
 import { GuidedTourOverlay } from "@/components/shared/GuidedTourOverlay";
 
@@ -17,10 +18,12 @@ import { GuidedTourOverlay } from "@/components/shared/GuidedTourOverlay";
 export function HubShell({ children }: { children: React.ReactNode }) {
   const { theme } = useTheme();
   const { user, loading } = useAuthContext();
+  const pathname = usePathname();
 
-  // Se o guard do servidor falhar ou o usuário deslogar, redirecionamos via client
+  // Se o guard do servidor falhar ou a sessao expirar, redirecionamos via client
+  // para a superficie canonica de login preservando o destino atual.
   if (!user && !loading) {
-    redirect("/");
+    redirect(buildEntrarPath(pathname));
     return null;
   }
 

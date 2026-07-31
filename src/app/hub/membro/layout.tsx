@@ -2,6 +2,7 @@ import React from "react";
 import { redirect } from "next/navigation";
 import { Metadata } from "next";
 import { verifySignedSession } from "@/actions/auth-session";
+import { entrarRedirectTarget } from "@/lib/auth/entrar-redirect-server";
 import { resolveUserPermissions } from "@/lib/user-permissions";
 
 export const metadata: Metadata = {
@@ -28,7 +29,7 @@ export default async function MemberAreaLayout({ children }: { children: React.R
   // App Router nao repassam dados entre si e o custo e' a leitura do cookie.
   const session = await verifySignedSession();
   if (!session) {
-    redirect("/");
+    redirect(await entrarRedirectTarget("/hub"));
   }
 
   const { services } = await resolveUserPermissions(session.uid);

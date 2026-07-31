@@ -61,7 +61,7 @@ export async function createSignedSessionCookie(idToken: string) {
  * Verifica o cookie de sessão assinado e retorna os dados do usuário.
  * Retorna null se o cookie for inválido, expirado ou ausente.
  */
-export async function verifySignedSession(): Promise<{ uid: string; email?: string } | null> {
+export async function verifySignedSession(): Promise<{ uid: string; email?: string; provider?: string } | null> {
   try {
     const cookieStore = await cookies();
     const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME)?.value;
@@ -72,9 +72,14 @@ export async function verifySignedSession(): Promise<{ uid: string; email?: stri
     const auth = getAdminAuth();
     const decodedClaims = await auth.verifySessionCookie(sessionCookie, true);
 
+    // Provedor de login vem do claim VERIFICADO (firebase.sign_in_provider),
+    // nunca de parametro do cliente — e metadado analitico, nao identidade.
+    const firebaseClaim = decodedClaims.firebase as { sign_in_provider?: string } | undefined;
+
     return {
       uid: decodedClaims.uid,
       email: decodedClaims.email,
+      provider: firebaseClaim?.sign_in_provider,
     };
   } catch (error) {
     // Cookie inválido, expirado ou revogado — limpar silenciosamente
