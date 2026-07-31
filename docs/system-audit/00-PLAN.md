@@ -1680,6 +1680,18 @@ sem decisão pendente ou adiados de propósito.
   declarou o caso "abre-sem-concluir welcome" **não-bug** (abandono da welcome,
   decisão da Gestora). Fase 2 (histórico de login por evento) e a captura de
   `origin` na fonte ficaram para depois (ver grupo 4 abaixo).
+- **Padrão de E-mail BPlen V01 — ENTREGUE EM PRODUÇÃO** (2026-07-30, PRs #165/#166,
+  `EMAIL-DESIGN-V01.md`). Redesign do template global transacional: motor
+  renomeado (`soberana-layout.ts`/`buildSoberanaEmail` → `email-layout.ts`/
+  `buildEmailLayout`, depreciando "soberano"), fita de acento por categoria em
+  23 callers, logo real, rodapé V01. **Fora da grade** de fases/tracks/bugs
+  (refino de design system, como a aba de Recepção). O PR #166 corrigiu um
+  **vazamento de "Google Drive"** em copy de cliente (`checkout-emails.ts`, cupom
+  resgatado) — conformidade com a regra infra-invisível (rule 6). Ajuste
+  pós-validação: rótulo textual da categoria removido, mantida só a fita.
+  **Follow-ups (buckets 2 e 3, PRs próprios):** 2 strings de UI com "Soberania"
+  (uma, `ServiceDeliveryView.tsx:155`, também vaza "Google Drive") e ~100
+  comentários/logs internos com "soberan*".
 
 ### Lista de validação humana pendente (Caminho B — decisão da Gestora, 2026-07-28)
 

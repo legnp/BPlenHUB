@@ -24,6 +24,28 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-30] Chat de planejamento — reconciliação: Padrão de E-mail BPlen V01 entregue (PRs #165/#166)
+
+- Chat/sessão: mesmo chat de planejamento. A Gestora sinalizou "template de e-mail
+  resolvido". Confirmado contra git (Lição 45): HEAD `57e3fe1`, PRs #165
+  (`43d2125`, e-mail V01) e #166 (`57e3fe1`, fix do vazamento "Google Drive")
+  ambos ancestrais, `main == origin/main`. **Nenhuma linha de código tocada.**
+- Entregue pela execução: o bucket 1 do `EMAIL-DESIGN-V01.md` (ver entrada de
+  execução abaixo). **Ajuste pós-validação** (decisão da Gestora ao ver o teste
+  real): rótulo textual da categoria REMOVIDO, mantida só a fita. O PR #166
+  corrigiu vazamento de "Google Drive" em `checkout-emails.ts` (cupom resgatado).
+- Reconciliação: e-mail V01 é **refino de design system fora da grade** de
+  fases/tracks/bugs (como a aba de Recepção). Reconhecido na seção "Estado da
+  auditoria" do `00-PLAN.md` e na nota do `DASHBOARD.md`, **sem** item graduado;
+  `BUGS.md` inalterado. Buckets 2 (2 strings de UI com "Soberania", uma —
+  `ServiceDeliveryView.tsx:155` — também vaza "Google Drive") e 3 (~100
+  comentários/logs internos "soberan*") seguem pendentes em PRs próprios.
+- Itens atualizados: `00-PLAN.md` (bullet no "Estado da auditoria"), `DASHBOARD.md`
+  (nota), este LOG. Sem alteração de código, `BUGS.md` (memória já atualizada).
+- **Novo pedido em análise (próxima etapa desta sessão):** estender os meios de
+  autenticação (Microsoft, Apple se sem custo, Discord, outros + fluxo próprio)
+  sem quebrar a auditoria — ver `AUTH-PROVIDERS-EXPANSION.md` quando criado.
+
 ## [2026-07-30] Chat de EXECUÇÃO — Padrão de E-mail BPlen V01 (bucket 1) implementado
 
 - Chat/sessão: chat de execução (Opus 4.8). Branch `feat/email-layout-v01` a partir

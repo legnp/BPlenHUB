@@ -25,7 +25,17 @@
 > registro permanente e completo de toda sessão está em `LOG.md`, que nunca foi
 > editado e continua a fonte primária de história.
 >
-> **Última atualização:** 2026-07-30 (chat de planejamento — **reconciliação
+> **Última atualização:** 2026-07-30 (chat de planejamento — **reconciliação do
+> Padrão de E-mail BPlen V01**). Redesign do template global transacional entregue
+> em produção (PRs #165/#166, `EMAIL-DESIGN-V01.md`): motor renomeado
+> (`email-layout.ts`/`buildEmailLayout`, depreciando "soberano"), fita de acento
+> por categoria em 23 callers, logo real. PR #166 corrigiu vazamento de "Google
+> Drive" em copy de cliente (rule 6). **Feature fora da grade** (refino de design
+> system) — reconhecida em "Estado da auditoria" do `00-PLAN.md`, sem item
+> graduado, `BUGS.md` inalterado. Buckets 2/3 (strings de UI "Soberania" +
+> comentários internos) pendentes em PRs próprios. HEAD `57e3fe1`.
+>
+> **Reconciliação anterior:** 2026-07-30 (chat de planejamento — **reconciliação
 > pós-execução da aba "Autenticações"**). Investigação read-only do fluxo de auth:
 > caso "abre-sem-concluir welcome" declarado **não-bug** (abandono da welcome,
 > decisão da Gestora — `_AuthMap` órfão sem `User`). Entregue em produção a aba
