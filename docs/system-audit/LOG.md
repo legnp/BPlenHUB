@@ -24,6 +24,30 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-07-31] Chat de planejamento — design das telas de login + Boas-vindas APROVADO
+
+- Chat/sessão: mesmo chat de planejamento. **Docs-only**; protótipos em `scratch/`
+  (gitignored), não vão para produção. A implementação real é sessão de execução.
+- Iteração do front-end (a pedido da Gestora, o canvas de Design do Claude não
+  agradou): tela de login dark (tema do home, partículas, Suporte via WhatsApp) +
+  tela de Boas-vindas (gate de primeiro acesso com aceites). Ajustes aplicados:
+  logo **original branco** (a Gestora adicionou o asset oficial
+  `public/logo_bplen/BPlen - Logomarca - Estatico - Branco.png`, sem filtro CSS),
+  **"HUB" removido do header**, componentes menores/delicados, e **correção de
+  quebras** (não parte mais "boas-vindas"/"BPlen HUB"; tipografia fluida).
+- **Design APROVADO pela Gestora (2026-07-31).** Spec completa incorporada ao
+  `AUTH-PROVIDERS-EXPANSION.md` seção 13 (tokens do tema dark, ParticleNexus,
+  logo branco oficial + recomendação de renome URL-safe, topbar/Suporte, layout
+  das 2 telas, magic link states, gate de aceites opt-in, responsividade, e o que
+  a execução deve trocar do protótipo: `next/font`, ParticleNexus real, Resend +
+  template V01 para o magic link).
+- Segue como **área sensível, forward-only, por fases** (grupo 4 do `00-PLAN.md`).
+  Próximo passo: sessão de execução (Fase 0 fundação → Fase 1 Microsoft + magic
+  link + `/entrar` + returnTo). Comando de execução entregue à Gestora.
+- Itens atualizados: `AUTH-PROVIDERS-EXPANSION.md` (seção 13), este LOG. Sem
+  alteração de código de produção, `BUGS.md`, `00-PLAN.md` (grupo 4 já cobre) ou
+  `DASHBOARD.md`.
+
 ## [2026-07-30] Chat de planejamento — design: expansão de autenticação + página de login (protótipo)
 
 - Chat/sessão: mesmo chat de planejamento. **Docs-only** (planejamento/design);

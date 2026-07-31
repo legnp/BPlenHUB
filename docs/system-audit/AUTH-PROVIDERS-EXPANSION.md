@@ -199,3 +199,63 @@ necessários para Discord/OIDC, que ficou fora). Azure AD app = grátis.
 - Registro do app no **Azure AD** (Microsoft) — credencial de projeto.
 - Configuração do console do Firebase (linking, magic link, domínio autorizado) —
   operação de proprietário do projeto (Gestora), como o deploy de índices.
+
+## 13. Design aprovado das telas (2026-07-31)
+
+**Aprovado pela Gestora.** Protótipos de referência (HTML self-contained) em
+`scratch/` (gitignored): `bplen-login-prototype.html` e
+`bplen-boas-vindas-prototype.html`. A execução implementa o equivalente em
+React/Next dentro da área pública/de entrada.
+
+**Universo visual:** área pública, **tema dark do home** (`theme-dark`): fundo
+`#000`, texto `#fff`, muted `#9CA3AF`, acento magenta `--accent-start #ff2c8d` →
+`--accent-end #ff006e`, roxo de apoio `#9677D9`. Fonte **Inter**. Vidro escuro
+(`rgba(255,255,255,.035)` + borda `rgba(255,255,255,.08)` + blur). Cantos 10–18px.
+
+**Fundo:** portar o `ParticleNexus` do home (partículas pink/roxo/violeta, drift
+lento + revelação por mouse, `mix-blend:screen`, opacidade ~.6) — no protótipo há
+uma leve visibilidade ambiente (~.09) além da revelação; + glow magenta suave +
+grade sutil mascarada. Reusar o componente real `ParticleNexus` na implementação.
+
+**Logo:** usar o asset **branco oficial** `public/logo_bplen/BPlen - Logomarca -
+Estatico - Branco.png` (adicionado pela Gestora, preserva o círculo do ícone) —
+**sem filtro CSS**. Recomendação p/ execução: **renomear para nome URL-safe**
+(ex.: `logo-branco.png`), evitando espaços no caminho servido. Altura ~24px.
+**Sem a palavra "HUB" no header** (só o logo).
+
+**Topbar:** logo à esquerda; à direita **"Suporte"** com ícone de WhatsApp →
+`https://wa.me/5511945152088` (mesmo do home). **Sem seletor de idioma.**
+
+**Tela de login (`/entrar`)** — layout split (hero à esquerda, card compacto à
+direita, ~334px):
+- Hero: eyebrow "BPLEN HUB"; título "Te damos as boas-vindas à BPlen HUB." (com
+  "boas-vindas" em gradiente); subtítulo "Sua jornada de desenvolvimento de
+  carreira começa aqui."
+- Card "Acesse sua conta" / "Escolha como deseja entrar.": botão **Entrar com
+  Google** (G multicolor), **Entrar com Microsoft**, divisor "ou", campo de
+  **e-mail** + botão primário **"Enviar link de acesso"** (magic link, habilita só
+  com e-mail válido) → estado **"Verifique seu e-mail"** (Reenviar / Usar outro
+  e-mail). Aviso "sem senha". Fine print informativo: "Ao continuar, você aceita
+  os Termos de Uso e a Política de Privacidade" (links) — **sem checkbox aqui**.
+
+**Tela de Boas-vindas** (primeiro acesso, gate — herda o mesmo layout):
+- Hero: eyebrow "PRIMEIRO ACESSO"; "Que bom ter você por aqui."; subtítulo curto.
+- Card "Boas-vindas à BPlen HUB": 3 aceites **opt-in (nada pré-marcado)** —
+  (1) Termos + Privacidade **[obrigatório]**, (2) maior de 18 **[obrigatório]**,
+  (3) novidades **[opcional]**; botão **"Continuar"** habilita só com 1 e 2
+  marcados. Registro **versionado** no aceite (seção 7).
+
+**Responsividade (pedido da Gestora):** priorizar **redimensionar** (tipografia
+fluida `clamp()`) para manter na horizontal em vez de quebrar; **não** partir
+palavras-chave no meio (`white-space:nowrap` em "boas-vindas" e "BPlen HUB");
+`text-wrap: balance/pretty`; empilhar (hero em cima, card embaixo) só em telas
+estreitas (≤880px). Se a Gestora quiser garantia de "linha única" que auto-reduz
+a fonte até caber, adicionar um pequeno "fit-to-width" em JS (opcional, registrado).
+
+**Componentes delicados/minimalistas** (ajuste explícito da Gestora): ícones
+15–16px, botões ~38–42px de altura, bordas finas, sem elementos largos/grosseiros.
+
+**Detalhes que a execução deve trocar do protótipo:** Inter via `next/font` (não
+`<link>` do Google Fonts); `ParticleNexus` real (não a cópia inline); logo via
+`next/image` ou `<img>` do asset branco renomeado; magic link real via Admin SDK
+(`generateSignInWithEmailLink`) + envio pelo Resend com o template V01.
