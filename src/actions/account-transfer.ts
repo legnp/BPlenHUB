@@ -2,11 +2,67 @@
 
 import * as admin from "firebase-admin";
 import { revalidatePath } from "next/cache";
+import { Resend } from "resend";
 import { requireAdmin } from "@/lib/auth-guards";
 import { getAdminDb, getAdminAuth } from "@/lib/firebase-admin";
+import { serverEnv, clientEnv } from "@/env";
 import { USER_ORDERS_COLLECTION } from "@/config/collections";
+import { buildEmailLayout, EMAIL_STYLES } from "@/lib/emails/email-layout";
 import { classifyTransfer, transferReasonMessage } from "@/lib/identity/account-transfer";
 import { getErrorMessage } from "@/lib/utils/errors";
+
+const resend = new Resend(serverEnv.RESEND_API_KEY);
+const SUPPORT_URL = "https://wa.me/5511945152088";
+
+/**
+ * Notifica origem e destino da transferencia (best-effort). Ao destino: passou a
+ * acessar a conta com este e-mail. A origem: o acesso saiu deste e-mail (sem
+ * revelar o novo e-mail — privacidade) + contato para o caso de nao reconhecer.
+ */
+async function sendTransferEmails(originEmail: string, destEmail: string): Promise<void> {
+  const origin = (originEmail || "").trim().toLowerCase();
+  const dest = (destEmail || "").trim().toLowerCase();
+  const entrarUrl = `${clientEnv.NEXT_PUBLIC_APP_URL || "https://bplen.com"}/entrar`;
+  const jobs: Promise<unknown>[] = [];
+
+  if (dest) {
+    const content = `
+      <p style="${EMAIL_STYLES.eyebrow}">ACESSO</p>
+      <h2 style="${EMAIL_STYLES.h2}">Acesso transferido para este e-mail</h2>
+      <p style="${EMAIL_STYLES.p}">A partir de agora, você acessa sua conta BPlen HUB com este e-mail. É só entrar normalmente pela página de acesso.</p>
+      <div style="text-align: left;"><a href="${entrarUrl}" style="${EMAIL_STYLES.button}">Entrar na BPlen HUB</a></div>
+      <p style="${EMAIL_STYLES.p}">Se você não reconhece esta ação, fale com a BPlen imediatamente.</p>
+    `;
+    jobs.push(
+      resend.emails.send({
+        from: "BPlen HUB <hub@bplen.com>",
+        to: dest,
+        subject: "Sua conta BPlen HUB agora é acessada por este e-mail",
+        html: buildEmailLayout(content, "BPlen HUB - Desenvolvimento Humano", { eyebrow: "ACESSO" }),
+      })
+    );
+  }
+
+  if (origin && origin !== dest) {
+    const content = `
+      <p style="${EMAIL_STYLES.eyebrow}">ACESSO</p>
+      <h2 style="${EMAIL_STYLES.h2}">O acesso da sua conta foi transferido</h2>
+      <p style="${EMAIL_STYLES.p}">O acesso à sua conta BPlen HUB foi transferido para outro e-mail. Este e-mail não acessa mais a conta.</p>
+      <div style="text-align: left;"><a href="${SUPPORT_URL}" style="${EMAIL_STYLES.button}">Falar com a BPlen</a></div>
+      <p style="${EMAIL_STYLES.p}">Se você não reconhece esta ação, fale com a BPlen imediatamente.</p>
+    `;
+    jobs.push(
+      resend.emails.send({
+        from: "BPlen HUB <hub@bplen.com>",
+        to: origin,
+        subject: "O acesso à sua conta BPlen HUB foi transferido",
+        html: buildEmailLayout(content, "BPlen HUB - Desenvolvimento Humano", { eyebrow: "ACESSO" }),
+      })
+    );
+  }
+
+  await Promise.all(jobs);
+}
 
 /**
  * BPlen HUB — Transferencia de conta (Fase 3, admin).
@@ -94,8 +150,10 @@ export async function transferAccountAction(
     const session = await requireAdmin();
     const db = getAdminDb();
 
-    // Origem (a conta com os dados).
+    // Origem (a conta com os dados). Captura o e-mail atual ANTES de sobrescrever,
+    // para notificar o e-mail de origem da transferencia.
     const sourceSnap = await db.doc(`User/${sourceMatricula}`).get();
+    const originEmail = (sourceSnap.data()?.email as string | undefined) || "";
 
     // Destino precisa ser um login real (Firebase Auth) — e-mail VERIFICADO de la.
     let targetEmail = "";
@@ -169,6 +227,14 @@ export async function transferAccountAction(
     });
 
     await batch.commit();
+
+    // Notificacao aos dois e-mails (best-effort — nao falha a transferencia ja feita).
+    try {
+      await sendTransferEmails(originEmail, targetEmail);
+    } catch (mailErr) {
+      console.warn("[account-transfer] Falha ao enviar e-mails de transferencia:", getErrorMessage(mailErr));
+    }
+
     revalidatePath("/admin/users/autenticacoes");
     return { success: true, targetEmail };
   } catch (error: unknown) {

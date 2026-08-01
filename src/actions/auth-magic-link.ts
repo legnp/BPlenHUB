@@ -51,18 +51,18 @@ export async function requestMagicLink(
 
     const content = `
       <p style="${EMAIL_STYLES.eyebrow}">ACESSO</p>
-      <h2 style="${EMAIL_STYLES.h2}">Seu link de acesso a BPlen HUB</h2>
-      <p style="${EMAIL_STYLES.p}">Recebemos um pedido de acesso a BPlen HUB com este e-mail. Clique no botao abaixo para entrar com seguranca, sem senha.</p>
+      <h2 style="${EMAIL_STYLES.h2}">Seu link de acesso à BPlen HUB</h2>
+      <p style="${EMAIL_STYLES.p}">Recebemos um pedido de acesso à BPlen HUB com este e-mail. Clique no botão abaixo para entrar com segurança, sem senha.</p>
       <div style="text-align: left;">
         <a href="${link}" style="${EMAIL_STYLES.button}">Entrar na BPlen HUB</a>
       </div>
-      <p style="${EMAIL_STYLES.p}">Este link e pessoal e temporario. Se voce nao pediu este acesso, pode ignorar esta mensagem com seguranca — nada acontece sem o clique.</p>
+      <p style="${EMAIL_STYLES.p}">Este link é pessoal e temporário. Se você não pediu este acesso, pode ignorar esta mensagem com segurança — nada acontece sem o clique.</p>
     `;
 
     await resend.emails.send({
       from: "BPlen HUB <hub@bplen.com>",
       to: email,
-      subject: "Seu link de acesso a BPlen HUB",
+      subject: "Seu link de acesso à BPlen HUB",
       html: buildEmailLayout(content, "BPlen HUB - Desenvolvimento Humano", { eyebrow: "ACESSO" }),
     });
 
