@@ -24,6 +24,22 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-01] BUG-fix Fase 3 — transferencia deixava o login antigo com acesso
+
+- Achado (teste em producao da Gestora): apos transferir BP-014 para legnp@outlook.com,
+  a origem lislscomercio@gmail.com CONTINUAVA acessando a mesma conta. Diagnostico
+  read-only (`scratch/diagnose-transfer.js`) mostrou os DOIS uids apontando para BP-014
+  no `_AuthMap` — nao eram duas contas com dado duplicado, era UMA conta com dois logins.
+- Causa raiz: `transferAccountAction` removia o mapeamento antigo lendo `User.uid`, que
+  estava vazio na origem (audit `oldUid=null`), entao o `_AuthMap` do login antigo nunca
+  saia. Licao 44 de novo: a fonte da verdade do login e o `_AuthMap`, nao o campo
+  denormalizado `User.uid`.
+- Correcao (`b373597`): buscar os logins antigos por `_AuthMap where matricula == origem`
+  e remover todos exceto o destino; auditoria grava `removedUids`. Estado ja gravado
+  remediado (removido o mapeamento stale da lislscomercio; so legnp acessa BP-014).
+- Nota: o login antigo, se usado de novo, cai no fluxo normal e cunha uma matricula NOVA
+  vazia (nao reacessa o dado transferido) — comportamento esperado ao abandonar o e-mail.
+
 ## [2026-08-01] Fase 3 — ferramenta de admin de transferencia de conta em producao (expansao de auth CONCLUIDA)
 
 - Chat/sessao: continuacao do chat de execucao. Branch `feat/auth-fase-3-transfer`
