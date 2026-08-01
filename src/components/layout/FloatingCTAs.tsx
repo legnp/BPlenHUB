@@ -105,8 +105,7 @@ export function FloatingCTAs() {
   const navActive = "bg-[var(--accent-soft)] border border-[var(--accent-start)]/40 text-[var(--text-primary)]";
   const navState = (active: boolean) => `${navBase} ${active ? navActive : navNeutral}`;
 
-  const { user, isLoggingIn, signInWithGoogle } = useAuth();
-  const router = useRouter();
+  const { user } = useAuth();
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const toggleServiceModal = () => setIsServiceModalOpen(!isServiceModalOpen);
@@ -218,26 +217,13 @@ export function FloatingCTAs() {
                      ACESSAR BPLEN HUB
                    </Link>
                 ) : (
-                   <button
-                      onClick={async () => {
-                          try {
-                            const loggedUser = await signInWithGoogle(true);
-                            if (loggedUser) {
-                              toggleMenu();
-                              setTimeout(() => {
-                                router.push("/hub");
-                                router.refresh();
-                              }, 100);
-                            }
-                          } catch (err) {
-                           console.error("Erro ao autenticar via CTA:", err);
-                         }
-                      }}
-                      disabled={isLoggingIn}
-                      className="w-full flex items-center justify-center gap-3 py-[18px] bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] text-white rounded-2xl font-black text-center tracking-[0.2em] text-[10px] shadow-xl shadow-[var(--accent-start)]/20 disabled:opacity-50"
+                   <Link
+                      href="/entrar"
+                      onClick={toggleMenu}
+                      className="w-full flex items-center justify-center gap-3 py-[18px] bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] text-white rounded-2xl font-black text-center tracking-[0.2em] text-[10px] shadow-xl shadow-[var(--accent-start)]/20 uppercase"
                    >
-                     {isLoggingIn ? "CONECTANDO..." : "ACESSAR BPLEN HUB"}
-                   </button>
+                     ACESSAR BPLEN HUB
+                   </Link>
                 )}
               </div>
 
@@ -320,25 +306,12 @@ export function FloatingCTAs() {
              Acessar BPlen HUB
            </Link>
         ) : (
-           <button 
-             onClick={async () => {
-                 try {
-                   const loggedUser = await signInWithGoogle(true);
-                   if (loggedUser) {
-                    setTimeout(() => {
-                      router.push("/hub");
-                      router.refresh();
-                    }, 100);
-                   }
-                 } catch (err) {
-                  console.error("Erro ao autenticar via CTA Desktop:", err);
-                }
-             }}
-             disabled={isLoggingIn}
-             className="w-[126px] md:w-[153px] h-8 md:h-9 px-3 md:px-4 bg-[var(--input-bg)] border border-[var(--border-primary)] backdrop-blur-md rounded-xl text-[10px] md:text-xs font-normal tracking-wide text-[var(--text-muted)] hover:bg-[var(--accent-soft)] hover:border-[var(--accent-start)]/20 hover:text-[var(--text-primary)] transition-all flex items-center justify-center shadow-lg cursor-pointer disabled:opacity-50 gap-2"
+           <Link
+             href="/entrar"
+             className="w-[126px] md:w-[153px] h-8 md:h-9 px-3 md:px-4 bg-[var(--input-bg)] border border-[var(--border-primary)] backdrop-blur-md rounded-xl text-[10px] md:text-xs font-normal tracking-wide text-[var(--text-muted)] hover:bg-[var(--accent-soft)] hover:border-[var(--accent-start)]/20 hover:text-[var(--text-primary)] transition-all flex items-center justify-center shadow-lg cursor-pointer"
            >
-             {isLoggingIn ? "Entrando..." : "Acessar BPlen HUB"}
-           </button>
+             Acessar BPlen HUB
+           </Link>
         )}
       </motion.div>
     </>
