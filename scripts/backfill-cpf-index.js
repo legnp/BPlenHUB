@@ -79,9 +79,24 @@ function validateCPF(cpf) {
   return true;
 }
 
+// Dono preferido em caso de duplicata: --prefer=BP-XXX (pode repetir). Se uma das
+// matriculas candidatas estiver na lista, ela vira a dona do indice; senao usa a
+// primeira encontrada. Nunca mescla contas - so decide qual referencia o indice.
+function preferredOwners() {
+  const p = '--prefer=';
+  return process.argv.filter((a) => a.indexOf(p) === 0).map((a) => a.slice(p.length));
+}
+
+function chooseOwner(mats, preferred) {
+  const pick = mats.find((m) => preferred.indexOf(m) !== -1);
+  return pick || mats[0];
+}
+
 async function run() {
   const dryRun = process.argv.includes('--dry-run');
+  const preferred = preferredOwners();
   console.log(`[backfill-cpf-index] Iniciando ${dryRun ? '(DRY-RUN, nao grava)' : '(GRAVANDO)'}...`);
+  if (preferred.length) console.log(`[backfill-cpf-index] Donos preferidos: ${preferred.join(', ')}`);
 
   const usersSnap = await db.collection('User').get();
   console.log(`[backfill-cpf-index] ${usersSnap.size} docs em User.`);
@@ -117,7 +132,7 @@ async function run() {
     for (const h of hashes) {
       const mats = byHash[h];
       const payload = {
-        matricula: mats[0],
+        matricula: chooseOwner(mats, preferred),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         source: 'backfill',
       };
@@ -141,7 +156,8 @@ async function run() {
     console.log('===== CPFs DUPLICADOS (mesma pessoa, contas diferentes) =====');
     console.log('(hash do CPF - nunca o CPF em claro - e as matriculas envolvidas)');
     duplicates.forEach((h) => {
-      console.log(`- ${h.substring(0, 12)}...  ->  ${byHash[h].join(', ')}`);
+      const owner = chooseOwner(byHash[h], preferred);
+      console.log(`- ${h.substring(0, 12)}...  ->  ${byHash[h].join(', ')}  [dona: ${owner}]`);
     });
     console.log('');
     console.log('Investigar cada caso (baldes A/B/C da nota de governanca). Nao mesclar automaticamente.');
