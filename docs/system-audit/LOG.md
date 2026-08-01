@@ -24,6 +24,33 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-01] Fase 3 — ferramenta de admin de transferencia de conta em producao (expansao de auth CONCLUIDA)
+
+- Chat/sessao: continuacao do chat de execucao. Branch `feat/auth-fase-3-transfer`
+  (fast-forward -> `main`, `67a3da7`), deploy apos revisao de tom/textos/layout/seguranca
+  pedida pela Gestora.
+- Implementado (admin-only; torna operavel o "fale com a BPlen" da trava de CPF):
+  - Logica pura `src/lib/identity/account-transfer.ts` (`classifyTransfer`) + testes:
+    a **trava de seguranca** so libera se o destino NAO tem conta com dados; se tiver,
+    RECUSA (fusao manual, caso a caso — nunca sobrescreve/trunca dado).
+  - Actions `src/actions/account-transfer.ts` (`requireAdmin`): `getAccountSnapshotAction`
+    (resumo read-only: contratos/pedidos/surveys/forms, CPF, admin, arquivada) e
+    `transferAccountAction` (valida uid destino no Auth — e-mail VERIFICADO de la; religa
+    `_AuthMap` + `User.uid/email`; remove `_AuthMap` antigo; arquiva a orfa VAZIA — nao
+    deleta, reversivel; auditoria em `_AccountTransfers`). Batch atomico.
+  - UI: `AccountTransferModal` na aba Autenticacoes (origem+destino das linhas do funil,
+    resumo da origem, confirma). Botao "Transferir conta".
+- Insight-chave: a conta e chaveada por MATRICULA (nao uid), entao transferir e so
+  trocar quem loga (uid/email) — nenhum dado migra, nada se perde. Merge de dados entre
+  duas contas ATIVAS fica para depois (caso a caso), por seguranca (aprovado pela Gestora).
+- Revisao pre-deploy (pedido da Gestora): acentos PT-BR nas strings de UI; "merge manual"
+  -> "fusao manual das contas" (tom F0-06); modal alinhado ao padrao de overlay do admin
+  (backdrop separado, z-overlay canonico, clicar-fora-fecha). Zero Any/Zero Emoji conferidos.
+- `npm run check` verde (345 testes). Admin-only atras de `requireAdmin` + gate do `/admin`.
+- **Expansao de autenticacao CONCLUIDA** (Fases 0, 1, 1b, 2, 3 em producao). Pendencias
+  operacionais fora do codigo: limpar conta de teste BP-002; revisar textos legais + bump
+  de `CONSENT_VERSION`; renovar o segredo do Azure antes de expirar.
+
 ## [2026-08-01] Fase 2 — gate de Boas-vindas (consentimento LGPD) em producao
 
 - Chat/sessao: continuacao do chat de execucao. Branch `feat/auth-fase-2-boasvindas`

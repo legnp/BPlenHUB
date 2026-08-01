@@ -306,4 +306,15 @@ revisar os textos. Banner de cookies (`CookieConsent`) ja existente atende o out
 item. Codigo: `src/lib/consent/consent.ts`, `src/actions/consent.ts`,
 `src/components/hub/WelcomeConsentGate.tsx`.
 
-**Ainda pendente:** admin de transferência/merge de conta (Fase 3).
+**Fase 3 — transferência de conta: ENTREGUE em producao (2026-08-01).** Ferramenta
+admin (aba Autenticações) que reassocia uma conta existente a um novo login,
+tornando operável o "fale com a BPlen" da trava de CPF. Como a conta é chaveada por
+matrícula (não uid), transferir é só trocar quem loga — nenhum dado migra. Trava de
+segurança: recusa transferir para cima de conta com dados (fusão de dados = manual,
+caso a caso). Código: `src/lib/identity/account-transfer.ts`,
+`src/actions/account-transfer.ts`, `src/components/admin/AccountTransferModal.tsx`.
+
+**Expansão de autenticação CONCLUÍDA** — Fases 0, 1, 1b, 2 e 3 em produção. Pendências
+operacionais (fora do código): revisar textos legais + bump de `CONSENT_VERSION`;
+limpar a conta de teste BP-002; renovar o segredo do Azure antes de expirar; fusão de
+dados entre duas contas ativas continua manual/caso-a-caso por segurança.
