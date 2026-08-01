@@ -65,8 +65,9 @@ export function AccountTransferModal({
   const canSubmit = Boolean(source && target && !submitting && !done);
 
   return (
-    <div className="fixed inset-0 z-overlay flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="w-full max-w-lg bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-[2rem] shadow-2xl p-8 max-h-[90vh] overflow-y-auto custom-scrollbar">
+    <div className="fixed inset-0 z-overlay flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
+      <div className="relative w-full max-w-lg bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-[2rem] shadow-2xl p-8 max-h-[90vh] overflow-y-auto custom-scrollbar">
         <div className="flex items-start justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-[var(--accent-start)]/10 text-[var(--accent-start)] flex items-center justify-center">

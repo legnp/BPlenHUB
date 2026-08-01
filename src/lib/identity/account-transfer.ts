@@ -54,12 +54,12 @@ export function classifyTransfer(input: TransferInput): TransferVerdict {
 export function transferReasonMessage(reason: TransferReason): string {
   switch (reason) {
     case "source_missing":
-      return "Conta de origem nao encontrada.";
+      return "Conta de origem não encontrada.";
     case "source_archived":
-      return "Conta de origem ja esta arquivada.";
+      return "Conta de origem já está arquivada.";
     case "same_account":
-      return "O acesso de destino ja pertence a esta conta. Nada a transferir.";
+      return "O acesso de destino já pertence a esta conta. Nada a transferir.";
     case "target_has_data":
-      return "O acesso de destino ja tem uma conta COM dados (contratos/pedidos). Isso exige merge manual, caso a caso — a transferencia automatica foi bloqueada para nao perder dados.";
+      return "O acesso de destino já tem uma conta com dados (contratos ou pedidos). Isso exige uma fusão manual das contas, caso a caso — a transferência automática foi bloqueada para não perder dados.";
   }
 }

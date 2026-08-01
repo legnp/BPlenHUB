@@ -47,7 +47,7 @@ export async function getAccountSnapshotAction(
     await requireAdmin();
     const db = getAdminDb();
     const userSnap = await db.doc(`User/${matricula}`).get();
-    if (!userSnap.exists) return { success: false, error: "Conta nao encontrada." };
+    if (!userSnap.exists) return { success: false, error: "Conta não encontrada." };
     const data = userSnap.data() || {};
 
     const [contracts, orders, surveys, forms, perm] = await Promise.all([
@@ -104,7 +104,7 @@ export async function transferAccountAction(
       const targetUser = await getAdminAuth().getUser(targetUid);
       targetEmail = (targetUser.email || "").toLowerCase();
     } catch {
-      return { success: false, error: "UID de destino invalido (nao existe no login)." };
+      return { success: false, error: "Login de destino inválido (não encontrado)." };
     }
 
     // Conta que o destino aponta hoje (a "orfa"/nova criada com o e-mail novo).
