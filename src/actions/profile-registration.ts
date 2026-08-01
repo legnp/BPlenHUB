@@ -5,6 +5,7 @@ import { requireAuth } from "@/lib/auth-guards";
 import { resolveMatricula } from "@/lib/user-matricula";
 import { handleFormSideEffects } from "./form-effects";
 import { dadosCadastraisForm } from "@/config/forms/definitions/dados-cadastrais";
+import { assertAndClaimCpf, CPF_TAKEN_MESSAGE } from "@/lib/identity/cpf-index";
 
 /**
  * BPlen HUB — Profile Registration Actions 📋🛡️
@@ -100,6 +101,18 @@ export async function updateRegistrationDataAction(data: RegistrationData, idTok
     if (!matricula) throw new Error("Matrícula não identificada.");
 
     const db = getAdminDb();
+
+    // 0. Trava de CPF (Fase 1b — unicidade por pessoa) ANTES de qualquer escrita.
+    //    O CPF vem do formulario, mas a matricula vem da SESSAO verificada
+    //    (requireAuth). Se o CPF pertence a OUTRA conta, bloqueia sem gravar.
+    const currentSnap = await db.doc(`User/${matricula}`).get();
+    const previousCpf = currentSnap.data()?.profile?.cpf as string | undefined;
+    const cpfClaim = await assertAndClaimCpf(db, data.cpf, matricula, previousCpf);
+    if (!cpfClaim.ok) {
+      return cpfClaim.reason === "taken"
+        ? { success: false, code: "cpf_taken", error: CPF_TAKEN_MESSAGE }
+        : { success: false, code: "cpf_invalid", error: "CPF invalido. Confira os numeros e tente novamente." };
+    }
 
     // 1. Atualizar Documento Soberano (Firestore)
     await db.doc(`User/${matricula}`).set({

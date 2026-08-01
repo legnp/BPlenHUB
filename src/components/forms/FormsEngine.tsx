@@ -11,6 +11,7 @@ import { TextareaGlass } from "@/components/ui/TextareaGlass";
 import { SelectGlass } from "@/components/ui/SelectGlass";
 import { FileField } from "@/components/forms/SurveyFields/FileField";
 import { submitGenericForm } from "@/actions/generic-form";
+import { checkCpfAvailabilityAction } from "@/actions/cpf-check";
 import { resolveOwnIdentityAction } from "@/actions/survey-effects";
 import { Loader2, FileCheck, AlertCircle, Search, Lock, FlaskConical } from "lucide-react";
 import { useAuthContext } from "@/context/AuthContext";
@@ -40,6 +41,7 @@ export function FormsEngine({ config, userUid, matricula: explicitMatricula, onC
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [matricula, setMatricula] = useState<string>(explicitMatricula || "");
   const [isCEPChecking, setIsCEPChecking] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   React.useEffect(() => {
     async function initForm() {
@@ -130,19 +132,43 @@ export function FormsEngine({ config, userUid, matricula: explicitMatricula, onC
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
+    setSubmitError(null);
     try {
       if (customSubmit) {
         await customSubmit(responses);
       } else {
         const res = await submitGenericForm(config, responses, userUid);
+        // Trava de CPF (Fase 1b): bloqueio server-side vem como success:false.
+        if (res.success === false) {
+          if ("code" in res && res.code === "cpf_taken") {
+            setErrors(prev => ({ ...prev, cpf: "CPF ja vinculado a outra conta." }));
+          }
+          setSubmitError(("error" in res && res.error) || "Nao foi possivel concluir o cadastro.");
+          return;
+        }
         if (onComplete) onComplete(res.matricula);
       }
     } catch (err: unknown) {
       const error = err as Error;
       console.error("Erro na submissão do FormsEngine:", error);
-      alert(error.message || "Falha ao enviar formulário.");
+      setSubmitError(error.message || "Falha ao enviar formulário.");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // Feedback de blur no CPF (Fase 1b): avisa se ja esta em uso em outra conta,
+  // sem revelar o dono. So consulta com formato valido; erros/identidade nao
+  // resolvida sao ignorados (nunca gera falso "em uso").
+  const handleCpfBlur = async (fieldId: string, value: string) => {
+    if (!validateCPF(value)) return;
+    try {
+      const { status } = await checkCpfAvailabilityAction(value);
+      if (status === "taken") {
+        setErrors(prev => ({ ...prev, [fieldId]: "Este CPF ja esta em uso em outra conta BPlen." }));
+      }
+    } catch {
+      // Silencioso: checagem de conveniencia, a trava do submit e a fonte da verdade.
     }
   };
 
@@ -191,6 +217,7 @@ export function FormsEngine({ config, userUid, matricula: explicitMatricula, onC
                 placeholder={field.placeholder}
                 readOnly={field.readOnly}
                 onChange={(e) => updateResponse(field.id, e.target.value, field)}
+                onBlur={field.validation === "cpf" ? (e) => handleCpfBlur(field.id, e.target.value) : undefined}
                 value={textValue}
                 className={field.readOnly ? "opacity-60 cursor-not-allowed bg-black/10" : error ? "border-red-500/50" : ""}
               />
@@ -381,6 +408,24 @@ export function FormsEngine({ config, userUid, matricula: explicitMatricula, onC
                 {renderField(field)}
               </div>
             ))}
+
+            {/* Bloqueio server-side (ex.: CPF ja vinculado a outra conta) */}
+            {submitError && (
+              <div className="mt-6 flex flex-col gap-3 rounded-2xl border border-red-500/30 bg-red-500/10 p-4">
+                <div className="flex items-start gap-2">
+                  <AlertCircle size={16} className="text-red-400 mt-0.5 flex-shrink-0" />
+                  <p className="text-xs text-red-300 leading-relaxed">{submitError}</p>
+                </div>
+                <a
+                  href="https://wa.me/5511945152088"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="self-start text-[10px] font-bold uppercase tracking-widest text-[var(--accent-start)] underline underline-offset-2"
+                >
+                  Falar com a BPlen
+                </a>
+              </div>
+            )}
 
             {/* Botão de Finalizar/Próximo acoplado ao fluxo */}
             <div className="pt-6">

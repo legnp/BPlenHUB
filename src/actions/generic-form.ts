@@ -6,12 +6,13 @@ import * as admin from "firebase-admin";
 import { getDriveClient, getSheetsClient } from "@/lib/google-auth";
 import { serverEnv } from "@/env";
 import { FormConfig, FormResponse, FormRecord } from "@/types/forms";
-import { 
-  checkKeySignature, 
-  ensureFolder, 
-  createSpreadsheet, 
-  syncDataToSheet 
+import {
+  checkKeySignature,
+  ensureFolder,
+  createSpreadsheet,
+  syncDataToSheet
 } from "@/lib/drive-utils";
+import { assertAndClaimCpf, CPF_TAKEN_MESSAGE } from "@/lib/identity/cpf-index";
 
 /**
  * BPlen HUB — Generic Form Submission (V2.0 📡)
@@ -31,6 +32,26 @@ export async function submitGenericForm(config: FormConfig, response: FormRespon
       const authMapSnap = await db.doc(`_AuthMap/${userUid}`).get();
       if (authMapSnap.exists && authMapSnap.data()?.matricula) {
         matricula = authMapSnap.data()?.matricula;
+      }
+    }
+
+    // 1b. Trava de CPF (unicidade por pessoa) para o cadastro. Antes de qualquer
+    //     escrita e so para matricula real (nunca anonimo). Se o CPF pertence a
+    //     outra conta, bloqueia sem persistir e sem disparar efeitos.
+    if (config.id === "dados_cadastrais" && matricula !== ANON_MATRICULA) {
+      const cpfValue = typeof response.cpf === "string" ? response.cpf : "";
+      const prevSnap = await db.doc(`User/${matricula}`).get();
+      const previousCpf = prevSnap.data()?.profile?.cpf as string | undefined;
+      const cpfClaim = await assertAndClaimCpf(db, cpfValue, matricula, previousCpf);
+      if (!cpfClaim.ok) {
+        return {
+          success: false,
+          matricula,
+          code: cpfClaim.reason === "taken" ? "cpf_taken" : "cpf_invalid",
+          error: cpfClaim.reason === "taken"
+            ? CPF_TAKEN_MESSAGE
+            : "CPF invalido. Confira os numeros e tente novamente.",
+        };
       }
     }
 

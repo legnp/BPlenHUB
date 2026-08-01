@@ -22,7 +22,8 @@ import {
   updateRegistrationDataAction, 
   RegistrationData 
 } from "@/actions/profile-registration";
-import { maskCPF, maskCEP, maskPhoneBR, lookupCEP } from "@/utils/validations";
+import { maskCPF, maskCEP, maskPhoneBR, lookupCEP, validateCPF } from "@/utils/validations";
+import { checkCpfAvailabilityAction } from "@/actions/cpf-check";
 import { GLOBAL_COUNTRIES } from "@/utils/locations";
 
 /**
@@ -36,6 +37,8 @@ export function ProfileRegistrationTab() {
   const [isCEPChecking, setIsCEPChecking] = useState(false);
   const [data, setData] = useState<RegistrationData | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const [showContact, setShowContact] = useState(false);
+  const [cpfWarning, setCpfWarning] = useState<string | null>(null);
 
   // 1. Carregamento Inicial
   useEffect(() => {
@@ -98,16 +101,37 @@ export function ProfileRegistrationTab() {
     if (!data) return;
     setIsSaving(true);
     setMessage(null);
+    setShowContact(false);
 
     const res = await updateRegistrationDataAction(data);
     if (res.success) {
       setMessage({ type: 'success', text: "Dados cadastrais atualizados e sincronizados com sucesso!" });
       setIsEditing(false);
-    } else {
-      setMessage({ type: 'error', text: "Erro ao salvar dados. Verifique sua conexão." });
+      setIsSaving(false);
+      setTimeout(() => setMessage(null), 5000);
+      return;
     }
+
+    // Trava de CPF (Fase 1b) e demais erros: mostrar a mensagem real do servidor.
+    setMessage({ type: 'error', text: res.error || "Erro ao salvar dados. Verifique sua conexão." });
+    if ("code" in res && res.code === "cpf_taken") setShowContact(true);
     setIsSaving(false);
-    setTimeout(() => setMessage(null), 5000);
+  };
+
+  // Feedback de blur no CPF: avisa se ja esta em uso em outra conta, sem revelar
+  // o dono. So consulta com formato valido; erro/identidade nao resolvida = ignora.
+  const handleCpfBlur = async () => {
+    setCpfWarning(null);
+    const cpf = data?.cpf || "";
+    if (!validateCPF(cpf)) return;
+    try {
+      const { status } = await checkCpfAvailabilityAction(cpf);
+      if (status === "taken") {
+        setCpfWarning("Este CPF ja esta em uso em outra conta BPlen.");
+      }
+    } catch {
+      // Silencioso: a trava do salvamento e a fonte da verdade.
+    }
   };
 
   if (isLoading) {
@@ -158,11 +182,23 @@ export function ProfileRegistrationTab() {
       {/* 📊 Feedback de Status */}
       {message && (
         <div className={cn(
-          "px-8 py-4 rounded-3xl text-[11px] font-bold flex items-center gap-3 animate-in slide-in-from-top-2 duration-500",
+          "px-8 py-4 rounded-3xl text-[11px] font-bold animate-in slide-in-from-top-2 duration-500",
           message.type === 'success' ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20" : "bg-red-500/10 text-red-500 border border-red-500/20"
         )}>
-          {message.type === 'success' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
-          {message.text}
+          <div className="flex items-center gap-3">
+            {message.type === 'success' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
+            <span className="leading-relaxed normal-case">{message.text}</span>
+          </div>
+          {showContact && (
+            <a
+              href="https://wa.me/5511945152088"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block mt-3 ml-7 text-[10px] font-black uppercase tracking-widest underline underline-offset-2"
+            >
+              Falar com a BPlen
+            </a>
+          )}
         </div>
       )}
 
@@ -210,12 +246,14 @@ export function ProfileRegistrationTab() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                  <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">CPF</label>
-                    <InputGlass 
-                       disabled={!isEditing} 
-                       value={data.cpf} 
+                    <InputGlass
+                       disabled={!isEditing}
+                       value={data.cpf}
                        onChange={(e) => updateField('cpf', e.target.value)}
+                       onBlur={handleCpfBlur}
                        placeholder="000.000.000-00"
                     />
+                    {cpfWarning && <p className="text-[9px] font-bold text-red-500 uppercase tracking-widest ml-1 mt-1">{cpfWarning}</p>}
                  </div>
                  <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Nascimento</label>
