@@ -96,7 +96,6 @@ export async function transferAccountAction(
 
     // Origem (a conta com os dados).
     const sourceSnap = await db.doc(`User/${sourceMatricula}`).get();
-    const oldUid = sourceSnap.data()?.uid as string | undefined;
 
     // Destino precisa ser um login real (Firebase Auth) — e-mail VERIFICADO de la.
     let targetEmail = "";
@@ -125,6 +124,12 @@ export async function transferAccountAction(
     });
     if (!verdict.ok) return { success: false, error: transferReasonMessage(verdict.reason) };
 
+    // Fonte da verdade dos logins antigos = o _AuthMap (nao o campo `User.uid`, que
+    // pode estar vazio/stale). Removemos TODOS os uids que apontam para a origem,
+    // exceto o destino — senao o login antigo continua acessando a mesma conta.
+    const oldMapsSnap = await db.collection("_AuthMap").where("matricula", "==", sourceMatricula).get();
+    const removedUids = oldMapsSnap.docs.map((d) => d.id).filter((id) => id !== targetUid);
+
     const now = admin.firestore.FieldValue.serverTimestamp();
     const batch = db.batch();
 
@@ -140,9 +145,9 @@ export async function transferAccountAction(
       { matricula: sourceMatricula, manualTransfer: true, transferredAt: now },
       { merge: true }
     );
-    // 3. Remove o mapeamento antigo do uid anterior da origem (decisao da Gestora).
-    if (oldUid && oldUid !== targetUid) {
-      batch.delete(db.doc(`_AuthMap/${oldUid}`));
+    // 3. Remove os mapeamentos antigos (o login de origem perde o acesso).
+    for (const doc of oldMapsSnap.docs) {
+      if (doc.id !== targetUid) batch.delete(doc.ref);
     }
     // 4. Arquiva a orfa vazia (nao deleta — reversivel).
     if (orphanIsDistinct) {
@@ -157,7 +162,7 @@ export async function transferAccountAction(
       sourceMatricula,
       targetUid,
       targetEmail,
-      oldUid: oldUid || null,
+      removedUids,
       orphanMatricula: orphanIsDistinct ? targetCurrentMatricula : null,
       performedBy: session.email || session.uid,
       performedAt: now,
