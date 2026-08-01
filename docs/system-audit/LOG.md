@@ -24,6 +24,42 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-01] Deploy em producao + VALIDACAO ponta a ponta da expansao de autenticacao
+
+- Chat/sessao: continuacao do chat de execucao. A Gestora optou por deploy direto
+  em producao (o preview da Vercel nao autentica area logada — BUG-030 —, padrao ja
+  usado para auth). Merge fast-forward `feat/auth-fase-0` -> `main` (`5972bec`) +
+  2 ajustes na `main`:
+  - `eb7148e` fix: botao "Acessar BPlen HUB" do home (FloatingCTAs) passou a
+    navegar para `/entrar` em vez de abrir o popup do Google direto — superficie
+    de entrada unica.
+  - `01b8d94` style: `/entrar` com `.stage` `max-width: 1120px` + `margin: auto`
+    (bloco central, nao mais colado nas bordas). Verificado no preview (1920px:
+    faixa central, margens iguais).
+- **Config de console feita pela Gestora** (com os tropecos registrados p/ o
+  futuro): Firebase linking "uma conta por e-mail"; provedor E-mail/senha +
+  "Link do e-mail (login sem senha)"; dominios autorizados (bplen.com, www,
+  firebaseapp, vercel). Azure AD app `BPlen_Hub` (client `0a5e1eab-...`):
+  - redirect URI **Web** `https://bplenhub.firebaseapp.com/__/auth/handler`
+    (tropeco 1: URI ja existia como "cliente publico" -> erro de "URIs devem ter
+    valores distintos"; solucao: apagar do mobile/desktop e recriar como Web).
+  - tipos de conta -> multitenant + contas pessoais (tropeco 2: mudar isso deu
+    "Property api.requestedAccessTokenVersion is invalid"; solucao: no Manifesto,
+    `requestedAccessTokenVersion: 2`).
+  - segredo do cliente (tropeco 3, o classico: colar o **Valor** do segredo, nao o
+    **ID secreto** -> `AADSTS7000215 invalid client secret`; o Valor so aparece na
+    criacao, entao gerar segredo novo e copiar na hora).
+- **VALIDADO EM PRODUCAO ponta a ponta:** Google, Microsoft, magic link (fluxo
+  completo ate logar) e **vinculo por e-mail** — `legnp@outlook.com` aparece no
+  console com Microsoft + e-mail no MESMO uid (camada 1 de unicidade operando).
+- Aviso do console sobre Firebase Dynamic Links NAO afeta o fluxo (atinge email
+  link em apps mobile / Cordova; o nosso e web puro via `/entrar/verificar`).
+- Heads-up registrado: app multitenant sem editor verificado pode bloquear
+  consentimento de usuarios de OUTRAS orgs Azure AD (contas pessoais e da BPlen
+  ok). Resolver com verificacao de editor (MPN ID) se/quando aparecer.
+- Pendente (fases seguintes, inalteradas): CPF (1b), Boas-vindas/cookies (2),
+  admin de transferencia (3).
+
 ## [2026-07-31] Chat de EXECUÇÃO — Fase 0 + Fase 1 da expansão de autenticação (branch + PR)
 
 - Chat/sessão: chat de execução (área sensível: identidade/sessão). Branch
