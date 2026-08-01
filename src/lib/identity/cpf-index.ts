@@ -23,7 +23,7 @@ export const CPF_INDEX_COLLECTION = "_CpfIndex";
 
 /** Mensagem unica de bloqueio (nao revela o dono). */
 export const CPF_TAKEN_MESSAGE =
-  "Este CPF ja esta vinculado a uma conta BPlen. Para acessar com este e-mail, fale com a BPlen para transferirmos sua conta.";
+  "Este CPF já está vinculado a uma conta BPlen. Para acessar com este e-mail, fale com a BPlen para transferirmos sua conta.";
 
 export type CpfOwnership = "free" | "owned" | "taken";
 

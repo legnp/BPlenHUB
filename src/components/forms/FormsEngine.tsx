@@ -141,7 +141,7 @@ export function FormsEngine({ config, userUid, matricula: explicitMatricula, onC
         // Trava de CPF (Fase 1b): bloqueio server-side vem como success:false.
         if (res.success === false) {
           if ("code" in res && res.code === "cpf_taken") {
-            setErrors(prev => ({ ...prev, cpf: "CPF ja vinculado a outra conta." }));
+            setErrors(prev => ({ ...prev, cpf: "CPF já vinculado a outra conta." }));
           }
           setSubmitError(("error" in res && res.error) || "Nao foi possivel concluir o cadastro.");
           return;
@@ -165,7 +165,7 @@ export function FormsEngine({ config, userUid, matricula: explicitMatricula, onC
     try {
       const { status } = await checkCpfAvailabilityAction(value);
       if (status === "taken") {
-        setErrors(prev => ({ ...prev, [fieldId]: "Este CPF ja esta em uso em outra conta BPlen." }));
+        setErrors(prev => ({ ...prev, [fieldId]: "Este CPF já está em uso em outra conta BPlen." }));
       }
     } catch {
       // Silencioso: checagem de conveniencia, a trava do submit e a fonte da verdade.

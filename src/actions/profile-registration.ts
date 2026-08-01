@@ -111,7 +111,7 @@ export async function updateRegistrationDataAction(data: RegistrationData, idTok
     if (!cpfClaim.ok) {
       return cpfClaim.reason === "taken"
         ? { success: false, code: "cpf_taken", error: CPF_TAKEN_MESSAGE }
-        : { success: false, code: "cpf_invalid", error: "CPF invalido. Confira os numeros e tente novamente." };
+        : { success: false, code: "cpf_invalid", error: "CPF inválido. Confira os números e tente novamente." };
     }
 
     // 1. Atualizar Documento Soberano (Firestore)

@@ -127,7 +127,7 @@ export function useAuth() {
           credential: credentialFromError(providerId, err),
         });
         setError(
-          "Este e-mail ja tem uma conta BPlen com outro meio de acesso. Entre pelo metodo original para vincular os dois."
+          "Este e-mail já tem uma conta BPlen com outro meio de acesso. Entre pelo método original para vincular os dois."
         );
         return null;
       }

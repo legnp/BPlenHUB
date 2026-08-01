@@ -61,7 +61,7 @@ export async function recordConsentAction(input: {
 
     // Trava de 18+ no servidor (nunca confiar no cliente).
     if (!isAdult(input.birthDate, new Date())) {
-      return { success: false, error: "E necessario ter 18 anos ou mais para usar a BPlen HUB." };
+      return { success: false, error: "É necessário ter 18 anos ou mais para usar a BPlen HUB." };
     }
 
     // Resolve-ou-mina a matricula pela via canonica (mesma da welcome survey; PF
@@ -118,6 +118,6 @@ export async function recordConsentAction(input: {
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
     console.error("[consent] Falha ao registrar consentimento:", message);
-    return { success: false, error: "Nao foi possivel registrar o aceite agora. Tente novamente." };
+    return { success: false, error: "Não foi possível registrar o aceite agora. Tente novamente." };
   }
 }

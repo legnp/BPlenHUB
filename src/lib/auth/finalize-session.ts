@@ -21,7 +21,7 @@ export async function finalizeClientSession(
   const idToken = await loggedUser.getIdToken();
   const sessionResult = await createSignedSessionCookie(idToken);
   if (!sessionResult.success) {
-    throw new Error(sessionResult.error || "Falha ao sincronizar sessao segura.");
+    throw new Error(sessionResult.error || "Falha ao sincronizar a sessão segura.");
   }
   await syncUserPermissionsOnLogin(loggedUser.uid, loggedUser.email);
 

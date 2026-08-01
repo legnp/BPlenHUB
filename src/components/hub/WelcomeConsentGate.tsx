@@ -41,10 +41,10 @@ export function WelcomeConsentGate({
       if (res.success) {
         onDone();
       } else {
-        setError(res.error || "Nao foi possivel registrar o aceite agora.");
+        setError(res.error || "Não foi possível registrar o aceite agora.");
       }
     } catch {
-      setError("Nao foi possivel registrar o aceite agora.");
+      setError("Não foi possível registrar o aceite agora.");
     } finally {
       setSubmitting(false);
     }
@@ -62,8 +62,8 @@ export function WelcomeConsentGate({
           <Image
             src="/logo_bplen/logo-branco.png"
             alt="BPlen HUB"
-            width={62}
-            height={25}
+            width={124}
+            height={50}
             className={styles.logoImg}
             priority
           />

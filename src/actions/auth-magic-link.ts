@@ -70,6 +70,6 @@ export async function requestMagicLink(
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
     console.error("[auth-magic-link] Falha ao gerar/enviar link de acesso:", message);
-    return { success: false, error: "Nao foi possivel enviar o link agora. Tente novamente." };
+    return { success: false, error: "Não foi possível enviar o link agora. Tente novamente." };
   }
 }

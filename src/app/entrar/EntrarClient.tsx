@@ -93,8 +93,8 @@ export function EntrarClient({ returnTo }: { returnTo: string }) {
           <Image
             src="/logo_bplen/logo-branco.png"
             alt="BPlen HUB"
-            width={62}
-            height={25}
+            width={124}
+            height={50}
             className={styles.logoImg}
             priority
           />

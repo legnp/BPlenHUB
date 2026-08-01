@@ -127,7 +127,7 @@ export function ProfileRegistrationTab() {
     try {
       const { status } = await checkCpfAvailabilityAction(cpf);
       if (status === "taken") {
-        setCpfWarning("Este CPF ja esta em uso em outra conta BPlen.");
+        setCpfWarning("Este CPF já está em uso em outra conta BPlen.");
       }
     } catch {
       // Silencioso: a trava do salvamento e a fonte da verdade.

@@ -50,7 +50,7 @@ export async function submitGenericForm(config: FormConfig, response: FormRespon
           code: cpfClaim.reason === "taken" ? "cpf_taken" : "cpf_invalid",
           error: cpfClaim.reason === "taken"
             ? CPF_TAKEN_MESSAGE
-            : "CPF invalido. Confira os numeros e tente novamente.",
+            : "CPF inválido. Confira os números e tente novamente.",
         };
       }
     }

@@ -72,7 +72,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 32px;
+  /* Alinha logo e Suporte a faixa central (1120px), aproximando-os do centro em
+     telas largas em vez de colados nas bordas. */
+  padding: 22px max(24px, calc((100% - 1120px) / 2));
 }
 .logo {
   display: flex;
@@ -81,7 +83,8 @@
   user-select: none;
 }
 .logoImg {
-  height: clamp(20px, 2.2vw, 26px);
+  /* Logo em dobro (pedido da Gestora). */
+  height: clamp(40px, 4.4vw, 52px);
   width: auto;
   display: block;
 }
@@ -251,8 +254,8 @@
 .input {
   width: 100%;
   height: 40px;
-  background: rgba(255, 255, 255, 0.028);
-  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid var(--border-strong);
   border-radius: 10px;
   padding: 0 13px;
   color: #fff;
@@ -260,6 +263,9 @@
   font-family: inherit;
   transition: border-color 0.2s, box-shadow 0.2s;
   outline: none;
+  /* Faz o seletor de data nativo (icone/calendario) renderizar em modo escuro,
+     senao o campo fica quase invisivel no fundo preto. */
+  color-scheme: dark;
 }
 .input::placeholder {
   color: #565c66;
@@ -475,7 +481,7 @@
 .consentList {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 9px;
   margin: 4px 0 4px;
 }
 .checkRow {
@@ -483,19 +489,28 @@
   align-items: flex-start;
   gap: 10px;
   cursor: pointer;
+  padding: 11px 12px;
+  border-radius: 10px;
+  background: var(--glass-strong);
+  border: 1px solid var(--border);
+  transition: all 0.2s ease;
+}
+.checkRow:hover:not(.disabled) {
+  border-color: var(--border-strong);
+  background: rgba(255, 255, 255, 0.085);
 }
 .checkRow.disabled {
-  opacity: 0.45;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 .checkBox {
   flex: 0 0 auto;
-  width: 17px;
-  height: 17px;
+  width: 18px;
+  height: 18px;
   margin-top: 1px;
-  border-radius: 5px;
-  border: 1px solid var(--border-strong);
-  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  border: 1.5px solid var(--border-strong);
+  background: rgba(255, 255, 255, 0.08);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -524,7 +539,7 @@
 .checkLabel {
   font-size: 11.5px;
   line-height: 1.5;
-  color: var(--muted);
+  color: rgba(255, 255, 255, 0.82);
   user-select: none;
 }
 .checkLabel a {
