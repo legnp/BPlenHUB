@@ -12,6 +12,7 @@ import {
   X,
   Activity,
   AlertTriangle,
+  ArrowRightLeft,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { auth } from "@/lib/firebase";
@@ -20,6 +21,7 @@ import type { AuthFunnelResult, AuthFunnelRow, AuthFunnelStage } from "@/types/a
 import { FunctionalPageHeader } from "@/components/layout/FunctionalPageHeader";
 import { StatTile } from "@/components/admin/StatTile";
 import AtmosphericLoading from "@/components/shared/AtmosphericLoading";
+import { AccountTransferModal } from "@/components/admin/AccountTransferModal";
 
 /**
  * BPlen HUB — Aba Autenticacoes (funil de recepcao).
@@ -65,6 +67,7 @@ export function AuthFunnelView() {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [stageFilter, setStageFilter] = useState<StageFilter>("all");
+  const [transferOpen, setTransferOpen] = useState(false);
 
   const fetchFunnel = async () => {
     setLoading(true);
@@ -220,6 +223,15 @@ export function AuthFunnelView() {
             </button>
           ))}
         </div>
+
+        <button
+          onClick={() => setTransferOpen(true)}
+          disabled={loading}
+          className="flex items-center gap-2 px-5 py-3 rounded-2xl border border-[var(--accent-start)]/30 bg-[var(--accent-start)]/10 text-[var(--accent-start)] text-[9px] font-bold uppercase tracking-widest hover:bg-[var(--accent-start)]/15 disabled:opacity-40 transition-all whitespace-nowrap"
+        >
+          <ArrowRightLeft size={14} />
+          Transferir conta
+        </button>
       </div>
 
       {/* Tabela */}
@@ -254,6 +266,14 @@ export function AuthFunnelView() {
             </table>
           </div>
         </div>
+      )}
+
+      {transferOpen && (
+        <AccountTransferModal
+          rows={result?.rows ?? []}
+          onClose={() => setTransferOpen(false)}
+          onDone={() => fetchFunnel()}
+        />
       )}
     </div>
   );
