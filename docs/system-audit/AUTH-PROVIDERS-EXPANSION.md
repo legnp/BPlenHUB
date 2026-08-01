@@ -290,6 +290,13 @@ AD (Microsoft); incluir o domínio de produção nos domínios autorizados (para
 continue-URL do magic link). Enquanto não configurados, Microsoft e magic link
 renderizam mas não completam.
 
-**Ainda pendente (fases seguintes, inalteradas):** trava de CPF (Fase 1b),
-consentimento/gate de Boas-vindas + banner de cookies de conta (Fase 2), admin de
-transferência (Fase 3).
+**Fase 1b — trava de CPF: ENTREGUE em producao (2026-08-01).** Indice
+`_CpfIndex/{cpfHash}` (`src/lib/identity/cpf-index.ts`), trava nos dois pontos que
+gravam `profile.cpf` (perfil do hub + cadastro do checkout), feedback de blur, e
+backfill `scripts/backfill-cpf-index.js`. Nunca mescla automaticamente: CPF de
+outra conta = bloqueio + contato. Duplicatas legadas resolvidas manualmente
+(governanca: baldes A/B/C, regra de sobrevivencia, arquivar, auditar).
+
+**Ainda pendente (fases seguintes, inalteradas):** consentimento/gate de
+Boas-vindas + banner de cookies de conta (Fase 2), admin de transferência/merge de
+conta (Fase 3).

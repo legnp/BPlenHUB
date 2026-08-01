@@ -24,6 +24,39 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-01] Fase 1b — trava de CPF (unicidade por pessoa) em producao
+
+- Chat/sessao: continuacao do chat de execucao. Branch `feat/auth-fase-1b-cpf`
+  (fast-forward -> `main`, `7c27ad7`), deploy direto em producao apos backfill.
+- Implementado (camada 2 da unicidade; camada 1 = linking por e-mail; nunca mescla
+  automaticamente):
+  - Indice `_CpfIndex/{cpfHash} -> { matricula }` (hash HMAC-SHA256, o MESMO do app,
+    sem CPF em claro — regra 4). Helper unico `src/lib/identity/cpf-index.ts`:
+    `classifyCpfOwnership` (puro, testado), `assertAndClaimCpf` (transacional),
+    `checkCpfStatus` (read-only para o blur).
+  - Trava ligada nos DOIS pontos que persistem `profile.cpf`, antes de gravar:
+    `updateRegistrationDataAction` (perfil do hub) e `submitGenericForm` (cadastro do
+    checkout — so `dados_cadastrais` + matricula real). CPF de OUTRA conta = bloqueio
+    com mensagem + botao "Falar com a BPlen"; matricula sempre da sessao verificada.
+  - Feedback de blur "CPF em uso" (`checkCpfAvailabilityAction`, guardada por sessao,
+    nao revela o dono) nas duas telas.
+  - Backfill `scripts/backfill-cpf-index.js` (dry-run/gravar, `--prefer=<matricula>`
+    para dono em duplicatas; loader .env byte-safe p/ evitar mangling de escape).
+- **Ordem correta seguida: backfill ANTES do deploy** (senao um usuario novo poderia
+  reivindicar um CPF legado ainda nao indexado e travar o dono legitimo).
+- Backfill de producao (dry-run primeiro): 6 contas, 4 com CPF, 3 CPFs unicos, **1
+  duplicata** — `BP-002-PF-260331` (conta de TESTE, decisao da Gestora) e
+  `BP-005-PF-260523` (dona real). Indice gravado com `--prefer=BP-005-PF-260523`;
+  `BP-002` marcada em `duplicateMatriculas` para limpeza posterior pela Gestora.
+- Governanca de duplicatas legadas (registrada a pedido): nunca auto-merge; classificar
+  em baldes (A vazia/abandonada, B ambas ativas, C erro de digitacao); regra de
+  sobrevivencia (compra > jornada > recencia); arquivar (nao deletar); auditar; alinhado
+  a LGPD (qualidade dos dados Art. 6, retificacao Art. 18). Merge real = Fase 3.
+- `npm run check` verde (329 testes; +6 de `cpf-index.test.ts`, exercendo a funcao real).
+  UI atras de login (preview nao autentica, BUG-030) -> verificacao por testes+build.
+- Pendente: limpar a conta de teste `BP-002` (Gestora); ferramenta de admin de
+  transferencia/merge (Fase 3); Boas-vindas/cookies (Fase 2).
+
 ## [2026-08-01] Deploy em producao + VALIDACAO ponta a ponta da expansao de autenticacao
 
 - Chat/sessao: continuacao do chat de execucao. A Gestora optou por deploy direto
