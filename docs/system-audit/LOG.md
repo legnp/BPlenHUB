@@ -24,6 +24,22 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-01] E-mails de transferencia de conta + correcao de acentos do magic link
+
+- Pedido da Gestora: (a) disparar e-mail nos dois lados da transferencia de conta;
+  (b) validar que os e-mails da sessao estao alinhados a auditoria — o e-mail do
+  magic link recebido no teste veio SEM acentos (evidencia em print).
+- Feito (`50eb6ed`): `transferAccountAction` passa a notificar (best-effort, pos-commit)
+  o e-mail de DESTINO ("voce agora acessa com este e-mail" + botao entrar) e o de ORIGEM
+  ("o acesso saiu deste e-mail" — SEM revelar o novo e-mail, por privacidade — + contato).
+  Template V01 (`buildEmailLayout`). E-mail do magic link corrigido (assunto e corpo:
+  "acesso a"->"acesso a", botao, seguranca, voce, temporario, e pessoal).
+- Validacao dos e-mails da sessao (magic link + transferencia): acentuacao PT-BR correta,
+  zero emoji no conteudo, sem nome de infra no texto (nomes de infra so aparecem em
+  imports/comentarios de codigo, o que e permitido). `npm run check` verde (345 testes).
+- Nota: envio de e-mail e best-effort — se o Resend falhar, a transferencia (ja commitada)
+  nao e desfeita; so loga o aviso.
+
 ## [2026-08-01] Polimento + revisao de conformidade da sessao de expansao de auth
 
 - Pedidos da Gestora: (1) gate de Boas-vindas estava escuro/campos invisiveis e nao
