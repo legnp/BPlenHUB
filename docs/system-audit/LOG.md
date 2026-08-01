@@ -24,6 +24,25 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-01] Polimento + revisao de conformidade da sessao de expansao de auth
+
+- Pedidos da Gestora: (1) gate de Boas-vindas estava escuro/campos invisiveis e nao
+  alinhado ao login; (2) logo em dobro + logo/Suporte mais ao centro nas duas telas;
+  (3) validar toda a sessao (seguranca, tom, acentos, governanca).
+- Feito (`f698bab`): (1) campo de data com `color-scheme: dark`, inputs com fundo/borda
+  mais fortes, aceites como "linhas de vidro" visiveis (aesthetic dos botoes de provedor
+  do login); (2) logo `clamp(40..52px)` (dobro) + topbar alinhada a faixa central 1120px
+  (verificado no preview via pagina temporaria, depois removida); (3) revisao de conformidade.
+- **Revisao de conformidade (resultado):** zero emoji, zero any, sem nome de infra na UI
+  de entrada, guards confirmados (teste de governanca de server actions verde). **Acentos
+  PT-BR corrigidos** em varias strings user-facing que tinham ido para producao sem acento
+  (CPF: mensagem de bloqueio, "CPF invalido/numeros", blur "ja esta em uso"; consentimento:
+  "E necessario ter 18...", "Nao foi possivel..."; magic link; vinculo de conta "metodo";
+  "sessao segura"). `npm run check` verde (345 testes).
+- Nota de padrao: as telas de entrada (/entrar, Boas-vindas, verificar) tem universo visual
+  proprio (dark, secao 13) — usam status/loading proprios do design aprovado, nao o
+  `AtmosphericLoading` do hub (que e de outro universo); consistente com o design gate.
+
 ## [2026-08-01] BUG-fix Fase 3 — transferencia deixava o login antigo com acesso
 
 - Achado (teste em producao da Gestora): apos transferir BP-014 para legnp@outlook.com,
