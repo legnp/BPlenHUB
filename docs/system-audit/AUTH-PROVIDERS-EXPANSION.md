@@ -297,6 +297,13 @@ backfill `scripts/backfill-cpf-index.js`. Nunca mescla automaticamente: CPF de
 outra conta = bloqueio + contato. Duplicatas legadas resolvidas manualmente
 (governanca: baldes A/B/C, regra de sobrevivencia, arquivar, auditar).
 
-**Ainda pendente (fases seguintes, inalteradas):** consentimento/gate de
-Boas-vindas + banner de cookies de conta (Fase 2), admin de transferência/merge de
-conta (Fase 3).
+**Fase 2 — gate de Boas-vindas: ENTREGUE em producao (2026-08-01).** Gate de
+consentimento no primeiro acesso (Termos + Privacidade + 18), com data de
+nascimento validada (menor de 18 nao avanca) e registro versionado com prova (IP,
+geo aproximada por IP, tipo de dispositivo) em `User/{matricula}/User_Consent`.
+Trava em `HubShell` (bloqueia todo o /hub). `CONSENT_VERSION` permite reprompt ao
+revisar os textos. Banner de cookies (`CookieConsent`) ja existente atende o outro
+item. Codigo: `src/lib/consent/consent.ts`, `src/actions/consent.ts`,
+`src/components/hub/WelcomeConsentGate.tsx`.
+
+**Ainda pendente:** admin de transferência/merge de conta (Fase 3).

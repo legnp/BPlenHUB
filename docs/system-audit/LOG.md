@@ -24,6 +24,42 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-01] Fase 2 — gate de Boas-vindas (consentimento LGPD) em producao
+
+- Chat/sessao: continuacao do chat de execucao. Branch `feat/auth-fase-2-boasvindas`
+  (fast-forward -> `main`, `c630097`), deploy direto (aprovado pela Gestora).
+- Implementado (gate de primeiro acesso, logo apos o login; nunca "onboarding" —
+  terminologia "Boas-vindas"):
+  - Logica pura `src/lib/consent/consent.ts`: `needsConsentGate` (reprompt por
+    versao), `computeAgeYears`/`isAdult` (trava 18+), `deviceTypeFromUserAgent` —
+    testadas (`src/__tests__/consent.test.ts`, funcao real, Licao 18).
+  - Server actions `src/actions/consent.ts`: `getConsentStatusAction` (leitura, sem
+    mint) e `recordConsentAction` (identidade da SESSAO verificada; re-valida 18+ no
+    servidor; grava `User/{matricula}/User_Consent/current` + trilha append-only
+    `User_Consent_History`; pre-preenche `profile.birthDate`).
+  - Tela `WelcomeConsentGate` reusa o visual do `/entrar` (secao 13): **campo de
+    data de nascimento validado ANTES do checkbox de idade** (menor de 18 nao avanca,
+    trava cliente+servidor), 3 aceites opt-in (nada pre-marcado; Termos+Privacidade
+    e 18 obrigatorios, novidades opcional), botao Continuar.
+  - **Trava real em `HubShell`**: bloqueia TODO o /hub ate o aceite vigente (nao so a
+    home). Admin (/admin) fica fora (equipe interna nao e barrada). Reprompt automatico
+    quando `CONSENT_VERSION` mudar.
+  - **Captura de prova (pedido da Gestora):** IP, **geolocalizacao aproximada por IP**
+    (edge headers, nao-invasiva — mesmo padrao do carimbo de contrato em legal.ts) e
+    **tipo de dispositivo** (do user-agent), alem de version/birthDate/newsletter/timestamp.
+- **Versao `CONSENT_VERSION="2026-06-21"`** (retroativa, ancorada em
+  `config/legal-pages.ts`). Decisao da Gestora: textos legais serao revisados depois;
+  ao bumpar a versao, o gate reaparece no proximo acesso.
+- **Banner de cookies:** o `CookieConsent` existente (privacy-first, "Aceitar Tudo" vs
+  "Apenas Essenciais", default essenciais) ja atende o outro item da Fase 2 — nao alterado.
+- Geo por IP e nao GPS preciso (evita prompt de permissao intrusivo num gate); se a
+  Gestora quiser GPS depois, e outro fluxo (com consentimento de geolocalizacao).
+- `npm run check` verde (339 testes). UI atras de login (preview nao autentica,
+  BUG-030) -> verificacao por testes+build; validacao visual em producao.
+- Pendente: Fase 3 (ferramenta de admin de transferencia/merge de conta — resolve o
+  "fale com a BPlen" e os duplicados legados de forma operavel); limpar conta de teste
+  BP-002; e a atualizacao futura dos textos legais + bump de `CONSENT_VERSION`.
+
 ## [2026-08-01] Fase 1b — trava de CPF (unicidade por pessoa) em producao
 
 - Chat/sessao: continuacao do chat de execucao. Branch `feat/auth-fase-1b-cpf`
