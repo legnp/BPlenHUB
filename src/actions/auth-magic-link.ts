@@ -50,7 +50,6 @@ export async function requestMagicLink(
     });
 
     const content = `
-      <p style="${EMAIL_STYLES.eyebrow}">ACESSO</p>
       <h2 style="${EMAIL_STYLES.h2}">Seu link de acesso à BPlen HUB</h2>
       <p style="${EMAIL_STYLES.p}">Recebemos um pedido de acesso à BPlen HUB com este e-mail. Clique no botão abaixo para entrar com segurança, sem senha.</p>
       <div style="text-align: left;">

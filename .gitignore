@@ -49,6 +49,9 @@ temp-credentials.json
 # vercel
 .vercel
 
+# configuracao local do agente (por maquina, nao versionar)
+.claude/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

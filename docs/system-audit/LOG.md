@@ -24,6 +24,40 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-02] Terceiro e-mail da transferencia (equipe) + limpeza de desvios do padrao V01
+
+- Pedido da Gestora: a transferencia de conta deve disparar TRES e-mails — origem,
+  destino e a caixa interna da BPlen. Os dois primeiros ja existiam (`50eb6ed`); o
+  da equipe e novo. Copy dos tres proposto e aprovado antes da implementacao.
+- Estado encontrado: a sessao anterior deixou na working tree da `main` apenas o
+  andaime (interface `TransferEmailContext` + troca de assinatura), SEM atualizar o
+  corpo da funcao nem a chamada — o arquivo nao compilava. Nenhuma branch em
+  andamento (`feat/auth-fase-3-transfer` ja estava mergeada e 7 commits atras).
+- Feito: terceiro e-mail para `notificacao@bplen.com` (eyebrow `EQUIPE`, rodape
+  "Notificacoes Internas", caixa de dados via token `EMAIL_STYLES.infoBox` — sem hex
+  hardcoded), com matricula, e-mails dos dois lados, conta orfa arquivada (linha
+  condicional) e quem executou. Assunto traz a matricula para a caixa ficar
+  pesquisavel. Segue best-effort: os tres vao em `Promise.all` pos-commit e falha de
+  e-mail nao desfaz a transferencia.
+- Copy dos dois e-mails ao cliente refinado (aprovado): ao destino, garantia
+  explicita de que o historico foi preservado (duvida natural de quem recebe); a
+  origem segue SEM revelar o novo e-mail (privacidade).
+- Desvios corrigidos junto (autorizados): (a) o rotulo textual de eyebrow ("ACESSO")
+  ainda era impresso no corpo de tres e-mails, contra a decisao de 2026-07-30
+  registrada em `EMAIL-DESIGN-V01.md` — removido de `account-transfer.ts` (2x) e
+  `auth-magic-link.ts`; (b) WhatsApp de suporte hardcoded em `account-transfer.ts`
+  trocado por `SUPPORT_WHATSAPP_URL` de `src/config/support.ts` (regra 3).
+- `.claude/` (config local do agente: `launch.json`, `settings.local.json`, lock de
+  tarefas) adicionado ao `.gitignore` — e por maquina, nao versionavel.
+- Validacao: type-check verde, 345 testes verdes, build verde. **Lint pre-existente
+  quebrado** — ver achado abaixo; os arquivos desta sessao passam limpos.
+- Achado (nao corrigido, fora do escopo aprovado): `npm run check` NAO fecha verde
+  hoje. (1) `eslint.config.mjs` nao ignora `scratch/`, entao o lint varre scripts
+  descartaveis locais (`require()` -> erro); (2) dois arquivos de produto tem erro
+  real de lint: `SurveyFields/CascadedSelect.tsx` (setState sincrono em effect) e
+  `SurveyFields/CvAudioRecorder.tsx` (variavel usada antes da declaracao), ambos de
+  `b168332`. Regra 5 do CLAUDE.md esta violada na `main`. Precisa de decisao.
+
 ## [2026-08-01] E-mails de transferencia de conta + correcao de acentos do magic link
 
 - Pedido da Gestora: (a) disparar e-mail nos dois lados da transferencia de conta;

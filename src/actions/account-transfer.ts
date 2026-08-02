@@ -8,30 +8,44 @@ import { getAdminDb, getAdminAuth } from "@/lib/firebase-admin";
 import { serverEnv, clientEnv } from "@/env";
 import { USER_ORDERS_COLLECTION } from "@/config/collections";
 import { buildEmailLayout, EMAIL_STYLES } from "@/lib/emails/email-layout";
+import { SUPPORT_WHATSAPP_URL } from "@/config/support";
 import { classifyTransfer, transferReasonMessage } from "@/lib/identity/account-transfer";
 import { getErrorMessage } from "@/lib/utils/errors";
 
 const resend = new Resend(serverEnv.RESEND_API_KEY);
-const SUPPORT_URL = "https://wa.me/5511945152088";
+const TEAM_NOTIFICATION_EMAIL = "notificacao@bplen.com";
+
+interface TransferEmailContext {
+  originEmail: string;
+  destEmail: string;
+  sourceMatricula: string;
+  orphanMatricula: string | null;
+  performedBy: string;
+}
+
+/** Linha rotulo/valor da caixa de dados do e-mail interno. */
+function teamRow(label: string, value: string): string {
+  return `<p style="margin: 4px 0; font-size: 14px; color: #1D1D1F;">${label}: <strong>${value}</strong></p>`;
+}
 
 /**
- * Notifica origem e destino da transferencia (best-effort). Ao destino: passou a
- * acessar a conta com este e-mail. A origem: o acesso saiu deste e-mail (sem
- * revelar o novo e-mail — privacidade) + contato para o caso de nao reconhecer.
+ * Notifica origem, destino e a EQUIPE (registro interno) da transferencia
+ * (best-effort). Ao destino: passou a acessar a conta com este e-mail. A origem: o
+ * acesso saiu deste e-mail (sem revelar o novo — privacidade) + contato. A equipe
+ * (`notificacao@bplen.com`): registro da operacao para auditoria na caixa de e-mail.
  */
-async function sendTransferEmails(originEmail: string, destEmail: string): Promise<void> {
-  const origin = (originEmail || "").trim().toLowerCase();
-  const dest = (destEmail || "").trim().toLowerCase();
+async function sendTransferEmails(ctx: TransferEmailContext): Promise<void> {
+  const origin = (ctx.originEmail || "").trim().toLowerCase();
+  const dest = (ctx.destEmail || "").trim().toLowerCase();
   const entrarUrl = `${clientEnv.NEXT_PUBLIC_APP_URL || "https://bplen.com"}/entrar`;
   const jobs: Promise<unknown>[] = [];
 
   if (dest) {
     const content = `
-      <p style="${EMAIL_STYLES.eyebrow}">ACESSO</p>
       <h2 style="${EMAIL_STYLES.h2}">Acesso transferido para este e-mail</h2>
-      <p style="${EMAIL_STYLES.p}">A partir de agora, você acessa sua conta BPlen HUB com este e-mail. É só entrar normalmente pela página de acesso.</p>
+      <p style="${EMAIL_STYLES.p}">A partir de agora, você acessa a sua conta BPlen HUB com este e-mail. Todo o seu histórico continua no lugar — nada foi perdido.</p>
       <div style="text-align: left;"><a href="${entrarUrl}" style="${EMAIL_STYLES.button}">Entrar na BPlen HUB</a></div>
-      <p style="${EMAIL_STYLES.p}">Se você não reconhece esta ação, fale com a BPlen imediatamente.</p>
+      <p style="${EMAIL_STYLES.p}">Se você não reconhece esta mudança, fale com a BPlen.</p>
     `;
     jobs.push(
       resend.emails.send({
@@ -45,11 +59,10 @@ async function sendTransferEmails(originEmail: string, destEmail: string): Promi
 
   if (origin && origin !== dest) {
     const content = `
-      <p style="${EMAIL_STYLES.eyebrow}">ACESSO</p>
       <h2 style="${EMAIL_STYLES.h2}">O acesso da sua conta foi transferido</h2>
-      <p style="${EMAIL_STYLES.p}">O acesso à sua conta BPlen HUB foi transferido para outro e-mail. Este e-mail não acessa mais a conta.</p>
-      <div style="text-align: left;"><a href="${SUPPORT_URL}" style="${EMAIL_STYLES.button}">Falar com a BPlen</a></div>
-      <p style="${EMAIL_STYLES.p}">Se você não reconhece esta ação, fale com a BPlen imediatamente.</p>
+      <p style="${EMAIL_STYLES.p}">O acesso à sua conta BPlen HUB passou a ser feito por outro e-mail. Este endereço não acessa mais a conta.</p>
+      <div style="text-align: left;"><a href="${SUPPORT_WHATSAPP_URL}" style="${EMAIL_STYLES.button}">Falar com a BPlen</a></div>
+      <p style="${EMAIL_STYLES.p}">Se você não reconhece esta mudança, fale com a BPlen imediatamente.</p>
     `;
     jobs.push(
       resend.emails.send({
@@ -60,6 +73,29 @@ async function sendTransferEmails(originEmail: string, destEmail: string): Promi
       })
     );
   }
+
+  // Registro interno na caixa da equipe (auditoria pesquisavel por matricula).
+  const teamContent = `
+    <h2 style="${EMAIL_STYLES.h2}">Transferência de conta realizada</h2>
+    <p style="${EMAIL_STYLES.p}">Registro interno de uma transferência de acesso executada no BPlen HUB.</p>
+    <div style="${EMAIL_STYLES.infoBox}">
+      <p style="margin: 0 0 8px 0; font-size: 11px; color: #94A3B8; font-weight: bold; text-transform: uppercase;">Dados da operação</p>
+      ${teamRow("Matrícula", ctx.sourceMatricula)}
+      ${teamRow("E-mail de origem", origin || "nao informado")}
+      ${teamRow("E-mail de destino", dest || "nao informado")}
+      ${ctx.orphanMatricula ? teamRow("Conta arquivada", ctx.orphanMatricula) : ""}
+      ${teamRow("Executado por", ctx.performedBy)}
+    </div>
+    <p style="${EMAIL_STYLES.p}">A conta de origem manteve todos os dados. O acesso pelo e-mail anterior foi removido.</p>
+  `;
+  jobs.push(
+    resend.emails.send({
+      from: "BPlen HUB <hub@bplen.com>",
+      to: TEAM_NOTIFICATION_EMAIL,
+      subject: `Transferência de conta realizada - ${ctx.sourceMatricula}`,
+      html: buildEmailLayout(teamContent, "BPlen HUB - Notificações Internas", { eyebrow: "EQUIPE" }),
+    })
+  );
 
   await Promise.all(jobs);
 }
@@ -228,9 +264,16 @@ export async function transferAccountAction(
 
     await batch.commit();
 
-    // Notificacao aos dois e-mails (best-effort — nao falha a transferencia ja feita).
+    // Notificacao aos dois lados + registro na caixa da equipe (best-effort — nao
+    // falha a transferencia ja feita).
     try {
-      await sendTransferEmails(originEmail, targetEmail);
+      await sendTransferEmails({
+        originEmail,
+        destEmail: targetEmail,
+        sourceMatricula,
+        orphanMatricula: orphanIsDistinct ? (targetCurrentMatricula as string) : null,
+        performedBy: session.email || session.uid,
+      });
     } catch (mailErr) {
       console.warn("[account-transfer] Falha ao enviar e-mails de transferencia:", getErrorMessage(mailErr));
     }
