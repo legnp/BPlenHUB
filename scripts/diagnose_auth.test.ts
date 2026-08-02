@@ -1,15 +1,22 @@
 import { it, expect } from "vitest";
 import { getAdminDb } from "../src/lib/firebase-admin";
 
+/** Inconsistencia entre o _AuthMap e a colecao User. */
+interface AuthMapMismatch {
+  uid: string;
+  matricula?: string;
+  error: string;
+}
+
 it("Diagnóstico de integridade de usuários", async () => {
-  console.log("🔍 [Diagonal] Iniciando diagnóstico de integridade de usuários...");
-  
+  console.log("[diagnose-auth] Iniciando diagnostico de integridade de usuarios...");
+
   const authMapRef = getAdminDb().collection("_AuthMap");
   const authMapSnap = await authMapRef.get();
-  
-  console.log(`📊 Total no _AuthMap: ${authMapSnap.size}`);
-  
-  const mismatches: any[] = [];
+
+  console.log(`[diagnose-auth] Total no _AuthMap: ${authMapSnap.size}`);
+
+  const mismatches: AuthMapMismatch[] = [];
   
   for (const doc of authMapSnap.docs) {
     const data = doc.data();
@@ -35,13 +42,13 @@ it("Diagnóstico de integridade de usuários", async () => {
     const permsData = permsSnap.exists ? permsSnap.data() : null;
     const hasAccess = permsData?.services?.member_area_access === true;
     
-    console.log(`✅ UID: ${uid} -> Matrícula: ${matricula} | Acesso Área Membro: ${hasAccess}`);
+    console.log(`[diagnose-auth] UID: ${uid} -> Matricula: ${matricula} | Acesso a area de membro: ${hasAccess}`);
   }
-  
+
   if (mismatches.length > 0) {
-    console.warn("⚠️ Inconsistências encontradas:");
+    console.warn("[diagnose-auth] Inconsistencias encontradas:");
     console.table(mismatches);
   } else {
-    console.log("✨ Nenhuma inconsistência de mapeamento encontrada.");
+    console.log("[diagnose-auth] Nenhuma inconsistencia de mapeamento encontrada.");
   }
 }, 30000); // 30s timeout

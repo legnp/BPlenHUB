@@ -47,7 +47,7 @@ export function StageOverviewCard({ stage, className }: StageOverviewCardProps) 
 
       <div className="space-y-6">
         <div className="p-6 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-primary)]/50 border-l-4 border-l-[var(--accent-primary)] shadow-sm">
-          <p className="text-xs font-bold text-[var(--text-primary)] mb-2 italic">"{stage.title}"</p>
+          <p className="text-xs font-bold text-[var(--text-primary)] mb-2 italic">&quot;{stage.title}&quot;</p>
           <p className="text-[var(--text-secondary)] text-xs leading-relaxed opacity-80">
             {stage.description}
           </p>

@@ -978,7 +978,7 @@ export default function ProgramacaoResumo() {
                         </div>
                         {review.feedback && (
                           <p className="text-[10px] text-[var(--text-primary)] font-medium leading-relaxed italic pl-9">
-                            "{review.feedback}"
+                            &quot;{review.feedback}&quot;
                           </p>
                         )}
                       </div>

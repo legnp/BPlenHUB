@@ -56,7 +56,7 @@ export function SocialFeedView({ posts }: SocialFeedViewProps) {
 
   // Função genérica de filtragem e ordenação
   const processPosts = (items: SocialPost[]) => {
-    let filtered = items.filter(post => {
+    const filtered = items.filter(post => {
       const searchMatch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           post.summary.toLowerCase().includes(searchTerm.toLowerCase());
       const platMatch = platformFilter === 'all' || post.platform === platformFilter;

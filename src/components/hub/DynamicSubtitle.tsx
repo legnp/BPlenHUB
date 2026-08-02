@@ -42,7 +42,7 @@ export function DynamicSubtitle() {
           className="text-center"
         >
           <p className="text-gray-400 italic text-lg lg:text-xl font-light tracking-wide px-4">
-            "{QUOTES[index].text}"
+            &quot;{QUOTES[index].text}&quot;
           </p>
           <p className="text-gray-500 text-sm mt-1 uppercase tracking-widest font-medium">
             {QUOTES[index].author}

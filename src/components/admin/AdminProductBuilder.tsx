@@ -800,7 +800,7 @@ function DeliveryStepsForm({ product, setProduct }: ProductFormProps) {
 
        {availableOptions.length === 0 && (
          <div className="p-4 bg-yellow-500/10 text-yellow-500 rounded-xl text-[10px] font-bold">
-           Nenhuma funcionalidade ativada. Ative Pesquisas, Formulários ou Agendamentos na aba "Funcionalidades" primeiro.
+           Nenhuma funcionalidade ativada. Ative Pesquisas, Formulários ou Agendamentos na aba &quot;Funcionalidades&quot; primeiro.
          </div>
        )}
 
