@@ -61,6 +61,59 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
   mata 107 de 139 sem tocar em produto; (3) `hub/page.tsx` com plano proprio, por ser
   gating de sessao; (4) o resto do `src/`, que e majoritariamente cosmetico.
 
+### Passo 2 executado (mesma branch) — 139 -> 20 erros
+
+- `scripts/` recebeu **override** (nao `globalIgnores`): `no-require-imports` desligado
+  so para `scripts/**/*.{js,cjs}`. Sao utilitarios que rodam direto no Node, fora do
+  bundle do Next, e CommonJS ali e legitimo. Escolhido override em vez de ignorar a
+  pasta inteira para que as demais regras — Zero-Any inclusive — continuem valendo
+  nela. `scratch_*` da raiz entrou no `globalIgnores` (mesma natureza de `scratch/`).
+- `scripts/diagnose_auth.test.ts`: tinha `any[]` explicito (violacao da regra 1,
+  inegociavel) e emoji nos logs (regra 2). Ambos corrigidos.
+- Triviais: 10 `no-unescaped-entities` (aspas literais em texto JSX -> `&quot;`, em 5
+  arquivos) e 1 `prefer-const`.
+- Type-check, 345 testes e build verdes.
+
+### Os 20 erros restantes — por que pararam aqui
+
+Nenhum e cosmetico; todos exigem decisao caso a caso. **Correcao da estimativa
+anterior**, que dizia "majoritariamente cosmetico" — nao e:
+
+- **9 `set-state-in-effect`.** Cinco deles (`CvResumoEditor`, `CvContactFilter`,
+  `CvEducationFilter`, `CvExperienceFilter`, `CvBusinessCardGenerator`) NAO sao
+  espelhamento de prop como era o `CascadedSelect`: sao **seeding do campo a partir do
+  CV mestre** e chamam `onChange` de dentro do efeito, ou seja, escrevem na resposta da
+  survey. Refatorar muda comportamento real de preenchimento automatico — risco de
+  campo deixar de pre-preencher ou de sobrescrever edicao do usuario. Precisa de
+  entendimento do contrato de seeding antes, nao de conversao mecanica. Os outros 4
+  estao em `admin/marketing`, `hub/journey/[stepId]` (2) e `MemberJourneyHero`.
+- **5 `purity`** em `ConfettiCheckbox.tsx`: `Math.random()` chamado durante o render
+  para gerar a trajetoria de cada particula. A correcao correta e mover o sorteio para
+  o momento em que a particula entra no estado, passando a trajetoria junto. Preserva
+  comportamento se bem feito; e refactor da animacao, nao ajuste pontual.
+- **4 `rules-of-hooks`** em `hub/page.tsx` — ver plano abaixo.
+- **2 diversos**: `immutability` em `admin/partners` e `preserve-manual-memoization`
+  em `MemberJourneyHero`.
+
+### Plano proposto para `hub/page.tsx` (aguardando aprovacao)
+
+Problema: `if (!user && !loading) return null;` na linha 22 esta ANTES dos quatro hooks
+das linhas 23-63. A contagem de hooks muda conforme o estado de auth; como o React
+guarda estado de hook por posicao, a transicao entre os caminhos (logout: `user` vai a
+null com `loading` ja false) pode derrubar a pagina com "Rendered fewer hooks than
+expected".
+
+Correcao proposta (minima, sem tocar na regra de acesso): mover o `return null` para
+DEPOIS de todos os hooks. Os `useState`/`useEffect` passam a ser sempre chamados, na
+mesma ordem, e o guard vira apenas decisao de renderizacao. O efeito da linha 29 ja
+trata `!user` internamente (`setHasCompletedSurvey(null); return;`), entao rodar com
+usuario ausente nao dispara leitura indevida no banco. Nenhuma mudanca em quem pode ou
+nao ver a pagina.
+
+Risco: baixo, mas o arquivo esta na lista de gating de identidade/sessao do CLAUDE.md,
+entao nao foi tocado sem aval. Validacao sugerida no preview: entrar, sair (logout) e
+reentrar, confirmando que a pagina nao quebra na transicao.
+
 ## [2026-08-02] Terceiro e-mail da transferencia (equipe) + limpeza de desvios do padrao V01
 
 - Pedido da Gestora: a transferencia de conta deve disparar TRES e-mails — origem,
