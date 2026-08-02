@@ -5,7 +5,7 @@ import nextTs from "eslint-config-next/typescript";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
-  // Governança BPlen: Política Zero-Any 🛡️
+  // Governanca BPlen: Politica Zero-Any
   {
     rules: {
       "@typescript-eslint/no-explicit-any": "error",
@@ -18,6 +18,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Investigacao ad-hoc e descartavel (CLAUDE.md): nao versionada e fora do
+    // padrao de producao — nao faz sentido aplicar as regras do produto nela.
+    "scratch/**",
   ]),
 ]);
 

@@ -24,6 +24,43 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-02] Lint: primeiro passo para a regra 5 + levantamento da divida real
+
+- Contexto: ao validar a entrega dos e-mails de transferencia, descobriu-se que
+  `npm run check` nao fecha verde na `main` (regra 5 do CLAUDE.md violada). A Gestora
+  pediu o resumo e aprovou uma correcao em tres frentes.
+- Feito (branch `fix/lint-verde-regra5`): (a) `scratch/**` no `globalIgnores` do
+  `eslint.config.mjs` + emoji removido do comentario da politica Zero-Any (regra 2);
+  (b) `CascadedSelect.tsx` — `selectedPrimary` deriva da prop no render em vez de ser
+  estado sincronizado por efeito; (c) `CvAudioRecorder.tsx` — `loadAudioDevices` movida
+  para antes do efeito, em `useCallback` com deps vazias.
+- Sobre o (b): o componente e controlado e tem um unico consumidor (`SurveyEngine`,
+  campo `type: "cascaded"`, usado em 2 questoes da survey de check-in), que sempre
+  devolve o valor novo pela prop. A expressao derivada e identica a que o efeito
+  gravava, entao a mudanca e equivalente — e corrige de quebra uma defasagem real:
+  os botoes do nivel 1 liam de `value.primary` e o nivel 2 lia do estado, atualizado
+  so no efeito seguinte.
+- **Correcao de escopo:** o primeiro diagnostico (registrado na entrada anterior)
+  falou em "2 arquivos de produto" — foi subdimensionado, por leitura de saida
+  truncada. O levantamento completo aponta **139 erros de lint** no repo:
+  - **107** `no-require-imports` — `scripts/*.js` (versionados, CommonJS legitimo) e
+    `scratch_*.js` na raiz (locais, ignorados pelo git). Nao e defeito de produto:
+    e a config do ESLint tratando script utilitario como codigo de app.
+  - **31 em `src/`, em 17 arquivos**: 10 `no-unescaped-entities` (cosmetico), 9
+    `set-state-in-effect`, 5 `purity`, 4 `rules-of-hooks`, 3 diversos.
+- **Achado grave (nao corrigido — precisa de aprovacao):** os 4 `rules-of-hooks` estao
+  todos em `src/app/hub/page.tsx`. A linha 22 faz `if (!user && !loading) return null;`
+  ANTES dos `useState`/`useEffect` das linhas 23-63. Isso viola as Regras dos Hooks: a
+  quantidade de hooks chamados muda conforme o estado de auth, e como o React guarda
+  estado de hook por posicao, a transicao entre os dois caminhos (ex.: logout, quando
+  `user` vai a null com `loading` false) pode derrubar a pagina com "Rendered fewer
+  hooks than expected". E a pagina de entrada do hub, e o arquivo esta na lista de
+  gating de identidade/sessao do CLAUDE.md — nao mexer sem plano aprovado.
+- Proposta de sequencia para fechar a regra 5: (1) esta branch; (2) decidir a config do
+  ESLint para `scripts/` (ou `globalIgnores`, ou override permitindo CommonJS la) —
+  mata 107 de 139 sem tocar em produto; (3) `hub/page.tsx` com plano proprio, por ser
+  gating de sessao; (4) o resto do `src/`, que e majoritariamente cosmetico.
+
 ## [2026-08-02] Terceiro e-mail da transferencia (equipe) + limpeza de desvios do padrao V01
 
 - Pedido da Gestora: a transferencia de conta deve disparar TRES e-mails — origem,

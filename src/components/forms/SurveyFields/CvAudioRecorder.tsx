@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Mic, Square, Play, Pause, RotateCcw } from "lucide-react";
 
 export function CvAudioRecorder() {
@@ -18,6 +18,24 @@ export function CvAudioRecorder() {
   const audioChunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
+
+  // Declarada ANTES do efeito que a consome (o efeito abaixo a chama; manter a
+  // ordem evita leitura de binding ainda nao inicializado).
+  const loadAudioDevices = useCallback(async () => {
+    try {
+      const allDevices = await navigator.mediaDevices.enumerateDevices();
+      const audioInputs = allDevices.filter((d) => d.kind === "audioinput");
+      setDevices(audioInputs);
+      if (audioInputs.length > 0) {
+        setSelectedDeviceId((prev) => {
+          const exists = audioInputs.some((d) => d.deviceId === prev);
+          return exists ? prev : audioInputs[0].deviceId;
+        });
+      }
+    } catch (err) {
+      console.error("Erro ao listar dispositivos de audio:", err);
+    }
+  }, []);
 
   useEffect(() => {
     // Detect initial permission status and load devices if already granted
@@ -41,23 +59,7 @@ export function CvAudioRecorder() {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, []);
-
-  const loadAudioDevices = async () => {
-    try {
-      const allDevices = await navigator.mediaDevices.enumerateDevices();
-      const audioInputs = allDevices.filter((d) => d.kind === "audioinput");
-      setDevices(audioInputs);
-      if (audioInputs.length > 0) {
-        setSelectedDeviceId((prev) => {
-          const exists = audioInputs.some((d) => d.deviceId === prev);
-          return exists ? prev : audioInputs[0].deviceId;
-        });
-      }
-    } catch (err) {
-      console.error("Erro ao listar dispositivos de audio:", err);
-    }
-  };
+  }, [loadAudioDevices]);
 
   const requestMicrophonePermission = async () => {
     try {

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { ChoiceButton } from "@/components/ui/ChoiceButton";
 import { InputGlass } from "@/components/ui/InputGlass";
 
@@ -26,17 +26,14 @@ interface CascadedSelectProps {
 }
 
 export function CascadedSelect({ options, value, onChange, labels }: CascadedSelectProps) {
-  const [selectedPrimary, setSelectedPrimary] = useState<Option | null>(
-    options.find(o => o.value === value?.primary) || null
-  );
-
-  useEffect(() => {
-    setSelectedPrimary(options.find(o => o.value === value?.primary) || null);
-  }, [value?.primary, options]);
+  // Derivado da prop durante o render — o componente e controlado pelo pai, que
+  // sempre devolve o valor novo. Antes isso era estado sincronizado por efeito, o
+  // que gerava render em cascata e podia deixar o nivel 2 defasado da prop por um
+  // render (os botoes do nivel 1 sempre leram de `value.primary`, nao do estado).
+  const selectedPrimary = options.find((o) => o.value === value?.primary) || null;
 
   const handlePrimaryChange = (opt: Option) => {
-    setSelectedPrimary(opt);
-    onChange({ 
+    onChange({
       primary: opt.value, 
       secondary: "",
       primaryOther: opt.value === "Outros" ? value?.primaryOther : undefined 
