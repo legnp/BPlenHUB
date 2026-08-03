@@ -24,6 +24,42 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-03] Chat de planejamento — reconciliação: expansão de autenticação CONCLUÍDA (Fases 0/1/1b/2/3)
+
+- Chat/sessão: chat de planejamento. **Docs-only, sem tocar código.** Confirmado
+  contra git (Lição 45): `main == origin/main == 1e8c5be`; **todas as fases da
+  expansão de auth estão na `main`** (`git merge-base --is-ancestor` de
+  `5972bec`/`e9d32f5`/`e470e36`/`c630097`/`7c9bf3d` = SIM). Reconciliação feita na
+  `main` (a sessão estava na branch WIP `feat/drive-coverage-surveys`, 1 commit à
+  frente e sem tocar docs de auditoria; branch devolvida ao fim).
+- Contexto reconciliado (entregue e **validado em produção 2026-08-01**, ver
+  entradas de execução abaixo e `AUTH-PROVIDERS-EXPANSION.md` §13-14):
+  - **Fase 0/1:** `/entrar` (Google + Microsoft + magic link real via Admin SDK +
+    Resend), `returnTo` unificado (proxy `x-bplen-pathname` + layouts) com
+    sanitização same-origin, `signInWith` genérico + vínculo
+    `account-exists-with-different-credential`, suíte de não-regressão de
+    identidade (BUG-032/106), captura best-effort de `origin/provider`.
+  - **Fase 1b:** trava de CPF (`_CpfIndex/{cpfHash}`, backfill feito; `BP-002` =
+    duplicata de teste marcada).
+  - **Fase 2:** gate de Boas-vindas (consentimento LGPD Termos+Privacidade+18,
+    `User/{matricula}/User_Consent` versionado com IP/geo/dispositivo, trava no
+    `HubShell`; `CONSENT_VERSION="2026-06-21"`).
+  - **Fase 3:** ferramenta admin de transferência de conta (aba Autenticações;
+    trava de segurança não sobrescreve conta com dados; bug-fix: remove TODOS os
+    `_AuthMap` antigos da origem, não por `User.uid` stale).
+- Reconciliação aplicada: **grupo 4 do `00-PLAN.md`** — item da expansão movido de
+  "guardado/pós-auditoria" para **CONCLUÍDO**; `origin` idem (absorvido pela Fase
+  0/1). Novo **grupo 4b** com as 5 **pendências operacionais não-código**
+  (textos legais + bump `CONSENT_VERSION`; limpar `BP-002`; renovar segredo Azure;
+  entregabilidade Resend/magic link caiu em spam; fusão de contas ativas segue
+  manual). Bullet de entrega adicionado em "Onde a auditoria está". `DASHBOARD.md`
+  (nota). **Feature fora da grade** (como aba de Recepção e e-mail V01); `BUGS.md`
+  inalterado (sem bug de auth aberto). Follow-ups guardados válidos: `T-04`
+  (Sentry) e onda 3 do cleanup de `any`.
+- Nota: há trabalho de execução mais recente na `main`/branch WIP não relacionado
+  a auth (tipos de evento, BUG-116/117/118, modularização da Jornada, drive-coverage)
+  — fora do escopo deste pedido, não reconciliado aqui.
+
 ## [2026-08-03] Tipos de evento: estado real da migração (levantamento a pedido da Gestora)
 
 - A Gestora suspeitou que o enxugamento de tipos de evento "talvez ainda esteja confuso no

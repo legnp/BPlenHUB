@@ -25,7 +25,19 @@
 > registro permanente e completo de toda sessão está em `LOG.md`, que nunca foi
 > editado e continua a fonte primária de história.
 >
-> **Última atualização:** 2026-07-30 (chat de planejamento — **reconciliação do
+> **Última atualização:** 2026-08-03 (chat de planejamento — **reconciliação da
+> expansão de autenticação, CONCLUÍDA em produção 2026-08-01**). Fases 0/1/1b/2/3
+> entregues e validadas ao vivo (`AUTH-PROVIDERS-EXPANSION.md`): página `/entrar` (Google +
+> Microsoft + magic link), `returnTo` unificado same-origin, trava de CPF
+> (`_CpfIndex`), gate de Boas-vindas (consentimento LGPD versionado), ferramenta
+> admin de transferência de conta. **Fora da grade** de fases/tracks/bugs —
+> reconhecida em "Estado da auditoria" do `00-PLAN.md`, sem item graduado. **Grupo
+> 4b** (novo) lista as pendências operacionais não-código (textos legais +
+> `CONSENT_VERSION`, limpar `BP-002`, renovar segredo Azure, entregabilidade
+> Resend/magic link, fusão manual de contas ativas). Confirmado contra git: auth
+> na `main` (`1e8c5be`); `BUGS.md` inalterado (sem bug de auth aberto).
+>
+> **Reconciliação anterior:** 2026-07-30 (chat de planejamento — **reconciliação do
 > Padrão de E-mail BPlen V01**). Redesign do template global transacional entregue
 > em produção (PRs #165/#166, `EMAIL-DESIGN-V01.md`): motor renomeado
 > (`email-layout.ts`/`buildEmailLayout`, depreciando "soberano"), fita de acento

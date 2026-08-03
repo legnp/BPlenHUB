@@ -1632,7 +1632,7 @@ esquecida.
 
 ## Estado da auditoria e próximos itens de execução
 
-*(Seção viva — atualizar a cada reconciliação geral. Última: 2026-07-30.)*
+*(Seção viva — atualizar a cada reconciliação geral. Última: 2026-08-03.)*
 
 ### Onde a auditoria está
 
@@ -1692,6 +1692,20 @@ sem decisão pendente ou adiados de propósito.
   **Follow-ups (buckets 2 e 3, PRs próprios):** 2 strings de UI com "Soberania"
   (uma, `ServiceDeliveryView.tsx:155`, também vaza "Google Drive") e ~100
   comentários/logs internos com "soberan*".
+- **Expansão de autenticação — ENTREGUE E VALIDADA EM PRODUÇÃO** (2026-08-01,
+  Fases 0/1/1b/2/3, `AUTH-PROVIDERS-EXPANSION.md`). Página `/entrar` (Google +
+  Microsoft + magic link real via Admin SDK + Resend), `returnTo` unificado
+  (proxy `x-bplen-pathname` + layouts) com sanitização same-origin, `signInWith`
+  genérico + fluxo de vínculo `account-exists-with-different-credential`, suíte
+  de não-regressão de identidade (BUG-032/106). **Fase 1b:** trava de CPF
+  (`_CpfIndex/{cpfHash}`, backfill feito). **Fase 2:** gate de Boas-vindas
+  (consentimento LGPD Termos+Privacidade+18, `User/{matricula}/User_Consent`
+  versionado com IP/geo/dispositivo, trava no `HubShell`). **Fase 3:** ferramenta
+  admin de transferência de conta (aba Autenticações, sem sobrescrever conta com
+  dados; fusão de contas ativas segue manual). Config de console feita pela
+  Gestora (Firebase linking, Microsoft/Azure, magic link, domínios). **Fora da
+  grade** de fases/tracks/bugs (mesma natureza da aba de Recepção e do e-mail
+  V01). **Pendências operacionais** (não-código) no grupo 4b da lista priorizada.
 
 ### Lista de validação humana pendente (Caminho B — decisão da Gestora, 2026-07-28)
 
@@ -1766,30 +1780,27 @@ a auditoria segue aberta.
      auditoria.
    - Momento 2 do `T-01` (Blaze, `Networking_Directory`, paginação com busca
      externa, provedores externos).
-   - **Captura de `origin` na fonte da autenticação** (convite/hub/futuras) —
-     para segmentar e-mail de lembrete a quem autenticou e não completou a
-     Recepção. A origem **não é dado gravado hoje**; fazê-lo à prova de futuras
-     origens exige um campo `origin` explícito **no momento em que a identidade
-     é cunhada** = write novo, **forward-only** (não backfilla quem já existe),
-     tocando o fluxo de identidade = área sensível → plano+aprovação. A Gestora
-     diferiu para outra sessão (2026-07-29). Guardado como o `T-04`; detalhe em
-     `AUTH-TRACKING-DESIGN.md` seção 8.3. O público-alvo do lembrete já é
-     visível pelos estágios do funil sem depender da origem. **Absorvido pela
-     expansão de autenticação abaixo** (capturar `provider/origin` junto).
-   - **Expansão dos meios de autenticação + página de login + consentimento**
-     (`AUTH-PROVIDERS-EXPANSION.md`, plano de 2026-07-30). Adicionar **Microsoft**
-     + **fluxo próprio via magic link** (sem senha, sem "esqueci a senha"),
-     mantendo Google; **sem Apple** (custo) **e sem Discord** (não-nativo).
-     Unicidade de conta em 2 camadas: linking do Firebase por e-mail ("uma conta
-     por e-mail" + fluxo de vínculo) + **trava de CPF** no cadastro (hash, bloqueio
-     + contato, sem merge automático). Nova **página `/entrar`** (protótipo dark
-     aprovado, herda o tema do home) com **`returnTo` unificado** e validação
-     same-origin (fecha a lacuna dos `redirect("/")` sem destino). **Gate de
-     "Boas-vindas"** (primeiro acesso, logo após o 1º login) com aceite versionado
-     de Termos/Privacidade/18+ (opt-in, LGPD) + banner de cookies global. **Área
-     sensível (identidade/sessão + legal), forward-only, por fases, com suíte de
-     não-regressão dos invariantes BUG-032/106.** Custo de plataforma zero (tudo
-     Firebase Auth clássico). Terminologia: "Boas-vindas" (não "onboarding").
+   - ~~Captura de `origin` na fonte da autenticação~~ e ~~Expansão dos meios de
+     autenticação + página de login + consentimento~~ — **CONCLUÍDAS E VALIDADAS
+     EM PRODUÇÃO (2026-08-01)**, ver o bloco de entregas fora-de-grade em "Onde a
+     auditoria está" e as **Pendências operacionais** logo abaixo. A captura de
+     `origin/provider` foi absorvida pela Fase 0/1 (anota `_AuthMap` existente,
+     best-effort, nunca cria mapeamento).
+
+**4b. Pendências OPERACIONAIS da expansão de autenticação (não-código; radar
+   da Gestora, fora da grade):**
+   - **Revisar os textos legais** de Termos/Privacidade e **bumpar
+     `CONSENT_VERSION`** (hoje `"2026-06-21"`, retroativa em `config/legal-pages.ts`)
+     — ao mudar a versão, o gate de Boas-vindas reaparece no próximo acesso.
+   - **Limpar a conta de teste `BP-002`** (`BP-002-PF-260331`) — é a duplicata de
+     CPF marcada em `duplicateMatriculas` no backfill (dona real = `BP-005`).
+   - **Renovar o segredo do app Azure AD** antes de expirar — se expirar, o login
+     com **Microsoft para de funcionar**.
+   - **Melhorar a entregabilidade do Resend** (SPF/DKIM/domínio) — no teste o
+     e-mail do **magic link caiu em spam**.
+   - **Fusão de dados entre 2 contas ativas** permanece **manual/caso-a-caso** por
+     segurança (só a **transferência** — trocar quem loga, sem migrar dado — é
+     automática, via a ferramenta de admin da Fase 3).
 
 ### Recomendação de por onde começar
 
