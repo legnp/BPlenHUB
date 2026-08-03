@@ -3,12 +3,13 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Users, Fingerprint } from "lucide-react";
+import { Users, Fingerprint, Archive } from "lucide-react";
 
 /**
  * Sub-abas da secao de Pessoas do admin (mesmo padrao do FSTabs).
- * "Membros" -> /admin/users (cadastros concluidos) e
- * "Autenticacoes" -> /admin/users/autenticacoes (funil de onboarding).
+ * "Membros" -> /admin/users (cadastros concluidos),
+ * "Autenticacoes" -> /admin/users/autenticacoes (funil de onboarding) e
+ * "Acervo" -> /admin/users/acervo (resgate retroativo das respostas).
  */
 export function UsersTabs() {
   const pathname = usePathname();
@@ -17,6 +18,7 @@ export function UsersTabs() {
   const tabs = [
     { name: "Membros", path: "/admin/users", icon: <Users size={16} /> },
     { name: "Autenticacoes", path: "/admin/users/autenticacoes", icon: <Fingerprint size={16} /> },
+    { name: "Acervo", path: "/admin/users/acervo", icon: <Archive size={16} /> },
   ];
 
   return (
