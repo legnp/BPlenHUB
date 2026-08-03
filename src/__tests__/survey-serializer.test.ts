@@ -190,6 +190,21 @@ describe("buildGenericSurveyRow — a garantia de que nada se perde", () => {
     expect(headers).toContain("comment");
   });
 
+  it("usa a data original do envio quando informada", () => {
+    // Invariante do resgate retroativo: uma planilha dizendo que tudo foi
+    // respondido no dia do backfill seria um historico falso.
+    const original = new Date(2026, 2, 15, 10, 30);
+    const { rowData } = buildGenericSurveyRow(
+      "survey_teste",
+      { objetivo: "x" },
+      "BP-001-PF-260101",
+      withFields,
+      original
+    );
+
+    expect(rowData[0]).toBe(original.toLocaleString("pt-BR"));
+  });
+
   it("desambigua rotulos repetidos para nao gerar duas colunas iguais", () => {
     const duplicado = config({
       steps: [

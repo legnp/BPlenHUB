@@ -124,11 +124,16 @@ export function buildGenericSurveyRow(
   surveyId: string,
   responses: Record<string, SurveyValue>,
   matricula: string,
-  config?: SurveyConfig
+  config?: SurveyConfig,
+  submittedAt?: Date
 ): GenericSurveyRow {
   const headers: string[] = [...FIXED_HEADERS];
   const rowData: (string | number | boolean | null)[] = [
-    new Date().toLocaleString("pt-BR"),
+    // Na retroacao vale a data ORIGINAL do envio, nao a do resgate: uma planilha
+    // dizendo que tudo foi respondido no dia do backfill seria um historico falso.
+    // O envio ao vivo nao tem `submittedAt` resolvido ainda (serverTimestamp), e
+    // usa o relogio do momento — que e o mesmo instante, na pratica.
+    (submittedAt ?? new Date()).toLocaleString("pt-BR"),
     matricula,
     config?.title || surveyId,
   ];

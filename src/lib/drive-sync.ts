@@ -1,6 +1,6 @@
 import { getDriveClient, getSheetsClient } from "@/lib/google-auth";
 import { serverEnv } from "@/env";
-import { ensureFolder, getOrCreateSpreadsheet, syncDataToSheet, appendDataToSheet, getStandardFolderWithHealing, uploadFileToDrive, DRIVE_FOLDERS, LEGACY_FOLDERS } from "@/lib/drive-utils";
+import { ensureFolder, getOrCreateSpreadsheet, syncDataToSheet, appendDataToSheet, getFirstColumnValues, getStandardFolderWithHealing, uploadFileToDrive, DRIVE_FOLDERS, LEGACY_FOLDERS } from "@/lib/drive-utils";
 
 /**
  * BPlen HUB — Drive Sync Service (🏁)
@@ -22,6 +22,15 @@ interface SurveySyncConfig {
    * `2.Cadastro`. Chamadas curadas nao passam este campo e seguem como antes.
    */
   targetFolderOverride?: string;
+  /**
+   * Nao anexa se a primeira coluna ja contiver este valor.
+   *
+   * Usado pelo resgate retroativo, cuja chave e o carimbo de tempo do envio: sem
+   * isto, rodar o backfill duas vezes duplicaria todo o historico do usuario. O
+   * envio ao vivo nao passa este campo — ali cada envio e um fato novo, mesmo que
+   * identico ao anterior.
+   */
+  skipIfFirstColumnMatches?: string;
 }
 
 /**
@@ -32,7 +41,7 @@ interface SurveySyncConfig {
  * @returns O ID da planilha criada ou atualizada.
  */
 export async function syncSurveyToUserDrive(config: SurveySyncConfig) {
-  const { matricula, surveyTitle, headers, rowData, targetFolderOverride } = config;
+  const { matricula, surveyTitle, headers, rowData, targetFolderOverride, skipIfFirstColumnMatches } = config;
 
   try {
     const drive = await getDriveClient();
@@ -57,6 +66,15 @@ export async function syncSurveyToUserDrive(config: SurveySyncConfig) {
 
     // 3. Criar/Atualizar Planilha
     const { id: spreadsheetId } = await getOrCreateSpreadsheet(drive, targetFolderId, `${surveyTitle} - ${matricula}`);
+
+    // Guarda de reexecucao do resgate retroativo (ver `skipIfFirstColumnMatches`).
+    if (skipIfFirstColumnMatches) {
+      const existing = await getFirstColumnValues(sheets, spreadsheetId);
+      if (existing.includes(skipIfFirstColumnMatches.trim())) {
+        console.log(`[DriveSync] Linha ja presente, nada a anexar: ${surveyTitle} -> ${matricula}`);
+        return spreadsheetId;
+      }
+    }
 
     // 4. ANEXAR (nao sobrescrever) — BUG-110.
     //

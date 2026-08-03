@@ -329,6 +329,31 @@ export async function appendDataToSheet(
 }
 
 /**
+ * Valores da primeira coluna de uma planilha (sem o cabecalho).
+ *
+ * Serve a idempotencia do resgate retroativo: a chave de cada linha e o carimbo
+ * de tempo na coluna A, entao rodar o backfill duas vezes nao duplica historico.
+ * Preferido a marcar o documento no Firestore, porque a verdade sobre o que ja
+ * esta na planilha e a propria planilha.
+ */
+export async function getFirstColumnValues(
+  sheets: sheets_v4.Sheets,
+  spreadsheetId: string
+): Promise<string[]> {
+  const spreadsheet = await sheets.spreadsheets.get({ spreadsheetId });
+  const sheetTitle = spreadsheet.data.sheets?.[0].properties?.title || "Sheet1";
+
+  const response = await sheets.spreadsheets.values.get({
+    spreadsheetId,
+    range: `${sheetTitle}!A:A`,
+  });
+
+  const rows = response.data.values || [];
+  // Descarta o cabecalho e normaliza para comparacao de string.
+  return rows.slice(1).map((row) => String(row?.[0] ?? "").trim());
+}
+
+/**
  * 4. Carregador de Arquivos (Mídia)
  * Realiza o upload de um arquivo binário para o Google Drive.
  */
