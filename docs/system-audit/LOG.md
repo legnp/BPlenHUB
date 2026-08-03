@@ -62,6 +62,18 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
   descasamento").
 - Validado: eslint dos arquivos tocados 0 problemas, type-check limpo, **363 testes**
   verdes (354 + 9 novos), build exit 0.
+- **Entregue e reparo APLICADO (`945ef8a` na `main`).** Ordem importou: o código subiu
+  ANTES da limpeza do dado, senão a varredura em leitura da versão antiga remarcaria as
+  dez na primeira abertura da jornada. Sonda pós-reparo: `mentocoach` com **1** sessão
+  concluída (a 1ª, a única com presença real), `overallProgress` 60 -> 44.
+  **Validado em produção pela Gestora (print):** paradas 3 a 11 voltaram a pendentes.
+- **Conferência do percentual pedida pela Gestora**, reproduzindo a fórmula do
+  `getStageTelemetry` contra o dado real — os **41%** do tooltip do MentoCoach estão
+  **corretos**: 15 checkpoints base (5 da Análise Comportamental + 10 sessões) + 2
+  instrumentos atribuídos = 17; concluídos = 7 (5 da análise + 1ª sessão + Master CV);
+  7/17 = 41%. `overallProgress` também confere: 24/55 = 44%, igual ao gravado. De quebra,
+  confirma a separação nova funcionando: as 5 surveys da análise cruzam (vieram
+  concluídas da etapa 03), as sessões não.
 
 ## [2026-08-03] Modularização de instrumentos — 4 fases (plano aprovado pela Gestora)
 
