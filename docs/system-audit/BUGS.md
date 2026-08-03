@@ -3542,6 +3542,35 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   (2026-08-03)**; corrigido como Fase 1 dessa entrega.
 - Commit/PR: branch `feat/instrumentos-modulares` (ver LOG de 2026-08-03).
 
+### BUG-118 Concluir a 1a sessao marca TODAS as sessoes do servico (MentoCoach e GDC)
+
+- Severidade: **Alto** (progresso e gating da jornada ficam falsos; o membro perde 9 de 10
+  sessões sem ter feito nenhuma)
+- Área/fase onde foi achado: teste da Gestora em produção (2026-08-03), print da trilha do
+  MentoCoach com as paradas 3 a 11 verdes após concluir só a 1ª
+- Arquivo(s) afetado(s): `src/actions/journey.ts` (`applyCrossCompletionSweep`)
+- Cenário de falha: **[CONFIRMADO por sonda read-only na base de produção]** o motor de
+  auto-conclusão cruzada casa atividades pelo par `type:referenceId`. As 10 sessões de
+  MentoCoach compartilham `referenceId="sessao-mentocoach"` (e as 10 do GDC compartilham
+  `orientacao-em-grupo`) **por design** — é o `referenceId` que identifica o TIPO de sessão
+  para casar com o evento da agenda (`getMeetingFilterKeyword`/`eventMatchesSubstep`).
+  Resultado: concluir uma sessão marca as dez. Sonda em `BP-002-PF-260331`: **10 sessões
+  concluídas** em `completedSubSteps` contra **1 único** evento "MentoCoach" com presença
+  confirmada na agenda. O mesmo vale na direção inversa: desmarcar uma desmarca as dez
+  (`forceRemoveActivityKey`).
+- **Relação com o BUG-077:** é o MESMO sintoma, por um segundo caminho independente. O
+  BUG-077 (PR #104, 2026-07-16) corrigiu a colisão pelo lado do **id** — os ids hoje são
+  únicos (`ss-meeting-sessao-mentocoach-2..11`, confirmado na sonda). Mas o sweep não usa
+  id para identidade, e sim `type:referenceId`. Na época o LOG registrou que "ninguém tinha
+  visto porque nenhum membro havia concluído uma 1ª sessão ainda" — a primeira conclusão
+  real aconteceu agora e reabriu o sintoma pelo outro caminho.
+- Alcance medido: **1 usuário** (`BP-002-PF-260331`, a conta de TESTE já marcada para
+  limpeza). Nenhum membro real afetado — a janela é a mesma do BUG-077.
+- Status: **Aberto.**
+- Decisão de execução: precisa plano + aprovação — gating de jornada e recálculo de
+  progresso. Plano apresentado à Gestora em 2026-08-03.
+- Commit/PR: —
+
 
 ---
 
