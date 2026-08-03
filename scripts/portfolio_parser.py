@@ -106,7 +106,11 @@ services_coords = {
         "price_row": 133,
         "max_inst_row": 135,
         "pix_row": 140,
-        "quotas": {"gestaoedesenvolvimento": 1, "1-to-1": 10}
+        # `1-to-1` e a moeda do agendamento AVULSO ("Agendar 1 to 1"), gasta so por
+        # evento do tipo `1-to-1`. As 10 orientacoes em grupo do GDC NAO consomem
+        # esta cota (sao `Consultoria em Grupo`). Portanto este numero e a quantidade
+        # de avulsos que o servico inclui — 11, decisao da Gestora em 2026-08-03.
+        "quotas": {"gestaoedesenvolvimento": 1, "1-to-1": 11}
     },
     "BPL-005": {
         "title": "MentoCoach (Alta Performance)",
@@ -116,7 +120,12 @@ services_coords = {
         "price_row": 162,
         "max_inst_row": 164,
         "pix_row": 169,
-        "quotas": {"mentocoach": 1, "1-to-1": 12}
+        # ZERO e' decisao explicita da Gestora (2026-08-03), nao esquecimento: o
+        # MentoCoach nao inclui avulso. Os 12 anteriores vinham de uma ma formulacao
+        # inicial — a intencao era conceder as 10 SESSOES do programa, mas elas sao
+        # eventos `Consultoria Individual` e nunca gastaram esta cota. A chave fica
+        # gravada com 0 justamente para a decisao ficar visivel.
+        "quotas": {"mentocoach": 1, "1-to-1": 0}
     }
 }
 
@@ -155,8 +164,8 @@ package_coords = {
     "BPL-PAC-JR": {"name": "Pacote JUNIOR", "slug": "pacote-junior", "row": 8, "max_inst_row": 30, "quotas": {"posicionamentoprofissional": 1}},
     "BPL-PAC-PL": {"name": "Pacote PLENO", "slug": "pacote-pleno", "row": 9, "max_inst_row": 51, "quotas": {"posicionamentoprofissional": 1, "analisecomportamental": 1, "devolutiva-analise-comportamental": 1}},
     "BPL-PAC-SR": {"name": "Pacote SENIOR (Recomendado)", "slug": "pacote-senior", "row": 10, "max_inst_row": 74, "quotas": {"posicionamentoprofissional": 1, "analisecomportamental": 1, "devolutiva-analise-comportamental": 1, "planodecarreira": 1, "consultoria-plano-carreira": 1}},
-    "BPL-PAC-LD": {"name": "Pacote LIDER", "slug": "pacote-lider", "row": 11, "max_inst_row": 99, "quotas": {"posicionamentoprofissional": 1, "analisecomportamental": 1, "devolutiva-analise-comportamental": 1, "planodecarreira": 1, "consultoria-plano-carreira": 1, "gestaoedesenvolvimento": 1, "1-to-1": 10}},
-    "BPL-PAC-EB": {"name": "Pacote EMBAIXADOR BPLEN", "slug": "pacote-embaixador", "row": 12, "max_inst_row": 124, "quotas": {"posicionamentoprofissional": 1, "analisecomportamental": 1, "devolutiva-analise-comportamental": 1, "planodecarreira": 1, "consultoria-plano-carreira": 1, "gestaoedesenvolvimento": 1, "mentocoach": 1, "1-to-1": 22}}
+    "BPL-PAC-LD": {"name": "Pacote LIDER", "slug": "pacote-lider", "row": 11, "max_inst_row": 99, "quotas": {"posicionamentoprofissional": 1, "analisecomportamental": 1, "devolutiva-analise-comportamental": 1, "planodecarreira": 1, "consultoria-plano-carreira": 1, "gestaoedesenvolvimento": 1, "1-to-1": 11}},
+    "BPL-PAC-EB": {"name": "Pacote EMBAIXADOR BPLEN", "slug": "pacote-embaixador", "row": 12, "max_inst_row": 124, "quotas": {"posicionamentoprofissional": 1, "analisecomportamental": 1, "devolutiva-analise-comportamental": 1, "planodecarreira": 1, "consultoria-plano-carreira": 1, "gestaoedesenvolvimento": 1, "mentocoach": 1, "1-to-1": 11}}
 }
 
 for code, cfg in package_coords.items():

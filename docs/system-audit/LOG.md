@@ -24,6 +24,25 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-03] Chat de execucao — Passo 1 do descasamento: catalogo (grantedQuotas)
+
+- Decisoes da Gestora: MentoCoach **0** avulsos de 1 to 1, GDC **11**, Pacote Lider
+  **11**, Pacote Embaixador **11**. Sessoes padrao seguem 10 (MentoCoach) e 10 (GDC),
+  com o admin podendo reduzir por cliente.
+- **Correcao de uma informacao que eu havia passado errada:** eu disse que as quotas
+  vinham da planilha do portfolio e que bastava editar la. Nao vem — estao **fixas no
+  `scripts/portfolio_parser.py`** (dicts `services_coords` e `package_coords`). A
+  planilha alimenta preco, parcelas e atributos; a quota e constante de codigo.
+- Feito: 4 numeros alterados no parser, com comentario registrando a decisao no ponto
+  de aplicacao (principio da secao 8.11 do AGENDA-SYNC-DESIGN: decisao que se manifesta
+  como ausencia/zero precisa de marca positiva). Payload regenerado — `git diff` mostra
+  **exatamente 4 linhas**, nada mais.
+- **Pre-voo do `sync_live_db.js`** (que grava com `set()` sem merge, Licao do PR #104):
+  comparacao payload x banco produto a produto acusou divergencia **so** nos 4
+  `grantedQuotas` esperados. Nenhuma edicao de admin seria revertida.
+- **Sync em producao ainda NAO executado** — aguarda o aval da Gestora.
+- Nota: o deposito de cota usa `total + amount`, entao `"1-to-1": 0` e seguro (cria a
+  chave com total 0, que o `isStageEntitled` ignora por ser <= 0).
 ## [2026-08-03] Chat de planejamento — reconciliação dos itens NÃO-auth (BUG-116/117/118 + tipos de evento + Jornada + lint)
 
 - Chat/sessão: mesmo chat de planejamento, logo após a reconciliação de auth.

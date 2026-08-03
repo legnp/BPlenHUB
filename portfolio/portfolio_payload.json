@@ -625,7 +625,7 @@
     "order": 5,
     "grantedQuotas": {
       "gestaoedesenvolvimento": 1,
-      "1-to-1": 10
+      "1-to-1": 11
     },
     "targetAudiences": [
       "people",
@@ -830,7 +830,7 @@
     "order": 6,
     "grantedQuotas": {
       "mentocoach": 1,
-      "1-to-1": 12
+      "1-to-1": 0
     },
     "targetAudiences": [
       "people",
@@ -1357,7 +1357,7 @@
       "planodecarreira": 1,
       "consultoria-plano-carreira": 1,
       "gestaoedesenvolvimento": 1,
-      "1-to-1": 10
+      "1-to-1": 11
     },
     "targetAudiences": [
       "people",
@@ -1429,7 +1429,7 @@
       "consultoria-plano-carreira": 1,
       "gestaoedesenvolvimento": 1,
       "mentocoach": 1,
-      "1-to-1": 22
+      "1-to-1": 11
     },
     "targetAudiences": [
       "people",
