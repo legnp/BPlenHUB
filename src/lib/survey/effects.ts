@@ -1,4 +1,4 @@
-import { SurveyValue } from "@/types/survey";
+import { SurveyConfig, SurveyValue } from "@/types/survey";
 import { handleWelcomeSurveyEffect } from "@/actions/effects/welcome-survey";
 import { handleGestaoTempoEffect } from "@/actions/effects/gestao-tempo";
 import { handlePreferenciasAprendizadoEffect } from "@/actions/effects/preferencias-aprendizado";
@@ -22,11 +22,62 @@ import { handleCheckInEffect, handleContentFeedbackEffect, handleCVReviewEffect,
  */
 
 /**
+ * REGISTRO COMPLETO NO DRIVE (cobertura padrao).
+ *
+ * Roda para TODO survey, antes de qualquer efeito curado. Ate aqui a gravacao no
+ * Drive dependia de o `surveyId` estar no `switch` abaixo: quem nao estivesse
+ * caia no `default`, que apenas logava um aviso — o dado ficava so no Firestore e
+ * nunca aparecia na pasta do usuario. Eram 18 dos 26 surveys, entre eles Carreira
+ * e PDI inteiros.
+ *
+ * Os handlers curados continuam existindo e nao foram tocados, mas sao projecoes
+ * PARCIAIS (o de check-in grava 13 colunas de ~36 campos). Por isso o registro
+ * completo e universal, e nao um fallback: o Drive e a copia de seguranca
+ * independente da plataforma, entao ele precisa conter a resposta inteira.
+ *
+ * Fail-soft por decisao: falha de Drive nao pode derrubar o envio ja gravado no
+ * Firestore — mesmo contrato dos handlers curados.
+ */
+async function syncCompleteSurveyRecord(
+  surveyId: string,
+  responses: Record<string, SurveyValue>,
+  matricula: string,
+  config?: SurveyConfig
+) {
+  try {
+    const { buildGenericSurveyRow } = await import("@/lib/survey/survey-serializer");
+    const { syncSurveyToUserDrive } = await import("@/lib/drive-sync");
+    const { DRIVE_FOLDERS } = await import("@/lib/drive-utils");
+
+    const { headers, rowData } = buildGenericSurveyRow(surveyId, responses, matricula, config);
+
+    await syncSurveyToUserDrive({
+      matricula,
+      surveyTitle: `${config?.title || surveyId} (Respostas completas)`,
+      headers,
+      rowData,
+      targetFolderOverride: DRIVE_FOLDERS.SURVEYS,
+    });
+  } catch (err) {
+    console.error(`[SurveyEffects] Falha ao gravar registro completo (${surveyId}):`, err);
+  }
+}
+
+/**
  * DESPACHANTE DE EFEITOS COLATERAIS ⚡
  * Roteia a execução para o módulo responsável por cada Survey.
  */
-export async function handleSurveySideEffects(surveyId: string, responses: Record<string, SurveyValue>, matricula: string, userUid?: string) {
+export async function handleSurveySideEffects(
+  surveyId: string,
+  responses: Record<string, SurveyValue>,
+  matricula: string,
+  userUid?: string,
+  config?: SurveyConfig
+) {
   console.log(`🔥 [SurveyEffects] Dispatching: "${surveyId}" para ${matricula}`);
+
+  // Cobertura padrao: independe do survey estar mapeado no switch.
+  await syncCompleteSurveyRecord(surveyId, responses, matricula, config);
 
   try {
     switch (surveyId) {
@@ -72,7 +123,10 @@ export async function handleSurveySideEffects(surveyId: string, responses: Recor
           const tituloAvaliacao = String(responses.title || `Artigo/Post ID: ${surveyId.replace("content_evaluation_", "")}`);
           await handleContentFeedbackEffect(responses, matricula, `Avaliação - ${tituloAvaliacao}`);
         } else {
-          console.warn(`⚠️ [SurveyEffects] Nenhum efeito colateral mapeado para: ${surveyId}`);
+          // Sem handler curado: o registro completo acima ja garantiu a copia no
+          // Drive. O aviso permanece so como sinal de que ainda nao ha curadoria
+          // de rotulos para este survey — nao indica mais perda de dado.
+          console.log(`[SurveyEffects] Sem efeito curado para "${surveyId}" — registro completo gravado.`);
         }
     }
   } catch (globalErr) {

@@ -2,7 +2,7 @@
 
 import { getAdminDb } from "@/lib/firebase-admin";
 import { getDriveClient } from "@/lib/google-auth";
-import { ensureFolder, uploadFileToDrive, makeFilePublic } from "@/lib/drive-utils";
+import { ensureFolder, uploadFileToDrive, makeFilePublic, getStandardFolderWithHealing, DRIVE_FOLDERS, LEGACY_FOLDERS } from "@/lib/drive-utils";
 import { requireAuth, AuthorizationError } from "@/lib/auth-guards";
 import { serverEnv } from "@/env";
 import { Readable } from "stream";
@@ -32,7 +32,15 @@ export async function updateProfileImageAction(matricula: string, base64Image: s
     const baseFolderId = serverEnv.GOOGLE_DRIVE_USUARIOS_ID;
     const categoryFolderId = await ensureFolder(drive, baseFolderId, subFolderName);
     const userFolderId = await ensureFolder(drive, categoryFolderId, matricula);
-    const identidadFolderId = await ensureFolder(drive, userFolderId, "Identidade");
+    // Padrao de governanca com cura da pasta legada ("Identidade" -> "1.Identidade").
+    // Criar a legada direto desfazia o rename feito por `getStandardFolderWithHealing`
+    // em outros fluxos, e o conteudo do usuario acabava partido entre duas pastas.
+    const identidadFolderId = await getStandardFolderWithHealing(
+      drive,
+      userFolderId,
+      DRIVE_FOLDERS.IDENTIDADE,
+      LEGACY_FOLDERS.IDENTIDADE
+    );
     
     // 3. Converter Base64 para Buffer
     const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, "");

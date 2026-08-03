@@ -3,7 +3,7 @@
 import { getAdminDb } from "@/lib/firebase-admin";
 import { requireAuth, requireAdmin, AuthorizationError } from "@/lib/auth-guards";
 import { getDriveClient } from "@/lib/google-auth";
-import { ensureFolder, uploadFileToDrive, getEventDriveFolder } from "@/lib/drive-utils";
+import { ensureFolder, uploadFileToDrive, getEventDriveFolder, getStandardFolderWithHealing, DRIVE_FOLDERS, LEGACY_FOLDERS } from "@/lib/drive-utils";
 import { serverEnv } from "@/env";
 import { Readable } from "stream";
 import { getEventStandardSlug } from "@/lib/utils";
@@ -45,11 +45,17 @@ export async function uploadToUserDrive(formData: FormData) {
     const drive = await getDriveClient();
     const baseFolderId = serverEnv.GOOGLE_DRIVE_USUARIOS_ID;
     
-    // Caminho Hierárquico: Categoria (B2B/B2C) -> Matrícula -> 2.Documentos
+    // Caminho Hierárquico: Categoria (B2B/B2C) -> Matrícula -> 5.Documentos
+    // (com cura da pasta legada "2.Documentos", ver nota em profile.ts)
     const isPJ = matricula.includes("-PJ-");
     const categoryFolderId = await ensureFolder(drive, baseFolderId, isPJ ? "2.3.B2B" : "2.2.B2C");
     const userFolderId = await ensureFolder(drive, categoryFolderId, matricula);
-    const docsFolderId = await ensureFolder(drive, userFolderId, "2.Documentos");
+    const docsFolderId = await getStandardFolderWithHealing(
+      drive,
+      userFolderId,
+      DRIVE_FOLDERS.DOCUMENTOS,
+      LEGACY_FOLDERS.DOCUMENTOS
+    );
 
     // 4. Conversão para Stream compatível com a API Google 🔄
     const arrayBuffer = await file.arrayBuffer();
@@ -127,12 +133,17 @@ export async function uploadPostEventDocAction(formData: FormData) {
       const baseAtasFolderId = serverEnv.GOOGLE_DRIVE_ATAS_ID;
       targetFolderId = await getEventDriveFolder(drive, baseAtasFolderId, eventId, standardSlug);
     } else {
-      // Governança Individual: Categoria -> Matrícula -> 2.Documentos -> Eventos -> {StandardSlug}
+      // Governança Individual: Categoria -> Matrícula -> 5.Documentos -> Eventos -> {StandardSlug}
       const baseFolderId = serverEnv.GOOGLE_DRIVE_USUARIOS_ID;
       const isPJ = matricula.includes("-PJ-");
       const categoryFolderId = await ensureFolder(drive, baseFolderId, isPJ ? "2.3.B2B" : "2.2.B2C");
       const userFolderId = await ensureFolder(drive, categoryFolderId, matricula);
-      const docsFolderId = await ensureFolder(drive, userFolderId, "2.Documentos");
+      const docsFolderId = await getStandardFolderWithHealing(
+        drive,
+        userFolderId,
+        DRIVE_FOLDERS.DOCUMENTOS,
+        LEGACY_FOLDERS.DOCUMENTOS
+      );
       const eventsBaseFolderId = await ensureFolder(drive, docsFolderId, "Eventos");
       targetFolderId = await getEventDriveFolder(drive, eventsBaseFolderId, eventId, standardSlug);
     }

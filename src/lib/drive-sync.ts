@@ -1,6 +1,6 @@
 import { getDriveClient, getSheetsClient } from "@/lib/google-auth";
 import { serverEnv } from "@/env";
-import { ensureFolder, createSpreadsheet, getOrCreateSpreadsheet, syncDataToSheet, appendDataToSheet, getStandardFolderWithHealing, uploadFileToDrive, DRIVE_FOLDERS, LEGACY_FOLDERS } from "@/lib/drive-utils";
+import { ensureFolder, getOrCreateSpreadsheet, syncDataToSheet, appendDataToSheet, getStandardFolderWithHealing, uploadFileToDrive, DRIVE_FOLDERS, LEGACY_FOLDERS } from "@/lib/drive-utils";
 
 /**
  * BPlen HUB — Drive Sync Service (🏁)
@@ -13,6 +13,15 @@ interface SurveySyncConfig {
   surveyTitle: string;
   headers: string[];
   rowData: (string | number | boolean | null)[];
+  /**
+   * Forca a pasta de destino, ignorando a heuristica de titulo abaixo.
+   *
+   * O registro completo (serializador generico) sempre vai para `3.Surveys`: ele
+   * cobre TODOS os surveys, e varios tem "perfil" no titulo sem serem cadastro
+   * (`perfil_profissional_publico`), o que a heuristica desviaria para
+   * `2.Cadastro`. Chamadas curadas nao passam este campo e seguem como antes.
+   */
+  targetFolderOverride?: string;
 }
 
 /**
@@ -23,7 +32,7 @@ interface SurveySyncConfig {
  * @returns O ID da planilha criada ou atualizada.
  */
 export async function syncSurveyToUserDrive(config: SurveySyncConfig) {
-  const { matricula, surveyTitle, headers, rowData } = config;
+  const { matricula, surveyTitle, headers, rowData, targetFolderOverride } = config;
 
   try {
     const drive = await getDriveClient();
@@ -38,9 +47,10 @@ export async function syncSurveyToUserDrive(config: SurveySyncConfig) {
     const catFolderId = await ensureFolder(drive, baseFolderId, categoryName);
     const userFolderId = await ensureFolder(drive, catFolderId, matricula);
 
-    // Identificar destino baseado no título
-    const isCadastro = surveyTitle.toLowerCase().includes("cadastro") || surveyTitle.toLowerCase().includes("perfil");
-    const targetFolder = isCadastro ? DRIVE_FOLDERS.CADASTRO : DRIVE_FOLDERS.SURVEYS;
+    // Identificar destino baseado no título (salvo override explicito)
+    const isCadastro = !targetFolderOverride
+      && (surveyTitle.toLowerCase().includes("cadastro") || surveyTitle.toLowerCase().includes("perfil"));
+    const targetFolder = targetFolderOverride || (isCadastro ? DRIVE_FOLDERS.CADASTRO : DRIVE_FOLDERS.SURVEYS);
     const legacyFolders = isCadastro ? LEGACY_FOLDERS.CADASTRO : LEGACY_FOLDERS.SURVEYS;
 
     const targetFolderId = await getStandardFolderWithHealing(drive, userFolderId, targetFolder, legacyFolders);

@@ -66,7 +66,7 @@ export async function submitDevolutivaDisc(
     try {
       const { getDriveClient, getSheetsClient } = await import("@/lib/google-auth");
       const { serverEnv } = await import("@/env");
-      const { ensureFolder, createSpreadsheet, syncDataToSheet } = await import("@/lib/drive-utils");
+      const { ensureFolder, createSpreadsheet, syncDataToSheet, getStandardFolderWithHealing, DRIVE_FOLDERS, LEGACY_FOLDERS } = await import("@/lib/drive-utils");
 
       const drive = await getDriveClient();
       const sheets = await getSheetsClient();
@@ -76,8 +76,14 @@ export async function submitDevolutivaDisc(
       const catFolderId = await ensureFolder(drive, baseFolderId, isPJ ? "2.3.B2B" : "2.2.B2C");
       const userFolderId = await ensureFolder(drive, catFolderId, targetMatricula);
       
-      // Pasta específica para Resultados
-      const resultadosFolderId = await ensureFolder(drive, userFolderId, "2.Resultados");
+      // Pasta específica para Resultados (padrao "4.Resultados", curando a legada
+      // "2.Resultados" — ver nota em profile.ts sobre pastas partidas)
+      const resultadosFolderId = await getStandardFolderWithHealing(
+        drive,
+        userFolderId,
+        DRIVE_FOLDERS.RESULTADOS,
+        LEGACY_FOLDERS.RESULTADOS
+      );
       const discFolderId = await ensureFolder(drive, resultadosFolderId, "DISC");
       
       const { id: spreadsheetId } = await createSpreadsheet(drive, discFolderId, `Devolutiva DISC - ${targetMatricula} - ${yymm}`);

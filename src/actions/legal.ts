@@ -11,7 +11,7 @@
 import { requireAuth, AuthorizationError } from "@/lib/auth-guards";
 import { getAdminDb } from "@/lib/firebase-admin";
 import { getDriveClient } from "@/lib/google-auth";
-import { ensureFolder, uploadFileToDrive } from "@/lib/drive-utils";
+import { ensureFolder, uploadFileToDrive, getStandardFolderWithHealing, DRIVE_FOLDERS, LEGACY_FOLDERS } from "@/lib/drive-utils";
 import { serverEnv } from "@/env";
 import PDFDocument from "pdfkit";
 import path from "path";
@@ -192,11 +192,19 @@ export async function generateContractPdf(
     const drive = await getDriveClient();
     const baseFolderId = serverEnv.GOOGLE_DRIVE_USUARIOS_ID;
     
-    // Caminho Hierárquico: Categoria (B2B/B2C) -> Matrícula -> 2.Documentos
+    // Caminho Hierárquico: Categoria (B2B/B2C) -> Matrícula -> 5.Documentos
+    // Antes criava "2.Documentos" direto. Como outros fluxos curam essa pasta para
+    // o padrao (rename), o contrato seguinte recriava a legada e os documentos do
+    // mesmo usuario ficavam divididos entre duas pastas.
     const isPJ = matricula.includes("-PJ-");
     const categoryFolderId = await ensureFolder(drive, baseFolderId, isPJ ? "2.3.B2B" : "2.2.B2C");
     const userFolderId = await ensureFolder(drive, categoryFolderId, matricula);
-    const docsFolderId = await ensureFolder(drive, userFolderId, "2.Documentos");
+    const docsFolderId = await getStandardFolderWithHealing(
+      drive,
+      userFolderId,
+      DRIVE_FOLDERS.DOCUMENTOS,
+      LEGACY_FOLDERS.DOCUMENTOS
+    );
     
     const dateStr = new Date().toISOString().split("T")[0];
     const cleanProductName = (product.title || "Contrato").replace(/[^a-zA-Z0-9.\-_]/g, "_");

@@ -133,6 +133,30 @@ export async function getStandardFolderWithHealing(
 // 3. Gerenciador de Planilhas
 // ──────────────────────────────
 /**
+ * Converte um indice de coluna (1-based) na notacao A1 do Sheets.
+ *
+ * O calculo anterior era `String.fromCharCode(64 + n)`, que so vale ate 26
+ * colunas: a partir da 27a ele devolve "[", "\\", "]" — caracteres invalidos que
+ * fazem o Sheets recusar o range inteiro. Nenhum survey curado a mao passava de
+ * 26 colunas, entao o teto nunca apareceu; com a sincronizacao generica ele
+ * aparece de imediato (master_cv e preparacao_entrevistas passam de 30 campos).
+ */
+export function columnLetter(index: number): string {
+  if (index < 1) throw new Error(`Indice de coluna invalido: ${index}`);
+
+  let result = "";
+  let remaining = index;
+
+  while (remaining > 0) {
+    const remainder = (remaining - 1) % 26;
+    result = String.fromCharCode(65 + remainder) + result;
+    remaining = Math.floor((remaining - 1) / 26);
+  }
+
+  return result;
+}
+
+/**
  * Cria uma planilha do Google Sheets dentro de uma pasta específica (Incondicionalmente).
  */
 export async function createSpreadsheet(
@@ -243,13 +267,15 @@ export async function syncDataToSheet(
   const spreadsheet = await sheets.spreadsheets.get({ spreadsheetId });
   const sheetTitle = spreadsheet.data.sheets?.[0].properties?.title || "Sheet1";
 
-  const lastColLetter = String.fromCharCode(64 + headers.length); 
+  const lastColLetter = columnLetter(headers.length);
   const totalRows = rowsData.length + 1;
 
-  // Limpar a aba para garantir Snapshot limpo, sem rastros do passado
+  // Limpar a aba para garantir Snapshot limpo, sem rastros do passado.
+  // Range = so o titulo da aba (aba inteira). Antes era "A:Z", que deixava para
+  // tras qualquer coluna alem da 26a de um snapshot anterior mais largo.
   await sheets.spreadsheets.values.clear({
     spreadsheetId,
-    range: `${sheetTitle}!A:Z`
+    range: sheetTitle
   });
 
   await sheets.spreadsheets.values.update({
@@ -271,15 +297,15 @@ export async function appendDataToSheet(
   headers: string[],
   rowData: (string | number | boolean | null)[]
 ) {
-  const spreadsheet = await sheets.spreadsheets.get({ spreadsheetId, includeGridData: true, ranges: ["A1:Z1"] });
+  const spreadsheet = await sheets.spreadsheets.get({ spreadsheetId, includeGridData: true, ranges: ["A1:A1"] });
   const sheet = spreadsheet.data.sheets?.[0];
   const sheetTitle = sheet?.properties?.title || "Sheet1";
-  
+
   const hasHeaders = sheet?.data?.[0]?.rowData?.[0]?.values && sheet.data[0].rowData[0].values.length > 0;
 
   // Se não tem headers, atualiza a primeira linha com os headers
   if (!hasHeaders) {
-    const lastColLetter = String.fromCharCode(64 + headers.length);
+    const lastColLetter = columnLetter(headers.length);
     await sheets.spreadsheets.values.update({
       spreadsheetId,
       range: `${sheetTitle}!A1:${lastColLetter}1`,

@@ -47,7 +47,9 @@ export async function submitSurvey(config: SurveyConfig, responses: Record<strin
 
     // 4. Disparar Efeitos Colaterais (Business Logic 🧠)
     console.log(`📡 [SubmitSurvey:Trigger] Acionando Side Effects para ${config.id}...`);
-    await handleSurveySideEffects(config.id, responses, matricula, userUid);
+    // `config` vai junto: e dele que o registro completo tira titulo e rotulos das
+    // colunas, inclusive para surveys dinamicos que nao existem no registry.
+    await handleSurveySideEffects(config.id, responses, matricula, userUid, config);
     console.log(`✅ [SubmitSurvey:Finish] Fluxo completo para ${config.id}`);
 
     return { success: true, matricula };
