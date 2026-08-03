@@ -3515,6 +3515,29 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   fast-forward a pedido da Gestora (sem PR: `gh` nao instalado e o preview nao autentica
   area logada — BUG-030; mesmo precedente das Fases 0/1/1b/2/3 da expansao de auth).
 
+### BUG-117 Subcheckpoint dinâmico entra na trilha com `order` não-numérico e vira "Parada" malformada
+
+- Severidade: Médio
+- Área/fase onde foi achado: análise da demanda "modularização de instrumentos" (2026-08-03)
+- Arquivo(s) afetado(s): `src/actions/journey.ts:616` (geração do `order`),
+  `src/components/journey/SubStepRail.tsx:26-37,136` (agrupamento e rótulo)
+- Cenário de falha: `assignDynamicSubstepAction` grava
+  `order: "${parentSubStepId}-sub-${n}"` — ex.: `ss-srv-gestao_tempo-sub-1`. O
+  `SubStepRail` agrupa por ordem majoritária fazendo `String(ss.order).split('.')[0]` e
+  ordena com `parseFloat`. O contrato esperado é decimal (`5.1`, `5.2` agrupam sob
+  "Parada 5" — está no próprio comentário do componente). Com o id textual: (a) o
+  subcheckpoint **não agrupa sob o checkpoint pai**, vira um grupo próprio; (b) o rótulo
+  renderiza literalmente **"Parada ss-srv-gestao_tempo-sub-1"**; (c) `parseFloat` devolve
+  `NaN` no comparador, então a **posição na trilha fica indefinida**. O caminho que já
+  está em produção (`PostEventWizard` → "Subcheckpoint Dinamico em Lote" → atribui aos
+  presentes) usa exatamente esta função.
+- Status: **Aberto.** Confirmado por leitura de código; **não verificado em dados de
+  produção** — depende de o widget do PostEventWizard já ter sido usado. Sonda read-only
+  em `User/{matricula}/User_Journey/progress` (campo `steps.*.dynamicSubSteps`) resolve.
+- Decisão de execução: precisa plano + aprovação — mexe em gating de jornada e no
+  recálculo de progresso. Corrigir junto da demanda de modularização de instrumentos.
+- Commit/PR: —
+
 
 ---
 
