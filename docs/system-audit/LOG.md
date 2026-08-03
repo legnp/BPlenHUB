@@ -60,6 +60,9 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 - Validado (Lição 14, `npm run check` por partes): eslint dos 3 arquivos tocados **0
   problemas**, `npm run type-check` limpo, `npm run test` **345/345**, `npm run build`
   exit 0 (com `NODE_OPTIONS=--max-old-space-size=8192`).
+- **VALIDADO EM PRODUÇÃO pela Gestora (2026-08-03, print de evidência):** `/hub` de
+  primeiro acesso mostra apenas a recepção, sem logo/menu/tema/flutuantes. Fecha o
+  BUG-116.
 - **Conferência visual fica em produção** (BUG-030: tela logada não autentica no preview).
   Roteiro sugerido: usuário novo → aceitar consentimento → confirmar que a recepção
   aparece **sem** logo/menu/tema/flutuantes; concluir → confirmar que o chrome volta e o

@@ -3500,8 +3500,10 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   flutuantes de suporte por cima dela, quando deveria ser a única superfície visível.
   O gate de consentimento (Fase 2) já fazia certo — retorna a tela sozinha, antes do
   chrome; a recepção nunca recebeu o mesmo tratamento.
-- Status: **Corrigido — 2026-08-02.** A decisão da recepção subiu para o `HubShell`,
-  como terceiro gate na mesma cadeia do consentimento (`WelcomeSurveyGate` +
+- Status: **Corrigido — 2026-08-02. VALIDADO EM PRODUÇÃO pela Gestora (2026-08-03, print
+  de evidência):** `/hub` de primeiro acesso renderiza apenas a recepção — sem logo,
+  menu/avatar, seletor de tema ou ações flutuantes. A decisão da recepção subiu para o
+  `HubShell`, como terceiro gate na mesma cadeia do consentimento (`WelcomeSurveyGate` +
   `hasCompletedWelcomeSurvey`). Escopo mantido em `/hub` (ver decisão abaixo).
 - Decisão de execução: precisava plano + aprovação (identidade/sessão + infraestrutura
   compartilhada). Plano apresentado e aprovado pela Gestora antes da implementação.
