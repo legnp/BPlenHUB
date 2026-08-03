@@ -24,6 +24,55 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-02] BUG-116: recepção sobreposta pelo cabeçalho + limpeza do `hub/page.tsx`
+
+- Relato da Gestora (com print): na tela de boas-vindas do primeiro acesso, o logo, o
+  menu sanduíche/avatar, o seletor de tema e os botões flutuantes apareciam **por cima**
+  da welcome survey. Regra de produto: a recepção deve ser a única tela.
+- Causa raiz: a decisão "mostrar a welcome survey" morava em `src/app/hub/page.tsx`, que
+  é `children` do `HubShell` — e o Shell monta `HubHeader` + `FloatingHubActions`
+  incondicionalmente ao redor dos children. O gate de consentimento (Fase 2) já resolvia
+  isso do jeito certo (retorna a tela sozinha, **antes** do chrome); a recepção nunca
+  recebeu o mesmo tratamento. Registrado como **BUG-116**.
+- Correção (plano aprovado antes de implementar, por tocar identidade/sessão e
+  infraestrutura compartilhada): a recepção virou o **terceiro gate** da mesma cadeia do
+  `HubShell` — consentimento resolve, consentimento gateia, recepção resolve, recepção
+  gateia, e só então monta o chrome. Novo `src/components/hub/WelcomeSurveyGate.tsx`
+  (tela + `hasCompletedWelcomeSurvey`, que faz a MESMA leitura de antes: `_AuthMap/{uid}`
+  → `User/{matricula}.hasCompletedWelcome`). Sem action nova, sem regra nova, sem índice.
+- **Decisão de escopo (importante):** o gate ficou restrito a `pathname === "/hub"`, e
+  NÃO estendido ao hub inteiro como o de consentimento. Motivo: quem vem de uma página
+  pública com intenção de compra é levado direto a `/hub/checkout/{slug}` pelo
+  `MatriculaGuard`, sem passar pela home — gatear o hub inteiro enfiaria uma survey de 6
+  passos entre a intenção e o checkout. O `isHubHome` aparece duas vezes de propósito (na
+  consulta e na renderização) para o estado não vazar o gate para outra rota via URL
+  direta. Comportamento de roteamento preservado 1:1 com o de hoje.
+- Comportamentos preservados de propósito: fail-closed na leitura (erro transitório
+  mostra a recepção, como antes), start do tour guiado no `onComplete`, wrapper de tema
+  (`theme-${theme}`) ao redor da tela — sem ele, quem usa tema escuro veria a recepção
+  em cores claras.
+- **Ganho de tabela:** `hub/page.tsx` ficou só com a `HubHomeView` + o trigger de tour por
+  URL. Isso **elimina os 4 erros de `rules-of-hooks`** analisados na entrada anterior — o
+  `return null` antes dos hooks sumiu junto com a ramificação que o exigia, sem precisar
+  do remendo de reordenar hooks. Lint do repo: **20 → 16 erros**, nenhum novo. Também
+  saíram 3 imports/variáveis mortos do arquivo (`GoogleLoginButton`, `useRouter`,
+  `useAuthContext`) e o `setTimeout` do tour ganhou cleanup.
+- Validado (Lição 14, `npm run check` por partes): eslint dos 3 arquivos tocados **0
+  problemas**, `npm run type-check` limpo, `npm run test` **345/345**, `npm run build`
+  exit 0 (com `NODE_OPTIONS=--max-old-space-size=8192`).
+- **Conferência visual fica em produção** (BUG-030: tela logada não autentica no preview).
+  Roteiro sugerido: usuário novo → aceitar consentimento → confirmar que a recepção
+  aparece **sem** logo/menu/tema/flutuantes; concluir → confirmar que o chrome volta e o
+  tour dispara; e um usuário já recepcionado → `/hub` normal, sem piscar.
+- **Ponto para a Gestora decidir:** com o chrome fora, a recepção fica **sem seletor de
+  tema e sem o botão de suporte**. Segue o precedente do gate de consentimento (que
+  também não tem seletor e é fixo em tema escuro), mas o `CLAUDE.md` pede que a
+  alternância de tema esteja "sempre acionável" na área logada. Como a recepção é tela
+  única de uma vez só e o chrome volta logo depois, foi tratado como exceção do mesmo
+  tipo — se preferir, dá para reintroduzir só o botão de tema.
+- Itens do `00-PLAN.md` atualizados: nenhum (pedido ad-hoc de correção da Gestora, mesmo
+  precedente dos PRs #87/#99). `BUGS.md`: BUG-116 registrado e corrigido.
+
 ## [2026-08-02] Lint: primeiro passo para a regra 5 + levantamento da divida real
 
 - Contexto: ao validar a entrega dos e-mails de transferencia, descobriu-se que

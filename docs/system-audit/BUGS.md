@@ -3487,6 +3487,30 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   (2026-07-24), confirmado por sonda.
 - Commit/PR: **PR #160** (`257a65e`, `firestore.indexes.json`) + criação do índice no console (2026-07-24).
 
+### BUG-116 Recepção (welcome survey) renderiza com o cabeçalho e as ações flutuantes por cima
+
+- Severidade: Médio
+- Área/fase onde foi achado: relato da Gestora com print (2026-08-02), primeiro acesso em produção
+- Arquivo(s) afetado(s): `src/components/hub/HubShell.tsx`, `src/app/hub/page.tsx`
+- Cenário de falha: usuário de primeiro acesso, com consentimento já aceito e recepção
+  pendente, abre `/hub`. A decisão "mostrar a welcome survey" vivia dentro de
+  `hub/page.tsx`, que é `children` do `HubShell` — e o Shell monta `HubHeader` e
+  `FloatingHubActions` incondicionalmente ao redor dos children. Resultado: a tela de
+  recepção aparece **com** logo, menu sanduíche/avatar, seletor de tema e botões
+  flutuantes de suporte por cima dela, quando deveria ser a única superfície visível.
+  O gate de consentimento (Fase 2) já fazia certo — retorna a tela sozinha, antes do
+  chrome; a recepção nunca recebeu o mesmo tratamento.
+- Status: **Corrigido — 2026-08-02.** A decisão da recepção subiu para o `HubShell`,
+  como terceiro gate na mesma cadeia do consentimento (`WelcomeSurveyGate` +
+  `hasCompletedWelcomeSurvey`). Escopo mantido em `/hub` (ver decisão abaixo).
+- Decisão de execução: precisava plano + aprovação (identidade/sessão + infraestrutura
+  compartilhada). Plano apresentado e aprovado pela Gestora antes da implementação.
+  **Decisão de escopo:** o gate NÃO foi estendido ao hub inteiro (como o de
+  consentimento) de propósito — quem vem de uma página pública com intenção de compra
+  cai direto em `/hub/checkout/{slug}` sem passar pela home, e gatear o hub inteiro
+  inseriria a survey de 6 passos entre a intenção e o checkout.
+- Commit/PR: branch `fix/welcome-survey-gate-sem-chrome` (aguardando PR).
+
 
 ---
 
