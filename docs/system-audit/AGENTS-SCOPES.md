@@ -68,6 +68,21 @@ escritora por vez na `main`.**
 - Código só é "entregue" quando **mergeado na `main` e em produção** — WIP em
   branch não conta para a reconciliação (Lição 31).
 
+## 5b. Diretório de trabalho compartilhado (o risco mais perigoso)
+
+Se as duas contas usam o **mesmo repositório local** (mesmo `D:\BPlen_HUB\Dev`),
+a árvore de trabalho e o branch ativo são **um só** — trocar de branch numa conta
+muda o que a outra vê. Regras:
+
+- **Deixe o repositório no mesmo branch em que o encontrou.** Se precisar mudar de
+  branch para commitar docs na `main` (ex.: a sessão está numa branch de código
+  WIP), volte para o branch original ao terminar. (Foi o que esta reconciliação
+  fez: `feat/drive-coverage-surveys` → `main` para os docs → devolvida.)
+- Preferir, quando possível, **clones separados ou `git worktree` por conta**, para
+  árvores independentes — aí o único ponto de colisão é o push para `origin/main`
+  (coberto pela regra 2).
+- Nunca deixar edições não-commitadas de uma conta ao trocar de contexto.
+
 ## 5. Cadência recomendada
 
 - Execução trabalha em blocos (branch → entrega → LOG/BUGS).
