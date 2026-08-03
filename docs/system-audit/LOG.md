@@ -24,6 +24,45 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-03] BUG-118: conclusão cruzada colapsava as 10 sessões (MentoCoach e GDC)
+
+- Relato da Gestora, com print: ao concluir a 1ª Sessão de MentoCoach, **todas** as
+  paradas seguintes ficaram verdes. "Elas devem se dar como concluídas separadamente."
+- Causa raiz: `applyCrossCompletionSweep` casa atividades por `type:referenceId`, e as 10
+  sessões compartilham `referenceId="sessao-mentocoach"` **por design** — é ele que
+  identifica o TIPO de sessão para casar a parada com o evento da agenda. Idem GDC, com
+  `orientacao-em-grupo`.
+- **Confirmado por sonda read-only na base de produção** (Lição 31), não só por leitura de
+  código: 10 ids únicos no produto, 10 conclusões gravadas em `BP-002-PF-260331`, contra
+  **1 único** evento "MentoCoach" com presença confirmada na agenda. Alcance medido:
+  **1 usuário**, a conta de teste. Nenhum membro real atingido.
+- **É o mesmo sintoma do BUG-077 (PR #104, julho) por um segundo caminho independente.**
+  Aquele fix corrigiu a colisão pelo lado do **id** — e os ids estão certos, a sonda
+  confirmou. Mas o sweep nunca usou id para identidade. O LOG da época registrou que
+  ninguém tinha visto "porque nenhum membro havia concluído uma 1ª sessão ainda"; a
+  primeira conclusão real aconteceu agora e reabriu o buraco pela outra porta.
+- Correção: `src/lib/journey/cross-completion.ts` (puro, 9 testes) com duas regras — uma
+  de semântica (`meeting` é ocorrência, não conteúdo produzido uma vez, então nunca cruza
+  nem quando aparece uma única vez na etapa) e uma da forma do dado (chave repetida na
+  etapa = ocorrências contáveis). Aplicadas nas DUAS fases do sweep e também na remoção,
+  senão desmarcar uma sessão desmarcaria as dez. Survey e formulário seguem cruzando — é
+  o que sustenta os instrumentos modulares aprovados nesta mesma sessão.
+- Reparo do dado em `scripts/fix-cross-completed-sessions.js`: o sweep só ADICIONA
+  conclusão, então corrigir o código não desfaz o que está gravado. O script não adivinha
+  quais sessões são reais — quem opera passa os ids a preservar em `--keep`. Dry-run
+  conferido na BP-002: remove 9, preserva a 1ª, `overallProgress` 60 -> 44. **`--apply`
+  ainda não rodado** (aguarda a Gestora).
+- Pergunta da Gestora durante o plano ("como serão destravadas as etapas que dependem de
+  MentoCoach ou GDC?") — verificado no motor de acesso: só o **Offboarding** depende deles
+  (`qualquer: [BPL-004, BPL-005]`), e "etapa concluída" para o motor é `status ===
+  "completed"`, que exige 100% dos checkpoints. Hoje o destravamento existe mas é **falso**
+  (entrega o encerramento a quem fez 1 de 10). Depois da correção passa a exigir o programa
+  de fato concluído. Daí saiu o achado adjacente do descasamento cota × checkpoints,
+  registrado no BUG-118 e adiado por decisão da Gestora ("primeiro a correção e depois o
+  descasamento").
+- Validado: eslint dos arquivos tocados 0 problemas, type-check limpo, **363 testes**
+  verdes (354 + 9 novos), build exit 0.
+
 ## [2026-08-03] Modularização de instrumentos — 4 fases (plano aprovado pela Gestora)
 
 - Demanda: pendurar um instrumento de F&S (survey ou formulário) num checkpoint

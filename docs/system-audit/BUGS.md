@@ -3566,10 +3566,31 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   real aconteceu agora e reabriu o sintoma pelo outro caminho.
 - Alcance medido: **1 usuário** (`BP-002-PF-260331`, a conta de TESTE já marcada para
   limpeza). Nenhum membro real afetado — a janela é a mesma do BUG-077.
-- Status: **Aberto.**
-- Decisão de execução: precisa plano + aprovação — gating de jornada e recálculo de
-  progresso. Plano apresentado à Gestora em 2026-08-03.
-- Commit/PR: —
+- Status: **Corrigido no código — 2026-08-03. Reparo do dado PENDENTE** (aguarda a
+  Gestora liberar o `--apply`; dry-run conferido). Duas regras novas de elegibilidade em
+  `src/lib/journey/cross-completion.ts` (9 testes): (1) tipo `meeting` nunca cruza —
+  sessão é ocorrência, não conteúdo produzido uma vez; (2) chave `type:referenceId` que
+  se repete dentro da etapa nunca cruza — são ocorrências contáveis. Valem nos dois
+  sentidos: não recebem conclusão de uma irmã nem são desmarcadas junto com ela.
+  Survey e formulário seguem cruzando (é o que sustenta os instrumentos modulares).
+- Reparo do dado: `scripts/fix-cross-completed-sessions.js`. Não adivinha nada — quem
+  opera informa os ids a PRESERVAR (`--keep`), o resto do grupo repetido sai de
+  `completedSubSteps`/datas e o status da etapa + `overallProgress` são recalculados com
+  a fórmula do app. Dry-run por padrão. Prévia conferida em `BP-002-PF-260331`: remove 9,
+  preserva `ss-meeting-sessao-mentocoach-2` (a única com presença real na agenda),
+  `overallProgress` 60 -> 44.
+- **Achado adjacente (registrado, NÃO corrigido — decisão da Gestora: tratar depois):** os
+  10 checkpoints vêm do `deliverySteps` do PRODUTO, não da cota que o membro comprou (as
+  cotas entram em `isStageEntitled`, isto é, se o membro *tem* a etapa — não em quantas
+  paradas ela tem). Um membro com menos de 10 sessões contratadas nunca fecha a etapa em
+  100%, e o Offboarding (`qualquer: [BPL-004, BPL-005]`) não destravaria sozinho. Hoje
+  isso está mascarado pelo próprio BUG-118. Saída existente: a dispensa de pré-requisito
+  por usuário (`dispensaPreRequisito`, em Gestão de Usuários). Decidir entre: paradas
+  seguirem a cota contratada, ou destravamento excepcional pela dispensa manual.
+- Decisão de execução: precisou plano + aprovação — gating de jornada e recálculo de
+  progresso. Plano apresentado e **aprovado pela Gestora (2026-08-03)**, com a ordem
+  "primeiro a correção e depois o descasamento".
+- Commit/PR: ver LOG de 2026-08-03.
 
 
 ---

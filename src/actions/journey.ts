@@ -11,6 +11,7 @@ import { syncJourneyToUserDrive } from "@/lib/drive-sync";
 import { normalizeString } from "@/lib/utils";
 import { getErrorMessage } from "@/lib/utils/errors";
 import { nextDynamicSubstepOrder } from "@/lib/journey/dynamic-substep-order";
+import { activityKeyOf, isCrossCompletable, repeatedActivityKeys } from "@/lib/journey/cross-completion";
 
 // `surveys` é indexado por IDs literais conhecidos, mas `capabilities.surveys`
 // vem de dados dinâmicos do Firestore (podem não corresponder a uma chave real).
@@ -925,6 +926,11 @@ export async function assignDynamicSubstepToPresentAttendeesAction(
  * Motor de Auto-Conclusao Cruzada (Cross-Service Auto-Completion)
  * Varre o progresso e as etapas da jornada para garantir que atividades identicas
  * (mesmo type e referenceId) compartilhem o mesmo status de conclusao em toda a plataforma.
+ *
+ * BUG-118: "identicas" nao vale para SESSAO. As 10 paradas do MentoCoach (e as 10 do GDC)
+ * compartilham o mesmo `referenceId` de proposito, entao concluir a 1a marcava as dez.
+ * Quem participa da conclusao cruzada e decidido por `isCrossCompletable` — nos DOIS
+ * sentidos, propagar e receber, e tambem na remocao.
  */
 function applyCrossCompletionSweep(
   currentSteps: Record<string, import("@/types/journey").UserStepProgress>,
@@ -943,11 +949,12 @@ function applyCrossCompletionSweep(
     if (!progress || !progress.completedSubSteps) return;
 
     const allSubsteps = [...(stage.substeps || []), ...(progress.dynamicSubSteps || [])];
-    
+    const repeatedKeys = repeatedActivityKeys(allSubsteps);
+
     progress.completedSubSteps.forEach(subId => {
       const config = allSubsteps.find(s => s.id === subId);
-      if (config && config.referenceId) {
-        const key = `${config.type}:${config.referenceId}`;
+      if (config && isCrossCompletable(config, repeatedKeys)) {
+        const key = activityKeyOf(config);
         if (key !== forceRemoveActivityKey) {
           completedActivities.add(key);
         }
@@ -965,14 +972,17 @@ function applyCrossCompletionSweep(
     };
 
     const allSubsteps = [...(stage.substeps || []), ...(progress.dynamicSubSteps || [])];
+    const repeatedKeys = repeatedActivityKeys(allSubsteps);
     let stageChanged = false;
     let newCompleted = [...(progress.completedSubSteps || [])];
     const newDates = { ...(progress.subStepCompletionDates || {}) };
 
     allSubsteps.forEach(sub => {
-      if (sub.referenceId) {
-        const activityKey = `${sub.type}:${sub.referenceId}`;
-        
+      // Sessao (e qualquer ocorrencia repetida) fica de fora nos dois sentidos: nao
+      // recebe conclusao de uma irma nem e desmarcada junto com ela (BUG-118).
+      if (isCrossCompletable(sub, repeatedKeys)) {
+        const activityKey = activityKeyOf(sub);
+
         // Ativar se estiver globalmente concluido
         if (completedActivities.has(activityKey) && !newCompleted.includes(sub.id)) {
           newCompleted.push(sub.id);
