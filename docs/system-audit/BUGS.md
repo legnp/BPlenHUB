@@ -3509,7 +3509,9 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   consentimento) de propósito — quem vem de uma página pública com intenção de compra
   cai direto em `/hub/checkout/{slug}` sem passar pela home, e gatear o hub inteiro
   inseriria a survey de 6 passos entre a intenção e o checkout.
-- Commit/PR: branch `fix/welcome-survey-gate-sem-chrome` (aguardando PR).
+- Commit/PR: `1f70e7b`, branch `fix/welcome-survey-gate-sem-chrome` mergeada na `main` por
+  fast-forward a pedido da Gestora (sem PR: `gh` nao instalado e o preview nao autentica
+  area logada — BUG-030; mesmo precedente das Fases 0/1/1b/2/3 da expansao de auth).
 
 
 ---

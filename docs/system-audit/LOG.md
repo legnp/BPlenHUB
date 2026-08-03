@@ -70,6 +70,11 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
   alternância de tema esteja "sempre acionável" na área logada. Como a recepção é tela
   única de uma vez só e o chrome volta logo depois, foi tratado como exceção do mesmo
   tipo — se preferir, dá para reintroduzir só o botão de tema.
+- **Entrega: `1f70e7b` mergeado na `main` por fast-forward (a Gestora autorizou ir direto
+  para produção).** Sem PR — o `gh` não está instalado nesta máquina e o preview não
+  autentica área logada (BUG-030), então o PR não agregaria a validação que justifica o
+  fluxo; mesmo precedente das Fases 0/1/1b/2/3 da expansão de auth. A branch remota
+  `fix/welcome-survey-gate-sem-chrome` continua no GitHub para rastreio.
 - Itens do `00-PLAN.md` atualizados: nenhum (pedido ad-hoc de correção da Gestora, mesmo
   precedente dos PRs #87/#99). `BUGS.md`: BUG-116 registrado e corrigido.
 
