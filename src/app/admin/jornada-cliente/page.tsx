@@ -3,6 +3,7 @@
 import React from "react";
 import { Route } from "lucide-react";
 import { DevolutivaComportamentalView } from "@/components/admin/DevolutivaComportamentalView";
+import { ClientInstrumentsView } from "@/components/admin/ClientInstrumentsView";
 import { FunctionalPageHeader } from "@/components/layout/FunctionalPageHeader";
 
 /**
@@ -27,6 +28,11 @@ export default function AdminJornadaClientePage() {
 
       {/* Devolutiva Comportamental (primeira seção da jornada) */}
       <DevolutivaComportamentalView />
+
+      {/* Instrumentos modulares por checkpoint (segunda seção da jornada) */}
+      <div className="pt-8 border-t border-[var(--border-primary)]">
+        <ClientInstrumentsView />
+      </div>
     </div>
   );
 }

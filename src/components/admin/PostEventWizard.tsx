@@ -38,12 +38,7 @@ import { useAuthContext } from "@/context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { surveys } from "@/config/surveys";
-import type { SurveyConfig } from "@/types/survey";
-
-// `surveys` é indexado por IDs literais conhecidos, mas `ref` vem de um <select>
-// dinâmico (pode não corresponder a uma chave real).
-const surveyRegistry = surveys as Record<string, SurveyConfig | undefined>;
+import { listInstruments, findInstrument } from "@/lib/journey/instrument-registry";
 import { assignDynamicSubstepToPresentAttendeesAction } from "@/actions/journey";
 import { getErrorMessage } from "@/lib/utils/errors";
 
@@ -312,12 +307,17 @@ export default function PostEventWizard({ isOpen, onClose, event, onSuccess }: P
 
   const handleAssignBulkSubstep = async () => {
     if (!event || !selectedSubstepRef) return;
+    const instrument = findInstrument(selectedSubstepRef);
+    if (!instrument) return;
+
     setIsAssigningSubstep(true);
     try {
       const res = await assignDynamicSubstepToPresentAttendeesAction(event.id, {
-        title: substepTitle || "Atividade Complementar",
-        type: "survey",
-        referenceId: selectedSubstepRef,
+        title: substepTitle || instrument.title,
+        // O tipo vem do registro (survey ou form), nao fixo: o StepRenderer
+        // resolve a configuracao pelo par type/referenceId.
+        type: instrument.type,
+        referenceId: instrument.referenceId,
         description: "Atividade complementar atribuida pelo consultor"
       });
       
@@ -521,14 +521,15 @@ export default function PostEventWizard({ isOpen, onClose, event, onSuccess }: P
                            onChange={(e) => {
                               const ref = e.target.value;
                               setSelectedSubstepRef(ref);
-                              const surveyObj = surveyRegistry[ref];
-                              setSubstepTitle(surveyObj?.title || "");
+                              setSubstepTitle(findInstrument(ref)?.title || "");
                            }}
                            className="w-full p-2.5 bg-[var(--input-bg)] border border-[var(--border-primary)] rounded-xl text-[10px] font-bold text-[var(--text-primary)] focus:outline-none"
                         >
                            <option value="">Selecione um Modelo...</option>
-                           {Object.entries(surveyRegistry).map(([key, val]) => (
-                              <option key={key} value={key}>{val?.title || key}</option>
+                           {listInstruments().map((instrument) => (
+                              <option key={`${instrument.type}-${instrument.referenceId}`} value={instrument.referenceId}>
+                                 {instrument.type === "survey" ? "Survey" : "Formulário"} — {instrument.title}
+                              </option>
                            ))}
                         </select>
                         

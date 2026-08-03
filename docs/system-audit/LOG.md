@@ -24,6 +24,49 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-03] Modularização de instrumentos — 4 fases (plano aprovado pela Gestora)
+
+- Demanda: pendurar um instrumento de F&S (survey ou formulário) num checkpoint
+  específico da jornada de **um cliente** (ex.: Tríade do Tempo só para o cliente X, na
+  etapa Y do MentoCoach), atribuído pelo admin, com impacto no recálculo do progresso.
+- **Diagnóstico: parcialmente implantado.** O motor já existia — `dynamicSubSteps` no
+  `UserStepProgress`, `assignDynamicSubstepAction` com transação/dedupe/recálculo,
+  merge do dinâmico logo após o pai no `useJourney`, contagem do progresso já somando os
+  dinâmicos. Faltavam: atribuição individual (a única UI era a de lote pós-evento, que
+  **infere** etapa e checkpoint), escolha explícita de etapa/checkpoint, formulários (o
+  seletor só listava surveys e fixava `type: "survey"`), remoção e visibilidade.
+- **Duas decisões de produto da Gestora**, que definiram o desenho: (1) auto-conclusão
+  cruzada é **desejada** — não se pede a mesma coisa duas vezes, então o instrumento já
+  respondido em outro ponto entra concluído; (2) re-travamento de sequência **deve
+  acontecer** — a etapa reabre e as seguintes travam, herdando a regra global.
+- Entregue em 4 fases:
+  1. **BUG-117** (achado na análise): `order` do subcheckpoint dinâmico era texto livre
+     (id do pai concatenado), então não agrupava sob o pai, imprimia "Parada ss-srv-..."
+     e caía em `NaN` no comparador do `SubStepRail`. Agora é decimal derivado do pai
+     (`5` → `5.1`), por helper puro `src/lib/journey/dynamic-substep-order.ts` (9 testes)
+     + `scripts/fix-dynamic-substep-order.js` para o dado legado (dry-run por padrão).
+  2. **`removeDynamicSubstepAction`**: inverso exato da atribuição — tira da lista, limpa
+     a conclusão e a data (senão a etapa nunca mais fecharia 100%) e refaz o recálculo.
+     Escreve **sem `merge`** de propósito: `merge` não apaga chave de mapa, e o payload já
+     é o documento inteiro lido na mesma transação.
+  3. **Painel "Instrumentos do Cliente"** em Admin > Jornada do Cliente
+     (`ClientInstrumentsView`): escolhe cliente, vê todas as etapas com os instrumentos já
+     atribuídos (com estado de conclusão), atribui escolhendo checkpoint + instrumento +
+     título opcional, e remove. Nova ação de leitura `getClientJourneyInstrumentsAction`.
+     O seletor de cliente reusa o padrão visual da Devolutiva Comportamental.
+  4. **Registro unificado de instrumentos** (`src/lib/journey/instrument-registry.ts`):
+     surveys + forms na mesma lista, com o `type` derivado da origem. Aplicado no painel
+     novo **e** no widget em lote do `PostEventWizard`, que deixou de fixar `"survey"`.
+- Validado: eslint dos 8 arquivos tocados **0 erros** (3 warnings pré-existentes no
+  PostEventWizard), type-check limpo, **354 testes** verdes (345 + 9 novos; 1ª execução
+  com 2 falhas espúrias de setup, verdes na reexecução), build exit 0. Lint global segue
+  em **16 erros pré-existentes** — nenhum novo.
+- **Pendências operacionais:** (a) rodar `node scripts/fix-dynamic-substep-order.js` (sem
+  flag = só relatório) para saber se algum cliente já tem instrumento com ordem quebrada,
+  e `--apply` para corrigir; (b) validação visual em produção (BUG-030).
+- Itens do `00-PLAN.md` atualizados: nenhum (demanda ad-hoc da Gestora, fora da grade de
+  fases). `BUGS.md`: BUG-117 registrado e corrigido.
+
 ## [2026-08-03] Verificação: botão "Agendar 1 to 1" nos checkpoints do GDC (já existia)
 
 - A Gestora pediu para verificar, antes de implementar, se o botão "agendar 1 to 1" nos

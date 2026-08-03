@@ -3,13 +3,14 @@
 import { getAdminDb } from "@/lib/firebase-admin";
 import { requireAuth, requireAdmin, AuthorizationError } from "@/lib/auth-guards";
 import { Product } from "@/types/products";
-import { JourneyStep, SubStepConfig, JourneyProgress } from "@/types/journey";
+import { JourneyStep, SubStepConfig, JourneyProgress, UserStepProgress, ClientJourneyInstruments } from "@/types/journey";
 import { SurveyConfig } from "@/types/survey";
 import { surveys } from "@/config/surveys";
 import { JOURNEY_STAGES } from "@/config/journey/steps-registry";
 import { syncJourneyToUserDrive } from "@/lib/drive-sync";
 import { normalizeString } from "@/lib/utils";
 import { getErrorMessage } from "@/lib/utils/errors";
+import { nextDynamicSubstepOrder } from "@/lib/journey/dynamic-substep-order";
 
 // `surveys` é indexado por IDs literais conhecidos, mas `capabilities.surveys`
 // vem de dados dinâmicos do Firestore (podem não corresponder a uma chave real).
@@ -573,7 +574,12 @@ export async function assignDynamicSubstepAction(
     const db = getAdminDb();
     const subStepId = `ss-dynamic-${subStepConfig.type}-${subStepConfig.referenceId}-${Date.now()}`;
     const progressRef = db.collection("User").doc(targetMatricula).collection("User_Journey").doc("progress");
-    
+
+    // Etapas lidas ANTES da transacao: `getJourneyStagesAction` faz leituras proprias
+    // no Firestore e chamar isso de dentro do callback transacional mistura os dois
+    // contextos. A ordem do instrumento depende do checkpoint pai (ver BUG-117).
+    const stages = await getJourneyStagesAction();
+
     await db.runTransaction(async (transaction) => {
       const snap = await transaction.get(progressRef);
       if (!snap.exists) {
@@ -606,6 +612,15 @@ export async function assignDynamicSubstepAction(
       );
       
       if (!alreadyExists) {
+        // A ordem tem que ser o decimal da parada do pai (`5` -> `5.1`), senao o
+        // instrumento nao agrupa sob ele na trilha e o rotulo sai malformado (BUG-117).
+        const stage = stages.find(s => normalizeString(s.id) === normalizeString(matchedDbKey));
+        const parentOrder = stage?.substeps.find(ss => ss.id === parentSubStepId)?.order;
+        const siblingOrders = [
+          ...(stage?.substeps || []).map(ss => ss.order),
+          ...dynamicSubSteps.map(ds => ds.order)
+        ];
+
         dynamicSubSteps.push({
           id: subStepId,
           parentId: parentSubStepId,
@@ -613,10 +628,14 @@ export async function assignDynamicSubstepAction(
           type: subStepConfig.type,
           referenceId: subStepConfig.referenceId,
           description: subStepConfig.description || "Subcheckpoint dinamico atribuido",
-          order: `${parentSubStepId}-sub-${dynamicSubSteps.length + 1}`
+          order: nextDynamicSubstepOrder(parentOrder, siblingOrders)
         });
       }
-      
+
+      // `status: "current"` e deliberado: o instrumento soma ao total da etapa, entao
+      // uma etapa ja concluida volta a ficar em aberto — e, pela regra global de
+      // sequencia, as etapas seguintes voltam a travar ate a conclusao. Decisao da
+      // Gestora (2026-08-03).
       const updatedSteps = {
         ...steps,
         [matchedDbKey]: {
@@ -625,8 +644,7 @@ export async function assignDynamicSubstepAction(
           status: "current"
         }
       };
-      
-      const stages = await getJourneyStagesAction();
+
       let totalAllSubsteps = 0;
       let completedAllSubsteps = 0;
 
@@ -656,6 +674,167 @@ export async function assignDynamicSubstepAction(
     return { success: true, message: "Subcheckpoint atribuido com sucesso." };
   } catch (error: unknown) {
     console.error("Erro ao atribuir subcheckpoint:", error);
+    return { success: false, message: getErrorMessage(error, "Erro desconhecido") };
+  }
+}
+
+/**
+ * Remove um instrumento modular (subcheckpoint dinamico) da jornada de um cliente.
+ *
+ * E o inverso exato do `assignDynamicSubstepAction`: alem de tirar o item da lista,
+ * limpa a conclusao dele (`completedSubSteps` + data) — deixar o id concluido para tras
+ * inflaria a contagem da etapa e ela nunca mais fecharia em 100%. Depois refaz o mesmo
+ * recalculo: status da etapa e `overallProgress`.
+ *
+ * So mexe no dinamico: checkpoint fixo do produto nao pode ser removido por aqui.
+ */
+export async function removeDynamicSubstepAction(
+  targetMatricula: string,
+  stepId: string,
+  subStepId: string
+): Promise<{ success: boolean; message: string }> {
+  try {
+    await requireAdmin();
+    const db = getAdminDb();
+    const progressRef = db.collection("User").doc(targetMatricula).collection("User_Journey").doc("progress");
+
+    const stages = await getJourneyStagesAction();
+
+    await db.runTransaction(async (transaction) => {
+      const snap = await transaction.get(progressRef);
+      if (!snap.exists) {
+        throw new Error("Jornada do usuario nao encontrada.");
+      }
+
+      const progressData = snap.data() || {};
+      const steps = progressData.steps || {};
+
+      let matchedDbKey = stepId;
+      const stepIdNormalized = normalizeString(stepId);
+      for (const key of Object.keys(steps)) {
+        if (normalizeString(key) === stepIdNormalized) {
+          matchedDbKey = key;
+          break;
+        }
+      }
+
+      const stepProgress = steps[matchedDbKey];
+      if (!stepProgress) {
+        throw new Error("Etapa nao encontrada na jornada deste cliente.");
+      }
+
+      const dynamicSubSteps = (stepProgress.dynamicSubSteps || []).filter(
+        (ds: SubStepConfig) => ds.id !== subStepId
+      );
+      if (dynamicSubSteps.length === (stepProgress.dynamicSubSteps || []).length) {
+        throw new Error("Instrumento nao encontrado nesta etapa.");
+      }
+
+      const completedSubSteps = (stepProgress.completedSubSteps || []).filter(
+        (id: string) => id !== subStepId
+      );
+      const subStepCompletionDates = { ...(stepProgress.subStepCompletionDates || {}) };
+      delete subStepCompletionDates[subStepId];
+
+      // Com um item a menos, a etapa pode ter voltado a fechar 100%.
+      const stage = stages.find(s => normalizeString(s.id) === normalizeString(matchedDbKey));
+      const totalSubsteps = (stage?.substeps.length || 0) + dynamicSubSteps.length;
+      const status = stepProgress.status === "locked"
+        ? "locked"
+        : (totalSubsteps > 0 && completedSubSteps.length >= totalSubsteps ? "completed" : "current");
+
+      const updatedSteps = {
+        ...steps,
+        [matchedDbKey]: {
+          ...stepProgress,
+          dynamicSubSteps,
+          completedSubSteps,
+          subStepCompletionDates,
+          status
+        }
+      };
+
+      let totalAllSubsteps = 0;
+      let completedAllSubsteps = 0;
+
+      stages.forEach(s => {
+        const sKey = Object.keys(updatedSteps).find(k => normalizeString(k) === normalizeString(s.id)) || s.id;
+        const sProgress = updatedSteps[sKey];
+        const baseCount = s.substeps.length;
+        const dynamicCount = sProgress?.dynamicSubSteps?.length || 0;
+
+        totalAllSubsteps += baseCount + dynamicCount;
+        completedAllSubsteps += sProgress?.completedSubSteps?.length || 0;
+      });
+
+      const overallProgress = totalAllSubsteps > 0
+        ? Math.round((completedAllSubsteps / totalAllSubsteps) * 100)
+        : 0;
+
+      // Sem `merge` de proposito (o resto do arquivo usa merge porque so ADICIONA):
+      // merge nao apaga chave de mapa, entao a data de conclusao do instrumento
+      // removido sobreviveria. O payload ja e o documento inteiro (`...progressData`
+      // lido nesta mesma transacao), entao a escrita cheia e equivalente e correta.
+      transaction.set(progressRef, {
+        ...progressData,
+        steps: updatedSteps,
+        overallProgress,
+        updatedAt: new Date().toISOString()
+      });
+    });
+
+    return { success: true, message: "Instrumento removido da jornada." };
+  } catch (error: unknown) {
+    console.error("Erro ao remover subcheckpoint:", error);
+    return { success: false, message: getErrorMessage(error, "Erro desconhecido") };
+  }
+}
+
+/**
+ * Leitura administrativa: a jornada de UM cliente, etapa a etapa, com os checkpoints
+ * fixos (candidatos a pai) e os instrumentos modulares ja atribuidos a ele.
+ *
+ * Devolve TODAS as etapas da jornada, inclusive as que o cliente ainda nao tocou —
+ * atribuir um instrumento a uma etapa futura e um caso de uso valido. Sem documento de
+ * progresso, as listas de instrumentos vem vazias.
+ */
+export async function getClientJourneyInstrumentsAction(
+  targetMatricula: string
+): Promise<{ success: boolean; message?: string; data?: ClientJourneyInstruments[] }> {
+  try {
+    await requireAdmin();
+    const db = getAdminDb();
+
+    const stages = await getJourneyStagesAction();
+    const progressSnap = await db
+      .collection("User").doc(targetMatricula)
+      .collection("User_Journey").doc("progress")
+      .get();
+
+    const steps = (progressSnap.data()?.steps || {}) as Record<string, UserStepProgress>;
+
+    const data: ClientJourneyInstruments[] = stages.map(stage => {
+      const stepKey = Object.keys(steps).find(
+        k => normalizeString(k) === normalizeString(stage.id)
+      );
+      const stepProgress = stepKey ? steps[stepKey] : undefined;
+      const completedIds = stepProgress?.completedSubSteps || [];
+
+      return {
+        stageId: stage.id,
+        title: stage.title,
+        order: stage.order,
+        checkpoints: stage.substeps,
+        instruments: (stepProgress?.dynamicSubSteps || []).map(ds => ({
+          ...ds,
+          completed: completedIds.includes(ds.id)
+        }))
+      };
+    });
+
+    return { success: true, data };
+  } catch (error: unknown) {
+    console.error("Erro ao carregar instrumentos da jornada do cliente:", error);
     return { success: false, message: getErrorMessage(error, "Erro desconhecido") };
   }
 }

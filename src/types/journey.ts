@@ -74,3 +74,21 @@ export interface JourneyProgress {
   steps: Record<string, UserStepProgress>;
   overallProgress: number; // 0-100
 }
+
+/** Instrumento modular ja atribuido, com o estado de conclusao do cliente. */
+export interface AssignedInstrument extends SubStepConfig {
+  completed: boolean;
+}
+
+/**
+ * Visao do admin sobre os instrumentos modulares de UM cliente, etapa a etapa.
+ * `checkpoints` sao os checkpoints fixos do produto (candidatos a pai da atribuicao);
+ * `instruments` sao os dinamicos ja pendurados nesta etapa para este cliente.
+ */
+export interface ClientJourneyInstruments {
+  stageId: string;
+  title: string;
+  order: number;
+  checkpoints: SubStepConfig[];
+  instruments: AssignedInstrument[];
+}

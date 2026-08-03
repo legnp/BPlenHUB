@@ -3531,12 +3531,16 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   `NaN` no comparador, então a **posição na trilha fica indefinida**. O caminho que já
   está em produção (`PostEventWizard` → "Subcheckpoint Dinamico em Lote" → atribui aos
   presentes) usa exatamente esta função.
-- Status: **Aberto.** Confirmado por leitura de código; **não verificado em dados de
-  produção** — depende de o widget do PostEventWizard já ter sido usado. Sonda read-only
-  em `User/{matricula}/User_Journey/progress` (campo `steps.*.dynamicSubSteps`) resolve.
-- Decisão de execução: precisa plano + aprovação — mexe em gating de jornada e no
-  recálculo de progresso. Corrigir junto da demanda de modularização de instrumentos.
-- Commit/PR: —
+- Status: **Corrigido — 2026-08-03 (Fase 1 da modularização de instrumentos).** A ordem
+  passa a ser o decimal da parada do pai (`5` → `5.1`), calculado por helper puro
+  (`src/lib/journey/dynamic-substep-order.ts`, 9 testes). **Dados legados ainda NÃO
+  corrigidos** — depende de rodar `scripts/fix-dynamic-substep-order.js`, que é dry-run
+  por padrão e só grava com `--apply`. Enquanto não roda, um instrumento antigo segue
+  aparecendo como parada malformada.
+- Decisão de execução: precisava plano + aprovação — mexe em gating de jornada e no
+  recálculo de progresso. Plano de 4 fases apresentado e **aprovado pela Gestora
+  (2026-08-03)**; corrigido como Fase 1 dessa entrega.
+- Commit/PR: branch `feat/instrumentos-modulares` (ver LOG de 2026-08-03).
 
 
 ---
