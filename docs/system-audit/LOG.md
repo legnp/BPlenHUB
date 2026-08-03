@@ -24,6 +24,34 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-03] Descasamento cota x checkpoints — FASE 0 (levantamento, aguarda decisão)
+
+- Contexto: achado adjacente ao BUG-118. As paradas de sessão vêm do `deliverySteps` do
+  PRODUTO (fixo, igual para todos), enquanto o que o membro contratou vive na carteira de
+  cotas. A Gestora aprovou tratar fase a fase, decidindo ao fim de cada uma.
+- Entregue: `scripts/report-quota-checkpoint-mismatch.js` — **read-only, não escreve em
+  modo nenhum**, reexecutável depois da limpeza.
+- **Correção de uma suposição minha da rodada anterior:** eu havia dito que "duas
+  semânticas convivem no mesmo mapa de cotas". Errado. Na ORIGEM o padrão é consistente:
+  todo produto concede `1` da chave da etapa (posse do serviço) e `N` da chave de sessão.
+  O que existe é sujeira de dado legado por cima disso.
+- Achados:
+  - **`1-to-1` é moeda COMPARTILHADA**: GDC concede 10, MentoCoach 12, pacote Embaixador
+    22 — e o botão avulso "Agendar 1 to 1" gasta do mesmo bolso. Não dá para saber, pela
+    carteira, quantos créditos são de qual serviço.
+  - **O MentoCoach já nasce descasado no próprio catálogo**: 10 paradas de sessão no
+    produto contra 12 créditos `1-to-1` concedidos. O GDC bate (10 e 10).
+  - **Nenhum campo declara "quantas paradas este membro contratou"** por serviço.
+    `mentoCoachSessionsLimit` existe só para o MentoCoach e está **ausente em 9 dos 10
+    membros** (o admin assume 10 na leitura).
+  - **Sujeira de dado**: 7 chaves de cota que NENHUM produto concede (`orientacao-em-grupo`
+    em 3 membros, `gestao-e-desenvolvimento` em 2, e mais 5) e 4 pares duplicados
+    hífen x sem-hífen na BP-002. O `normalize-quota-keys.js` existente resolve só drift de
+    CAIXA — **não resolveria** esses pares.
+  - Alcance prático: 6 dos 10 membros têm carteira vazia; ninguém está travado hoje pelo
+    descasamento, porque nenhum membro real chegou perto de concluir GDC ou MentoCoach.
+- **Aguardando decisão da Gestora (D1 a D4)** antes da Fase 1 — ver a mensagem do chat.
+
 ## [2026-08-03] BUG-118: conclusão cruzada colapsava as 10 sessões (MentoCoach e GDC)
 
 - Relato da Gestora, com print: ao concluir a 1ª Sessão de MentoCoach, **todas** as
