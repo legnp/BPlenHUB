@@ -463,6 +463,16 @@ ativa furando a ordem das fases.
 |---|---|---|---|
 | _(vazia)_ | — | — | nenhum `Crítico`/`Alto` aberto |
 
+**Reconciliação de 2026-08-03:** o `BUG-118` (**Alto**, conclusão cruzada da
+jornada) surgiu e foi **corrigido no mesmo dia** — a correção de código está na
+`main` (`src/lib/journey/cross-completion.ts`, regra de chave repetida), então
+pelo critério de fechamento (Corrigido = mergeado) **a fila permanece vazia**. O
+que resta é o **reparo do dado** (`scripts/fix-cross-completed-sessions.js
+--apply`), operacional e restrito à **conta de teste `BP-002`** — nenhum membro
+real afetado (mesma janela do `BUG-077`). `BUG-116`/`BUG-117` (Médios) também
+corrigidos; `BUG-117` tem dados legados pendentes de script. Nenhum `Crítico`
+aberto.
+
 **Reconciliação de 2026-07-23:** confirmado por checagem cruzada de todos os
 115 bugs registrados (`BUG-001` a `BUG-115`) que a fila está **genuinamente
 vazia** — 0 Crítico, 0 Alto abertos. A entrada anterior (2026-07-22) tinha
@@ -1598,6 +1608,9 @@ sessões): `BUG-010` (PR #69, desde 2026-07-11), `BUG-040`/`041`/`042` (Trilha
 | BUG-113 | Baixo | Corrigido (PR #144) | F1-06/redesign — cores hardcoded brancas em `partners` recoloridas para vars de tema (legível em temas claros); scrims preservados |
 | BUG-114 | Médio | **Corrigido (2026-07-24)** | T-01 — detalhe de respondentes do admin (F&S); índices criados pela Gestora no console do Firebase, verificado por sonda read-only (query voltou a funcionar) *(corrigido nesta sessão — estava "Aguarda deploy manual")* |
 | BUG-115 | Médio | **Corrigido (2026-07-24)** | T-01 — anti-lockout de admin (rebaixar outro admin); field override criado pela Gestora, verificado por sonda read-only *(corrigido nesta sessão — estava "Aguarda deploy manual")* |
+| BUG-116 | Médio | **Corrigido (2026-08-02, validado em produção 2026-08-03)** | Hub/Recepção — welcome survey renderizava com chrome (header/ações flutuantes) por cima; virou 3º gate no `HubShell` (`1f70e7b`) *(adicionado nesta reconciliação)* |
+| BUG-117 | Médio | **Corrigido no código (2026-08-03)** | Jornada (modularização de instrumentos) — subcheckpoint dinâmico com `order` não-numérico; ordem passa a ser decimal da parada do pai. **Dados legados pendentes** (`scripts/fix-dynamic-substep-order.js --apply`) *(adicionado nesta reconciliação)* |
+| BUG-118 | **Alto** | **Corrigido no código na `main` (2026-08-03)** | Jornada — conclusão cruzada marcava as 10 sessões ao concluir 1 (chave `type:referenceId` repetida); regra de chave repetida corrige. Mesmo sintoma do BUG-077 por outro caminho. Alcance: **1 conta de teste (`BP-002`)**, nenhum membro real. **Reparo do dado pendente** (`scripts/fix-cross-completed-sessions.js --apply`, aguarda Gestora) *(adicionado nesta reconciliação)* |
 
 ---
 

@@ -36,6 +36,11 @@
 > `CONSENT_VERSION`, limpar `BP-002`, renovar segredo Azure, entregabilidade
 > Resend/magic link, fusão manual de contas ativas). Confirmado contra git: auth
 > na `main` (`1e8c5be`); `BUGS.md` inalterado (sem bug de auth aberto).
+> **Também reconciliados os itens não-auth:** `BUG-116`/`BUG-117`/`BUG-118`
+> adicionados ao índice bug→track (o `BUG-118`, **Alto**, corrigido no código na
+> `main`; reparo de dado pendente só na conta de teste `BP-002` → **fila de
+> triagem permanece vazia**); migração de tipos de evento e modularização da
+> Jornada = produto **fora da grade**.
 >
 > **Reconciliação anterior:** 2026-07-30 (chat de planejamento — **reconciliação do
 > Padrão de E-mail BPlen V01**). Redesign do template global transacional entregue

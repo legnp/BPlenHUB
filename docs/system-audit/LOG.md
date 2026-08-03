@@ -24,6 +24,42 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-03] Chat de planejamento — reconciliação dos itens NÃO-auth (BUG-116/117/118 + tipos de evento + Jornada + lint)
+
+- Chat/sessão: mesmo chat de planejamento, logo após a reconciliação de auth.
+  **Docs-only.** Confirmado contra git (`main == 1e8c5be`).
+- **Bugs novos reconciliados no índice bug→track** (estavam só no `BUGS.md`):
+  - `BUG-116` (Médio) — Recepção renderizava com chrome por cima; virou gate no
+    `HubShell` (`1f70e7b`). Corrigido, validado em produção 2026-08-03.
+  - `BUG-117` (Médio) — subcheckpoint dinâmico com `order` não-numérico
+    (Fase 1 da modularização de instrumentos). Código corrigido; **dados legados
+    pendentes** (`scripts/fix-dynamic-substep-order.js --apply`).
+  - `BUG-118` (**Alto**) — conclusão cruzada marcava as 10 sessões ao concluir 1
+    (chave `type:referenceId` repetida; mesmo sintoma do `BUG-077` por outro
+    caminho). **Código corrigido na `main`** (regra de chave repetida em
+    `cross-completion.ts`); **reparo do dado pendente** só na conta de teste
+    `BP-002` (`scripts/fix-cross-completed-sessions.js --apply`) — nenhum membro
+    real. **Triagem por severidade: fila permanece vazia** (Corrigido = mergeado;
+    o pendente é operacional, restrito à conta de teste). Nota adicionada à triagem.
+- **Achado adjacente do BUG-118 (registrado, NÃO corrigido — decisão da Gestora):**
+  as 10 paradas vêm do `deliverySteps` do PRODUTO, não da cota comprada → membro
+  com <10 sessões nunca fecha a etapa em 100% (descasamento cota × checkpoints).
+  Hoje mascarado pelo BUG-118; saída existente = `dispensaPreRequisito`. Tratar depois.
+- **Trabalho de produto fora da grade (não-bug), reconhecido só no LOG:**
+  - **Migração de tipos de evento** (lista fechada 3→5 tipos, decisão da Gestora)
+    — em andamento; levantamento mostrou classificação em ~24%→41% (relatórios
+    read-only na `main`). Não é da grade da auditoria; é higiene de dado/design.
+  - **Modularização de instrumentos por cliente/checkpoint** (Jornada do Cliente
+    no admin) — Fase 1 entregue; plano de 4 fases aprovado pela Gestora.
+  - **Lint:** baseline melhorada de ~139 → ~20 erros (config de `scripts/`,
+    ignorar `scratch/`, correções triviais). Ver memória de status do lint.
+- Itens atualizados: `00-PLAN.md` (índice bug→track +116/117/118; nota na
+  Triagem), `DASHBOARD.md` (addendum), este LOG. `BUGS.md` já estava correto
+  (fonte). Sem código.
+- **WIP não-mergeado:** `feat/drive-coverage-surveys` (`11ce9d8`, "todo survey
+  passa a ter registro completo na pasta do usuário") está 1 commit à frente da
+  `main`, não reconciliado (ainda não em produção).
+
 ## [2026-08-03] Chat de planejamento — reconciliação: expansão de autenticação CONCLUÍDA (Fases 0/1/1b/2/3)
 
 - Chat/sessão: chat de planejamento. **Docs-only, sem tocar código.** Confirmado
