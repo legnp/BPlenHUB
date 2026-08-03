@@ -2,6 +2,12 @@ import type { User } from "firebase/auth";
 import { createSignedSessionCookie } from "@/actions/auth-session";
 import { syncUserPermissionsOnLogin } from "@/actions/auth-permissions";
 import { recordLoginOrigin } from "@/actions/auth-login-metadata";
+import { recordCookiePreferenceAction } from "@/actions/cookie-consent";
+import {
+  hasPendingCookieSync,
+  markCookieChoiceSynced,
+  readStoredCookieChoice,
+} from "@/lib/consent/cookie-consent";
 
 /**
  * BPlen HUB — Finalizacao de sessao no cliente (fonte unica).
@@ -32,5 +38,20 @@ export async function finalizeClientSession(
     await recordLoginOrigin(origin ?? null);
   } catch {
     // Captura de metadado e nao-critica: falha aqui nao afeta a autenticacao.
+  }
+
+  // Espelha a escolha de cookies feita ANTES do login. O banner aparece na area
+  // publica, quando quase ninguem esta identificado ainda, e nao volta depois —
+  // sem este resgate a preferencia da maioria nunca sairia do navegador.
+  try {
+    if (hasPendingCookieSync()) {
+      const choice = readStoredCookieChoice();
+      if (choice) {
+        const result = await recordCookiePreferenceAction(choice);
+        if (result.persisted) markCookieChoiceSynced();
+      }
+    }
+  } catch {
+    // Idem: preferencia ja vale localmente, e a tentativa se repete no proximo login.
   }
 }

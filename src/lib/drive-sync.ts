@@ -241,4 +241,195 @@ ${termText}
   }
 }
 
+/** Prova de contexto capturada no momento de um aceite (mesma forma em consent/cookies). */
+export interface AcceptanceProof {
+  ip: string;
+  userAgent: string;
+  deviceType: string;
+  location: string;
+  acceptedAt: Date;
+}
+
+function formatProofBlock(proof: AcceptanceProof): string {
+  return [
+    `- Data/Hora: ${proof.acceptedAt.toISOString()}`,
+    `- Endereco IP: ${proof.ip}`,
+    `- Dispositivo: ${proof.deviceType}`,
+    `- Localizacao aproximada: ${proof.location || "nao identificada"}`,
+    `- User-Agent: ${proof.userAgent}`,
+  ].join("\n");
+}
+
+/**
+ * Comprovante de aceite dos Termos, Privacidade e declaracao de 18+ (LGPD).
+ *
+ * O aceite ja era gravado no Firestore com prova completa (IP, geo, dispositivo),
+ * mas nunca saia de la — nao existia contrapartida na pasta do usuario, embora
+ * seja o documento com maior peso probatorio do sistema depois do contrato.
+ * Mesmo formato do comprovante de cupom, para o acervo do usuario ficar coerente.
+ */
+export async function syncConsentAcceptanceToDrive(
+  matricula: string,
+  details: {
+    version: string;
+    birthDate: string;
+    newsletterOptIn: boolean;
+    proof: AcceptanceProof;
+  }
+): Promise<{ id: string; webViewLink: string }> {
+  try {
+    const drive = await getDriveClient();
+    const userFolderId = await getUserRootFolder(matricula);
+
+    const docsFolderId = await getStandardFolderWithHealing(
+      drive,
+      userFolderId,
+      DRIVE_FOLDERS.DOCUMENTOS,
+      LEGACY_FOLDERS.DOCUMENTOS
+    );
+
+    // Timestamp no nome: cada reaceite (nova versao dos termos) e um documento
+    // proprio. Sobrescrever apagaria a trilha que a LGPD pede.
+    const stamp = details.proof.acceptedAt.toISOString().replace(/[:.]/g, "-");
+    const fileName = `Aceite_Termos_e_Privacidade_${details.version}_${stamp}.txt`;
+
+    const fileContent = `==================================================
+COMPROVANTE DE ACEITE DE TERMOS DE USO E PRIVACIDADE
+==================================================
+
+Identificacao do Membro:
+- Matricula: ${matricula}
+- Versao dos documentos aceitos: ${details.version}
+
+Declaracoes registradas:
+- Termos de Uso: aceito
+- Politica de Privacidade: aceita
+- Declaracao de maioridade (18 anos ou mais): confirmada
+- Data de nascimento informada: ${details.birthDate}
+- Comunicacoes opcionais (newsletter): ${details.newsletterOptIn ? "aceitas" : "recusadas"}
+
+Prova do aceite:
+${formatProofBlock(details.proof)}
+==================================================
+`;
+
+    const result = await uploadFileToDrive(
+      drive,
+      docsFolderId,
+      fileName,
+      "text/plain",
+      fileContent
+    );
+
+    console.log(`[DriveSync:Consent] Comprovante de consentimento gravado para: ${matricula}`);
+    return result;
+  } catch (err) {
+    console.error(`[DriveSync:Consent] Falha ao gravar comprovante de consentimento:`, err);
+    throw err;
+  }
+}
+
+/**
+ * Historico de preferencia de cookies.
+ *
+ * Ate aqui a escolha vivia SOMENTE no `localStorage` do navegador: nao havia
+ * registro no servidor, nenhuma prova do que foi escolhido e quando, e a
+ * preferencia se perdia ao limpar o navegador ou trocar de aparelho. Planilha e
+ * nao documento porque preferencia muda com o tempo — o que importa e a serie.
+ */
+export async function syncCookiePreferenceToDrive(
+  matricula: string,
+  details: { choice: string; version: string; proof: AcceptanceProof }
+): Promise<string> {
+  try {
+    const drive = await getDriveClient();
+    const sheets = await getSheetsClient();
+    const userFolderId = await getUserRootFolder(matricula);
+
+    const acompanhamentoFolderId = await getStandardFolderWithHealing(
+      drive,
+      userFolderId,
+      DRIVE_FOLDERS.ACOMPANHAMENTO
+    );
+
+    const { id: spreadsheetId } = await getOrCreateSpreadsheet(
+      drive,
+      acompanhamentoFolderId,
+      `Preferencias_Cookies - ${matricula}`
+    );
+
+    const headers = [
+      "Data/Hora", "Escolha", "Versao", "IP", "Dispositivo", "Localizacao", "User-Agent",
+    ];
+    const rowData = [
+      details.proof.acceptedAt.toLocaleString("pt-BR"),
+      details.choice === "all" ? "Todos os cookies" : "Apenas essenciais",
+      details.version,
+      details.proof.ip,
+      details.proof.deviceType,
+      details.proof.location,
+      details.proof.userAgent,
+    ];
+
+    await appendDataToSheet(sheets, spreadsheetId, headers, rowData);
+
+    console.log(`[DriveSync:Cookies] Preferencia de cookies registrada para: ${matricula}`);
+    return spreadsheetId;
+  } catch (err) {
+    console.error(`[DriveSync:Cookies] Falha ao registrar preferencia de cookies:`, err);
+    throw err;
+  }
+}
+
+/**
+ * Historico de acessos (quando entrou, por qual provedor, de onde).
+ *
+ * O `_AuthMap` guardava so o ULTIMO login (campo sobrescrito a cada entrada), o
+ * que responde "quando foi a ultima vez" mas nao "quando foram todas". Aqui a
+ * serie e append-only, na pasta do proprio usuario.
+ */
+export async function syncAccessLogToUserDrive(
+  matricula: string,
+  details: { provider: string; origin: string; proof: AcceptanceProof }
+): Promise<string> {
+  try {
+    const drive = await getDriveClient();
+    const sheets = await getSheetsClient();
+    const userFolderId = await getUserRootFolder(matricula);
+
+    const acompanhamentoFolderId = await getStandardFolderWithHealing(
+      drive,
+      userFolderId,
+      DRIVE_FOLDERS.ACOMPANHAMENTO
+    );
+
+    const { id: spreadsheetId } = await getOrCreateSpreadsheet(
+      drive,
+      acompanhamentoFolderId,
+      `Historico_Acessos - ${matricula}`
+    );
+
+    const headers = [
+      "Data/Hora", "Provedor", "Origem", "IP", "Dispositivo", "Localizacao", "User-Agent",
+    ];
+    const rowData = [
+      details.proof.acceptedAt.toLocaleString("pt-BR"),
+      details.provider,
+      details.origin,
+      details.proof.ip,
+      details.proof.deviceType,
+      details.proof.location,
+      details.proof.userAgent,
+    ];
+
+    await appendDataToSheet(sheets, spreadsheetId, headers, rowData);
+
+    console.log(`[DriveSync:Access] Acesso registrado para: ${matricula}`);
+    return spreadsheetId;
+  } catch (err) {
+    console.error(`[DriveSync:Access] Falha ao registrar acesso:`, err);
+    throw err;
+  }
+}
+
 

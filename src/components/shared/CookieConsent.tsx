@@ -2,22 +2,28 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Cookie, X, Check, ShieldCheck } from "lucide-react";
+import { X, Check, ShieldCheck } from "lucide-react";
+import { recordCookiePreferenceAction } from "@/actions/cookie-consent";
+import {
+  COOKIE_CONSENT_EVENT,
+  markCookieChoiceSynced,
+  readStoredCookieChoice,
+  storeCookieChoice,
+  type CookieChoice,
+} from "@/lib/consent/cookie-consent";
 
 /**
  * BPlen HUB — Cookie Consent Banner (LGPD) 🍪🛡️
  * Design premium com glassmorphism, animações fluidas e ativação condicional.
  */
 
-const CONSENT_KEY = "bplen_cookie_consent";
-
 export default function CookieConsent() {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     // 1. Verificar se o usuário já deu consentimento
-    const consent = localStorage.getItem(CONSENT_KEY);
-    
+    const consent = readStoredCookieChoice();
+
     if (!consent) {
       // 2. Pequeno delay para não assustar o usuário e garantir o design first
       const timer = setTimeout(() => {
@@ -27,18 +33,33 @@ export default function CookieConsent() {
     }
   }, []);
 
-  const handleAcceptAll = () => {
-    localStorage.setItem(CONSENT_KEY, "all");
+  /**
+   * Fecha o banner na hora e registra a escolha em segundo plano.
+   *
+   * A UI nunca espera pelo servidor: a resposta do banner precisa ser imediata, e
+   * a escolha ja esta valendo pelo `localStorage`. Se o visitante estiver
+   * deslogado, a action responde `persisted: false` e o espelhamento acontece no
+   * proximo login (ver `finalize-session.ts`) — por isso a marca de sincronizado
+   * so e gravada quando o servidor confirma.
+   */
+  const handleChoice = (choice: CookieChoice) => {
+    storeCookieChoice(choice);
     setIsVisible(false);
     // Disparar evento para o GoogleAnalyticsLoader "acordar"
-    window.dispatchEvent(new Event("bplen_consent_updated"));
+    window.dispatchEvent(new Event(COOKIE_CONSENT_EVENT));
+
+    void recordCookiePreferenceAction(choice)
+      .then((result) => {
+        if (result.persisted) markCookieChoiceSynced();
+      })
+      .catch(() => {
+        // Registro e nao-critico para a navegacao: a escolha ja vale localmente e
+        // a tentativa se repete no proximo login.
+      });
   };
 
-  const handleAcceptEssential = () => {
-    localStorage.setItem(CONSENT_KEY, "essential");
-    setIsVisible(false);
-    window.dispatchEvent(new Event("bplen_consent_updated"));
-  };
+  const handleAcceptAll = () => handleChoice("all");
+  const handleAcceptEssential = () => handleChoice("essential");
 
   return (
     <AnimatePresence>

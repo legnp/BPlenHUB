@@ -1,15 +1,15 @@
 "use server";
 
 import * as admin from "firebase-admin";
-import { headers } from "next/headers";
+import { after } from "next/server";
 import { requireAuth } from "@/lib/auth-guards";
 import { getAdminDb } from "@/lib/firebase-admin";
 import { findMatriculaByIdentity } from "@/lib/identity/find-matricula";
+import { captureRequestProof } from "@/lib/request-proof";
 import {
   CONSENT_VERSION,
   isAdult,
   needsConsentGate,
-  deviceTypeFromUserAgent,
 } from "@/lib/consent/consent";
 
 /**
@@ -70,27 +70,9 @@ export async function recordConsentAction(input: {
     const matricula = await resolveUserIdentity("welcome_survey", {}, session.uid);
 
     // Prova do aceite: IP + user-agent + geo aproximada por IP (edge headers).
-    const hdrs = await headers();
-    const ip =
-      hdrs.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-      hdrs.get("x-real-ip") ||
-      "desconhecido";
-    const userAgent = hdrs.get("user-agent") || "desconhecido";
-    const decode = (v: string | null): string => {
-      if (!v) return "";
-      try {
-        return decodeURIComponent(v);
-      } catch {
-        return v;
-      }
-    };
-    const geo = {
-      country: hdrs.get("x-vercel-ip-country") || "",
-      region: decode(hdrs.get("x-vercel-ip-country-region")),
-      city: decode(hdrs.get("x-vercel-ip-city")),
-      latitude: hdrs.get("x-vercel-ip-latitude") || "",
-      longitude: hdrs.get("x-vercel-ip-longitude") || "",
-    };
+    // Captura extraida para `lib/request-proof.ts` — mesma leitura de antes, agora
+    // compartilhada com o registro de cookies e de acessos.
+    const proof = await captureRequestProof();
 
     const record = {
       version: CONSENT_VERSION,
@@ -100,10 +82,10 @@ export async function recordConsentAction(input: {
       birthDate: input.birthDate,
       newsletterOptIn: !!input.newsletterOptIn,
       acceptedAt: admin.firestore.FieldValue.serverTimestamp(),
-      ip,
-      userAgent,
-      deviceType: deviceTypeFromUserAgent(userAgent),
-      geo,
+      ip: proof.ip,
+      userAgent: proof.userAgent,
+      deviceType: proof.deviceType,
+      geo: proof.geo,
     };
 
     const db = getAdminDb();
@@ -113,6 +95,30 @@ export async function recordConsentAction(input: {
     await db.collection(`User/${matricula}/User_Consent_History`).add(record);
     // Pre-preenche a data de nascimento no perfil (evita re-perguntar no cadastro).
     await db.doc(`User/${matricula}`).set({ profile: { birthDate: input.birthDate } }, { merge: true });
+
+    // Comprovante na pasta do usuario. Fora do caminho critico (`after`): o gate e
+    // bloqueante na tela, e a ida ao Drive custa varias chamadas de API — o aceite
+    // ja esta gravado com prova no Firestore quando isto roda.
+    after(async () => {
+      try {
+        const { syncConsentAcceptanceToDrive } = await import("@/lib/drive-sync");
+        await syncConsentAcceptanceToDrive(matricula, {
+          version: CONSENT_VERSION,
+          birthDate: input.birthDate,
+          newsletterOptIn: !!input.newsletterOptIn,
+          proof: {
+            ip: proof.ip,
+            userAgent: proof.userAgent,
+            deviceType: proof.deviceType,
+            location: proof.location,
+            acceptedAt: proof.capturedAt,
+          },
+        });
+      } catch (driveError: unknown) {
+        const message = driveError instanceof Error ? driveError.message : String(driveError);
+        console.error("[consent] Falha ao gravar comprovante no acervo do usuario:", message);
+      }
+    });
 
     return { success: true };
   } catch (error: unknown) {

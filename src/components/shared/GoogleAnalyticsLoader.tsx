@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { GoogleAnalytics } from "@next/third-parties/google";
+import { COOKIE_CONSENT_EVENT, readStoredCookieChoice } from "@/lib/consent/cookie-consent";
 
 /**
  * BPlen HUB — Google Analytics Loader (Condicional) 📈🛡️
@@ -9,7 +10,8 @@ import { GoogleAnalytics } from "@next/third-parties/google";
  * se o usuário tiver dado consentimento explícito via CookieBanner.
  */
 
-const CONSENT_KEY = "bplen_cookie_consent";
+// Chave e evento vem de `lib/consent/cookie-consent.ts`: eram literais repetidos
+// aqui e no banner, e divergir entre os dois quebraria o gate em silencio.
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 
 export default function GoogleAnalyticsLoader() {
@@ -17,23 +19,18 @@ export default function GoogleAnalyticsLoader() {
 
   useEffect(() => {
     const checkConsent = () => {
-      const consent = localStorage.getItem(CONSENT_KEY);
       // Solo carregamos se o consentimento for "all"
-      if (consent === "all" && GA_ID) {
-        setShouldLoad(true);
-      } else {
-        setShouldLoad(false);
-      }
+      setShouldLoad(readStoredCookieChoice() === "all" && !!GA_ID);
     };
 
     // 1. Verificação inicial (ao carregar o app)
     checkConsent();
 
     // 2. Escutar atualizações de consentimento (disparadas pelo CookieConsent.tsx)
-    window.addEventListener("bplen_consent_updated", checkConsent);
+    window.addEventListener(COOKIE_CONSENT_EVENT, checkConsent);
 
     return () => {
-      window.removeEventListener("bplen_consent_updated", checkConsent);
+      window.removeEventListener(COOKIE_CONSENT_EVENT, checkConsent);
     };
   }, []);
 

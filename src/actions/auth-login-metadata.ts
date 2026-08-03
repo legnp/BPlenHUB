@@ -2,8 +2,10 @@
 
 import { getAdminDb } from "@/lib/firebase-admin";
 import * as admin from "firebase-admin";
+import { after } from "next/server";
 import { verifySignedSession } from "@/actions/auth-session";
 import { normalizeProvider } from "@/lib/auth/identity-guards";
+import { captureRequestProof } from "@/lib/request-proof";
 
 /**
  * BPlen HUB — Captura de origin/provider do login (metadado analitico).
@@ -52,11 +54,41 @@ export async function recordLoginOrigin(
     const snap = await ref.get();
     if (!snap.exists) return { success: false };
 
+    const provider = normalizeProvider(caller.provider);
+    const normalizedOrigin = normalizeOrigin(origin);
+
     await ref.update({
-      lastProvider: normalizeProvider(caller.provider),
-      lastOrigin: normalizeOrigin(origin),
+      lastProvider: provider,
+      lastOrigin: normalizedOrigin,
       lastLoginAt: admin.firestore.FieldValue.serverTimestamp(),
     });
+
+    // Serie de acessos na pasta do usuario. Os campos acima sao SOBRESCRITOS a
+    // cada entrada — respondem "quando foi a ultima vez", nunca "quando foram
+    // todas". Fora do caminho critico: login nao espera pelo Drive.
+    const matricula = snap.data()?.matricula;
+    if (typeof matricula === "string" && matricula) {
+      const proof = await captureRequestProof();
+      after(async () => {
+        try {
+          const { syncAccessLogToUserDrive } = await import("@/lib/drive-sync");
+          await syncAccessLogToUserDrive(matricula, {
+            provider,
+            origin: normalizedOrigin,
+            proof: {
+              ip: proof.ip,
+              userAgent: proof.userAgent,
+              deviceType: proof.deviceType,
+              location: proof.location,
+              acceptedAt: proof.capturedAt,
+            },
+          });
+        } catch (driveError: unknown) {
+          const driveMessage = driveError instanceof Error ? driveError.message : String(driveError);
+          console.warn("[auth-login-metadata] Falha ao registrar acesso no acervo:", driveMessage);
+        }
+      });
+    }
 
     return { success: true };
   } catch (error: unknown) {
