@@ -501,3 +501,68 @@ casarem, o teste quebra antes de a sessão errada aparecer para o membro.
 
 **Critério de aceite invertido, de propósito:** nesta fase **nada pode mudar para
 o membro**. Se mudar, é bug.
+
+### 8.10 Revisão da lista fechada — 3 → 5 tipos (Gestora, 2026-08-03)
+
+**Correção da Gestora:** Onboarding e Offboarding **são sessões em grupo**, mas
+**não devem ser servidos pelo tipo `Consultoria em Grupo`** — cada um tem tipo
+próprio, com o próprio nome. A lista fechada da 8.1 (3 títulos) passa a ter **5**.
+
+**Matriz aprovada** (sessão que o membro vê → tipo no Google):
+
+| Sessão que o membro vê | Serviço | Qtd | Tipo no Google | Vagas | Título hoje | Futuros a migrar |
+|---|---|---|---|---|---|---|
+| Consultoria de Feedback | BPL-001 Posicionamento | 1 | Consultoria Individual | 1 | Feedback Posicionamento de Carreira | 65 |
+| Devolutiva de Análise | BPL-002 Análise | 1 | Consultoria Individual | 1 | Devolutiva Analise Comportamental | 143 |
+| Devolutiva do Plano | BPL-003 Plano | 1 | Consultoria Individual | 1 | Consultoria Plano de Carreira | 117 |
+| 1ª a 10ª Sessão | BPL-005 MentoCoach | 10 | Consultoria Individual | 1 | MentoCoach | 78 |
+| 10 temas | BPL-004 GDC | 10 | Consultoria em Grupo | 10 | Orientação em Grupo | 52 |
+| Sessão de Onboarding | BPL-000 | 1 | **Onboarding** (novo) | 10 | Onboarding | 24 |
+| Sessão de Offboarding | BPL-006 | 1 | **Offboarding** (novo) | 10 | *(não existe ainda)* | 0 |
+| Agendar 1 to 1 | avulso | N | 1 to 1 | 1 | 1 to 1 | 221 |
+
+**`atende` resultante:**
+
+| Tipo | atende |
+|---|---|
+| `1-to-1` | **`[]` — VAZIO POR DECISÃO** (ver abaixo) |
+| `consultoria-individual` | BPL-001, BPL-002, BPL-003, BPL-005 |
+| `consultoria-em-grupo` | **só BPL-004** (BPL-000 e BPL-006 saem) |
+| `onboarding` (novo) | BPL-000 |
+| `offboarding` (novo) | BPL-006 |
+
+**`1 to 1` com `atende` vazio é DECISÃO, não pendência** (Gestora, 2026-08-03): o
+1 to 1 é avulso, não pertence a trilha nenhuma — "é seu próprio". Nunca preencher.
+
+> **Problema de comunicação que este caso expôs** (levantado pela Gestora): hoje o
+> `atende: []` do seed em `src/types/calendar-event-types.ts` significa "ainda não
+> decidido, preencha na tela". Depois que a Gestora preencheu dois e deixou o
+> terceiro vazio de propósito, **os dois estados ficaram indistinguíveis**. Regra
+> geral adotada: **decisão que se manifesta como AUSÊNCIA precisa de marca
+> positiva** — senão é indistinguível de esquecimento. Ver 8.11.
+
+**Decisões acessórias:** "Onboarding de Parceiros" (1 evento futuro) **fica fora**
+da lista fechada — não é jornada de membro. O tipo `Offboarding` é criado mesmo
+sem evento na agenda, para o fluxo já nascer resiliente a recebê-lo.
+
+### 8.11 Como marcar uma decisão que se manifesta como ausência
+
+Quatro camadas, da mais forte para a mais fraca. Para o caso do `1 to 1`, usar as
+três primeiras (a quarta é registro, não defesa):
+
+1. **Teste que trava a decisão.** Um teste nomeado pela decisão — "o tipo `1 to 1`
+   não atende trilha nenhuma: decisão, não esquecimento" — falha alto se alguém
+   "corrigir" o vazio. É a única camada que sobrevive a troca de pessoas.
+2. **Marca no próprio DADO.** O `atende` vive no Firestore, não no código: quem
+   inspeciona o dado não vê comentário de código. Um campo irmão
+   (`atendeDefinido: true`) separa "vazio por decisão" de "ninguém preencheu".
+3. **Texto na tela do admin**, ao lado do campo — onde a decisão é operada.
+4. **Registro na auditoria** (este documento / `F0-DECISIONS.md`). Necessário para
+   o histórico, insuficiente sozinho: ninguém lê doc antes de mexer no dado.
+
+**Precedente que funcionou:** a regra do bloqueio de agenda mora em
+`src/lib/booking/blocker.ts`, **junto do código que a aplica**, e o comentário
+registra por que o casamento é pelo radical `bloqu` (havia 5 eventos "Bloquado",
+sem o "e", escapando do filtro). Foi por estar no ponto de aplicação que a decisão
+continuou legível meses depois. O `atende` não tem equivalente porque a decisão
+mora no dado, não no código — daí a camada 2.
