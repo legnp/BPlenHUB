@@ -67,6 +67,26 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 - Itens do `00-PLAN.md` atualizados: nenhum (demanda ad-hoc da Gestora, fora da grade de
   fases). `BUGS.md`: BUG-117 registrado e corrigido.
 
+### Ajuste de UX pedido pela Gestora logo apos o deploy (mesmo dia)
+
+- Feedback: a pagina ficou com **dois seletores de cliente** (um da Devolutiva, outro dos
+  Instrumentos) e o de baixo nao dava para usar. Pedido: reaproveitar a selecao que ja
+  existe no topo e, se fizer sentido, organizar em sub-abas — "assim ja fica tudo
+  integrado, num so lugar".
+- Feito: o seletor foi **extraido** da Devolutiva para `ClientSelector` (mesmo markup e
+  mesmas classes, nenhum padrao visual novo) e subiu para a pagina. A escolha do cliente
+  agora e **unica** e vale para as duas secoes, que viraram **sub-abas** locais
+  ("Devolutiva Comportamental" e "Instrumentos") no mesmo padrao visual do `UsersTabs` —
+  mas por estado, nao por rota, para nao perder o cliente escolhido ao trocar de aba.
+  `ClientInstrumentsView` passou a receber `matricula` por prop e perdeu o seletor
+  proprio; a Devolutiva usa o `hideUserSelector`/`matricula` que **ja existiam** nela.
+- Detalhe que exigiu cuidado: a Devolutiva deriva o estado interno da prop **so na
+  montagem** (`useState(initialMatricula)`), entao trocar de cliente nao a atualizaria.
+  Resolvido com `key={matricula}` (remonta), em vez de sincronizar por efeito — o que
+  esbarraria na regra `set-state-in-effect` que estamos justamente reduzindo.
+- Validado de novo: eslint dos 3 arquivos 0 problemas, type-check limpo, 354 testes
+  verdes, build exit 0.
+
 ## [2026-08-03] Verificação: botão "Agendar 1 to 1" nos checkpoints do GDC (já existia)
 
 - A Gestora pediu para verificar, antes de implementar, se o botão "agendar 1 to 1" nos
