@@ -1,4 +1,4 @@
-import type { ContentType, SubStepConfig } from "@/types/journey";
+import type { SubStepConfig } from "@/types/journey";
 
 /**
  * BPlen HUB — Elegibilidade para a conclusao cruzada (BUG-118).
@@ -13,19 +13,21 @@ import type { ContentType, SubStepConfig } from "@/types/journey";
  * (`getMeetingFilterKeyword`/`eventMatchesSubstep`). Sem uma regra de elegibilidade,
  * concluir a 1a sessao marcava as dez (e desmarcar uma desmarcava as dez).
  *
- * Duas regras, uma de semantica e outra da forma do dado:
+ * A regra e uma so: **chave repetida dentro da etapa nao cruza.** Se o mesmo
+ * `type:referenceId` aparece mais de uma vez, sao ocorrencias contaveis (1a, 2a, 3a...),
+ * nao a mesma atividade. Vale para qualquer tipo — protege tambem um servico futuro que
+ * repita uma survey de proposito (um check-in mensal, por exemplo).
  *
- * 1. **Ocorrencia nao cruza.** Uma sessao e um EVENTO: participar de uma nao e
- *    participar de outra, em servico nenhum. Vale mesmo quando a chave aparece uma
- *    unica vez na etapa.
- * 2. **Chave repetida na etapa nao cruza.** Se o mesmo `type:referenceId` aparece mais
- *    de uma vez, sao ocorrencias contaveis (1a, 2a, 3a...), nao a mesma atividade.
- *    Protege um servico futuro que repita uma survey de proposito (um check-in mensal,
- *    por exemplo) sem depender de alguem lembrar desta regra.
+ * Nao ha vazamento de uma etapa para outra: a chave repetida e excluida ja na COLETA,
+ * entao a conclusao de uma sessao nunca entra no conjunto que propaga.
+ *
+ * A primeira versao desta correcao tinha uma segunda regra — "`meeting` nunca cruza",
+ * pelo argumento de que sessao e ocorrencia. Era larga demais: a **Devolutiva de
+ * Analise** e o MESMO checkpoint (`ss-meeting-devolutiva-analise-comportamental`) nas
+ * etapas `analise-comportamental` e `mentocoach`, uma unica vez em cada. E uma unica
+ * sessao, a que o membro participa uma vez — sincronizar as duas pontas esta correto, e
+ * a regra derrubava isso. Removida.
  */
-
-/** Tipos que representam ocorrencia no tempo, nao conteudo produzido uma vez. */
-const OCCURRENCE_TYPES: ReadonlySet<ContentType> = new Set<ContentType>(["meeting"]);
 
 type ActivityLike = Pick<SubStepConfig, "type" | "referenceId">;
 
@@ -59,6 +61,5 @@ export function isCrossCompletable(
   repeatedKeys: ReadonlySet<string>
 ): boolean {
   if (!sub.referenceId) return false;
-  if (OCCURRENCE_TYPES.has(sub.type)) return false;
   return !repeatedKeys.has(activityKeyOf(sub));
 }

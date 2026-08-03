@@ -25,12 +25,21 @@ const MENTOCOACH = Array.from({ length: 10 }, (_, i) =>
   sub(`ss-meeting-sessao-mentocoach-${i + 2}`, "meeting", "sessao-mentocoach")
 );
 
-/** Forma real da etapa Analise Comportamental: instrumentos distintos, sem repeticao. */
+/**
+ * Forma real da etapa Analise Comportamental: 4 surveys + a Devolutiva de Analise.
+ * Os CINCO ids abaixo aparecem tambem dentro da etapa `mentocoach` (uma unica vez la),
+ * porque uma contratacao de MentoCoach embute a estrutura da analise.
+ */
 const ANALISE = [
   sub("ss-survey-disc", "survey", "disc"),
-  sub("ss-survey-pre", "survey", "pre_analise_comportamental"),
-  sub("ss-meeting-devolutiva", "meeting", "devolutiva-analise-comportamental"),
+  sub("ss-survey-preferencias_reconhecimento", "survey", "preferencias_reconhecimento"),
+  sub("ss-survey-preferencias_aprendizado", "survey", "preferencias_aprendizado"),
+  sub("ss-survey-gestao_tempo", "survey", "gestao_tempo"),
+  sub("ss-meeting-devolutiva-analise-comportamental", "meeting", "devolutiva-analise-comportamental"),
 ];
+
+/** Etapa MentoCoach como esta em producao: a analise embutida + as 10 sessoes. */
+const MENTOCOACH_COMPLETO = [...ANALISE, ...MENTOCOACH];
 
 describe("repeatedActivityKeys — ocorrencias contaveis dentro da etapa", () => {
   it("detecta a chave repetida das 10 sessoes", () => {
@@ -48,16 +57,28 @@ describe("repeatedActivityKeys — ocorrencias contaveis dentro da etapa", () =>
 
 describe("isCrossCompletable — quem participa da conclusao cruzada", () => {
   it("NENHUMA das 10 sessoes cruza: concluir uma nao pode marcar as outras", () => {
-    const repeated = repeatedActivityKeys(MENTOCOACH);
+    const repeated = repeatedActivityKeys(MENTOCOACH_COMPLETO);
     for (const sessao of MENTOCOACH) {
       expect(isCrossCompletable(sessao, repeated)).toBe(false);
     }
   });
 
-  it("sessao unica na etapa tambem nao cruza — participar e ocorrencia, nao conteudo", () => {
-    const repeated = repeatedActivityKeys(ANALISE);
-    const devolutiva = ANALISE[2];
-    expect(isCrossCompletable(devolutiva, repeated)).toBe(false);
+  it("a Devolutiva de Analise CRUZA: e a mesma sessao nas duas etapas", () => {
+    // Regressao do ajuste de 2026-08-03: a primeira versao excluia todo `meeting` da
+    // conclusao cruzada e quebrava justamente este caso — o membro teria que fechar a
+    // MESMA devolutiva duas vezes, uma em cada etapa.
+    const devolutiva = ANALISE[4];
+
+    expect(isCrossCompletable(devolutiva, repeatedActivityKeys(ANALISE))).toBe(true);
+    expect(isCrossCompletable(devolutiva, repeatedActivityKeys(MENTOCOACH_COMPLETO))).toBe(true);
+  });
+
+  it("na mesma etapa, a analise embutida cruza e as sessoes nao", () => {
+    const repeated = repeatedActivityKeys(MENTOCOACH_COMPLETO);
+    ANALISE.forEach((atividade) => {
+      expect(isCrossCompletable(atividade, repeated)).toBe(true);
+    });
+    expect(isCrossCompletable(MENTOCOACH[0], repeated)).toBe(false);
   });
 
   it("survey e formulario continuam cruzando — e o que sustenta os instrumentos modulares", () => {

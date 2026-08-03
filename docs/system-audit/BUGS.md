@@ -3573,6 +3573,13 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   se repete dentro da etapa nunca cruza — são ocorrências contáveis. Valem nos dois
   sentidos: não recebem conclusão de uma irmã nem são desmarcadas junto com ela.
   Survey e formulário seguem cruzando (é o que sustenta os instrumentos modulares).
+  **Ajuste no mesmo dia (aprovado pela Gestora): a regra (1) foi REMOVIDA.** Era larga
+  demais — `ss-meeting-devolutiva-analise-comportamental` é o MESMO checkpoint nas etapas
+  `analise-comportamental` e `mentocoach` (uma vez em cada), e é uma única sessão, à qual
+  o membro comparece uma vez; a regra obrigava a fechá-la duas vezes. A regra (2) sozinha
+  já resolve o BUG-118 (as 10 sessões são chave repetida) e preserva a devolutiva. Não há
+  vazamento: a chave repetida é excluída já na coleta, então a conclusão de uma sessão
+  nunca entra no conjunto que propaga. Teste de regressão cobre a devolutiva compartilhada.
 - Reparo do dado: `scripts/fix-cross-completed-sessions.js`. Não adivinha nada — quem
   opera informa os ids a PRESERVAR (`--keep`), o resto do grupo repetido sai de
   `completedSubSteps`/datas e o status da etapa + `overallProgress` são recalculados com
