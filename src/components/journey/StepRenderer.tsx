@@ -614,7 +614,7 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
                          className="flex items-center gap-2 px-5 py-2.5 bg-[var(--input-bg)]/30 hover:bg-[var(--input-bg)]/50 border border-[var(--border-primary)] rounded-full text-[10px] font-black uppercase tracking-wider transition-all hover:scale-105 active:scale-95 shadow-sm text-[var(--text-primary)]"
                       >
                          <CalendarIcon size={14} className="text-amber-500" />
-                         <span>Agendar Sessao 1-to-1</span>
+                         <span>Agendar Sessão 1 to 1</span>
                       </Link>
                    )}
                 </div>

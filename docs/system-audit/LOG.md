@@ -24,6 +24,26 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-03] Verificação: botão "Agendar 1 to 1" nos checkpoints do GDC (já existia)
+
+- A Gestora pediu para verificar, antes de implementar, se o botão "agendar 1 to 1" nos
+  checkpoints do serviço GDC a partir do 2º já tinha sido pedido/implantado.
+- **Já estava implantado** desde `4fba928` (2026-06-26, "feat: sync GDC checkpoints, add
+  calendar theme filtering, **1-to-1 shortcut**, and dynamic subcheckpoints"). Fica em
+  `src/components/journey/StepRenderer.tsx`, no `case "meeting"`, sob a condição
+  `stageId === "gestao-e-desenvolvimento" && parseFloat(substep.order || "0") >= 2` —
+  exatamente "a partir do 2º checkpoint". Cobre as 10 paradas do GDC, que são todas do
+  tipo agendamento (`referenceId="orientacao-em-grupo"`, categoria "Agendamentos
+  (Calendário)"). O botão leva para `/hub/membro/gestao_agenda`.
+- **Desvio corrigido de passagem** (copy pura, um arquivo): o rótulo era "Agendar Sessao
+  1-to-1" — sem acento em "Sessão" (Lição 11) e com a grafia "1-to-1", divergente do
+  padrão "1 to 1" usado no menu do header, na Gestão de Carreira e no
+  `nomenclature.ts`. Passou a ser **"Agendar Sessão 1 to 1"**.
+- Validado: eslint do arquivo **0 erros** (10 warnings de imports mortos, pré-existentes
+  e alheios), type-check limpo, 345 testes verdes (1ª execução teve 2 falhas espúrias de
+  setup, verdes na reexecução — flakiness conhecida), build exit 0.
+- Sem bug novo no `BUGS.md`: a funcionalidade estava correta, só o texto destoava.
+
 ## [2026-08-02] BUG-116: recepção sobreposta pelo cabeçalho + limpeza do `hub/page.tsx`
 
 - Relato da Gestora (com print): na tela de boas-vindas do primeiro acesso, o logo, o
