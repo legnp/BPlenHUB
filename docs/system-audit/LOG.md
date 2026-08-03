@@ -24,6 +24,38 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-03] Tipos de evento: estado real da migração (levantamento a pedido da Gestora)
+
+- A Gestora suspeitou que o enxugamento de tipos de evento "talvez ainda esteja confuso no
+  sistema, não bem implementado, causando ruídos". **Está certa, e o número é alto.**
+- O desenho existe e está aprovado: `AGENDA-SYNC-DESIGN.md` seção 8 — separar o SLOT
+  (Google: quando) do SIGNIFICADO (HUB: o quê), com lista fechada de títulos genéricos.
+  **Fase 3.1 concluída** (PR #120): `Settings/CalendarEventTypes` + tela de admin + o sync
+  gravando `tipoId`. **Fases 3.2 a 3.5 NÃO feitas.**
+- Estado medido na base (sonda read-only):
+  - `Settings/CalendarEventTypes` tem **3 tipos**: `1-to-1` (atende=**[] VAZIO**),
+    `consultoria-individual` (atende BPL-002, BPL-003, BPL-001, BPL-005) e
+    `consultoria-em-grupo` (atende BPL-004, BPL-000, BPL-006).
+  - **Só 328 de 1358 eventos (24%) têm `tipoId`.** E `tipoId` é lido por UM único
+    consumidor (`isOneToOneEvent`); todo o resto — jornada, filtros, casamento
+    parada↔evento — segue casando por TEXTO (`meeting-keyword` + `Tema:`).
+  - **495 eventos FUTUROS ainda com títulos do modelo antigo**: Devolutiva Análise
+    Comportamental (143), Consultoria Plano de Carreira (117), MentoCoach (78), Feedback
+    Posicionamento (65), Orientação em Grupo (52), Onboarding (24), Onboarding de
+    Parceiros (1).
+  - Typo no dado: **"Bloquado"** (5 eventos) convivendo com "Bloqueado" (141).
+- **Contradição a decidir:** o design fixou **3** títulos e a config em produção tem 3,
+  mas a Gestora citou **5** (somando Onboarding e Offboarding). Hoje esses dois são
+  servidos DENTRO de `consultoria-em-grupo` via `atende`. São dois modelos diferentes.
+- **Ligação com o trabalho de hoje (não é assunto paralelo):** enquanto a Fase 3.3 não
+  entrar, a jornada casa parada↔evento por texto. Renomear ou apagar os eventos antigos
+  ANTES disso quebra o casamento e o membro perde o vínculo com a sessão agendada. Logo,
+  a ordem correta é **3.3 antes da limpeza de dados** — e a limpeza das chaves de cota
+  (D3 da Fase 0) fica trivial depois, porque o vocabulário passa a ser um só.
+- `grantedQuotas` tem **duas fontes**: editável no admin (`AdminProductBuilder`) e gerado
+  pelo `portfolio_parser.py`. O `sync_live_db.js` usa `set()` sem merge — edição feita só
+  pelo admin é revertida num sync futuro se a planilha não acompanhar.
+
 ## [2026-08-03] Descasamento cota x checkpoints — FASE 0 (levantamento, aguarda decisão)
 
 - Contexto: achado adjacente ao BUG-118. As paradas de sessão vêm do `deliverySteps` do
