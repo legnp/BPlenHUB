@@ -24,6 +24,36 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-04] Chat de execução — Fase 0 da Área de Parceiros VALIDADA em produção e CONCLUÍDA
+
+- Chat/sessão: chat de execução (mesma sessão da entrega abaixo). Fast-forward na `main`
+  autorizado explicitamente pela Gestora (`d07e2d9..159cb17`), pelo precedente das Fases de
+  auth: o preview não autentica a área logada (`BUG-030`), então o teste é em produção.
+- **Roteiro executado pela Gestora em produção, resultado: passou por completo** — concessão
+  do selo + taxa pela ficha do admin, alternância Membro/Parceiro no menu, entrada em
+  `/hub/partners`, retorno ao contexto de membro, e revogação do selo expulsando da área.
+- **Auditoria de fechamento** (pedida pela Gestora antes de declarar a fase concluída),
+  contra `CLAUDE.md` + `ACCESS-MODEL-DESIGN.md`:
+  - Zero emoji nas 406 linhas adicionadas; zero `any` explícito; zero cor hardcoded (só
+    theme vars); nenhum nome de infraestrutura na interface do cliente.
+  - `firestore.rules` não tocada — como o plano previa (§2), a Fase 0 não cria coleção nova.
+  - Identidade sempre da sessão verificada: o gate usa `verifySignedSession` +
+    `resolveUserPermissions`; a 2a camada usa `fetchUserPermissionsStatus`, que tem trava de
+    dono (`BUG-020`); a gravação do selo/taxa passa por `requireAdmin`. Nenhum caminho aceita
+    matrícula ou uid por parâmetro do client (Lição 44).
+  - Store Zustand não é fonte de autorização (verificado: o componente só escreve nela; o
+    que renderiza vem do selo, e o que autoriza vem do servidor).
+  - Estrutura de pastas conforme o plano (§10): `src/lib/partners/`, `src/store/`,
+    `src/app/hub/partners/`. Nenhum `AtmosphericLoading` novo era necessário (não há tela de
+    carregamento nova nesta fase).
+- **1 desvio encontrado e corrigido na própria auditoria**: os rótulos do menu de parceiro
+  tinham nascido como literais dentro do `HubHeader`, enquanto TODO o menu do hub vem do
+  `BPLEN_NOMENCLATURE` (regra 3 do `CLAUDE.md` — combate ao hardcoded). Movidos para
+  `src/config/nomenclature.ts` (`partner_area`, `partnership_section`, `context_label`,
+  `context_member`, `context_partner`). Revalidado: lint sem erro, `tsc` limpo, build exit 0,
+  suíte 46/46 arquivos e 417/417 testes.
+- **Fase 0: CONCLUÍDA.** Próximo passo autorizado pela Gestora: Fase 1 (Jornada do Parceiro).
+
 ## [2026-08-04] Chat de execução — Área de Parceiros, Fase 0 (fundamentos: selo, gate, contexto)
 
 - Chat/sessão: chat de execução, worktree próprio (`claude/partner-area-phase-0-2f3ed3`).

@@ -9,6 +9,14 @@ export const BPLEN_NOMENCLATURE = {
     logging_out: "Saindo...",
     sync_status: "Sincronizado",
     social_label: "Social Media",
+
+    // Área de Parceiros — rótulos do menu e da alternância de contexto.
+    // Só aparecem para quem tem o selo de parceiro.
+    partner_area: "Área de Parceiros",
+    partnership_section: "Parceria",
+    context_label: "Contexto",
+    context_member: "Membro",
+    context_partner: "Parceiro",
   },
 
   // --- [PÁGINA: PRIMEIROS PASSOS] (Trilha de Boas-vindas) ---

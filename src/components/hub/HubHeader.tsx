@@ -46,8 +46,8 @@ interface ThemeOption {
 
 /** Destino canônico de cada contexto do hub (PARTNER-AREA-EXPANSION-PLAN.md secao 3). */
 const CONTEXT_OPTIONS: { id: HubContext; label: string; href: string }[] = [
-  { id: "member", label: "Membro", href: "/hub" },
-  { id: "partner", label: "Parceiro", href: "/hub/partners" },
+  { id: "member", label: BPLEN_NOMENCLATURE.navigation.context_member, href: "/hub" },
+  { id: "partner", label: BPLEN_NOMENCLATURE.navigation.context_partner, href: "/hub/partners" },
 ];
 
 const THEMES: ThemeOption[] = [
@@ -177,9 +177,9 @@ export function HubHeader() {
     ...(hasPartnerArea
       ? [
           {
-            label: "Parceria",
+            label: BPLEN_NOMENCLATURE.navigation.partnership_section,
             items: [
-              { href: "/hub/partners", icon: Handshake, label: "Área de Parceiros" },
+              { href: "/hub/partners", icon: Handshake, label: BPLEN_NOMENCLATURE.navigation.partner_area },
             ],
           },
         ]
@@ -275,7 +275,7 @@ export function HubHeader() {
                        {/* Alternância de contexto Membro/Parceiro — só existe para quem tem o selo */}
                        {hasPartnerArea && (
                           <div className="px-2 space-y-1.5">
-                             <p className="text-[7px] font-black text-gray-500 uppercase tracking-[0.2em]">Contexto</p>
+                             <p className="text-[7px] font-black text-gray-500 uppercase tracking-[0.2em]">{BPLEN_NOMENCLATURE.navigation.context_label}</p>
                              <div className="grid grid-cols-2 gap-1 p-1 rounded-2xl bg-white/5 border border-white/5">
                                 {CONTEXT_OPTIONS.map((option) => {
                                    const isCurrent = activeContext === option.id;
