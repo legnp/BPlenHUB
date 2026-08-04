@@ -24,6 +24,44 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-03] Chat de execucao — catalogo sincronizado + tipos de evento 3 -> 5
+
+- **Catalogo APLICADO em producao** (`sync_live_db.js`): GDC `1-to-1` 10->11,
+  MentoCoach 12->**0**, Pacote Lider 10->11, Pacote Embaixador 22->11. Backup
+  automatico em `products_backup_20260804131842`, 0 produtos arquivados. Conferido
+  depois do sync: **0 divergencias** entre payload e banco.
+- **Tipos de evento: lista fechada de 3 para 5.** Correcao da Gestora: Onboarding e
+  Offboarding sao sessoes em grupo, mas ganham tipo PROPRIO em vez de serem servidos
+  pelo `Consultoria em Grupo` — cada um se chama pelo proprio nome. O `atende` do grupo
+  fica so com o GDC (BPL-004); `onboarding` atende BPL-000 e `offboarding` BPL-006,
+  ambos com 10 vagas. Seed atualizado + `scripts/migrate-calendar-event-types.js`
+  (dry-run por padrao) aplicado na configuracao viva. Conferido: 5 tipos em
+  `Settings/CalendarEventTypes`.
+- **Debito pago de passagem:** a normalizacao do titulo do Google estava em **tres
+  copias** (`sync.ts` resolvendo o `tipoId`, `actions/calendar-event-types.ts` validando
+  titulo duplicado, e uma terceira dentro do proprio teste). Copia diverge por
+  construcao — bastava uma ganhar tolerancia a mais para a tela aceitar dois tipos que o
+  sync trataria como o mesmo, deixando o `tipoId` ambiguo em silencio. Extraida para
+  `src/lib/calendar/event-title.ts`, mesma licao do `lib/booking/blocker.ts`. O teste
+  passou a exercitar a funcao real.
+- **Teste de regressao ajustado, nao afrouxado:** "Onboarding" saiu da lista de titulos
+  aposentados (a agenda ja usa esse titulo e agora ele e classificado de proposito),
+  enquanto "Onboarding de Parceiros" continua fora por nao ser jornada de membro. Os
+  demais titulos antigos seguem sem casar, como manda a transicao.
+- **Levantamento que embasou o plano da Gestora de limpar o Google Calendar:** dos 753
+  eventos com titulo antigo (479 futuros), apenas **9 tem inscrito** e so **2 sao
+  futuros** — ambos da `BP-002` (conta de teste). E o `sync` so limpa a janela de
+  [agora, +90 dias], entao **evento passado nunca e apagado** pela sincronizacao: o
+  historico de sessoes dos clientes esta a salvo. Apagar os 477 futuros sem inscrito e
+  risco zero.
+- Validado: eslint dos arquivos tocados 0 erros, type-check limpo, **398 testes** verdes
+  (uma duplicata de teste que eu havia criado foi removida — o teste ja existia em
+  `__tests__/lib/`), build exit 0.
+- Convivencia: segui a `AGENTS-SCOPES.md` publicada pelo chat de planejamento — push
+  rejeitado foi resolvido com rebase (nunca force), o conflito do `LOG.md` manteve as
+  duas entradas, usei **worktree separado** para nao encostar na arvore compartilhada, e
+  devolvi o repositorio na branch em que o encontrei.
+
 ## [2026-08-03] Chat de execucao — Passo 1 do descasamento: catalogo (grantedQuotas)
 
 - Decisoes da Gestora: MentoCoach **0** avulsos de 1 to 1, GDC **11**, Pacote Lider
