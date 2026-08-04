@@ -24,6 +24,43 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-04] Chat de planejamento — Plano da Área de Parceiros APROVADO, handoff para execução
+
+- Chat/sessão: chat de planejamento. **Docs-only, sem tocar código.** Confirmado contra git
+  (Lição 45): `main == origin/main == 5fa723c` no momento deste commit.
+- **Escopo**: demanda nova da Gestora (fora da grade da auditoria, como `EXP-01`/aba
+  Autenticações/E-mail V01) — expansão de plataforma para criar uma "Área de Parceiros" no hub
+  (mesma conta/matrícula, role novo concedido via admin, jornada própria, agenda sem cota,
+  Gestão de Indicações com ciclos de repasse mensais).
+- **Processo seguido**: análise de viabilidade primeiro (6 investigações paralelas read-only sobre
+  motor de jornada, identidade/`firestore.rules`, Zustand/concessão de permissão via admin, agenda/
+  booking/sync, `SurveyEngine`/consentimento, design system/menu/contratos), depois documento de
+  plano técnico completo, com 3 rodadas de revisão até a Gestora aprovar — a v2.1 e a v2.2 corrigem
+  o mecanismo de casamento evento-calendário↔checkpoint da jornada, que mudou de fato NO MESMO DIA
+  por uma sessão de execução paralela (Fase 3.3 da migração de tipos de evento, ver entrada abaixo)
+  — boa demonstração prática da Lição 45 (confirmar contra o estado real antes de tratar como fato).
+- **Entregue**: `docs/system-audit/PARTNER-AREA-EXPANSION-PLAN.md` (v2.2, aprovado). Cobre estrutura
+  de dados no Firestore (tudo sob `User/{matricula}`, zero mudança em `firestore.rules`), o toggle
+  de contexto Membro/Parceiro via Zustand + gate de rota no servidor, a captura de indicação via a
+  pergunta já existente "Como você nos conheceu?" da Welcome Survey (sem código/link novo, decisão
+  da Gestora), o mapa de fluxo dos status do ciclo de repasse (Mermaid), tabela de arquivos legados
+  tocados por subsistema com mitigação de risco, e 6 fases de execução propostas.
+- **Decisões de negócio capturadas** (ver §9 do documento): HashCPF nunca exposto ao parceiro
+  (server-only); geração de ciclo mensal por ação do Admin, não cron (evita disputa pelo único slot
+  de cron do plano Hobby); comissão fixa por parceiro; Consultor e Parceiro são conceitos distintos
+  (sem sobreposição com `BUG-112`); CNPJ informativo, sem trava de unicidade; volume inicial de
+  parceiros baixo, infra atual (Vercel Hobby + Firebase Spark) comporta o MVP.
+- **Achado técnico que virou parte do plano**: o checkpoint "Reunião de Onboarding" da jornada de
+  parceiro casa automaticamente com o evento "Onboarding de Parceiros" (já existente no Google
+  Calendar, deliberadamente fora dos 5 tipos migrados por não ser jornada de membro) via o mecanismo
+  mecânico já genérico da Fase 3.3 (`CalendarEventType.atende`/`serviceCode`) — basta um 6º tipo
+  configurado pela tela de admin existente, zero código novo.
+- **Não entra em nenhuma % do checklist da auditoria** — é expansão de plataforma fora da grade,
+  como `EXP-01`. Registrado aqui e no `00-PLAN.md` só para a fonte de verdade refletir a decisão.
+- **Handoff**: pronto para a conta de EXECUÇÃO iniciar a Fase 0 (flag `partner_area_access` +
+  `partnerCommissionPercent` em `User_Permissions/access`, gate de rota em `hub/partners/layout.tsx`,
+  store Zustand do toggle, `HubHeader` condicional) a partir do documento aprovado.
+
 ## [2026-08-04] Chat de execucao — Fase 3.3 (parte 1): oferta por tipo, vinculo por id e a VAGA de volta
 
 - Contexto: a Gestora limpou o Google Calendar e recriou os eventos com os titulos

@@ -1685,6 +1685,12 @@ sem decisão pendente ou adiados de propósito.
   Gestora no console do Firebase, efeito confirmado por sonda read-only.
 - **EXP-01:** fora do checklist da auditoria; represado por decisão da
   Gestora até o fim desta.
+- **Área de Parceiros — PLANO APROVADO (2026-08-04), aguardando execução.** Expansão de
+  plataforma fora da grade (como `EXP-01`): nova área do hub para parceiros (role via admin,
+  jornada própria, agenda sem cota, Gestão de Indicações com ciclos de repasse). Plano técnico
+  completo em `PARTNER-AREA-EXPANSION-PLAN.md` (v2.2) — estrutura de dados, zero mudança em
+  `firestore.rules`, toggle de contexto via Zustand, mapa de fluxo dos ciclos, arquivos legados
+  tocados por subsistema. Não entra em nenhuma % desta auditoria.
 - **Aba "Autenticações" (funil de Recepção) do admin — ENTREGUE EM PRODUÇÃO**
   (2026-07-29/30, PRs #163/#164, `AUTH-TRACKING-DESIGN.md`). Feature read-only
   de observabilidade **fora da grade** de fases/tracks/bugs (como `EXP-01`):
