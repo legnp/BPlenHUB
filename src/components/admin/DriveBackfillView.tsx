@@ -192,8 +192,12 @@ export function DriveBackfillView() {
         )}
       </AnimatePresence>
 
-      {/* Controles */}
-      <div className="flex flex-wrap items-end gap-4 p-5 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-[2rem] shadow-2xl backdrop-blur-3xl">
+      {/* Controles.
+          `relative z-50`: o `backdrop-blur` deste card cria contexto de
+          empilhamento proprio, entao o z-index do dropdown do seletor fica preso
+          aqui dentro e os cards seguintes (que vem depois no DOM) pintavam por
+          cima da lista de membros. Mesma solucao ja usada no painel de F&S. */}
+      <div className="relative z-50 flex flex-wrap items-end gap-4 p-5 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-[2rem] shadow-2xl backdrop-blur-3xl">
         {/* Selecao por busca (nome, matricula ou apelido). O campo de texto livre
             que existia aqui antes exigia a matricula exata, mas exibia uma lupa —
             prometia busca e nao entregava. Reusa o seletor da Jornada do Cliente. */}
