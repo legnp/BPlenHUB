@@ -26,7 +26,9 @@ import { getUpcomingEvents, getUserBookingsAction, submitEvaluationAction } from
 import { UserBooking, GoogleCalendarEvent } from "@/types/calendar";
 import { SurveyEngine } from "@/components/forms/SurveyEngine";
 import { getSurveyConfig } from "@/config/surveys";
-import { eventMatchesSubstep } from "@/lib/journey/booking-match";
+import { eventMatchesSubstep, bookingMatchesSubstep } from "@/lib/journey/booking-match";
+import { slotServesStage } from "@/lib/calendar/slot-offer";
+import { getCalendarEventTypes } from "@/actions/calendar-event-types";
 import { useAuthContext } from "@/context/AuthContext";
 import { BPLEN_NOMENCLATURE } from "@/config/nomenclature";
 import { checkSurveyCompletedAction } from "@/actions/submit-survey";
@@ -39,6 +41,8 @@ interface StepRendererProps {
   onComplete: () => void;
   context?: "primeiros_passos" | "member_journey";
   stageId?: string;
+  /** `serviceCode` da etapa — resolve quais slots da agenda servem esta parada. */
+  serviceCode?: string;
   kicker?: string;
   icon?: string;
 }
@@ -47,7 +51,7 @@ interface StepRendererProps {
  * BPlen HUB — StepRenderer 🧬🛡️
  * Orchestrator that renders the appropriate content type for a journey substep.
  */
-export function StepRenderer({ substep, status, onComplete, context = "member_journey", stageId, kicker, icon }: StepRendererProps) {
+export function StepRenderer({ substep, status, onComplete, context = "member_journey", stageId, serviceCode, kicker, icon }: StepRendererProps) {
   const { user, matricula, nickname } = useAuthContext();
 
   const DynamicIcon = ({ name, size = 18, className }: { name?: string, size?: number, className?: string }) => {
@@ -85,16 +89,23 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
   // vale acoplar a identidade dele as deps do `UserBookings`. (Com o BUG-100
   // corrigido os hooks ja rodam todos antes do early return; um hook a mais aqui
   // nao violaria mais a ordem — mas continua sem ganho real.)
+  // Identificador primeiro, texto so para agendamento anterior a Fase 3.3.
   const matchesThisSubstep = (booking: UserBooking) =>
-    eventMatchesSubstep(booking.eventDetail, substep);
+    bookingMatchesSubstep(booking, substep);
 
   const loadData = React.useCallback(async () => {
     setLoadingEvents(true);
     try {
-      const allEvents = await getUpcomingEvents();
-
-      // Mesma regra do cabecalho e da lista de confirmados (BUG-099).
-      const filteredEvents = allEvents.filter(ev => eventMatchesSubstep(ev, substep));
+      const [allEvents, tipos] = await Promise.all([
+        getUpcomingEvents(),
+        getCalendarEventTypes(),
+      ]);
+      // Oferta por IDENTIFICADOR: o tipo do slot declara quais servicos ele atende
+      // (Fase 3.3). O casamento por texto fica como fallback para evento ainda sem
+      // tipo — com os titulos genericos, nenhuma palavra-chave casa mais.
+      const filteredEvents = allEvents.filter(ev =>
+        slotServesStage(ev, tipos, serviceCode) || eventMatchesSubstep(ev, substep)
+      );
       setEvents(filteredEvents);
 
       if (matricula) {
@@ -106,7 +117,7 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
     } finally {
       setLoadingEvents(false);
     }
-  }, [substep.type, substep.referenceId, substep.title, matricula]);
+  }, [substep.type, substep.referenceId, substep.title, matricula, serviceCode]);
 
   React.useEffect(() => {
     // BUG-100: parada travada nao dispara leitura de agenda (getUpcomingEvents +
@@ -651,6 +662,11 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
                          <Calendar 
                             events={events} 
                             onBookingSuccess={() => { loadData(); }}
+                            origin={stageId ? {
+                              stageId,
+                              subStepId: substep.id,
+                              serviceLabel: substep.title,
+                            } : undefined}
                          />
                       </div>
                    )}

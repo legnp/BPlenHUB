@@ -11,6 +11,7 @@ import { isBlockerSummary } from "@/lib/booking/blocker";
 import { updateGlobalProgramacaoRegistryAction } from "./post-event";
 import { getCalendarEventTypes } from "@/actions/calendar-event-types";
 import { normalizeEventTitle } from "@/lib/calendar/event-title";
+import { resolveSlotCapacity } from "@/lib/calendar/slot-offer";
 
 // O casamento titulo do Google <-> tipo vive em `@/lib/calendar/event-title` (fonte
 // unica, compartilhada com a validacao da tela de admin).
@@ -138,14 +139,18 @@ export async function runCalendarSync(options: { guardMassDeletion?: boolean } =
 
       ops.push({ kind: "set", ref, data: {
         summary: item.summary,
-        // Etapa 3.1 — so classifica; nenhum consumidor le isto ainda.
         tipoId: tipo?.id ?? null,
         start: item.start?.dateTime || item.start?.date,
         end: item.end?.dateTime || item.end?.date,
         location: item.location || "",
         htmlLink: item.htmlLink,
         meetingLink: item.hangoutLink || "",
-        totalCapacity: capacityMatch ? parseInt(capacityMatch[1]) : 0,
+        // A capacidade passou a vir do TIPO (`vagasPadrao`), nao mais de "Vagas: N" no
+        // corpo do evento. Quando esses campos sairam do Google (limpeza de 2026-08-04),
+        // todo evento novo passou a gravar 0 — e o guard do agendamento trata 0 como
+        // ILIMITADO, entao um slot de 1 vaga aceitava inscricao sem fim. A descricao
+        // fica como fallback para evento legado ainda sem tipo.
+        totalCapacity: resolveSlotCapacity(tipo ?? null, capacityMatch ? parseInt(capacityMatch[1]) : 0),
         mentor: mentorMatch ? mentorMatch[1].trim() : "",
         theme: themeMatch ? themeMatch[1].trim() : undefined,
         slug: getEventStandardSlug(item.summary || "", item.start?.dateTime || item.start?.date || "", item.id),

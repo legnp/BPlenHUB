@@ -54,7 +54,14 @@ export async function bookEventAction(
   matricula?: string,
   nickname?: string,
   oneToOneData?: { type: string; expectations: string },
-  leadInfo?: { name?: string; phone?: string }
+  leadInfo?: { name?: string; phone?: string },
+  /**
+   * Parada da jornada de onde o agendamento partiu (Fase 3.3). Gravada nos dois
+   * documentos para amarrar agendamento <-> checkpoint por identificador, em vez de
+   * deduzir do texto do titulo — que, com os titulos genericos, nao distingue a 1a da
+   * 10a sessao de MentoCoach.
+   */
+  origin?: { stageId: string; subStepId: string; serviceLabel: string }
 ) {
   try {
     // Guard de sessao: fluxo de membro exige sessao propria (ou admin); funil de
@@ -185,6 +192,9 @@ export async function bookEventAction(
         eventSummary: eventData.summary || "",
         oneToOneData: oneToOneData || null,
         leadInfo: leadInfo || null,
+        stageId: origin?.stageId ?? null,
+        subStepId: origin?.subStepId ?? null,
+        serviceLabel: origin?.serviceLabel ?? null,
         // Marca a reserva que DE FATO debitou cota 1:1 (BUG-013). O estorno no
         // cancelamento so credita reservas com esta flag — nunca as anteriores a
         // trava (que nunca consumiram), evitando creditar saldo do nada.
@@ -203,6 +213,9 @@ export async function bookEventAction(
           eventSummary: eventData.summary || "",
           category: (eventData.summary || "").toLowerCase().includes("1 to 1") ? "1to1" : "geral",
           oneToOneData: oneToOneData || null,
+          stageId: origin?.stageId ?? null,
+          subStepId: origin?.subStepId ?? null,
+          serviceLabel: origin?.serviceLabel ?? null,
           attendanceStatus: "pending"
         }, { merge: true });
       }

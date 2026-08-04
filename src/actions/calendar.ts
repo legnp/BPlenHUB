@@ -60,9 +60,10 @@ export async function bookEventAction(
   matricula?: string,
   nickname?: string,
   oneToOneData?: { type: string; expectations: string },
-  leadInfo?: { name?: string; phone?: string }
+  leadInfo?: { name?: string; phone?: string },
+  origin?: { stageId: string; subStepId: string; serviceLabel: string }
 ) {
-  return Booking.bookEventAction(eventId, userUid, userEmail, matricula, nickname, oneToOneData, leadInfo);
+  return Booking.bookEventAction(eventId, userUid, userEmail, matricula, nickname, oneToOneData, leadInfo, origin);
 }
 
 export async function cancelBookingAction(matricula: string, bookingId: string, eventId: string, userUid: string) {

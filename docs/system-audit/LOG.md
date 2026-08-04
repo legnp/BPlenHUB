@@ -24,6 +24,47 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-04] Chat de execucao — Fase 3.3 (parte 1): oferta por tipo, vinculo por id e a VAGA de volta
+
+- Contexto: a Gestora limpou o Google Calendar e recriou os eventos com os titulos
+  genericos. A migracao da agenda ficou completa (zero eventos futuros com titulo
+  antigo), mas expos duas quebras — a segunda mais grave que a primeira.
+- **QUEBRA 1 — 5 categorias sem horario.** Sem os campos no corpo do evento, nenhum
+  evento futuro tem `theme`, e o casamento parada<->evento caia na palavra-chave: a
+  parada "1a Sessao de MentoCoach" procura "mentocoach" e o evento agora se chama
+  "Consultoria Individual". Os 147 slots de Consultoria Individual/em Grupo existiam e
+  estavam invisiveis para a jornada. Onboarding e Offboarding escaparam por coincidencia
+  (o titulo novo contem a propria palavra-chave).
+- **QUEBRA 2 — a vaga virou ilimitada.** O `sync` lia a capacidade de "Vagas: N" na
+  descricao; sem ela, gravava `totalCapacity: 0`. E o guard do agendamento trata **0 como
+  ILIMITADO** (esta escrito no comentario do proprio codigo). Ou seja: os slots de
+  Onboarding/Offboarding — os unicos agendaveis no momento — aceitavam inscricao sem fim.
+  Era um risco de dado, nao so de visibilidade.
+- Entregue:
+  - `src/lib/calendar/slot-offer.ts` (puro, 13 testes): `slotServesStage` resolve a
+    oferta pelo `atende` do TIPO em vez de texto, e `resolveSlotCapacity` faz a vaga vir
+    do `vagasPadrao` do tipo — com a descricao como fallback para evento legado.
+  - `sync.ts` grava a capacidade resolvida pelo tipo.
+  - `bookingMatchesSubstep` em `booking-match.ts`: casa agendamento<->parada por
+    `subStepId`, com o texto como fallback para agendamento anterior a esta fase. Sem
+    isso, agendar a 1a sessao marcaria as dez como confirmadas — familia BUG-077/118.
+  - A origem viaja do checkpoint ate o agendamento: `StepRenderer` -> `Calendar` ->
+    `bookEventAction`, gravando `stageId`/`subStepId`/`serviceLabel` nos DOIS documentos
+    (`attendees` e `User_Bookings`).
+- **Decisao da Gestora incorporada:** a Consultoria Individual e polivalente de proposito
+  (o mesmo slot serve Devolutiva de Analise, do Plano, Feedback e MentoCoach), e quem
+  impede o uso duplo e a CAPACIDADE — reservado por uma trilha, sai da oferta de todas, e
+  volta inteiro no cancelamento/remarcacao. Isso ja funcionava; o que estava quebrado era
+  a capacidade valer 0.
+- **Pendente de operacao: rodar a sincronizacao da agenda apos o deploy.** A correcao da
+  capacidade so vale para eventos regravados pelo sync — os 387 futuros ainda estao com
+  `totalCapacity: 0` ate a proxima rodada.
+- Validado: eslint dos arquivos tocados sem erro novo (os 2 erros em
+  `hub/journey/[stepId]/page.tsx` sao pre-existentes, da lista dos 16), type-check limpo,
+  **414 testes** verdes, build exit 0, lint global mantido em **16 erros**.
+- Fica para as fases seguintes: atribuicao do slot de grupo a parada do GDC no admin
+  (o tema como OFERTA), a razao do 1 to 1 virando tema, e o consultor padrao.
+
 ## [2026-08-03] Chat de execucao — catalogo sincronizado + tipos de evento 3 -> 5
 
 - **Catalogo APLICADO em producao** (`sync_live_db.js`): GDC `1-to-1` 10->11,

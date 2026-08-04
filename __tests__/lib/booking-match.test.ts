@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { eventMatchesSubstep } from "@/lib/journey/booking-match";
+import { bookingMatchesSubstep, eventMatchesSubstep } from "@/lib/journey/booking-match";
 
 /**
  * Fonte unica do casamento parada <-> evento da agenda (BUG-099).
@@ -90,5 +90,30 @@ describe("eventMatchesSubstep — bordas", () => {
 
   it("summary vazio nao casa", () => {
     expect(eventMatchesSubstep({ summary: "" }, PARADA_ONBOARDING)).toBe(false);
+  });
+});
+
+describe("bookingMatchesSubstep — agendamento <-> parada por identificador", () => {
+  const parada = { id: "ss-meeting-sessao-mentocoach-2", referenceId: "sessao-mentocoach", title: "1ª Sessão de MentoCoach" };
+  const irma = { id: "ss-meeting-sessao-mentocoach-3", referenceId: "sessao-mentocoach", title: "2ª Sessão de MentoCoach" };
+
+  it("casa a parada que originou o agendamento", () => {
+    expect(bookingMatchesSubstep({ subStepId: parada.id }, parada)).toBe(true);
+  });
+
+  it("NAO casa a parada irma — as 10 sessoes sao eventos indistinguiveis pelo titulo", () => {
+    // Sem o identificador, agendar a 1a marcaria as dez como confirmadas (familia
+    // dos BUG-077 / BUG-118).
+    expect(bookingMatchesSubstep({ subStepId: parada.id }, irma)).toBe(false);
+  });
+
+  it("agendamento anterior a Fase 3.3 (sem subStepId) cai no casamento por texto", () => {
+    const legado = { eventDetail: { summary: "MentoCoach", theme: undefined } };
+    expect(bookingMatchesSubstep(legado, parada)).toBe(true);
+    expect(bookingMatchesSubstep({ eventDetail: { summary: "Onboarding", theme: undefined } }, parada)).toBe(false);
+  });
+
+  it("agendamento ausente nao casa", () => {
+    expect(bookingMatchesSubstep(null, parada)).toBe(false);
   });
 });

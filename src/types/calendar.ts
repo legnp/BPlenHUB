@@ -94,6 +94,16 @@ export interface UserBooking {
    * no fallback do `eventDetail.summary`.
    */
   eventSummary?: string;
+  /**
+   * Parada da jornada de onde este agendamento partiu (Fase 3.3). E o vinculo
+   * CANONICO entre agendamento e checkpoint: antes ele era deduzido do texto do
+   * titulo, o que colapsava as 10 sessoes de MentoCoach num unico casamento.
+   * Ausente nos agendamentos anteriores a esta fase, que caem no fallback textual.
+   */
+  stageId?: string;
+  subStepId?: string;
+  /** Rotulo visivel da sessao ("Devolutiva de Analise"), derivado da parada de origem. */
+  serviceLabel?: string;
   timestamp: string | null;
   rating: number;
   feedback: string;

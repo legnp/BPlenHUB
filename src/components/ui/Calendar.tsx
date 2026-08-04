@@ -69,6 +69,12 @@ interface CalendarProps {
   onMonthChange?: (date: Date) => void;
   onBookingSuccess?: (event?: CalendarEvent) => void;
   /**
+   * Parada da jornada de onde o calendario foi aberto (Fase 3.3). Viaja ate o
+   * agendamento para amarrar sessao <-> checkpoint por identificador. Ausente no
+   * modal avulso de 1 to 1, que nao parte de uma parada.
+   */
+  origin?: { stageId: string; subStepId: string; serviceLabel: string };
+  /**
    * Texto do card "Política de Agendamento". Quando omitido, usa a política
    * padrão (antecedência + janela de Onboarding + limite semanal). Cada
    * contexto pode passar a sua — ex.: o modal 1 to 1 (que não trata Onboarding
@@ -82,6 +88,7 @@ export default function Calendar({
   isLoading = false,
   onMonthChange,
   onBookingSuccess,
+  origin,
   policyNote
 }: CalendarProps) {
   const { user, matricula, nickname } = useAuthContext();
@@ -149,7 +156,9 @@ export default function Calendar({
         user.email || "", 
         matricula, 
         nickname, 
-        oneToOneData
+        oneToOneData,
+        undefined,
+        origin
       );
       if (result.success) {
         setBookingStatus({ id: eventId, message: "Agendamento realizado com sucesso!", type: 'success' });

@@ -157,6 +157,7 @@ export default function StepJourneyPage() {
           <StepRenderer
             context="member_journey"
             stageId={stepId}
+            serviceCode={stepConfig.serviceCode}
             substep={currentSubStep}
             status={stepStatus}
             kicker={stepConfig.kicker}

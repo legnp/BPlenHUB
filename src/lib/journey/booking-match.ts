@@ -46,3 +46,26 @@ export function eventMatchesSubstep(
   if (!keyword) return false;
   return normalizeForMatch(event.summary).includes(keyword);
 }
+
+/**
+ * Este AGENDAMENTO pertence a esta parada?
+ *
+ * Identificador tem precedencia sobre texto (Licao 19): quando o agendamento carrega a
+ * parada de origem (`subStepId`, gravado a partir da Fase 3.3), a resposta e exata. So
+ * agendamento anterior a essa fase — que nao tem o campo — cai no casamento por texto.
+ *
+ * Por que o identificador e obrigatorio aqui: as 10 sessoes de MentoCoach sao eventos
+ * `Consultoria Individual` indistinguiveis pelo titulo. Sem `subStepId`, agendar a 1a
+ * marcaria as dez como confirmadas — a mesma familia de bug do BUG-077/BUG-118.
+ */
+export function bookingMatchesSubstep(
+  booking: {
+    subStepId?: string;
+    eventDetail?: Pick<GoogleCalendarEvent, "summary" | "theme"> | null;
+  } | null | undefined,
+  substep: Pick<SubStepConfig, "id" | "referenceId" | "title">
+): boolean {
+  if (!booking) return false;
+  if (booking.subStepId) return booking.subStepId === substep.id;
+  return eventMatchesSubstep(booking.eventDetail, substep);
+}
