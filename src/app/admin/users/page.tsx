@@ -25,6 +25,8 @@ import {
   Copy,
   KeyRound,
   ReceiptText,
+  Handshake,
+  Percent,
   type LucideIcon
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -256,8 +258,19 @@ export default function UsersManagementPage() {
     try {
       const token = await auth.currentUser?.getIdToken();
       
-      // 1. Atualizar Acessos (Booleanos)
-      await updateUserPermissions(targetMatricula, { services }, token);
+      // 1. Atualizar Acessos (Booleanos) + a taxa fixa do parceiro.
+      // A comissão só é gravada com o selo de parceiro ativo — desligar o selo não
+      // apaga a taxa anterior (o histórico de indicações já guarda a cópia dela).
+      await updateUserPermissions(
+        targetMatricula,
+        {
+          services,
+          ...(services.partner_area_access
+            ? { partnerCommissionPercent: selectedUser.partnerCommissionPercent ?? 0 }
+            : {}),
+        },
+        token
+      );
       
       // 2. Atualizar Cotas (Valores Numéricos)
       // Filtramos apenas as cotas que pertencem a serviços que estão ativos
@@ -272,8 +285,10 @@ export default function UsersManagementPage() {
         await setMemberQuotasAction(selectedUser.uid, finalQuotas);
       }
       
-      setUsers(prev => prev.map(u => 
-        u.matricula === targetMatricula ? { ...u, services } : u
+      setUsers(prev => prev.map(u =>
+        u.matricula === targetMatricula
+          ? { ...u, services, partnerCommissionPercent: selectedUser.partnerCommissionPercent }
+          : u
       ));
       setSelectedUser(null);
     } catch (err: unknown) {
@@ -501,7 +516,7 @@ export default function UsersManagementPage() {
                             const productName = products.find(p => p.id === id || p.slug === id)?.title;
                             return (
                               <div key={id} className={`px-2 py-1 border rounded-lg text-[8px] font-bold uppercase tracking-tighter ${id === 'member_area_access' ? 'bg-emerald-500/5 border-emerald-500/10 text-emerald-600' : 'bg-[var(--accent-start)]/5 border-[var(--accent-start)]/10 text-[var(--accent-start)]/70'}`}>
-                                 {id === 'member_area_access' ? 'Portaria' : (productName || id)}
+                                 {id === 'member_area_access' ? 'Portaria' : id === 'partner_area_access' ? 'Parceiro' : (productName || id)}
                               </div>
                             );
                          })}
@@ -655,6 +670,53 @@ export default function UsersManagementPage() {
                                      <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${selectedUser.services.member_area_access ? 'left-6' : 'left-1'}`} />
                                   </div>
                                </button>
+
+                               {/* Área de Parceiros — selo + taxa fixa de comissão
+                                   (PARTNER-AREA-EXPANSION-PLAN.md secao 1.1). O selo é
+                                   independente do de membro: os dois coexistem e não se implicam. */}
+                               <div className={`p-6 rounded-[2rem] border transition-all space-y-4 ${selectedUser.services.partner_area_access ? 'bg-[var(--accent-start)]/5 border-[var(--accent-start)]/20' : 'bg-white/5 border-[var(--border-primary)] opacity-40 hover:opacity-100'}`}>
+                                  <div className="flex items-center justify-between">
+                                     <div className="flex items-center gap-3">
+                                        <div className={cn("p-2 rounded-xl", selectedUser.services.partner_area_access ? "bg-[var(--accent-start)]/10 text-[var(--accent-start)]" : "bg-[var(--bg-primary)]/40 text-[var(--text-muted)]")}>
+                                           <Handshake size={16} />
+                                        </div>
+                                        <div>
+                                           <p className={`text-[10px] font-bold uppercase ${selectedUser.services.partner_area_access ? 'text-[var(--accent-start)]' : ''}`}>Área de Parceiros</p>
+                                           <p className="text-[8px] text-[var(--text-muted)] uppercase mt-1">Programa de Parceria</p>
+                                        </div>
+                                     </div>
+                                     <button
+                                       onClick={() => {
+                                          const n = { ...selectedUser.services, partner_area_access: !selectedUser.services.partner_area_access };
+                                          setSelectedUser({ ...selectedUser, services: n });
+                                       }}
+                                       className={`w-10 h-5 rounded-full relative transition-all shrink-0 ${selectedUser.services.partner_area_access ? 'bg-[var(--accent-start)]' : 'bg-gray-700'}`}
+                                     >
+                                        <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${selectedUser.services.partner_area_access ? 'left-6' : 'left-1'}`} />
+                                     </button>
+                                  </div>
+
+                                  {selectedUser.services.partner_area_access && (
+                                     <div className="pt-3 border-t border-[var(--border-primary)] flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                           <Percent size={12} className="text-[var(--accent-start)]" />
+                                           <label className="text-[8px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Comissão Fixa (%)</label>
+                                        </div>
+                                        <input
+                                           type="number"
+                                           min="0"
+                                           max="100"
+                                           step="0.5"
+                                           value={selectedUser.partnerCommissionPercent ?? 0}
+                                           onChange={(e) => {
+                                              const val = parseFloat(e.target.value);
+                                              setSelectedUser({ ...selectedUser, partnerCommissionPercent: isNaN(val) ? 0 : val });
+                                           }}
+                                           className="w-16 bg-[var(--bg-primary)]/40 border border-[var(--border-primary)] rounded-lg p-2 text-[10px] text-center font-black text-[var(--text-primary)] focus:border-[var(--accent-start)] outline-none"
+                                        />
+                                     </div>
+                                  )}
+                               </div>
 
                                {/* Cotas de Sessões de MentoCoach */}
                                <div className="p-6 rounded-[2rem] border bg-white/5 border-[var(--border-primary)] text-left flex items-center justify-between transition-all">

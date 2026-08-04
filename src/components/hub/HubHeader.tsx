@@ -18,7 +18,8 @@ import {
   LayoutDashboard,
   CalendarDays,
   Activity,
-  Plus
+  Plus,
+  Handshake
 } from "lucide-react";
 import { useTheme, BPlenTheme } from "@/context/ThemeContext";
 import { useAuthContext } from "@/context/AuthContext";
@@ -29,6 +30,7 @@ import { cn } from "@/lib/utils";
 import OneToOneBookingModal from "@/components/shared/OneToOneBookingModal";
 import { getProgramacaoForMemberAction } from "@/actions/calendar";
 import { ProgramacaoEntry } from "@/types/calendar";
+import { usePartnerContextStore, HubContext } from "@/store/partner-context-store";
 
 /**
  * HubHeader (Ecossistema Privado)
@@ -42,6 +44,12 @@ interface ThemeOption {
   color: string;
 }
 
+/** Destino canônico de cada contexto do hub (PARTNER-AREA-EXPANSION-PLAN.md secao 3). */
+const CONTEXT_OPTIONS: { id: HubContext; label: string; href: string }[] = [
+  { id: "member", label: "Membro", href: "/hub" },
+  { id: "partner", label: "Parceiro", href: "/hub/partners" },
+];
+
 const THEMES: ThemeOption[] = [
   { id: "light", label: "Modo Claro", color: "#FFFFFF" },
   { id: "dark", label: "Modo BPlen", color: "#18181B" },
@@ -54,7 +62,7 @@ const THEMES: ThemeOption[] = [
 
 export function HubHeader() {
   const { theme, setTheme } = useTheme();
-  const { user, matricula, nickname, photoUrl, logout } = useAuthContext();
+  const { user, matricula, nickname, photoUrl, services, logout } = useAuthContext();
   const router = useRouter();
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
   const [isSocialMenuOpen, setIsSocialMenuOpen] = useState(false);
@@ -81,6 +89,20 @@ export function HubHeader() {
       }
     }
   };
+
+  // Contexto Membro/Parceiro (Fase 0 da Área de Parceiros).
+  // A AUTORIZAÇÃO é o selo `partner_area_access` — resolvido em tempo real pelo
+  // AuthContext aqui e no servidor pelo gate de /hub/partners. A store Zustand só
+  // guarda a preferência de navegação; por isso nunca é lida para decidir o que
+  // renderizar (evita divergir do selo e evita mismatch de hidratação).
+  const hasPartnerArea = services?.partner_area_access === true;
+  const activeContext: HubContext = pathname.startsWith("/hub/partners") ? "partner" : "member";
+
+  // A rota é a fonte do contexto; a preferência guardada apenas a acompanha. Quem
+  // perde o selo volta a "member" sem depender de limpar o navegador.
+  useEffect(() => {
+    usePartnerContextStore.getState().setActiveContext(hasPartnerArea ? activeContext : "member");
+  }, [hasPartnerArea, activeContext]);
 
   // Escuta de Eventos do Tour
   useEffect(() => {
@@ -151,6 +173,17 @@ export function HubHeader() {
         { onClick: handleOpenOneToOne, icon: Plus, label: "Agendar 1 to 1" },
       ],
     },
+    // Seção exclusiva de quem tem o selo de parceiro — some por completo para os demais.
+    ...(hasPartnerArea
+      ? [
+          {
+            label: "Parceria",
+            items: [
+              { href: "/hub/partners", icon: Handshake, label: "Área de Parceiros" },
+            ],
+          },
+        ]
+      : []),
     {
       label: BPLEN_NOMENCLATURE.navigation.networking,
       items: [
@@ -238,6 +271,36 @@ export function HubHeader() {
                             {nickname ? `@${nickname}` : "carregando..."}
                           </p>
                        </div>
+
+                       {/* Alternância de contexto Membro/Parceiro — só existe para quem tem o selo */}
+                       {hasPartnerArea && (
+                          <div className="px-2 space-y-1.5">
+                             <p className="text-[7px] font-black text-gray-500 uppercase tracking-[0.2em]">Contexto</p>
+                             <div className="grid grid-cols-2 gap-1 p-1 rounded-2xl bg-white/5 border border-white/5">
+                                {CONTEXT_OPTIONS.map((option) => {
+                                   const isCurrent = activeContext === option.id;
+                                   return (
+                                     <Link
+                                       key={option.id}
+                                       href={option.href}
+                                       onClick={() => {
+                                          usePartnerContextStore.getState().setActiveContext(option.id);
+                                          setIsSocialMenuOpen(false);
+                                       }}
+                                       className={cn(
+                                          "py-2 rounded-xl text-center text-[9px] uppercase tracking-widest transition-all",
+                                          isCurrent
+                                            ? "bg-[var(--accent-start)]/10 text-[var(--accent-start)] font-black"
+                                            : "text-[var(--text-secondary)] font-bold hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)]"
+                                       )}
+                                     >
+                                        {option.label}
+                                     </Link>
+                                   );
+                                })}
+                             </div>
+                          </div>
+                       )}
 
                        <div className="space-y-3">
                           {menuSections.map((section) => (

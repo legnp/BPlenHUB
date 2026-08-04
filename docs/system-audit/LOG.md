@@ -24,6 +24,57 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-04] Chat de execução — Área de Parceiros, Fase 0 (fundamentos: selo, gate, contexto)
+
+- Chat/sessão: chat de execução, worktree próprio (`claude/partner-area-phase-0-2f3ed3`).
+  Confirmado contra git antes de agir (Lição 45): `main == origin/main == d07e2d9`.
+- **Escopo**: Fase 0 do `PARTNER-AREA-EXPANSION-PLAN.md` (§11) — expansão de plataforma
+  fora da grade da auditoria, **não entra em nenhuma % do checklist**.
+- **Entregue** (branch + PR, nenhum commit direto na `main`):
+  1. **Selo `services.partner_area_access`** — chave nova em `UserServices`
+     (`src/types/users.ts`) e na allowlist de `src/actions/users-admin.ts`, mesmo padrão do
+     `member_area_access`. Concedido/revogado pela ficha de usuário do admin.
+  2. **`partnerCommissionPercent`** — taxa FIXA por parceiro, gravada no mesmo doc
+     `User_Permissions/access` mas FORA do map `services` (que só carrega booleanos),
+     como o plano especifica (§1.1). Validada por função pura nova
+     (`src/lib/partners/commission.ts`, faixa 0-100, aceita vírgula decimal, recusa campo
+     vazio — `Number("")` é 0 e gravaria "0%" silenciosamente). 6 testes novos.
+  3. **Gate de rota** `src/app/hub/partners/layout.tsx` — cópia do cadeado de
+     `hub/membro/layout.tsx`: sessão verificada + `resolveUserPermissions` a cada request,
+     sem selo redireciona para `/hub`. Sem herança por admin (os selos coexistem).
+     `src/app/hub/partners/page.tsx` repete o gate como 2a camada e é, nesta fase, uma
+     página de entrada mínima (a Home real do parceiro é a Fase 5).
+  4. **Store Zustand do contexto** `src/store/partner-context-store.ts` — `persist` em
+     `localStorage` (`bplen_active_context`). **Nunca é fonte de autorização**: só
+     preferência de navegação; a rota é quem determina o contexto exibido e o selo é quem
+     autoriza. Forjar o valor no navegador não dá acesso — cai no redirect do gate.
+  5. **`HubHeader` condicional** — passou a ler `services` do `AuthContext`; com o selo,
+     renderiza a alternância Membro/Parceiro e a seção "Parceria" no menu. Sem o selo,
+     nada muda para quem já usa o hub (aditivo).
+  6. **Ficha do admin** (`src/app/admin/users/page.tsx`) — card "Área de Parceiros" com o
+     toggle do selo e, quando ligado, o campo de comissão fixa; badge "Parceiro" na lista.
+- **Decisões tomadas na execução**:
+  - A comissão só é gravada com o selo ativo — **desligar o selo não apaga a taxa
+    anterior**, porque a indicação já guarda uma cópia do percentual vigente (§1.2) e
+    reescrever/limpar aqui bagunçaria auditoria futura.
+  - O contexto ativo é derivado da **rota**, não do valor persistido — evita divergir do
+    selo e evita mismatch de hidratação. A store apenas acompanha a rota.
+  - Criada a página mínima `/hub/partners` (não estava explícita na Fase 0): sem ela o
+    toggle e o gate apontariam para 404. É placeholder declarado, substituído na Fase 5.
+- **Validação**: `eslint` nos arquivos tocados (0 erros; só warnings pré-existentes),
+  `tsc --noEmit` limpo, `next build` limpo (rota `/hub/partners` registrada), suíte
+  completa **46 arquivos / 417 testes, tudo verde**. Redirect do gate exercido de fato no
+  servidor de desenvolvimento: `GET /hub/partners` sem sessão -> `/entrar?returnTo=%2Fhub%2Fpartners`.
+- **Não validado por preview** (precedente `BUG-030`): toggle no cabeçalho, página do
+  parceiro e card do admin exigem sessão autenticada — verificação visual fica com a
+  Gestora após o deploy.
+- **Achados**: nenhum bug novo registrado em `BUGS.md`. Observação sem gravidade:
+  `ALLOWED_SERVICE_KEYS` (`users-admin.ts`) nunca foi consumida pelo código — a validação
+  de serviços é dinâmica desde a Fase A. A chave nova foi adicionada para a lista continuar
+  sendo documentação fiel, mas ela não é um portão.
+- Itens do `00-PLAN.md` atualizados: **nenhum** (estado agregado é do chat de planejamento;
+  expansão de plataforma não entra em % da auditoria).
+
 ## [2026-08-04] Chat de planejamento — Plano da Área de Parceiros APROVADO, handoff para execução
 
 - Chat/sessão: chat de planejamento. **Docs-only, sem tocar código.** Confirmado contra git

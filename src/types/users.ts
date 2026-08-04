@@ -18,6 +18,7 @@ export interface UserServices {
   career_planning?: boolean;
   behavioral_analysis?: boolean;
   member_area_access?: boolean; // 🔒 Acesso Restrito À Área de Membros
+  partner_area_access?: boolean; // Acesso à Área de Parceiros (concedido via Admin)
   [key: string]: boolean | undefined; // Permite expansão dinâmica
 }
 
@@ -44,6 +45,11 @@ export interface AdminUser {
   
   // 🎯 Cotas de Sessões Customizadas
   mentoCoachSessionsLimit?: number;
+
+  // Área de Parceiros — taxa de comissão FIXA do parceiro (percentual), definida pelo
+  // Admin junto com o selo `partner_area_access`. Vive no mesmo doc User_Permissions/access,
+  // fora do map `services` (que só carrega booleanos).
+  partnerCommissionPercent?: number;
 
   // 🌟 Status Profissional BPlen (Curadoria de Networking)
   isProfessional?: boolean;

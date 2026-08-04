@@ -18,7 +18,8 @@ const ALLOWED_SERVICE_KEYS = [
   "mentoria_1to1",
   "career_planning",
   "behavioral_analysis",
-  "member_area_access"
+  "member_area_access",
+  "partner_area_access"
 ];
 
 /** Teto defensivo de dispensas de pré-requisito por usuário (Fase A / A3) */
@@ -26,6 +27,7 @@ const MAX_WAIVERS_PER_USER = 20;
 
 import { toISOSafe } from "@/lib/date-utils";
 import { getErrorMessage } from "@/lib/utils/errors";
+import { parsePartnerCommissionPercent } from "@/lib/partners/commission";
 
 /**
  * Retorna a lista completa de usuários para o painel administrativo.
@@ -49,6 +51,7 @@ export async function getAdminUsersList(adminToken?: string): Promise<{ success:
       services?: UserServices;
       admin?: boolean;
       dispensaPreRequisito?: string[];
+      partnerCommissionPercent?: number;
       metadata?: {
         disc_link?: string;
         [key: string]: unknown;
@@ -108,6 +111,7 @@ export async function getAdminUsersList(adminToken?: string): Promise<{ success:
         services: perm.services || {},
         dispensaPreRequisito: Array.isArray(perm.dispensaPreRequisito) ? perm.dispensaPreRequisito : [],
         mentoCoachSessionsLimit: quotasMap.get(matricula) ?? 10,
+        partnerCommissionPercent: typeof perm.partnerCommissionPercent === "number" ? perm.partnerCommissionPercent : undefined,
         metadata: perm.metadata || {},
         isProfessional: data.profile?.networking?.isBPlenProfessional || false,
         onboardStatus: data.hasCompletedWelcome ? "completed" : "pending",
@@ -132,6 +136,7 @@ export async function updateUserPermissions(
     role?: UserRole;
     services?: UserServices;
     dispensaPreRequisito?: string[];
+    partnerCommissionPercent?: number;
     metadata?: {
       disc_link?: string;
       maslow_menor_pilar?: string;
@@ -154,6 +159,7 @@ export async function updateUserPermissions(
        admin?: boolean;
        services?: UserServices;
        dispensaPreRequisito?: string[];
+       partnerCommissionPercent?: number;
        metadata?: { disc_link?: string; [key: string]: unknown };
     } = {
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -175,6 +181,13 @@ export async function updateUserPermissions(
     
     if (updates.metadata) {
       dataToSave.metadata = updates.metadata;
+    }
+
+    // Área de Parceiros — taxa de comissão FIXA do parceiro (PARTNER-AREA-EXPANSION-PLAN.md
+    // secao 1.1). Vive fora do map `services` (que só aceita booleanos) e é validada por
+    // uma função pura para nunca gravar percentual fora da faixa.
+    if (updates.partnerCommissionPercent !== undefined) {
+       dataToSave.partnerCommissionPercent = parsePartnerCommissionPercent(updates.partnerCommissionPercent);
     }
 
     // 🎫 Dispensa de pré-requisito (Fase A / A3 — ver ACCESS-MODEL-DESIGN.md).
