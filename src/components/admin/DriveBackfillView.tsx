@@ -8,8 +8,8 @@ import {
   FileText,
   FolderSync,
   Play,
-  Search,
   ShieldAlert,
+  Users,
   X,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -18,6 +18,7 @@ import { backfillUserDriveAction, type BackfillReport } from "@/actions/admin/ba
 import { triggerRetroactiveDriveSyncAction } from "@/actions/admin/sync-tools";
 import { FunctionalPageHeader } from "@/components/layout/FunctionalPageHeader";
 import { StatTile } from "@/components/admin/StatTile";
+import { ClientSelector } from "@/components/admin/ClientSelector";
 import AtmosphericLoading from "@/components/shared/AtmosphericLoading";
 
 /**
@@ -192,21 +193,35 @@ export function DriveBackfillView() {
       </AnimatePresence>
 
       {/* Controles */}
-      <div className="flex flex-wrap items-center gap-4 p-5 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-[2rem] shadow-2xl backdrop-blur-3xl">
-        <div className="relative flex-1 min-w-[300px]">
-          <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] opacity-40" />
-          <input
-            type="text"
-            placeholder="Matrícula do membro (vazio = todos os membros)"
-            value={matricula}
-            onChange={(e) => {
-              setMatricula(e.target.value);
+      <div className="flex flex-wrap items-end gap-4 p-5 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-[2rem] shadow-2xl backdrop-blur-3xl">
+        {/* Selecao por busca (nome, matricula ou apelido). O campo de texto livre
+            que existia aqui antes exigia a matricula exata, mas exibia uma lupa —
+            prometia busca e nao entregava. Reusa o seletor da Jornada do Cliente. */}
+        <div className={`flex-1 min-w-[300px] ${running ? "pointer-events-none opacity-50" : ""}`}>
+          <ClientSelector
+            value={targetMatricula}
+            onChange={(selected) => {
+              setMatricula(selected);
+              setConfirmingMassWrite(false);
+            }}
+            label="Membro"
+            placeholder="Todos os membros"
+          />
+        </div>
+
+        {targetMatricula ? (
+          <button
+            onClick={() => {
+              setMatricula("");
               setConfirmingMassWrite(false);
             }}
             disabled={running}
-            className="w-full bg-[var(--bg-primary)]/50 border border-[var(--input-border)] rounded-2xl pl-12 pr-6 py-3.5 text-sm font-medium text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-start)]/50 transition-all disabled:opacity-50"
-          />
-        </div>
+            className="flex items-center gap-2 px-4 py-3.5 text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-all disabled:opacity-50"
+          >
+            <Users size={14} />
+            Todos os membros
+          </button>
+        ) : null}
 
         <div className="flex items-center bg-[var(--bg-primary)]/50 p-1.5 rounded-2xl border border-[var(--input-border)] gap-1">
           {([
@@ -356,8 +371,8 @@ export function DriveBackfillView() {
             Resgate complementar
           </h3>
           <p className="text-[11px] text-[var(--text-muted)] leading-relaxed font-medium opacity-80">
-            Espelha extrato financeiro, progresso de jornada e tarefas do membro informado acima. Exige
-            matrícula e não tem simulação: a execução grava direto.
+            Espelha extrato financeiro, progresso de jornada e tarefas do membro selecionado acima. Exige
+            um membro escolhido e não tem simulação: a execução grava direto.
           </p>
         </div>
 
