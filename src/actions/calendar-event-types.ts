@@ -7,6 +7,7 @@ import {
   CalendarEventType,
   DEFAULT_EVENT_TYPES,
 } from "@/types/calendar-event-types";
+import { normalizeEventTitle } from "@/lib/calendar/event-title";
 
 /**
  * Configuracao dos tipos de evento da agenda (Etapa 3.1).
@@ -24,14 +25,9 @@ import {
 const SETTINGS_COLLECTION = "Settings";
 const SETTINGS_DOC_ID = "CalendarEventTypes";
 
-/** Normaliza para comparar titulo do Google sem depender de acento/caixa/espaco. */
-function normalizeTitle(value: string | undefined | null): string {
-  return (value || "")
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .trim()
-    .toLowerCase();
-}
+// A normalizacao do titulo vive em `@/lib/calendar/event-title` — a MESMA que o sync
+// usa para resolver o `tipoId`. Duas copias divergiriam: a tela aceitaria salvar dois
+// tipos que o sync trataria como o mesmo.
 
 /**
  * Le a configuracao. Se ainda nao existe, devolve os 3 tipos padrao (seed em
@@ -67,7 +63,7 @@ export async function updateCalendarEventTypes(
     // titulo tornariam a resolucao ambigua e silenciosa.
     const vistos = new Set<string>();
     for (const t of types) {
-      const chave = normalizeTitle(t.googleTitle);
+      const chave = normalizeEventTitle(t.googleTitle);
       if (!chave) {
         return { success: false, message: `O tipo "${t.label}" esta sem titulo do Google.` };
       }

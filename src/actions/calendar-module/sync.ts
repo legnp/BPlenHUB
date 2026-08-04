@@ -10,15 +10,10 @@ import { getEventStandardSlug } from "@/lib/utils";
 import { isBlockerSummary } from "@/lib/booking/blocker";
 import { updateGlobalProgramacaoRegistryAction } from "./post-event";
 import { getCalendarEventTypes } from "@/actions/calendar-event-types";
+import { normalizeEventTitle } from "@/lib/calendar/event-title";
 
-/** Casa o titulo do Google com o `googleTitle` do tipo, sem depender de acento/caixa. */
-function normalizeEventTitle(value: string | undefined | null): string {
-  return (value || "")
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .trim()
-    .toLowerCase();
-}
+// O casamento titulo do Google <-> tipo vive em `@/lib/calendar/event-title` (fonte
+// unica, compartilhada com a validacao da tela de admin).
 
 /**
  * Sincronização de 90 Dias (Firestore 🛡️)
