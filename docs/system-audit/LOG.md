@@ -24,6 +24,49 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-05] Chat de execução — Fase 3, bloco 1: captura da indicação (diretório + recepção + efeito)
+
+- Chat/sessão: chat de execução, mesma branch. Fast-forward na `main` autorizado.
+- **Escopo**: a cadeia de captura da indicação, ponta a ponta. Veio antes do painel porque é
+  o que **começa a coletar dado** — cada dia sem ela é indicação perdida, e o painel só mostra
+  o que a captura registrou.
+- **Mecanismo (plano §4, decisão da Gestora)**: nenhum link, nenhum código de indicação. O
+  próprio cliente escolhe o NOME de quem o indicou, na pergunta "Como você nos conheceu?" que
+  já existia na recepção.
+- **Entregue**:
+  1. `Settings/PartnerDirectory` + `src/actions/partners/directory.ts`. A leitura pública
+     devolve **só os nomes** — a matrícula do parceiro nunca chega ao navegador de terceiros;
+     a resolução nome → parceiro acontece no servidor. Nome duplicado entre parceiros ativos é
+     **recusado** na gravação: resolução ambígua mandaria a indicação para o parceiro errado,
+     em silêncio.
+  2. `src/lib/survey/welcome-origin.ts` (puro) + 8 testes: injeta os parceiros ativos nas
+     opções de `origin`, sempre ANTES de "Outro", sem duplicar nome que colida com origem fixa
+     e sem tocar em nenhuma outra etapa. Sem parceiro ativo, devolve a configuração intacta.
+  3. `src/lib/partners/referrals.ts` (módulo de servidor, **sem `"use server"`** — mesma
+     disciplina do BUG-103: sem porta na rede). Resolve o nome escolhido, recusa
+     autoindicação, copia o `partnerCommissionPercent` vigente (audita o histórico) e grava
+     `Partner_Referrals/{matriculaDoIndicado}` — idempotente pelo próprio id.
+  4. Efeito da recepção: chama o registro da indicação **sem poder derrubar o onboarding**
+     (try/catch próprio). Qualquer origem que não seja um parceiro segue exatamente como antes.
+  5. **Classificação PF/PJ corrigida** (risco apontado no plano §8): a opção nova de parceria
+     cairia silenciosamente em "PF". Agora é reconhecida e registra a intenção declarada —
+     sem conceder nada, o selo continua sendo concessão do Admin.
+  6. Recepção: opção "Para uma Parceria de Negócios" + **ramo condicional** de enunciados
+     (`step_topics_partner`/`step_demand_partner`) que reusa os MESMOS campos (`topics`,
+     `demand`) e converge de volta em `step_origin` — texto adaptado, resposta comparável,
+     como a Gestora pediu. `step_demand` ganhou salto explícito para não cair no ramo novo.
+  7. Ficha do admin: campo "Nome na lista de indicação", gravado no diretório junto com o
+     selo. Revogar o selo **desativa** a entrada, não apaga — o histórico continua fazendo
+     sentido.
+- **PENDÊNCIA DE DECISÃO — `HashCPF` na lista de indicações**: a especificação da Gestora
+  para o painel lista `HashCPF` como coluna visível ao parceiro; a decisão dela já registrada
+  no plano (§9.1/§7.1) diz que o hash é **uso interno, nunca exposto na UI do parceiro**.
+  Segui a decisão do plano (não expor) e levei a contradição para ela decidir antes do painel.
+- **Validação**: lint sem erro, `tsc` limpo, build exit 0, suíte **49 arquivos / 445 testes**
+  (8 novos) verde.
+- **Próximo**: painel de Gestão de Indicações (projeção ao vivo dos indicados) e, na sequência,
+  os ciclos de repasse (Fase 4).
+
 ## [2026-08-05] Chat de execução — Grade de 1 to 1 compartilhada entre membro, parceiro e funil público
 
 - Chat/sessão: chat de execução, mesma branch. Fast-forward na `main` autorizado.

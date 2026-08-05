@@ -34,9 +34,16 @@ export const welcomeSurveyConfig: SurveyConfig = {
           label: "Seu Perfil",
           options: [
             "Para minha Carreira Profissional",
-            "Para o DHO da minha empresa"
+            "Para o DHO da minha empresa",
+            "Para uma Parceria de Negócios"
           ],
-          required: true
+          required: true,
+          // Quem chega por parceria segue por enunciados proprios. Os CAMPOS sao os
+          // mesmos (`topics`, `demand`) — so o texto muda, para a resposta continuar
+          // comparavel com a de todo mundo.
+          logic: {
+            "Para uma Parceria de Negócios": "step_topics_partner"
+          }
         }
       ]
     },
@@ -73,6 +80,9 @@ export const welcomeSurveyConfig: SurveyConfig = {
     {
       id: "step_demand",
       question: "Porque você acredita que podemos te ajudar com os temas selecionados?",
+      // Salto explicito: sem ele, a progressao linear cairia nos enunciados de
+      // parceria, que vivem logo abaixo no arquivo.
+      nextStepId: "step_origin",
       fields: [
         {
           id: "demand",
@@ -83,6 +93,55 @@ export const welcomeSurveyConfig: SurveyConfig = {
         }
       ]
     },
+
+    // --- Ramo de PARCERIA DE NEGOCIOS ---
+    // Mesmos campos (`topics`, `demand`), enunciados proprios. Converge de volta em
+    // `step_origin`, que e' onde a indicacao e' capturada para todo mundo.
+    {
+      id: "step_topics_partner",
+      question: "{{nickname}}, quais temas da BPlen mais conversam com a sua proposta de parceria?",
+      nextStepId: "step_demand_partner",
+      fields: [
+        {
+          id: "topics",
+          type: "choice",
+          isMultiple: true,
+          cols: 2,
+          label: "Temas da Parceria",
+          options: [
+            "Transição de Carreira",
+            "Recolocação Profissional",
+            "Liderança e Gestão",
+            "Gestão de Tempo",
+            "Desenvolvimento Humano Organizacional (DHO)",
+            "Técnicas de Negociação",
+            "Gestão Emocional",
+            "Relacionamento Interpessoal",
+            "Resolução de Conflitos",
+            "Sucessão de Cargo",
+            "Posicionamento Profissional",
+            "Outros"
+          ],
+          randomize: true,
+          required: true
+        }
+      ]
+    },
+    {
+      id: "step_demand_partner",
+      question: "Como você imagina essa parceria funcionando na prática?",
+      nextStepId: "step_origin",
+      fields: [
+        {
+          id: "demand",
+          type: "textarea",
+          label: "Sua Proposta",
+          placeholder: "Conte brevemente o que você tem em mente...",
+          required: true
+        }
+      ]
+    },
+
     {
       id: "step_origin",
       question: "Como você nos conheceu?",

@@ -14,6 +14,7 @@ import * as admin from "firebase-admin";
 import { getAdminDb, getAdminAuth } from "@/lib/firebase-admin";
 import { SurveyValue } from "@/types/survey";
 import { syncSurveyToUserDrive } from "@/lib/drive-sync";
+import { registerReferralFromOrigin } from "@/lib/partners/referrals";
 
 /**
  * EFEITO: Welcome Survey (Onboarding) 🧬
@@ -30,6 +31,11 @@ export async function handleWelcomeSurveyEffect(
   const userRef = db.doc(`User/${matricula}`);
   const nickname = (responses.nickname as string) || "";
   const userTypeRaw = (responses.userType as string) || "member";
+  // Classificacao PF/PJ. A opcao de PARCERIA nao e' nem uma nem outra por si so — quem
+  // busca a BPlen para uma parceria pode atuar como pessoa fisica ou por empresa, e
+  // isso e' perguntado no cadastro da parceria (`partner_dados_cadastrais`). Sem este
+  // ramo, a opcao cairia silenciosamente em "PF" (risco apontado no plano, secao 8).
+  const isPartnershipIntent = userTypeRaw.toLowerCase().includes("parceria");
   const userType = userTypeRaw.includes("empresa") || userTypeRaw.includes("PJ") ? "PJ" : "PF";
 
   // 1. Sincronizar Identidade (Auth -> Root Profile) 🛡️
@@ -50,8 +56,27 @@ export async function handleWelcomeSurveyEffect(
     email: authEmail,
     User_Nickname: nickname || null,
     User_Type: userType,
+    // Intencao declarada na recepcao. Nao concede nada — o selo de parceiro continua
+    // sendo concessao do Admin; isto so registra que a pessoa chegou por esse caminho.
+    ...(isPartnershipIntent ? { User_PartnershipIntent: true } : {}),
     lastUpdated: admin.firestore.FieldValue.serverTimestamp()
   }, { merge: true });
+
+  // 1b. Indicacao: se a origem escolhida for o nome de um parceiro do diretorio, a
+  // indicacao e' registrada sob ele. Qualquer outra origem (Instagram, LinkedIn,
+  // "Indicacao" generica) segue exatamente como antes — nada muda.
+  try {
+    await registerReferralFromOrigin({
+      origin: String(responses.origin || ""),
+      referredMatricula: matricula,
+      referredNome: nickname || authName,
+      cpfHash: null,
+    });
+  } catch (referralErr) {
+    // Efeito colateral do onboarding: uma falha aqui nunca pode derrubar a entrada do
+    // cliente no hub.
+    console.error("[Effects:Welcome] Falha ao registrar indicacao de parceria:", referralErr);
+  }
 
   // 2. Sincronização Google Drive (via lib/drive-sync) 🛰️
   try {

@@ -42,6 +42,40 @@ export type PartnerTermsSection = z.infer<typeof PartnerTermsSectionSchema>;
 export type PartnerTermsAcceptance = z.infer<typeof PartnerTermsAcceptanceSchema>;
 export type PartnerTermsDocument = z.infer<typeof PartnerTermsDocumentSchema>;
 
+/**
+ * Entrada do diretorio de parceiros — o que alimenta a pergunta "Como voce nos
+ * conheceu?" da Welcome Survey.
+ *
+ * O cliente novo escolhe um NOME, nunca uma matricula: a matricula do parceiro nao
+ * chega ao navegador de terceiros. A resolucao nome -> parceiro acontece no servidor,
+ * no efeito da survey.
+ */
+export const PartnerDirectoryEntrySchema = z.object({
+  partnerMatricula: z.string(),
+  displayName: z.string(),
+  active: z.boolean().default(true),
+});
+
+export const PartnerDirectorySchema = z.object({
+  entries: z.array(PartnerDirectoryEntrySchema).default([]),
+});
+
+export type PartnerDirectoryEntry = z.infer<typeof PartnerDirectoryEntrySchema>;
+
+/** Indicacao registrada sob User/{partnerMatricula}/Partner_Referrals/{indicado}. */
+export const PartnerReferralSchema = z.object({
+  referredMatricula: z.string(),
+  referredNome: z.string(),
+  /** Uso SERVER-ONLY: nunca retornado ao parceiro (plano secao 7.1). */
+  cpfHash: z.string().nullable().default(null),
+  dataIndicacao: z.string(),
+  /** Copia do percentual vigente no momento da indicacao — audita o historico. */
+  commissionPercent: z.number(),
+  source: z.literal("welcome_survey"),
+});
+
+export type PartnerReferral = z.infer<typeof PartnerReferralSchema>;
+
 /** Registro do aceite, gravado em User/{matricula}/Partner_Consent/current. */
 export const PartnerConsentRecordSchema = z.object({
   version: z.string(),

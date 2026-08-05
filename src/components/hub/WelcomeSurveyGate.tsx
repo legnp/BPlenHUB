@@ -1,11 +1,14 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { SurveyEngine } from "@/components/forms/SurveyEngine";
 import { welcomeSurveyConfig } from "@/config/surveys/welcome";
 import { useTourStore } from "@/store/tour-store";
 import { hubOnboardingSteps } from "@/config/tour/hub-onboarding";
+import { getPartnerDirectoryOptionsAction } from "@/actions/partners/directory";
+import { withPartnerOriginOptions } from "@/lib/survey/welcome-origin";
 import type { SurveyValue } from "@/types/survey";
 
 /**
@@ -45,8 +48,26 @@ export function WelcomeSurveyGate({
   const name = displayName || "Membro";
   const firstName = name.split(" ")[0];
 
+  // Nomes dos parceiros ativos, somados as origens fixas da pergunta "Como voce nos
+  // conheceu?" (plano secao 4). Falha ou lista vazia = pergunta como sempre foi — a
+  // recepcao nunca pode travar por causa disto.
+  const [partnerNames, setPartnerNames] = useState<string[]>([]);
+  useEffect(() => {
+    let active = true;
+    getPartnerDirectoryOptionsAction()
+      .then((names) => {
+        if (active && names.length > 0) setPartnerNames(names);
+      })
+      .catch((error) => {
+        console.error("Erro ao carregar as origens de indicacao:", error);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const dynamicWelcomeConfig = {
-    ...welcomeSurveyConfig,
+    ...withPartnerOriginOptions(welcomeSurveyConfig, partnerNames),
     templateData: { firstName, displayName: name },
   };
 

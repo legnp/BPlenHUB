@@ -39,6 +39,7 @@ import { DiscDevolutivaModal } from "@/components/admin/DiscDevolutivaModal";
 import { getAdminProducts } from "@/actions/products";
 import { Product } from "@/types/products";
 import { getMemberQuotasAction, setMemberQuotasAction } from "@/actions/quotas";
+import { getPartnerDirectoryAction, upsertPartnerDirectoryEntryAction } from "@/actions/partners/directory";
 import { getErrorMessage } from "@/lib/utils/errors";
 import type { UserAssessment } from "@/actions/admin-assessments";
 import type { AdminContractRow } from "@/actions/admin/contract-invoice";
@@ -80,6 +81,9 @@ export default function UsersManagementPage() {
   const [savingDisc, setSavingDisc] = useState(false);
   const [showDiscDevolutiva, setShowDiscDevolutiva] = useState(false);
   const [savingWaiver, setSavingWaiver] = useState<string | null>(null);
+  // Nome do parceiro na lista de indicacao (Settings/PartnerDirectory). Vive fora de
+  // User_Permissions porque e' um diretorio consultado por TODO cliente novo na recepcao.
+  const [partnerDisplayName, setPartnerDisplayName] = useState("");
 
   const fetchUsersAndProducts = async () => {
     setLoading(true);
@@ -113,6 +117,26 @@ export default function UsersManagementPage() {
       setDiscLinkInput(selectedUser.metadata?.disc_link || "");
     }
   }, [selectedUser]);
+
+  // Nome de indicacao do parceiro selecionado (default: o nome da conta).
+  const selectedMatricula = selectedUser?.matricula;
+  const selectedName = selectedUser?.name;
+  useEffect(() => {
+    if (!selectedMatricula) return;
+    let active = true;
+    getPartnerDirectoryAction()
+      .then((entries) => {
+        if (!active) return;
+        const entry = entries.find((e) => e.partnerMatricula === selectedMatricula);
+        setPartnerDisplayName(entry?.displayName || selectedName || "");
+      })
+      .catch((error) => {
+        console.error("Erro ao carregar o diretorio de parceiros:", error);
+      });
+    return () => {
+      active = false;
+    };
+  }, [selectedMatricula, selectedName]);
 
   // Carregar Quotas quando o modal abre
   useEffect(() => {
@@ -258,6 +282,25 @@ export default function UsersManagementPage() {
     try {
       const token = await auth.currentUser?.getIdToken();
       
+      // 0. Diretorio de parceiros: o nome que o cliente novo vera na recepcao. Segue o
+      // selo — conceder publica a entrada, revogar apenas a desativa (o historico de
+      // indicacoes ja registradas continua valendo).
+      const isPartner = services.partner_area_access === true;
+      if (isPartner || selectedUser.services.partner_area_access) {
+        const dirRes = await upsertPartnerDirectoryEntryAction(
+          {
+            partnerMatricula: targetMatricula,
+            displayName: partnerDisplayName || selectedUser.name,
+            active: isPartner,
+          },
+          token
+        );
+        if (!dirRes.success) {
+          alert(dirRes.error || "Nao foi possivel salvar o nome de indicacao.");
+          return;
+        }
+      }
+
       // 1. Atualizar Acessos (Booleanos) + a taxa fixa do parceiro.
       // A comissão só é gravada com o selo de parceiro ativo — desligar o selo não
       // apaga a taxa anterior (o histórico de indicações já guarda a cópia dela).
@@ -714,6 +757,27 @@ export default function UsersManagementPage() {
                                            }}
                                            className="w-16 bg-[var(--bg-primary)]/40 border border-[var(--border-primary)] rounded-lg p-2 text-[10px] text-center font-black text-[var(--text-primary)] focus:border-[var(--accent-start)] outline-none"
                                         />
+                                     </div>
+                                  )}
+
+                                  {selectedUser.services.partner_area_access && (
+                                     <div className="pt-3 border-t border-[var(--border-primary)] space-y-2">
+                                        <div className="flex items-center gap-2">
+                                           <UserCircle size={12} className="text-[var(--accent-start)]" />
+                                           <label className="text-[8px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
+                                              Nome na lista de indicacao
+                                           </label>
+                                        </div>
+                                        <input
+                                           type="text"
+                                           value={partnerDisplayName}
+                                           onChange={(e) => setPartnerDisplayName(e.target.value)}
+                                           placeholder="Como o cliente vera este parceiro"
+                                           className="w-full bg-[var(--bg-primary)]/40 border border-[var(--border-primary)] rounded-lg px-3 py-2 text-[11px] font-bold text-[var(--text-primary)] focus:border-[var(--accent-start)] outline-none placeholder:opacity-40"
+                                        />
+                                        <p className="text-[8px] text-[var(--text-muted)] opacity-60 uppercase tracking-widest">
+                                           Aparece em &quot;Como voce nos conheceu?&quot; na recepcao do cliente novo
+                                        </p>
                                      </div>
                                   )}
                                </div>
