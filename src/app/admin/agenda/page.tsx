@@ -52,6 +52,7 @@ export default function AgendaManagementPage() {
   // Input do motivo por tipo de evento (a lista global acima segue valendo para o 1 to 1).
   const [newDemandByType, setNewDemandByType] = useState<Record<string, string>>({});
   const [newPartnerDemandByType, setNewPartnerDemandByType] = useState<Record<string, string>>({});
+  const [newEventTypeTitle, setNewEventTypeTitle] = useState("");
   const [newType, setNewType] = useState("");
   // Tipos de evento (Etapa 3.1): o significado do slot mora aqui, nao no titulo.
   const [eventTypes, setEventTypes] = useState<CalendarEventType[]>([]);
@@ -124,6 +125,47 @@ export default function AgendaManagementPage() {
       alert(resTipos.message || "Erro ao salvar configurações.");
     }
     setIsSaving(false);
+  };
+
+  /**
+   * Cria um tipo de evento novo.
+   *
+   * Ate aqui a lista de tipos so podia ser editada, nunca acrescida — criar o 6o tipo
+   * ("Onboarding de Parceiros") exigia codigo, embora o evento ja existisse no Google.
+   * O `id` e derivado do titulo e nao muda depois: e' o identificador que amarra slot,
+   * parada da jornada e agendamento (Licao 19 — identificador nunca sai de rotulo
+   * editavel, por isso o titulo pode ser corrigido sem quebrar o vinculo).
+   */
+  const handleAddEventType = () => {
+    const googleTitle = newEventTypeTitle.trim();
+    if (!googleTitle) return;
+
+    const id = googleTitle
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-zA-Z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .toLowerCase();
+
+    if (!id) return;
+    if (eventTypes.some((t) => t.id === id)) {
+      alert("Ja existe um tipo com esse nome.");
+      return;
+    }
+
+    setEventTypes([
+      ...eventTypes,
+      {
+        id,
+        label: googleTitle,
+        googleTitle,
+        consultorPadrao: "a definir",
+        vagasPadrao: 1,
+        atende: [],
+        audiences: ["member"],
+      },
+    ]);
+    setNewEventTypeTitle("");
   };
 
   const audiencesDoTipo = (tipo: CalendarEventType): Array<"member" | "partner"> =>
@@ -506,6 +548,32 @@ export default function AgendaManagementPage() {
         maxWidth="max-w-2xl"
       >
         <div className="space-y-5 p-2 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar text-left">
+          <div className="p-5 bg-[var(--input-bg)] border border-dashed border-[var(--border-primary)] rounded-2xl space-y-2">
+            <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
+              Criar tipo novo (use o titulo EXATO do evento no Google Calendar)
+            </span>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newEventTypeTitle}
+                onChange={(e) => setNewEventTypeTitle(e.target.value)}
+                placeholder="Ex: Onboarding de Parceiros"
+                className="flex-1 px-4 py-3 bg-[var(--bg-primary)]/50 border border-[var(--input-border)] rounded-xl text-sm font-bold text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-start)]/50 placeholder:text-[var(--text-muted)] placeholder:opacity-40"
+                onKeyDown={(e) => e.key === "Enter" && handleAddEventType()}
+              />
+              <button
+                onClick={handleAddEventType}
+                className="px-5 py-3 bg-[var(--accent-start)] text-white rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-[var(--accent-end)] transition-all"
+              >
+                Criar tipo
+              </button>
+            </div>
+            <p className="text-[10px] text-[var(--text-muted)] opacity-60 italic">
+              O tipo nasce como Membro e sem servicos atendidos. Ajuste a audiencia, os
+              servicos e os motivos abaixo, e salve.
+            </p>
+          </div>
+
           {eventTypes.map((tipo) => {
             const casados = contarEventosDoTipo(tipo.googleTitle);
             return (

@@ -200,14 +200,62 @@ wb_data.close()
 
 # 3. READ JOURNEY CONFIGURATION (ORDER)
 print("\nStep 3: Reading Journey orders from 'Jornada' sheet...")
+
+# Colunas lidas por NOME de cabecalho (e nao por posicao): a aba ganhou uma coluna de
+# audiencia e vai ganhar outras. Posicao fixa quebraria em silencio a cada insercao.
+JOURNEY_AUDIENCE_HEADERS = {"audiencia", "audiência", "isstepjourney", "audience"}
+PARTNER_AUDIENCE_VALUES = {"parceiros", "parceiro", "partners", "partner"}
+
+
+def _norm_header(value):
+    return str(value or "").strip().lower().replace(" ", "")
+
+
+def _slugify(value):
+    import re
+    import unicodedata
+    txt = unicodedata.normalize("NFKD", str(value or "")).encode("ascii", "ignore").decode("ascii")
+    txt = re.sub(r"[^a-zA-Z0-9]+", "-", txt).strip("-").lower()
+    return txt or "servico"
+
+
+journey_rows = []
 try:
     journey_sheet = wb_config["Jornada"]
+
+    header_index = {}
+    for c in range(1, journey_sheet.max_column + 1):
+        header_index[_norm_header(journey_sheet.cell(row=1, column=c).value)] = c
+
+    col_code = header_index.get("servicecode", 1)
+    col_order = header_index.get("order", 2)
+    col_name = header_index.get("servicename", 3)
+    col_audience = next((header_index[h] for h in JOURNEY_AUDIENCE_HEADERS if h in header_index), None)
+
     journey_orders = {}
     for r in range(2, journey_sheet.max_row + 1):
-        code = str(journey_sheet.cell(row=r, column=1).value or "").strip()
-        order = journey_sheet.cell(row=r, column=2).value
-        if code and order is not None:
+        code = str(journey_sheet.cell(row=r, column=col_code).value or "").strip()
+        order = journey_sheet.cell(row=r, column=col_order).value
+        if not code:
+            continue
+        if order is not None:
             journey_orders[code] = int(order)
+
+        audience_raw = ""
+        if col_audience:
+            audience_raw = str(journey_sheet.cell(row=r, column=col_audience).value or "").strip().lower()
+
+        journey_rows.append({
+            "code": code,
+            "order": int(order) if order is not None else None,
+            "name": str(journey_sheet.cell(row=r, column=col_name).value or "").strip() if col_name else "",
+            "audience": audience_raw,
+        })
+
+    if col_audience:
+        print(f" -> Audience column found at index {col_audience}.")
+    else:
+        print(" -> No audience column: every journey service stays as it is today (B2C).")
     print(f" -> Loaded orders for {len(journey_orders)} services.")
 except KeyError:
     print("WARNING: 'Jornada' sheet not found. Using default orders.")
@@ -465,6 +513,80 @@ internal_services = {
 # Add internal services to services_data for unified processing
 services_data.update(internal_services)
 
+
+# 6.B PARTNER JOURNEY SERVICES (from the 'Jornada' sheet)
+#
+# Caminho SEPARADO do dos servicos B2C de proposito. Os servicos vendaveis vem das
+# coordenadas fixas de `services_coords` (linhas de preco na aba de custos); os da
+# jornada de parceria nao tem preco nem cota, entao nascem da propria aba Jornada — a
+# Gestora adiciona uma linha com audiencia "parceiros" e o servico existe, sem tocar em
+# codigo e sem risco de mexer no que ja e vendido.
+print("\nStep 6.B: Adding partner journey services from the 'Jornada' sheet...")
+partner_services = {}
+for row in journey_rows:
+    if row["audience"] not in PARTNER_AUDIENCE_VALUES:
+        continue
+
+    code = row["code"]
+    if code in services_data:
+        print(f" -> SKIP {code}: ja existe como servico B2C/interno. Use um ServiceCode proprio para a parceria.")
+        continue
+
+    title = row["name"] or code
+    slug = _slugify(title)
+
+    partner_services[code] = {
+        "id": slug,
+        "slug": slug,
+        "serviceCode": code,
+        "title": title,
+        "kicker": "Parceria",
+        "price": 0.0,
+        "pricePix": 0.0,
+        "maxInstallments": 12,
+        "isStepJourney": True,
+        "order": row["order"],
+        "grantedQuotas": {},
+        # E o que faz a etapa aparecer SO na trilha de parceiro (filtro de audiencia em
+        # src/lib/journey/audience.ts). Sem "people"/"companies" aqui, ela nunca vaza
+        # para a jornada do membro.
+        "targetAudiences": ["partners"],
+        "status": "active",
+        "sheet": {
+            "description": f"Etapa da jornada de parceria: {title}.",
+            "coverImage": "/images/products/onboarding.png",
+            "paymentConditions": "Etapa interna da parceria, sem custo.",
+            "faq": [
+                {"question": "Para quem e esta etapa?", "answer": "Para parceiros BPlen com acesso liberado."}
+            ],
+            "termsAndConditions": "Etapa exclusiva do programa de parceria BPlen.",
+            "seo": {
+                "title": f"{title} | BPlen HUB",
+                "description": f"Etapa da jornada de parceria: {title}.",
+                "keywords": ["parceria", "bplen"]
+            }
+        },
+        "workflow": [],
+        "deliverySteps": checkpoints_by_service.get(code, []),
+        "capabilities": {
+            "surveys": [],
+            "forms": [],
+            "allowedEventTypes": []
+        }
+    }
+    print(f" -> Partner journey service {code} ({title}): {len(partner_services[code]['deliverySteps'])} checkpoint(s).")
+
+if partner_services:
+    services_data.update(partner_services)
+else:
+    print(" -> No row with audience 'parceiros' in the 'Jornada' sheet.")
+
+# Checkpoint orfao (serviceCode que nao virou produto nenhum) some em silencio e a
+# jornada aparece vazia sem explicacao. Avisar alto e melhor.
+orphan_checkpoints = [c for c in checkpoints_by_service.keys() if c not in services_data]
+if orphan_checkpoints:
+    print(f" -> WARNING: checkpoints sem servico correspondente (serao ignorados): {sorted(orphan_checkpoints)}")
+
 # Apply Dynamic Journey Orders to all services (including internal)
 print("\nStep 6.C: Applying dynamic Journey orders to all services...")
 for code, data in services_data.items():
@@ -705,6 +827,12 @@ all_products.append(internal_services["BPL-006"])
 for code in ["BPL-PAC-JR", "BPL-PAC-PL", "BPL-PAC-SR", "BPL-PAC-LD", "BPL-PAC-EB"]:
     all_products.append(packages_data[code])
 
+# Etapas da jornada de parceria — entram DEPOIS da lista fixa acima, que segue byte a
+# byte como sempre foi. A lista fixa e' o motivo de um servico novo na planilha nao
+# aparecer sozinho: estar em `services_data` nao basta, e' preciso entrar aqui.
+for code in sorted(partner_services.keys()):
+    all_products.append(partner_services[code])
+
 # Ensure target folder exists
 os.makedirs(os.path.dirname(output_payload_path), exist_ok=True)
 
@@ -715,6 +843,6 @@ print("\n=========================================")
 print("  PARSER PIPELINE EXECUTED WITH SUCCESS! ")
 print("=========================================")
 print(f"Payload Saved: {output_payload_path}")
-print(f"Products Compiled: {len(all_products)} (7 Services | 5 Packages)")
+print(f"Products Compiled: {len(all_products)} (7 Services | 5 Packages | {len(partner_services)} Partner Journey)")
 print(f"Protected directory '/portfolio' holds secure sources and outputs.")
 print("=========================================")

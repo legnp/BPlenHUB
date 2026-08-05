@@ -35,7 +35,21 @@ export const WorkflowStepSchema = z.object({
 
 export const DeliveryStepSchema = z.object({
   id: z.string().min(1),
-  type: z.enum(["survey", "form", "meeting", "content", "upload", "feedback"]),
+  // `action`, `contract` e `tour` nasceram na jornada de parceria (Fases 1 e 5). Sem
+  // eles aqui, a planilha ate parseia mas o payload e' REJEITADO na validacao, e a
+  // parada nunca chega ao produto. Mantidos em sincronia com `ContentType`
+  // (`src/types/journey.ts`).
+  type: z.enum([
+    "survey",
+    "form",
+    "meeting",
+    "content",
+    "upload",
+    "feedback",
+    "action",
+    "contract",
+    "tour",
+  ]),
   referenceId: z.string().min(1),
   title: z.string().min(1),
   description: z.string().optional(),

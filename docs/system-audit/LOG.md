@@ -24,6 +24,50 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-05] Chat de execução — Configuração da parceria: 4 inconsistências achadas na planilha e no admin
+
+- Chat/sessão: chat de execução, mesma branch. Fast-forward na `main` autorizado.
+- **Origem**: a Gestora começou a configurar a Área de Parceiros e reportou o que travou.
+  Pediu explicitamente análise consultiva da planilha e do payload, alertando para **não
+  sobrescrever o Excel nem truncar os serviços B2C existentes**.
+- **4 inconsistências confirmadas por leitura do código e da planilha local**:
+  1. **A coluna nova não era lida.** A aba `Jornada` era lida por POSIÇÃO fixa (col 1 =
+     ServiceCode, col 2 = Order). A coluna que ela criou era simplesmente ignorada.
+  2. **Campo trocado.** `isStepJourney` é BOOLEANO ("é etapa de jornada, sim/não"); audiência
+     é `targetAudiences`. O parser fixava `["people","companies"]` para todos os produtos —
+     nenhum jamais sairia como de parceria.
+  3. **Serviço novo na planilha era invisível.** Duas listas fechadas em código o impediam:
+     `services_coords` (coordenadas de preço) e, principalmente, o **Step 7**, que montava o
+     payload final a partir de uma lista fixa de códigos. Estar em `services_data` não
+     bastava. Os checkpoints de parceria dela ficariam órfãos, descartados em silêncio.
+  4. **Os tipos novos de parada seriam rejeitados.** `DeliveryStepSchema` aceitava só
+     survey/form/meeting/content/upload/feedback — `contract`, `action` e `tour` (usados pela
+     jornada de parceria) fariam o payload falhar na validação, depois de a planilha já ter
+     sido parseada.
+- **Entregue**:
+  1. `scripts/portfolio_parser.py`: aba `Jornada` lida por **nome de cabeçalho** (posição fixa
+     quebra em silêncio a cada coluna inserida), com coluna de audiência tolerante aos nomes
+     `Audiencia`/`Audiência`/`isStepJourney`/`audience`; e **caminho separado** que gera os
+     serviços de jornada de parceria a partir da própria aba — sem preço, sem cota,
+     `targetAudiences: ["partners"]`. O Step 7 acrescenta esses serviços **depois** da lista
+     fixa, que segue intacta. Aviso alto para checkpoint órfão, que antes sumia calado.
+  2. `DeliveryStepSchema` passa a aceitar `action`, `contract` e `tour`, em sincronia com
+     `ContentType`.
+  3. Tela de agenda do admin ganhou **"Criar tipo novo"** — a Gestora estava certa ao dizer
+     que criar o "Onboarding de Parceiros" era código: a lista de tipos só podia ser
+     **editada**, nunca acrescida. O `id` é derivado do título e não muda depois (Lição 19).
+- **Prova de não-regressão do B2C** (a garantia que ela pediu), por execução real do parser:
+  - Sem coluna de audiência: payload gerado **idêntico byte a byte** ao anterior (12 produtos).
+  - Com a planilha simulada (coluna + 2 etapas de parceria + 3 checkpoints, incluindo um do
+    tipo `contract`): 14 produtos — os **12 B2C/internos preservados sem nenhuma alteração** e
+    2 de parceria com as paradas corretas. Planilha e payload originais restaurados ao fim do
+    teste.
+- **Validação**: lint sem erro nos arquivos tocados, `tsc` limpo, build exit 0, suíte
+  **51 arquivos / 480 testes** verde.
+- **Pendente da Gestora**: renomear a coluna para `Audiencia` (opcional — `isStepJourney`
+  também é aceito), usar ServiceCodes próprios para as etapas de parceria (ex.: `BPP-001`) e
+  reimportar a planilha pelo admin.
+
 ## [2026-08-05] Chat de execução — Fase 5: Home do parceiro, tour de boas-vindas e pop-up único
 
 - Chat/sessão: chat de execução, mesma branch. Fast-forward na `main` autorizado.
