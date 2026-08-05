@@ -19,7 +19,8 @@ const ALLOWED_SERVICE_KEYS = [
   "career_planning",
   "behavioral_analysis",
   "member_area_access",
-  "partner_area_access"
+  "partner_area_access",
+  "partner_public_showcase"
 ];
 
 /** Teto defensivo de dispensas de pré-requisito por usuário (Fase A / A3) */

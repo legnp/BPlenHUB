@@ -26,6 +26,8 @@ import { getUpcomingEvents, getUserBookingsAction, submitEvaluationAction } from
 import { UserBooking, GoogleCalendarEvent } from "@/types/calendar";
 import { SurveyEngine } from "@/components/forms/SurveyEngine";
 import { PartnerContractStep } from "./PartnerContractStep";
+import { useTourStore } from "@/store/tour-store";
+import { partnerOnboardingSteps } from "@/config/tour/partner-onboarding";
 import { getSurveyConfig } from "@/config/surveys";
 import { eventMatchesSubstep, bookingMatchesSubstep } from "@/lib/journey/booking-match";
 import { slotServesStage } from "@/lib/calendar/slot-offer";
@@ -374,6 +376,49 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
       // Parada que encaminha para uma tela da plataforma (Configuracao do Perfil,
       // Gestao de Parceria). O destino vem do dado (`referenceId` = rota), nunca
       // hardcoded aqui — a Gestora define no cadastro do produto.
+      // Parada de tour guiado: dispara o tour da propria audiencia e conclui quando ele
+      // termina. O tour do parceiro (checkpoint 1) reaproveita o mesmo motor do hub.
+      case "tour":
+        return (
+          <div className="flex-1 flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-6 duration-1000">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-[var(--accent-start)]/10 rounded-xl flex items-center justify-center text-[var(--accent-start)]">
+                  <DynamicIcon name={icon} />
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--accent-start)]">
+                  {kicker || partnerNomen.badge_tour}
+                </span>
+              </div>
+              <h2 className="text-3xl font-black tracking-tight">{substep.title}</h2>
+              <p className="text-[12px] font-medium text-[var(--text-muted)] max-w-xl leading-relaxed">
+                {substep.description || partnerNomen.instructions.tour_helper_text}
+              </p>
+            </div>
+
+            <div className="p-12 border border-[var(--border-primary)] rounded-[3rem] bg-[var(--input-bg)]/20 flex flex-col items-center justify-center text-center gap-8">
+              {status === "completed" ? (
+                <div className="flex items-center gap-3 px-5 py-3 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl">
+                  <CheckCircle2 size={18} className="text-emerald-500" />
+                  <span className="text-[11px] font-black uppercase tracking-widest text-emerald-500">
+                    {partnerNomen.instructions.survey_status_done}
+                  </span>
+                </div>
+              ) : (
+                <button
+                  onClick={() => {
+                    useTourStore.getState().startTour("partner_onboarding_tour", partnerOnboardingSteps);
+                    onComplete();
+                  }}
+                  className="px-10 py-4 bg-[var(--accent-start)] text-white rounded-full text-[10px] font-black uppercase tracking-[0.2em] hover:scale-105 active:scale-95 transition-all shadow-xl shadow-[var(--accent-start)]/20"
+                >
+                  {partnerNomen.actions.start_tour}
+                </button>
+              )}
+            </div>
+          </div>
+        );
+
       case "action": {
         const target = substep.referenceId?.startsWith("/") ? substep.referenceId : "";
         return (

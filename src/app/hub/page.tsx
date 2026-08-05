@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useTourStore } from "@/store/tour-store";
 import { hubOnboardingSteps } from "@/config/tour/hub-onboarding";
 import { HubHomeView } from "@/components/hub/HubHomeView";
+import { PartnerWelcomePopup } from "@/components/hub/partners/PartnerWelcomePopup";
 
 /**
  * BPlen HUB — Home da area logada.
@@ -31,5 +32,12 @@ export default function HubPage() {
     }
   }, [searchParams, startTour]);
 
-  return <HubHomeView />;
+  return (
+    <>
+      <HubHomeView />
+      {/* Boas-vindas ao novo parceiro: uma unica vez, so para quem tem o selo. Nao e
+          gate — nao bloqueia a home nem interrompe quem nao e parceiro. */}
+      <PartnerWelcomePopup />
+    </>
+  );
 }

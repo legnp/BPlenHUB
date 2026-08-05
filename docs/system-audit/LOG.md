@@ -24,6 +24,40 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-05] Chat de execução — Fase 5: Home do parceiro, tour de boas-vindas e pop-up único
+
+- Chat/sessão: chat de execução, mesma branch. Fast-forward na `main` autorizado.
+  **Atenção**: o push anterior foi recusado porque OUTRO chat de execução publicou 4 commits
+  na `main` (espelhamento no acervo + ajuste no `vitest.config`). Rebase feito, tudo
+  revalidado do zero antes de empurrar — nenhum conflito, nada perdido.
+- **Decisão da Gestora (2026-08-05)**: a vitrine pública é concedida **caso a caso**.
+  Entregue como selo `partner_public_showcase`, com toggle próprio na ficha do usuário
+  (aparece só quando o acesso de parceiro está ligado) e etiqueta "Vitrine" na lista. É ele
+  que libera a cláusula 4.2 no termo.
+- **Entregue (Fase 5)**:
+  1. `PartnerHomeView` — a Home real do parceiro substitui a página de entrada mínima da
+     Fase 0: saudação, aviso do ciclo que espera recibo, métricas (indicações, repasse
+     acumulado, ciclos em aberto) e os três atalhos. O dado vem das MESMAS actions das telas
+     internas — nenhuma leitura nova, nenhuma regra duplicada.
+  2. **Pop-up único de boas-vindas** em `/hub`, para quem acabou de receber o selo. O "já vi"
+     mora no **banco** (`User_Flags/partner_welcome`), não só no navegador: `localStorage`
+     sozinho faria o pop-up reaparecer em outro dispositivo, em aba anônima ou após limpar o
+     navegador — e o pedido era uma vez, não uma vez por navegador. A cópia local existe só
+     para não piscar enquanto o servidor responde. Não é gate: não bloqueia nada.
+  3. **Checkpoint 1 — Boas-vindas com tour**: tipo de parada novo (`tour`) no motor +
+     `partner-onboarding.ts` com 4 passos, reaproveitando o mesmo motor de tour do hub.
+     Apresenta a alternância de contexto (a novidade estrutural para quem já usa o hub) e as
+     três frentes da parceria. Âncoras adicionadas na Home do parceiro.
+- **Achado colateral (NÃO é regressão minha)**: `npx eslint src/components/journey` acusa 5
+  erros de `Cannot call impure function during render` em
+  `src/components/journey/ConfettiCheckbox.tsx` — `Math.random()` no corpo do componente,
+  vindo do commit `200dd2e`. Arquivo intocado por esta sessão (confirmado por
+  `git diff origin/main`). Registrado como tarefa separada para não misturar com a entrega.
+- **Validação**: lint sem erro **nos arquivos tocados**, `tsc` limpo, build exit 0 com as 7
+  rotas de parceria (5 do hub + 2 do admin), suíte **51 arquivos / 480 testes** verde.
+- **Configuração que fica com a Gestora** para o checkpoint 1: cadastrar a parada de
+  Boas-vindas com tipo `tour` na esteira do produto correspondente.
+
 ## [2026-08-05] Chat de execução — Termo de Parceria: modelo oficial, blocos condicionais e editor
 
 - Chat/sessão: chat de execução, mesma branch. Fast-forward na `main` autorizado.

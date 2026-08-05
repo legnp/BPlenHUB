@@ -559,7 +559,7 @@ export default function UsersManagementPage() {
                             const productName = products.find(p => p.id === id || p.slug === id)?.title;
                             return (
                               <div key={id} className={`px-2 py-1 border rounded-lg text-[8px] font-bold uppercase tracking-tighter ${id === 'member_area_access' ? 'bg-emerald-500/5 border-emerald-500/10 text-emerald-600' : 'bg-[var(--accent-start)]/5 border-[var(--accent-start)]/10 text-[var(--accent-start)]/70'}`}>
-                                 {id === 'member_area_access' ? 'Portaria' : id === 'partner_area_access' ? 'Parceiro' : (productName || id)}
+                                 {id === 'member_area_access' ? 'Portaria' : id === 'partner_area_access' ? 'Parceiro' : id === 'partner_public_showcase' ? 'Vitrine' : (productName || id)}
                               </div>
                             );
                          })}
@@ -757,6 +757,34 @@ export default function UsersManagementPage() {
                                            }}
                                            className="w-16 bg-[var(--bg-primary)]/40 border border-[var(--border-primary)] rounded-lg p-2 text-[10px] text-center font-black text-[var(--text-primary)] focus:border-[var(--accent-start)] outline-none"
                                         />
+                                     </div>
+                                  )}
+
+                                  {selectedUser.services.partner_area_access && (
+                                     <div className="pt-3 border-t border-[var(--border-primary)] flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                           <Trophy size={12} className="text-[var(--accent-start)]" />
+                                           <div>
+                                              <label className="text-[8px] font-bold uppercase tracking-widest text-[var(--text-muted)] block">
+                                                 Vitrine pública
+                                              </label>
+                                              <p className="text-[8px] text-[var(--text-muted)] opacity-60 uppercase mt-0.5">
+                                                 Libera a cláusula 4.2 no termo
+                                              </p>
+                                           </div>
+                                        </div>
+                                        <button
+                                          onClick={() => {
+                                             const n = {
+                                                ...selectedUser.services,
+                                                partner_public_showcase: !selectedUser.services.partner_public_showcase,
+                                             };
+                                             setSelectedUser({ ...selectedUser, services: n });
+                                          }}
+                                          className={`w-10 h-5 rounded-full relative transition-all shrink-0 ${selectedUser.services.partner_public_showcase ? 'bg-[var(--accent-start)]' : 'bg-gray-700'}`}
+                                        >
+                                           <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${selectedUser.services.partner_public_showcase ? 'left-6' : 'left-1'}`} />
+                                        </button>
                                      </div>
                                   )}
 

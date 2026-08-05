@@ -13,6 +13,7 @@ export type ContentType =
   | "meeting"     // Schedule/Join 1-to-1 or group sessions
   | "action"      // Parada que encaminha para uma tela da plataforma (referenceId = rota)
   | "contract"    // Termo com texto, aceites modulares e assinatura (referenceId = id do termo)
+  | "tour"        // Tour guiado da area (checkpoint de boas-vindas)
   | "upload"      // Document submission
   | "feedback";   // Event feedback / Post-session notes
 

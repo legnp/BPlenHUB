@@ -19,6 +19,7 @@ export interface UserServices {
   behavioral_analysis?: boolean;
   member_area_access?: boolean; // 🔒 Acesso Restrito À Área de Membros
   partner_area_access?: boolean; // Acesso à Área de Parceiros (concedido via Admin)
+  partner_public_showcase?: boolean; // Direito à vitrine pública de parceiros (caso a caso)
   [key: string]: boolean | undefined; // Permite expansão dinâmica
 }
 
