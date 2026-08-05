@@ -53,11 +53,19 @@ export function DriveBackfillView() {
 
   const totals = useMemo(() => {
     const list = reports ?? [];
+    const soma = (pick: (r: BackfillReport) => number) => list.reduce((acc, r) => acc + pick(r), 0);
     return {
       users: list.length,
-      surveys: list.reduce((sum, r) => sum + r.surveysWritten, 0),
-      forms: list.reduce((sum, r) => sum + r.formsWritten, 0),
-      failures: list.reduce((sum, r) => sum + r.failures.length, 0),
+      surveys: soma((r) => r.surveysWritten),
+      forms: soma((r) => r.formsWritten),
+      // Comprovantes de aceite, trilha de assinatura, feedbacks e objetivos —
+      // agrupados num tile so para a linha de metricas nao virar um paredao.
+      registros:
+        soma((r) => r.consentWritten) +
+        soma((r) => r.auditsWritten) +
+        soma((r) => r.feedbacksWritten) +
+        soma((r) => r.objectivesWritten),
+      failures: soma((r) => r.failures.length),
     };
   }, [reports]);
 
@@ -308,6 +316,13 @@ export function DriveBackfillView() {
               tone="accent"
             />
             <StatTile
+              label="Aceites e registros"
+              value={totals.registros}
+              icon={<Archive size={18} />}
+              tone="accent"
+              detail="Termos, assinaturas, feedbacks e objetivos"
+            />
+            <StatTile
               label="Falhas"
               value={totals.failures}
               icon={<AlertTriangle size={18} />}
@@ -322,7 +337,7 @@ export function DriveBackfillView() {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-[var(--input-bg)]/80 border-b border-[var(--border-primary)]">
-                    {["Matrícula", "Pesquisas", "Formulários", "Falhas"].map((head) => (
+                    {["Matrícula", "Pesquisas", "Formulários", "Aceites", "Assinaturas", "Feedbacks", "Objetivos", "Falhas"].map((head) => (
                       <th
                         key={head}
                         className="px-6 py-4 text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-70"
@@ -334,7 +349,16 @@ export function DriveBackfillView() {
                 </thead>
                 <tbody>
                   {reports
-                    .filter((r) => r.surveysFound > 0 || r.formsFound > 0)
+                    .filter(
+                      (r) =>
+                        r.surveysFound > 0 ||
+                        r.formsFound > 0 ||
+                        r.consentWritten > 0 ||
+                        r.auditsWritten > 0 ||
+                        r.feedbacksWritten > 0 ||
+                        r.objectivesWritten > 0 ||
+                        r.failures.length > 0
+                    )
                     .map((report) => (
                       <tr
                         key={report.matricula}
@@ -349,6 +373,18 @@ export function DriveBackfillView() {
                         </td>
                         <td className="px-6 py-4 text-sm font-medium text-[var(--text-muted)]">
                           {report.formsWritten} de {report.formsFound}
+                        </td>
+                        <td className="px-6 py-4 text-sm font-medium text-[var(--text-muted)]">
+                          {report.consentWritten}
+                        </td>
+                        <td className="px-6 py-4 text-sm font-medium text-[var(--text-muted)]">
+                          {report.auditsWritten}
+                        </td>
+                        <td className="px-6 py-4 text-sm font-medium text-[var(--text-muted)]">
+                          {report.feedbacksWritten}
+                        </td>
+                        <td className="px-6 py-4 text-sm font-medium text-[var(--text-muted)]">
+                          {report.objectivesWritten > 0 ? "sim" : "-"}
                         </td>
                         <td className="px-6 py-4 text-sm font-medium">
                           {report.failures.length === 0 ? (

@@ -50,6 +50,14 @@ export interface BackfillReport {
   surveysSkipped: number;
   formsFound: number;
   formsWritten: number;
+  /** Comprovantes de aceite de termos gerados a partir de User_Consent_History. */
+  consentWritten: number;
+  /** Linhas de trilha de assinatura geradas a partir de Legal_Audits. */
+  auditsWritten: number;
+  /** Feedbacks de carreira espelhados. */
+  feedbacksWritten: number;
+  /** 1 se o snapshot de objetivos foi (re)gerado, 0 se nao havia objetivos. */
+  objectivesWritten: number;
   failures: string[];
 }
 
@@ -62,6 +70,10 @@ async function backfillOneUser(matricula: string, dryRun: boolean): Promise<Back
     surveysSkipped: 0,
     formsFound: 0,
     formsWritten: 0,
+    consentWritten: 0,
+    auditsWritten: 0,
+    feedbacksWritten: 0,
+    objectivesWritten: 0,
     failures: [],
   };
 
@@ -153,7 +165,160 @@ async function backfillOneUser(matricula: string, dryRun: boolean): Promise<Back
     }
   }
 
+  await backfillProofTrails(matricula, dryRun, report);
+
   return report;
+}
+
+/**
+ * Categorias com valor probatorio e material de acompanhamento.
+ *
+ * Separado do bloco de respostas porque a natureza e outra: aqui nao ha
+ * definicao de survey para derivar colunas, e cada categoria tem forma propria e
+ * conhecida (tipada). O que se mantem e a idempotencia — comprovante pelo nome
+ * do arquivo, series pelo carimbo na coluna A.
+ */
+async function backfillProofTrails(
+  matricula: string,
+  dryRun: boolean,
+  report: BackfillReport
+): Promise<void> {
+  const db = getAdminDb();
+
+  const [consentSnap, auditsSnap, feedbacksSnap, objectivesSnap] = await Promise.all([
+    db.collection(`User/${matricula}/User_Consent_History`).get(),
+    db.collection(`User/${matricula}/Legal_Audits`).get(),
+    db.collection(`User/${matricula}/Feedbacks`).get(),
+    db.collection(`User/${matricula}/Career_Objectives`).get(),
+  ]);
+
+  const {
+    syncConsentAcceptanceToDrive,
+    syncLegalAuditToUserDrive,
+    syncCareerFeedbackToUserDrive,
+    syncCareerObjectivesToUserDrive,
+  } = await import("@/lib/drive-sync");
+
+  // 1. Comprovantes de aceite de termos.
+  for (const doc of consentSnap.docs) {
+    const data = doc.data();
+    const acceptedAt = toDate(data.acceptedAt);
+    // Sem carimbo nao da para nomear o comprovante de forma estavel, e um nome
+    // instavel quebraria a idempotencia (geraria um arquivo novo a cada resgate).
+    if (!acceptedAt) {
+      report.failures.push(`consent ${doc.id}: sem data de aceite`);
+      continue;
+    }
+
+    if (dryRun) {
+      report.consentWritten += 1;
+      continue;
+    }
+
+    try {
+      await syncConsentAcceptanceToDrive(matricula, {
+        version: String(data.version || "sem-versao"),
+        birthDate: String(data.birthDate || "nao informada"),
+        newsletterOptIn: data.newsletterOptIn === true,
+        proof: {
+          ip: String(data.ip || "desconhecido"),
+          userAgent: String(data.userAgent || "desconhecido"),
+          deviceType: String(data.deviceType || "unknown"),
+          location: formatGeo(data.geo),
+          acceptedAt,
+        },
+      });
+      report.consentWritten += 1;
+    } catch (error: unknown) {
+      report.failures.push(`consent ${doc.id}: ${getErrorMessage(error)}`);
+    }
+  }
+
+  // 2. Trilha de auditoria das assinaturas.
+  for (const doc of auditsSnap.docs) {
+    const data = doc.data();
+    if (dryRun) {
+      report.auditsWritten += 1;
+      continue;
+    }
+
+    try {
+      await syncLegalAuditToUserDrive(matricula, {
+        auditId: String(data.auditId || doc.id),
+        timestamp: String(data.timestamp || ""),
+        productId: String(data.productId || ""),
+        orderId: data.orderId ? String(data.orderId) : null,
+        paymentId: data.paymentId ? String(data.paymentId) : null,
+        verificationCode: String(data.verificationCode || ""),
+        documentHash: String(data.documentHash || ""),
+        verificationHash: String(data.verificationHash || ""),
+        ipAddress: String(data.ipAddress || ""),
+        location: formatGeo(data.geo),
+        documentUrl: String(data.documentUrl || ""),
+      });
+      report.auditsWritten += 1;
+    } catch (error: unknown) {
+      report.failures.push(`audit ${doc.id}: ${getErrorMessage(error)}`);
+    }
+  }
+
+  // 3. Feedbacks de carreira.
+  for (const doc of feedbacksSnap.docs) {
+    const data = doc.data();
+    if (dryRun) {
+      report.feedbacksWritten += 1;
+      continue;
+    }
+
+    try {
+      await syncCareerFeedbackToUserDrive(matricula, {
+        title: String(data.title || ""),
+        content: String(data.content || ""),
+        author: String(data.author || ""),
+        createdAt: String(data.createdAt || ""),
+      });
+      report.feedbacksWritten += 1;
+    } catch (error: unknown) {
+      report.failures.push(`feedback ${doc.id}: ${getErrorMessage(error)}`);
+    }
+  }
+
+  // 4. Objetivos de carreira (snapshot unico, nao linha a linha).
+  if (!objectivesSnap.empty) {
+    if (dryRun) {
+      report.objectivesWritten = 1;
+      return;
+    }
+
+    try {
+      await syncCareerObjectivesToUserDrive(
+        matricula,
+        objectivesSnap.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            title: String(data.title || ""),
+            description: data.description ? String(data.description) : undefined,
+            status: String(data.status || ""),
+            targetDate: data.targetDate ? String(data.targetDate) : undefined,
+            createdAt: String(data.createdAt || ""),
+            completedAt: data.completedAt ? String(data.completedAt) : undefined,
+            goals: Array.isArray(data.goals) ? data.goals : [],
+          };
+        })
+      );
+      report.objectivesWritten = 1;
+    } catch (error: unknown) {
+      report.failures.push(`objetivos: ${getErrorMessage(error)}`);
+    }
+  }
+}
+
+/** Achata a geo gravada no Firestore para a celula de planilha. */
+function formatGeo(geo: unknown): string {
+  if (typeof geo !== "object" || geo === null) return "";
+  const g = geo as Record<string, unknown>;
+  const cityRegion = [g.city, g.region].filter(Boolean).join("/");
+  return [cityRegion, g.country].filter(Boolean).join(", ");
 }
 
 /**

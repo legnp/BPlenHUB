@@ -14,7 +14,47 @@ import {
   CareerGoal
 } from "@/types/career";
 import * as admin from "firebase-admin";
+import { after } from "next/server";
 import { getErrorMessage } from "@/lib/utils/errors";
+
+/**
+ * Espelha o estado atual dos objetivos no acervo do membro.
+ *
+ * Objetivo e ESTADO, nao evento: o snapshot inteiro e reescrito a cada mudanca,
+ * como a jornada. Por isso a funcao rele a colecao em vez de receber so o
+ * objetivo alterado — as duas escritas (salvar objetivo e atualizar meta) caem
+ * aqui e produzem a mesma foto.
+ *
+ * Fail-soft e fora do caminho critico, conforme `WORKSPACE_GLOBAL.md`.
+ */
+function mirrorCareerObjectives(matricula: string): void {
+  after(async () => {
+    try {
+      const db = getAdminDb();
+      const snap = await db.collection(`User/${matricula}/Career_Objectives`).get();
+      if (snap.empty) return;
+
+      const { syncCareerObjectivesToUserDrive } = await import("@/lib/drive-sync");
+      await syncCareerObjectivesToUserDrive(
+        matricula,
+        snap.docs.map((doc) => {
+          const data = doc.data() as CareerObjective;
+          return {
+            title: data.title || "",
+            description: data.description,
+            status: data.status,
+            targetDate: data.targetDate,
+            createdAt: data.createdAt || "",
+            completedAt: data.completedAt,
+            goals: data.goals || [],
+          };
+        })
+      );
+    } catch (error: unknown) {
+      console.error("[Career] Falha ao espelhar objetivos no acervo:", getErrorMessage(error));
+    }
+  });
+}
 
 export interface CareerPlanningData {
   isCareerPlanningReleased: boolean;
@@ -591,6 +631,8 @@ export async function saveCareerObjectiveAction(
       await objRef.set(payload);
     }
 
+    mirrorCareerObjectives(matricula);
+
     return {
       success: true,
       id: objRef.id
@@ -676,6 +718,8 @@ export async function updateCareerGoalProgressAction(
       transaction.update(objRef, update);
     });
 
+    mirrorCareerObjectives(matricula);
+
     return { success: true };
   } catch (error: unknown) {
     console.error("❌ [Career Action] Erro ao atualizar progresso da meta:", error);
@@ -718,6 +762,16 @@ export async function addCareerFeedbackAction(
     };
 
     await ref.set(newFeedback);
+
+    // Serie no acervo: cada feedback e um fato novo na trajetoria do membro.
+    after(async () => {
+      try {
+        const { syncCareerFeedbackToUserDrive } = await import("@/lib/drive-sync");
+        await syncCareerFeedbackToUserDrive(matricula, newFeedback);
+      } catch (error: unknown) {
+        console.error("[Career] Falha ao espelhar feedback no acervo:", getErrorMessage(error));
+      }
+    });
 
     return {
       success: true,

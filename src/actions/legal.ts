@@ -8,6 +8,7 @@
 // Confirmado por bisseccao: o build passa na main e falha so com a diretiva
 // removida. Por isso aqui a protecao e GUARD, nao remocao da porta.
 
+import { after } from "next/server";
 import { requireAuth, AuthorizationError } from "@/lib/auth-guards";
 import { getAdminDb } from "@/lib/firebase-admin";
 import { getDriveClient } from "@/lib/google-auth";
@@ -243,6 +244,30 @@ export async function generateContractPdf(
       verificationCode,
       verificationHash,
       geo
+    });
+
+    // Trilha da assinatura no acervo, ao lado do proprio PDF. Fora do caminho
+    // critico e fail-soft: a assinatura ja esta gravada e o documento ja subiu.
+    after(async () => {
+      try {
+        const { syncLegalAuditToUserDrive } = await import("@/lib/drive-sync");
+        await syncLegalAuditToUserDrive(matricula, {
+          auditId,
+          timestamp: signedAtIso,
+          productId,
+          orderId,
+          paymentId,
+          verificationCode,
+          documentHash: hash,
+          verificationHash,
+          ipAddress: ip,
+          location: locationStr,
+          documentUrl: result.webViewLink,
+        });
+      } catch (auditErr: unknown) {
+        const message = auditErr instanceof Error ? auditErr.message : String(auditErr);
+        console.error("[legal] Falha ao espelhar auditoria de assinatura:", message);
+      }
     });
 
     // Entidade de contrato (CT-1) — `User/{matricula}/Contracts/{contractId}`.

@@ -12,7 +12,7 @@ import { getAdminDb } from "@/lib/firebase-admin";
 import { getDriveClient, getSheetsClient } from "@/lib/google-auth";
 import { serverEnv } from "@/env";
 import { FormConfig, FormResponse } from "@/types/forms";
-import { ensureFolder, createSpreadsheet, syncDataToSheet } from "@/lib/drive-utils";
+import { ensureFolder, getOrCreateSpreadsheet, appendDataToSheet } from "@/lib/drive-utils";
 
 /**
  * BPlen HUB — Form Effects Manager (📡)
@@ -37,8 +37,13 @@ export async function handleFormSideEffects(config: FormConfig, response: FormRe
     const themeFolderId = await ensureFolder(drive, userFolderId, config.driveFolder || config.id);
 
     // C. Criar/Preparar Planilha
+    //
+    // `getOrCreateSpreadsheet`, nao `createSpreadsheet`: o segundo cria um arquivo
+    // NOVO a cada envio, com o mesmo nome, e a pasta do membro ia acumulando
+    // planilhas homonimas com uma linha cada. Nada se perdia, mas o acervo ficava
+    // impraticavel de ler — e o acervo existe para ser lido.
     const fileName = `${config.sheetNamePrefix || config.id} - ${matricula}`;
-    const { id: spreadsheetId } = await createSpreadsheet(drive, themeFolderId, fileName);
+    const { id: spreadsheetId } = await getOrCreateSpreadsheet(drive, themeFolderId, fileName);
 
     // D. Formatar Dados para Sheets
     const headers = ["Timestamp", "Formulário", "Matrícula", ...Object.keys(response)];
@@ -53,7 +58,9 @@ export async function handleFormSideEffects(config: FormConfig, response: FormRe
       })
     ];
 
-    await syncDataToSheet(sheets, spreadsheetId, headers, [rowData]);
+    // Anexa em vez de sobrescrever: agora que a planilha e reaproveitada, um
+    // snapshot apagaria o envio anterior. Resposta e evento, nao estado (BUG-110).
+    await appendDataToSheet(sheets, spreadsheetId, headers, rowData);
     console.log(`✅ [Form Effects] Sincronização Sheets Concluída: ${matricula}`);
 
     // E. Lógica de Persistência no Perfil do Usuário (Soberania de Dados)

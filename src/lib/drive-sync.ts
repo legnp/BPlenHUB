@@ -1,6 +1,6 @@
 import { getDriveClient, getSheetsClient } from "@/lib/google-auth";
 import { serverEnv } from "@/env";
-import { ensureFolder, getOrCreateSpreadsheet, syncDataToSheet, appendDataToSheet, getFirstColumnValues, getStandardFolderWithHealing, uploadFileToDrive, DRIVE_FOLDERS, LEGACY_FOLDERS } from "@/lib/drive-utils";
+import { ensureFolder, getOrCreateSpreadsheet, syncDataToSheet, appendDataToSheet, getFirstColumnValues, fileExistsInFolder, getStandardFolderWithHealing, uploadFileToDrive, DRIVE_FOLDERS, LEGACY_FOLDERS } from "@/lib/drive-utils";
 
 /**
  * BPlen HUB — Drive Sync Service (🏁)
@@ -259,6 +259,53 @@ ${termText}
   }
 }
 
+/**
+ * Anexa uma linha a uma serie do acervo do usuario.
+ *
+ * Base comum das categorias que sao SERIE (evento que se repete): acessos,
+ * preferencias, feedbacks, auditoria de assinatura. Antes de existir, cada
+ * categoria repetia o mesmo bloco de resolver pasta, achar planilha e anexar —
+ * e cada repeticao era uma chance de esquecer a cura da pasta legada ou de
+ * sobrescrever em vez de anexar.
+ *
+ * Ver `WORKSPACE_GLOBAL.md` para o criterio de serie versus documento.
+ */
+async function appendToUserSeries(config: {
+  matricula: string;
+  folder: string;
+  legacyFolders?: string[];
+  fileName: string;
+  headers: string[];
+  rowData: (string | number | boolean | null)[];
+  /** Nao anexa se a primeira coluna ja tiver este valor (idempotencia do resgate). */
+  skipIfFirstColumnMatches?: string;
+}): Promise<string> {
+  const drive = await getDriveClient();
+  const sheets = await getSheetsClient();
+  const userFolderId = await getUserRootFolder(config.matricula);
+
+  const folderId = await getStandardFolderWithHealing(
+    drive,
+    userFolderId,
+    config.folder,
+    config.legacyFolders
+  );
+
+  const { id: spreadsheetId } = await getOrCreateSpreadsheet(
+    drive,
+    folderId,
+    `${config.fileName} - ${config.matricula}`
+  );
+
+  if (config.skipIfFirstColumnMatches) {
+    const existing = await getFirstColumnValues(sheets, spreadsheetId);
+    if (existing.includes(config.skipIfFirstColumnMatches.trim())) return spreadsheetId;
+  }
+
+  await appendDataToSheet(sheets, spreadsheetId, config.headers, config.rowData);
+  return spreadsheetId;
+}
+
 /** Prova de contexto capturada no momento de um aceite (mesma forma em consent/cookies). */
 export interface AcceptanceProof {
   ip: string;
@@ -311,6 +358,13 @@ export async function syncConsentAcceptanceToDrive(
     const stamp = details.proof.acceptedAt.toISOString().replace(/[:.]/g, "-");
     const fileName = `Aceite_Termos_e_Privacidade_${details.version}_${stamp}.txt`;
 
+    // Guarda de reexecucao do resgate: o nome ja carrega versao e carimbo, entao
+    // ele mesmo e a chave. Sem isto, resgatar duas vezes duplicaria o comprovante.
+    if (await fileExistsInFolder(drive, docsFolderId, fileName)) {
+      console.log(`[DriveSync:Consent] Comprovante ja existente, nada a gravar: ${matricula}`);
+      return { id: "", webViewLink: "" };
+    }
+
     const fileContent = `==================================================
 COMPROVANTE DE ACEITE DE TERMOS DE USO E PRIVACIDADE
 ==================================================
@@ -360,36 +414,21 @@ export async function syncCookiePreferenceToDrive(
   details: { choice: string; version: string; proof: AcceptanceProof }
 ): Promise<string> {
   try {
-    const drive = await getDriveClient();
-    const sheets = await getSheetsClient();
-    const userFolderId = await getUserRootFolder(matricula);
-
-    const acompanhamentoFolderId = await getStandardFolderWithHealing(
-      drive,
-      userFolderId,
-      DRIVE_FOLDERS.ACOMPANHAMENTO
-    );
-
-    const { id: spreadsheetId } = await getOrCreateSpreadsheet(
-      drive,
-      acompanhamentoFolderId,
-      `Preferencias_Cookies - ${matricula}`
-    );
-
-    const headers = [
-      "Data/Hora", "Escolha", "Versao", "IP", "Dispositivo", "Localizacao", "User-Agent",
-    ];
-    const rowData = [
-      details.proof.acceptedAt.toLocaleString("pt-BR"),
-      details.choice === "all" ? "Todos os cookies" : "Apenas essenciais",
-      details.version,
-      details.proof.ip,
-      details.proof.deviceType,
-      details.proof.location,
-      details.proof.userAgent,
-    ];
-
-    await appendDataToSheet(sheets, spreadsheetId, headers, rowData);
+    const spreadsheetId = await appendToUserSeries({
+      matricula,
+      folder: DRIVE_FOLDERS.ACOMPANHAMENTO,
+      fileName: "Preferencias_Cookies",
+      headers: ["Data/Hora", "Escolha", "Versao", "IP", "Dispositivo", "Localizacao", "User-Agent"],
+      rowData: [
+        details.proof.acceptedAt.toLocaleString("pt-BR"),
+        details.choice === "all" ? "Todos os cookies" : "Apenas essenciais",
+        details.version,
+        details.proof.ip,
+        details.proof.deviceType,
+        details.proof.location,
+        details.proof.userAgent,
+      ],
+    });
 
     console.log(`[DriveSync:Cookies] Preferencia de cookies registrada para: ${matricula}`);
     return spreadsheetId;
@@ -411,11 +450,145 @@ export async function syncAccessLogToUserDrive(
   details: { provider: string; origin: string; proof: AcceptanceProof }
 ): Promise<string> {
   try {
+    const spreadsheetId = await appendToUserSeries({
+      matricula,
+      folder: DRIVE_FOLDERS.ACOMPANHAMENTO,
+      fileName: "Historico_Acessos",
+      headers: ["Data/Hora", "Provedor", "Origem", "IP", "Dispositivo", "Localizacao", "User-Agent"],
+      rowData: [
+        details.proof.acceptedAt.toLocaleString("pt-BR"),
+        details.provider,
+        details.origin,
+        details.proof.ip,
+        details.proof.deviceType,
+        details.proof.location,
+        details.proof.userAgent,
+      ],
+    });
+
+    console.log(`[DriveSync:Access] Acesso registrado para: ${matricula}`);
+    return spreadsheetId;
+  } catch (err) {
+    console.error(`[DriveSync:Access] Falha ao registrar acesso:`, err);
+    throw err;
+  }
+}
+
+/**
+ * Trilha de auditoria da assinatura de contrato.
+ *
+ * O PDF assinado ja ia para `5.Documentos`, mas o registro que da valor
+ * probatorio a ele — codigo de verificacao, hash de integridade, IP e geo do
+ * momento da assinatura — ficava so no banco (`Legal_Audits`). O documento sem a
+ * trilha prova menos do que os dois juntos.
+ */
+export async function syncLegalAuditToUserDrive(
+  matricula: string,
+  audit: {
+    auditId: string;
+    timestamp: string;
+    productId: string;
+    orderId?: string | null;
+    paymentId?: string | null;
+    verificationCode: string;
+    documentHash: string;
+    verificationHash: string;
+    ipAddress: string;
+    location: string;
+    documentUrl: string;
+  }
+): Promise<string> {
+  try {
+    const spreadsheetId = await appendToUserSeries({
+      matricula,
+      folder: DRIVE_FOLDERS.DOCUMENTOS,
+      legacyFolders: LEGACY_FOLDERS.DOCUMENTOS,
+      fileName: "Auditoria_Assinaturas",
+      headers: [
+        "Data/Hora", "ID da auditoria", "Produto", "Pedido", "Pagamento",
+        "Codigo de verificacao", "Hash do documento", "Hash de verificacao",
+        "IP", "Localizacao", "Documento",
+      ],
+      rowData: [
+        audit.timestamp,
+        audit.auditId,
+        audit.productId,
+        audit.orderId || "sem pedido",
+        audit.paymentId || "sem pagamento",
+        audit.verificationCode,
+        audit.documentHash,
+        audit.verificationHash,
+        audit.ipAddress,
+        audit.location || "nao identificada",
+        audit.documentUrl,
+      ],
+      // Chave do resgate: o carimbo da assinatura, que e a coluna A.
+      skipIfFirstColumnMatches: audit.timestamp,
+    });
+
+    console.log(`[DriveSync:LegalAudit] Auditoria de assinatura registrada para: ${matricula}`);
+    return spreadsheetId;
+  } catch (err) {
+    console.error(`[DriveSync:LegalAudit] Falha ao registrar auditoria de assinatura:`, err);
+    throw err;
+  }
+}
+
+/**
+ * Feedback de carreira escrito pelo consultor.
+ *
+ * Serie: cada feedback e um fato novo na trajetoria do membro, e o valor esta em
+ * ter todos. Vai para `0.Acompanhamento` porque e material de acompanhamento, e
+ * nao resultado de instrumento.
+ */
+export async function syncCareerFeedbackToUserDrive(
+  matricula: string,
+  feedback: { title: string; content: string; author: string; createdAt: string }
+): Promise<string> {
+  try {
+    const spreadsheetId = await appendToUserSeries({
+      matricula,
+      folder: DRIVE_FOLDERS.ACOMPANHAMENTO,
+      fileName: "Feedbacks_Carreira",
+      headers: ["Data", "Titulo", "Autor", "Conteudo"],
+      rowData: [feedback.createdAt, feedback.title, feedback.author, feedback.content],
+      skipIfFirstColumnMatches: feedback.createdAt,
+    });
+
+    console.log(`[DriveSync:CareerFeedback] Feedback registrado para: ${matricula}`);
+    return spreadsheetId;
+  } catch (err) {
+    console.error(`[DriveSync:CareerFeedback] Falha ao registrar feedback:`, err);
+    throw err;
+  }
+}
+
+/**
+ * Objetivos de carreira — SNAPSHOT, nao serie.
+ *
+ * Diferente de feedback ou acesso, objetivo e ESTADO: o status muda ("Em
+ * Andamento" -> "Alcancado") e o que importa e a foto atual, nao cada transicao.
+ * Mesmo tratamento da jornada, e um dos poucos casos em que sobrescrever e
+ * correto (ver `WORKSPACE_GLOBAL.md`).
+ */
+export async function syncCareerObjectivesToUserDrive(
+  matricula: string,
+  objectives: {
+    title: string;
+    description?: string;
+    status: string;
+    targetDate?: string;
+    createdAt: string;
+    completedAt?: string;
+    goals: { title: string; currentValue: number; targetValue: number; unit: string; completed: boolean }[];
+  }[]
+): Promise<string> {
+  try {
     const drive = await getDriveClient();
     const sheets = await getSheetsClient();
     const userFolderId = await getUserRootFolder(matricula);
 
-    const acompanhamentoFolderId = await getStandardFolderWithHealing(
+    const folderId = await getStandardFolderWithHealing(
       drive,
       userFolderId,
       DRIVE_FOLDERS.ACOMPANHAMENTO
@@ -423,29 +596,31 @@ export async function syncAccessLogToUserDrive(
 
     const { id: spreadsheetId } = await getOrCreateSpreadsheet(
       drive,
-      acompanhamentoFolderId,
-      `Historico_Acessos - ${matricula}`
+      folderId,
+      `Objetivos_Carreira - ${matricula}`
     );
 
     const headers = [
-      "Data/Hora", "Provedor", "Origem", "IP", "Dispositivo", "Localizacao", "User-Agent",
+      "Objetivo", "Descricao", "Status", "Data alvo", "Criado em", "Concluido em", "Metas",
     ];
-    const rowData = [
-      details.proof.acceptedAt.toLocaleString("pt-BR"),
-      details.provider,
-      details.origin,
-      details.proof.ip,
-      details.proof.deviceType,
-      details.proof.location,
-      details.proof.userAgent,
-    ];
+    const rowsData = objectives.map((objective) => [
+      objective.title,
+      objective.description || "",
+      objective.status,
+      objective.targetDate || "",
+      objective.createdAt,
+      objective.completedAt || "",
+      objective.goals
+        .map((goal) => `${goal.title}: ${goal.currentValue}/${goal.targetValue} ${goal.unit}${goal.completed ? " (concluida)" : ""}`)
+        .join(" | "),
+    ]);
 
-    await appendDataToSheet(sheets, spreadsheetId, headers, rowData);
+    await syncDataToSheet(sheets, spreadsheetId, headers, rowsData);
 
-    console.log(`[DriveSync:Access] Acesso registrado para: ${matricula}`);
+    console.log(`[DriveSync:CareerObjectives] Snapshot de objetivos atualizado: ${matricula}`);
     return spreadsheetId;
   } catch (err) {
-    console.error(`[DriveSync:Access] Falha ao registrar acesso:`, err);
+    console.error(`[DriveSync:CareerObjectives] Falha ao sincronizar objetivos:`, err);
     throw err;
   }
 }

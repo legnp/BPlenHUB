@@ -354,6 +354,32 @@ export async function getFirstColumnValues(
 }
 
 /**
+ * Ha um arquivo com este nome exato na pasta?
+ *
+ * Idempotencia do resgate retroativo para as categorias que gravam DOCUMENTO (e
+ * nao linha de planilha): sem esta checagem, reexecutar o resgate criaria um
+ * segundo comprovante do mesmo aceite. Nas series a chave e a coluna A; aqui, o
+ * proprio nome do arquivo, que ja carrega versao e carimbo de tempo.
+ */
+export async function fileExistsInFolder(
+  drive: drive_v3.Drive,
+  parentFolderId: string,
+  fileName: string
+): Promise<boolean> {
+  // Aspas simples no nome quebrariam a query `name = '...'` do Drive.
+  const safeName = fileName.replace(/'/g, "\\'");
+  const result = await drive.files.list({
+    q: `'${parentFolderId}' in parents and name = '${safeName}' and trashed = false`,
+    fields: "files(id)",
+    pageSize: 1,
+    supportsAllDrives: true,
+    includeItemsFromAllDrives: true,
+  });
+
+  return Boolean(result.data.files && result.data.files.length > 0);
+}
+
+/**
  * 4. Carregador de Arquivos (Mídia)
  * Realiza o upload de um arquivo binário para o Google Drive.
  */
