@@ -24,6 +24,39 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-05] Chat de execução — Fase 4: ciclos de repasse (máquina de estados + painel do parceiro)
+
+- Chat/sessão: chat de execução, mesma branch. Fast-forward na `main` autorizado.
+- **Entregue**:
+  1. `src/lib/partners/cycle-status.ts` — a máquina de estados do mapa aprovado (plano §6),
+     **pura**, com 15 testes. É a única porta por onde o status muda: quem pode cada
+     transição, a partir de qual estado, e a única barreira temporal real (não abrir apuração
+     antes do fim do mês civil). As actions perguntam a ela; nenhuma grava status por conta
+     própria. Recusa devolve motivo em linguagem de negócio, para a tela exibir sem traduzir.
+  2. `src/actions/partners/billing-cycles.ts` — geração **por ação do Admin, nunca cron**
+     (§9.2: o slot de cron do plano Hobby já está ocupado), **idempotente**: recalcula do zero
+     a partir das compras aprovadas dos indicados, nunca soma sobre o que já estava lá. Valor
+     de ciclo já apurado continua sendo recalculado (o admin vê o número atual), mas o
+     **status não regride** — só os estados automáticos são reescritos.
+  3. `PartnerBillingCyclesPanel` + o grid do desenho da Gestora na tela de indicações
+     (indicações à esquerda, ciclos à direita). O parceiro tem duas ações e só elas: enviar
+     recibo/NF (reaproveitando o upload de documento já existente) e conversar no ciclo.
+     Comentários mútuos com o papel do autor vindo de **quem está autenticado** — parceiro não
+     publica mensagem assinada como BPlen.
+- **ACHADO — a invariante executável do `BUG-103` pegou meu código**: as duas actions do
+  parceiro chamavam o guard através de um helper (`requirePartnerSelf`), e
+  `__tests__/lib/server-action-surface.test.ts` acusou "action exposta sem guard". O teste
+  estava **certo**: guard escondido atrás de helper é invisível para a auditoria de superfície
+  — foi exatamente assim que 57 funções ficaram expostas antes. Corrigido pondo `requireAuth()`
+  no corpo de cada action e deixando no helper só a confirmação do selo, com o porquê
+  registrado no código. Excelente demonstração de que a invariante paga o próprio custo.
+- **Validação**: lint sem erro, `tsc` limpo, build exit 0, suíte **50 arquivos / 467 testes**
+  (15 novos) verde — incluindo a invariante de superfície.
+- **Pendente da Fase 4**: a tela de admin dos ciclos (gerar/atualizar, abrir apuração, corrigir
+  valor, aprovar, rejeitar recibo e subir comprovante). As actions administrativas já existem
+  e estão testadas pela máquina de estados; falta a superfície. Também segue pendente a tela de
+  admin do termo de parceria, combinada para depois da agenda.
+
 ## [2026-08-05] Chat de execução — Fase 3, bloco 2: painel de Gestão de Indicações
 
 - Chat/sessão: chat de execução, mesma branch. Fast-forward na `main` autorizado.

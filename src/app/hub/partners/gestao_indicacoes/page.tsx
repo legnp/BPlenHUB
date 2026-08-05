@@ -6,35 +6,40 @@ import { FunctionalPageHeader } from "@/components/layout/FunctionalPageHeader";
 import { StatTile } from "@/components/admin/StatTile";
 import AtmosphericLoading from "@/components/shared/AtmosphericLoading";
 import { PartnerIndicationsTable } from "@/components/hub/partners/PartnerIndicationsTable";
+import { PartnerBillingCyclesPanel } from "@/components/hub/partners/PartnerBillingCyclesPanel";
 import { getPartnerIndicationsAction, PartnerIndication } from "@/actions/partners/referrals";
+import { getPartnerCyclesAction, PartnerBillingCycle } from "@/actions/partners/billing-cycles";
 
 /**
  * Gestao de Indicacoes do Parceiro.
  *
- * Metricas no topo e a lista de indicados, com busca livre e ordenacao por coluna. O
- * painel de ciclos de repasse (coluna da direita no desenho da Gestora) entra na Fase 4
- * — esta tela ja nasce com o espaco previsto para ele.
+ * Metricas no topo e o grid do desenho da Gestora: indicacoes a esquerda, ciclos de
+ * repasse a direita. As duas listas tem busca; a de indicacoes tem ordenacao por coluna.
  *
  * Todo o dado exibido vem projetado do servidor (`getPartnerIndicationsAction`), campo a
  * campo: o navegador do parceiro nunca recebe o documento do indicado.
  */
 export default function PartnerIndicationsPage() {
   const [indications, setIndications] = useState<PartnerIndication[]>([]);
+  const [cycles, setCycles] = useState<PartnerBillingCycle[]>([]);
   const [totalCommission, setTotalCommission] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Recarrega os ciclos depois de uma acao do parceiro (recibo enviado, comentario).
+  const [refreshCounter, setRefreshCounter] = useState(0);
 
   useEffect(() => {
     let active = true;
-    getPartnerIndicationsAction()
-      .then((res) => {
+    Promise.all([getPartnerIndicationsAction(), getPartnerCyclesAction()])
+      .then(([indicacoes, ciclos]) => {
         if (!active) return;
-        setIndications(res.indications);
-        setTotalCommission(res.totalCommission);
-        setError(res.error || null);
+        setIndications(indicacoes.indications);
+        setTotalCommission(indicacoes.totalCommission);
+        setCycles(ciclos.cycles);
+        setError(indicacoes.error || ciclos.error || null);
       })
       .catch((err) => {
-        console.error("Erro ao carregar indicacoes:", err);
+        console.error("Erro ao carregar a gestao de indicacoes:", err);
         if (active) setError("Nao foi possivel carregar as suas indicacoes agora.");
       })
       .finally(() => {
@@ -43,7 +48,7 @@ export default function PartnerIndicationsPage() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [refreshCounter]);
 
   if (isLoading) {
     return <AtmosphericLoading label="Carregando Gestão de Indicações..." />;
@@ -92,12 +97,25 @@ export default function PartnerIndicationsPage() {
         />
       </div>
 
-      <section className="space-y-4">
-        <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--accent-start)]">
-          Suas indicações
-        </h2>
-        <PartnerIndicationsTable indications={indications} />
-      </section>
+      {/* Grid do desenho da Gestora: indicacoes a esquerda, ciclos de repasse a direita. */}
+      <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] gap-8 items-start">
+        <section className="space-y-4">
+          <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--accent-start)]">
+            Suas indicações
+          </h2>
+          <PartnerIndicationsTable indications={indications} />
+        </section>
+
+        <section className="space-y-4">
+          <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--accent-start)]">
+            Ciclos de repasse
+          </h2>
+          <PartnerBillingCyclesPanel
+            cycles={cycles}
+            onChanged={() => setRefreshCounter((c) => c + 1)}
+          />
+        </section>
+      </div>
     </div>
   );
 }
