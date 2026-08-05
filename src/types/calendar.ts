@@ -60,6 +60,12 @@ export interface GoogleCalendarEvent {
 export interface ProgramacaoEntry {
   id: string;
   summary: string;
+  /**
+   * Tipo do evento (Settings/CalendarEventTypes), copiado do evento sincronizado.
+   * E' o que permite a agenda decidir audiencia e motivo da sessao por identificador,
+   * e nao pelo texto do titulo (Licao 19). Ausente em snapshot legado.
+   */
+  tipoId?: string | null;
   start: string;
   end: string;
   mentor: string;

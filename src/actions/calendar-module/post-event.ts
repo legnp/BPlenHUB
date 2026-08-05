@@ -382,6 +382,7 @@ export async function updateGlobalProgramacaoRegistryAction() {
       return {
         id: doc.id,
         summary: data.summary,
+        tipoId: data.tipoId || null,
         start: data.start,
         end: data.end,
         mentor: data.mentor || "BPlen",

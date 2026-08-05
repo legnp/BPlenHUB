@@ -12,6 +12,8 @@ import { GoogleCalendarEvent, AttendeeData, UserBooking, ProgramacaoEntry } from
 import { toISOSafe } from "@/lib/date-utils";
 import { isBlockerSummary, isBlockerEvent } from "@/lib/booking/blocker";
 import { eventStartKey } from "@/lib/calendar/window";
+import { getCalendarEventTypes } from "@/actions/calendar-event-types";
+import { eventServesAudience } from "@/lib/booking/session-demands";
 
 /**
  * Busca eventos do Google Calendar para visualização rápida no Front.
@@ -273,13 +275,21 @@ export async function getEventAttendees(eventId: string): Promise<AttendeeData[]
 /**
  * REATOR DE DASHBOARD 🛰️ (Versão Datas_Center - Membro)
  */
-export async function getProgramacaoForMemberAction(): Promise<ProgramacaoEntry[]> {
+export async function getProgramacaoForMemberAction(
+  audience: "member" | "partner" = "member"
+): Promise<ProgramacaoEntry[]> {
   try {
     await requireAuth();
     const db = getAdminDb();
     const registrySnap = await db.collection("Datas_Center").doc("Programacao_Registry").get();
     if (!registrySnap.exists) return [];
-    return registrySnap.data()?.events || [];
+    const events = (registrySnap.data()?.events || []) as ProgramacaoEntry[];
+
+    // Filtro de audiencia: a agenda do membro nunca mostra slot de parceria, e
+    // vice-versa. Decidido pelo TIPO do evento — evento sem tipo (legado) continua
+    // sendo do membro, entao ninguem perde o que ja via.
+    const types = await getCalendarEventTypes();
+    return events.filter((ev) => eventServesAudience(ev, types, audience));
   } catch (error) {
     console.error("Erro ao ler programação para membro:", error);
     return [];

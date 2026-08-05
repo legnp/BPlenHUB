@@ -36,6 +36,19 @@ export interface CalendarEventType {
    * palavra-chave: identificador, nao rotulo (Licao 19).
    */
   atende: string[];
+  /**
+   * De quem e' este tipo de sessao. Ausente = `member` (todo tipo existente hoje).
+   * A agenda do parceiro so oferece tipos `partner`, e a do membro nunca os mostra —
+   * mesma logica de audiencia da jornada (`src/lib/journey/audience.ts`).
+   */
+  audience?: "member" | "partner";
+  /**
+   * Motivos oferecidos ao agendar uma sessao deste tipo (viram o tema do
+   * agendamento). Vazio/ausente = a sessao nao pergunta motivo, com uma excecao de
+   * transicao: o tipo `1-to-1` cai na lista global legada de razoes, configurada na
+   * mesma tela (ver `src/lib/booking/session-demands.ts`).
+   */
+  demandOptions?: string[];
 }
 
 /** Valor inicial do consultor, ate a Gestora atribuir (ver 8.2 do design). */

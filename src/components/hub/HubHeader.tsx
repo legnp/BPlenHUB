@@ -180,6 +180,7 @@ export function HubHeader() {
             label: BPLEN_NOMENCLATURE.navigation.partnership_section,
             items: [
               { href: "/hub/partners", icon: Handshake, label: BPLEN_NOMENCLATURE.navigation.partner_area },
+              { href: "/hub/partners/gestao_agenda", icon: CalendarDays, label: "Gestão de Agenda" },
             ],
           },
         ]

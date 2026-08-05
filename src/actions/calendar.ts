@@ -21,8 +21,8 @@ export async function getEventAttendees(eventId: string) {
   return Queries.getEventAttendees(eventId);
 }
 
-export async function getProgramacaoForMemberAction() {
-  return Queries.getProgramacaoForMemberAction();
+export async function getProgramacaoForMemberAction(audience: "member" | "partner" = "member") {
+  return Queries.getProgramacaoForMemberAction(audience);
 }
 
 export async function getProgramacaoSummaryAction(idToken?: string) {

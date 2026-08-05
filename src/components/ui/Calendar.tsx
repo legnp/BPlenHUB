@@ -36,6 +36,9 @@ import { useAuthContext } from "@/context/AuthContext";
 import { UserBooking } from "@/types/calendar";
 import { bookEventAction, getUserBookingsAction } from "@/actions/calendar";
 import { getOneToOneTypes } from "@/actions/OneToOneActions";
+import { getCalendarEventTypes } from "@/actions/calendar-event-types";
+import { CalendarEventType } from "@/types/calendar-event-types";
+import { resolveSessionDemands } from "@/lib/booking/session-demands";
 import GlassModal from "@/components/ui/GlassModal";
 import { CALENDAR_CONFIG } from "@/config/calendarConfig";
 import {
@@ -61,6 +64,12 @@ export interface CalendarEvent {
   registeredCount?: number;
   mentor?: string;
   theme?: string | null;
+  /**
+   * Identificador do tipo de evento (Settings/CalendarEventTypes), gravado pelo sync.
+   * E' por ele que a tela decide motivo da sessao e audiencia — nao pelo texto do
+   * titulo, que e' rotulo editavel (Licao 19).
+   */
+  tipoId?: string | null;
 }
 
 interface CalendarProps {
@@ -101,6 +110,7 @@ export default function Calendar({
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [eventToConfirm, setEventToConfirm] = useState<CalendarEvent | null>(null);
   const [oneToOneTypes, setOneToOneTypes] = useState<string[]>([]);
+  const [calendarEventTypes, setCalendarEventTypes] = useState<CalendarEventType[]>([]);
   const [selectedType, setSelectedType] = useState("");
   const [expectations, setExpectations] = useState("");
   const [isBooking, setIsBooking] = useState<string | null>(null);
@@ -112,6 +122,13 @@ export default function Calendar({
     async function load() {
       const types = await getOneToOneTypes();
       setOneToOneTypes(types);
+
+      // Tipos configurados: fonte dos motivos por tipo de sessao (e da audiencia).
+      try {
+        setCalendarEventTypes(await getCalendarEventTypes());
+      } catch (error) {
+        console.error("Erro ao carregar tipos de evento da agenda:", error);
+      }
       
       if (matricula) {
         const bookings = await getUserBookingsAction(matricula);
@@ -120,6 +137,13 @@ export default function Calendar({
     }
     load();
   }, [user, matricula]);
+
+  // Motivos oferecidos para o evento em confirmacao — regra pura e testada em
+  // `src/lib/booking/session-demands.ts`. Lista vazia = a sessao nao pergunta motivo.
+  const demandOptions = useMemo(
+    () => resolveSessionDemands(eventToConfirm, calendarEventTypes, oneToOneTypes),
+    [eventToConfirm, calendarEventTypes, oneToOneTypes]
+  );
 
   // --- LÓGICA DE DADOS ---
 
@@ -478,8 +502,9 @@ export default function Calendar({
             </div>
           </div>
 
-          {/* Campos Dinâmicos para 1 to 1 */}
-          {eventToConfirm?.summary.toLowerCase().includes("1 to 1") && (
+          {/* Motivo da sessao — oferecido conforme o TIPO do evento (nao mais pelo
+              texto do titulo). A lista vem da configuracao; vazia, nao pergunta. */}
+          {demandOptions.length > 0 && (
             <div className="space-y-4 pt-4 border-t border-[var(--border-primary)] animate-in fade-in slide-in-from-top-2">
               <div className="space-y-2 text-left">
                 <label className="text-[10px] font-black text-[var(--text-muted)] opacity-40 uppercase tracking-widest ml-1">Demanda do 1 to 1</label>
@@ -490,7 +515,7 @@ export default function Calendar({
                     className="w-full pl-5 pr-10 py-4 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-2xl text-sm font-bold text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-start)]/20 appearance-none cursor-pointer"
                   >
                     <option value="" className="bg-[var(--bg-primary)]">Selecione o motivo...</option>
-                    {oneToOneTypes.map((type, idx) => (
+                    {demandOptions.map((type, idx) => (
                       <option key={idx} value={type} className="bg-[var(--bg-primary)]">{type}</option>
                     ))}
                   </select>
@@ -513,8 +538,8 @@ export default function Calendar({
 
         <div className="flex flex-col gap-3">
           <button
-            onClick={() => eventToConfirm && handleBooking(eventToConfirm.id, eventToConfirm.summary.toLowerCase().includes("1 to 1") ? { type: selectedType, expectations } : undefined)}
-            disabled={isBooking === eventToConfirm?.id || (eventToConfirm?.summary.toLowerCase().includes("1 to 1") && !selectedType)}
+            onClick={() => eventToConfirm && handleBooking(eventToConfirm.id, demandOptions.length > 0 ? { type: selectedType, expectations } : undefined)}
+            disabled={isBooking === eventToConfirm?.id || (demandOptions.length > 0 && !selectedType)}
             className="w-full py-5 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-[24px] font-black text-xs uppercase tracking-[0.2em] shadow-2xl hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed group relative overflow-hidden"
           >
             <div className="relative z-10 flex items-center justify-center gap-2">

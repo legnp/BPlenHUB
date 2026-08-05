@@ -24,6 +24,44 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-04] Chat de execução — Fase 2: Agenda do Parceiro (audiência de slot e motivo por tipo)
+
+- Chat/sessão: chat de execução, mesma branch. Fast-forward na `main` autorizado.
+- **Achado que encolheu a fase**: o plano (§8) previa "pular bloco de cota e de estorno/
+  penalidade para `tipoId` de parceiro" em `booking.ts`. **Nenhuma mudança foi necessária** — o
+  débito de cota já é gated por `isOneToOneEvent` (que decide por `tipoId === "1-to-1"`, desde a
+  Fase 3.3) e o estorno só ocorre em reserva com a flag `quotaConsumed`. Um tipo de parceiro
+  nunca entra em nenhum dos dois caminhos, por construção. A janela de 3 a 20 dias e a regra de
+  cancelamento continuam valendo, aplicadas no servidor pela política única — que é o que a
+  Gestora pediu.
+- **Entregue**:
+  1. `CalendarEventType` ganha `audience` ("member" default / "partner") e `demandOptions`
+     (motivos daquele tipo). Ambos opcionais — configuração existente segue válida.
+  2. `src/lib/booking/session-demands.ts` (novo, puro) + 10 testes: audiência do tipo, ids por
+     audiência, se um evento serve uma audiência e qual lista de motivos oferecer.
+     Conservador igual ao filtro da jornada: **evento sem tipo continua sendo do membro**.
+  3. `Calendar.tsx`: o contrato do evento ganhou `tipoId` e o motivo da sessão passou a sair do
+     resolvedor. **Morreu o `summary.includes("1 to 1")`** — era o item do §8 e uma dívida da
+     migração de tipos (Lições 19/30: identificador tem precedência sobre rótulo editável).
+  4. `ProgramacaoEntry` passou a carregar `tipoId` (copiado no rebuild do snapshot) e
+     `getProgramacaoForMemberAction(audience)` filtra por audiência. Sem isso, os slots de
+     parceria apareceriam na agenda de todos os membros — mesma classe de vazamento que o
+     filtro da jornada fechou no bloco A da Fase 1.
+  5. Tela de admin da agenda: seletor de audiência por tipo e editor de motivos por tipo (a
+     lista global legada segue valendo para o `1-to-1`, sem mudança de comportamento).
+  6. `/hub/partners/gestao_agenda` + `PartnerSessionBookingModal` (sem carteira de créditos,
+     sem penalidade; oferta filtrada por audiência do tipo) e o item no menu de parceria.
+- **Configuração que fica com a Gestora** (nenhuma exige código): criar o tipo de sessão de
+  parceria com audiência "Parceiro" e os 5 motivos (Acompanhamento Geral, Dúvidas sobre
+  Formalização, Proposta de Colaboração, Aprofundar conhecimento, Outros); e o 6º tipo
+  "Onboarding de Parceiros" casando com o evento homônimo do Google, com o `serviceCode` do
+  checkpoint 4 em `atende` — é assim que a Reunião de Onboarding casa automaticamente.
+- **Nota de rota**: a Gestora escreveu `/hub/partner/...`; as rotas ficaram em
+  `/hub/partners/...` para não fragmentar a subárvore já em produção (o gate de servidor e o
+  toggle vivem nela).
+- **Validação**: lint sem erro, `tsc` limpo, build exit 0 com as 4 rotas de parceiro, suíte
+  **48 arquivos / 433 testes** (10 novos) verde.
+
 ## [2026-08-04] Chat de execução — Fase 1, bloco B2: rotas e telas da Jornada de Parceria
 
 - Chat/sessão: chat de execução, mesma branch. Fast-forward na `main` autorizado.
