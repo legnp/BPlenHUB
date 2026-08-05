@@ -62,6 +62,9 @@ const NAV: NavGroupDef[] = [
     items: [
       { href: "/admin/users", label: "Gestão de Usuários", icon: Users },
       { href: "/admin/jornada-cliente", label: "Jornada do Cliente", icon: Route },
+      // Distinto de "Gestão de Parceiros" (vitrine, em Negócios): aqui operam-se os
+      // ciclos de repasse do programa de parceria.
+      { href: "/admin/partners-program", label: "Programa de Parceria", icon: Handshake },
     ],
   },
   { group: "Instrumentos", items: [{ href: "/admin/fs", label: "F&S", icon: Activity }] },

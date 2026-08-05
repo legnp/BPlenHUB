@@ -24,6 +24,30 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-05] Chat de execução — Fase 4, parte 2: tela de admin do Programa de Parceria
+
+- Chat/sessão: chat de execução, mesma branch. Fast-forward na `main` autorizado.
+- **Entregue**: `/admin/partners-program` — a superfície que faltava para a Gestora operar os
+  ciclos. Lista de parceiros à esquerda (com a taxa de cada um e marca de acesso revogado),
+  ciclos do selecionado à direita, e as ações: **gerar/atualizar ciclos**, **abrir apuração**,
+  **corrigir valor**, **aprovar e pedir recibo**, **recusar recibo** e **subir comprovante e
+  concluir**. Conversa do ciclo nos dois sentidos. Item no menu, no grupo Pessoas.
+- **Decisões registradas**:
+  - Rota `partners-program`, e **não** `partners`: `/admin/partners` já existe e é a vitrine de
+    parceiros estratégicos. Nomes parecidos, conceitos distintos — comentário no menu para não
+    se confundirem depois.
+  - Os botões aparecem por estado, mas isso é **conforto**: a trava real é a máquina de estados
+    no servidor, que recusa a transição e devolve o motivo. A tela exibe o motivo como veio.
+  - Parceiro com acesso revogado **continua na lista**: revogar não encerra ciclos, e um
+    repasse pendente precisa continuar visível para ser pago.
+  - `getPartnersProgramListAction` monta a lista a partir do diretório (que a ficha do usuário
+    alimenta ao conceder o selo), evitando uma query de collection group que exigiria índice
+    novo — e deploy de índice é sempre passo manual da Gestora (Lição 49).
+- **Validação**: lint sem erro, `tsc` limpo, build exit 0 com a rota registrada, suíte
+  **50 arquivos / 467 testes** verde.
+- **Pendente**: tela de admin do termo de parceria (combinada para depois da agenda) e a
+  Fase 5 (Home do parceiro, checkpoint 1 de Boas-vindas com tour, pop-up único em `/hub`).
+
 ## [2026-08-05] Chat de execução — Fase 4: ciclos de repasse (máquina de estados + painel do parceiro)
 
 - Chat/sessão: chat de execução, mesma branch. Fast-forward na `main` autorizado.

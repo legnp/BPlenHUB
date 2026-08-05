@@ -47,6 +47,47 @@ export async function getPartnerDirectoryOptionsAction(): Promise<string[]> {
   }
 }
 
+/**
+ * Parceiros do programa, para a tela de operacao dos ciclos (admin).
+ *
+ * A lista sai do diretorio porque e' ele que a ficha do usuario alimenta ao conceder o
+ * selo. Parceiro desativado continua aparecendo: revogar o acesso nao encerra os ciclos
+ * que ele ja tem — o repasse pendente precisa continuar visivel para ser pago.
+ */
+export async function getPartnersProgramListAction(
+  adminToken?: string
+): Promise<Array<PartnerDirectoryEntry & { commissionPercent: number; name: string }>> {
+  try {
+    await requireAdmin(adminToken);
+    const db = getAdminDb();
+    const entries = await readDirectory();
+
+    const detalhados = await Promise.all(
+      entries.map(async (entry) => {
+        const [accessSnap, userSnap] = await Promise.all([
+          db.doc(`User/${entry.partnerMatricula}/User_Permissions/access`).get(),
+          db.doc(`User/${entry.partnerMatricula}`).get(),
+        ]);
+        const user = userSnap.data();
+        return {
+          ...entry,
+          commissionPercent:
+            typeof accessSnap.data()?.partnerCommissionPercent === "number"
+              ? (accessSnap.data()?.partnerCommissionPercent as number)
+              : 0,
+          name: String(user?.Authentication_Name || user?.User_Name || entry.displayName),
+        };
+      })
+    );
+
+    return detalhados.sort((a, b) => a.displayName.localeCompare(b.displayName, "pt-BR"));
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("[partner-directory] Falha ao listar os parceiros do programa:", message);
+    return [];
+  }
+}
+
 /** Diretorio completo (admin). */
 export async function getPartnerDirectoryAction(
   adminToken?: string
