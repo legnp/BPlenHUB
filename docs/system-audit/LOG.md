@@ -24,6 +24,45 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-04] Chat de execução — Fase 1, bloco B1: coleta do Check-in de Parceria (survey + form)
+
+- Chat/sessão: chat de execução, mesma branch da Fase 0/bloco A. Fast-forward na `main`
+  autorizado pela Gestora.
+- **Contexto**: a Gestora decidiu que **ela mesma cadastra os produtos** das paradas no admin.
+  Isso inverteu a prioridade: as definições que ela precisa REFERENCIAR no cadastro (ids de
+  survey e de form) passaram na frente das telas.
+- **Classificação prévia (obrigatória pelo `CLAUDE.md`)**, feita contra `SURVEY_GLOBAL.md` e
+  `FORMS_GLOBAL.md` e registrada no cabeçalho de cada arquivo:
+  - `partner_check_in` = **SURVEY**. Narrativa guiada, um enunciado por vez, resposta única e
+    não editável; acolhe e informa (LGPD, onde ficam termos e privacidade, acordos
+    essenciais), registrando a ciência de cada bloco. Não alimenta cadastro.
+  - `partner_dados_cadastrais` = **FORM**. Coleta operacional (identificação, emissão de
+    documentos, repasse), com create/edit/view e dado que evolui.
+- **Entregue**:
+  1. `src/config/surveys/definitions/partner-checkin.ts` — 6 enunciados: boas-vindas, LGPD,
+     onde encontrar os documentos, os 4 combinados essenciais da parceria (indicação por
+     origem, comissão fixa, ciclos mensais, confidencialidade), expectativa e canal preferido.
+  2. `src/config/forms/definitions/partner-dados-cadastrais.ts` — identificação (somente
+     leitura), tipo de parceria PF/PJ, dados pessoais, **seção condicional "Dados da Empresa"**
+     (CNPJ, razão social, nome fantasia, endereço) via `logic.showIf` — o MESMO mecanismo já
+     usado no form de dados cadastrais do membro, sem motor novo —, endereço do parceiro (PF)
+     e dados para repasse. CNPJ informativo, sem trava de unicidade (decisão §9.6).
+  3. Ambos registrados nos índices (`src/config/surveys/index.ts`, `src/config/forms/index.ts`)
+     — é o que os torna descobríveis pelo admin ao montar a esteira de entrega do produto.
+- **Ids para o cadastro dos produtos** (o que a Gestora referencia na esteira): survey
+  `partner_check_in`; form `partner_dados_cadastrais`.
+- **Validação**: lint sem erro, `tsc` limpo, build exit 0, suíte 47 arquivos / 423 testes verde.
+- **Pendente do bloco B** (próximo): dicionário de textos da jornada de parceiro + rota
+  `/hub/partners/journey`, e as telas dos checkpoints 3 (Formalização), 5 (Configuração do
+  Perfil) e 6 (Gestão de Parceria).
+- **Escopo recebido da Gestora para as fases seguintes** (complemento do checkpoint 6, guardado
+  aqui para não se perder): agenda do parceiro em `/hub/partner/gestao_agenda` (janela de 3 a 20
+  dias, sem créditos nem penalidade, com 5 motivos de sessão 1-to-1); gestão de indicações em
+  `/hub/partner/gestao_indicacoes` (grid indicações + ciclos, métricas no topo, busca/ordenação
+  em ambas as listas, upload de recibo/NF, download de comprovante, comentários mútuos);
+  Welcome Survey com a opção "Parceria de Negócios" e enunciados condicionais; pop-up único de
+  boas-vindas ao parceiro em `/hub`. Tudo isso é Fase 2 a 5 do plano, não Fase 1.
+
 ## [2026-08-04] Chat de execução — Fase 1 da Área de Parceiros, bloco A (motor de jornada por audiência)
 
 - Chat/sessão: chat de execução, mesma branch/worktree da Fase 0. Fast-forward na `main`

@@ -27,6 +27,9 @@ import { cvFocadoSurvey } from "./definitions/cv-focado";
 import { perfilProfissionalPublicoSurvey } from "./definitions/perfil-publico";
 import { preparacaoEntrevistasSurvey } from "./definitions/preparacao-entrevistas";
 
+// Partner journey surveys
+import { partnerCheckInSurvey } from "./definitions/partner-checkin";
+
 /**
  * BPlen HUB — Survey Registry (🗂️)
  * Centraliza todas as definições de pesquisa do projeto
@@ -60,7 +63,10 @@ export const surveys = {
   "survey_pdi_fase2": pdiFase2Survey,
   "survey_pdi_fase3": pdiFase3Survey,
   "survey_pdi_fase4": pdiFase4Survey,
-  "preparacao_entrevistas_networking": preparacaoEntrevistasSurvey
+  "preparacao_entrevistas_networking": preparacaoEntrevistasSurvey,
+
+  // Jornada de Parceria
+  "partner_check_in": partnerCheckInSurvey
 };
 
 export const SURVEY_REGISTRY = Object.values(surveys);

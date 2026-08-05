@@ -3,6 +3,7 @@ import { themeSuggestionFormConfig } from "./theme-suggestion";
 import { bookingScreeningFormConfig } from "./booking-screening";
 import { devolutivaDiscFormConfig } from "./devolutiva-disc";
 import { dadosCadastraisForm } from "./definitions/dados-cadastrais";
+import { partnerDadosCadastraisForm } from "./definitions/partner-dados-cadastrais";
 
 /**
  * BPlen HUB — Forms Registry
@@ -13,7 +14,8 @@ export const forms = {
   theme_suggestion: themeSuggestionFormConfig,
   booking_screening: bookingScreeningFormConfig,
   devolutiva_disc: devolutivaDiscFormConfig,
-  dados_cadastrais: dadosCadastraisForm
+  dados_cadastrais: dadosCadastraisForm,
+  partner_dados_cadastrais: partnerDadosCadastraisForm
 };
 
 export const FORMS_REGISTRY = Object.values(forms);
