@@ -24,6 +24,50 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-04] Chat de execução — Fase 1 da Área de Parceiros, bloco A (motor de jornada por audiência)
+
+- Chat/sessão: chat de execução, mesma branch/worktree da Fase 0. Fast-forward na `main`
+  segue autorizado pela Gestora (o PR do GitHub não está funcionando para ela; preview não
+  autentica área logada — `BUG-030`).
+- **Escopo**: primeiro bloco da Fase 1 — generalizar o motor de jornada por audiência, antes
+  de qualquer conteúdo de checkpoint. **Zero mudança de comportamento para o membro.**
+- **Risco que motivou a ordem**: `getJourneyStagesAction` buscava TODOS os produtos com
+  `isStepJourney: true`, sem filtro de audiência. Criar os produtos da jornada de parceiro no
+  admin ANTES deste filtro faria os checkpoints do parceiro aparecerem na jornada de todos os
+  membros. O filtro é trava de exibição, não refinamento — por isso veio primeiro.
+- **Entregue**:
+  1. `src/lib/journey/audience.ts` (novo, puro): tipo `JourneyAudience`, mapa
+     `JOURNEY_PROGRESS_DOC` (docs irmãos `progress` / `partner_progress`) e a regra
+     `productServesJourneyAudience`. Regra deliberadamente conservadora — só sai da jornada de
+     membro o produto EXCLUSIVO de parceiro; produto legado sem `targetAudiences` e produto de
+     audiência dupla continuam onde estavam. 6 testes novos cobrindo a população inteira de
+     combinações (Lição 28), inclusive o campo ausente.
+  2. `src/actions/journey.ts` (god file, mudança prevista no plano §8): parâmetro
+     `audience` com default `"member"` em `getJourneyStagesAction`,
+     `getJourneyProgressAction` e `updateJourneySubStepAction`; doc de progresso resolvido pelo
+     mapa; as chamadas internas (varredura cross-completion, telemetria, sync do acervo)
+     passaram a propagar a audiência. Chamadores existentes não mudaram de assinatura.
+  3. `src/hooks/useJourney.ts`: segundo parâmetro `audience`; o selo lido pelo motor de acesso
+     passou a ser o da própria audiência (`partner_area_access` para parceiro), em vez de
+     `member_area_access` fixo.
+- **Descoberta que muda o desenho da fase**: os checkpoints da jornada **são dado, não
+  código** — cada parada é um produto do portfólio com `isStepJourney` + `order` +
+  `serviceCode` + esteira de entrega, e `targetAudiences` **já aceitava `partners`** desde
+  antes deste plano (`src/types/products.ts`, `src/lib/validations/portfolio.ts`). A jornada de
+  parceiro se monta na tela de produtos do admin.
+- **Decisão de escopo registrada**: a rota `/hub/partners/journey` NÃO foi criada neste bloco
+  de propósito. O `StepRenderer` escolhe o dicionário de textos por `context`
+  (`primeiros_passos` | `member_journey`); sem um dicionário de parceiro, a trilha do parceiro
+  exibiria copy de membro ("Passaporte do Membro BPlen"). O dicionário entra no bloco B, junto
+  dos checkpoints — publicar a rota antes seria entregar tela com texto errado.
+- **Validação**: lint sem erro nos arquivos tocados, `tsc` limpo, build exit 0, suíte
+  **47 arquivos / 423 testes** (6 novos), tudo verde.
+- **Lista de checkpoints recebida da Gestora** (para o bloco B): 1) Boas-vindas (tour, por
+  último), 2) Check-in (aviso LGPD/termos + forms cadastrais), 3) Formalização de Parceria
+  (termo + assinatura + aceites modulares), 4) Reunião de Onboarding (Fase 2 — agenda),
+  5) Configuração do Perfil (liberação via Admin), 6) Gestão de Parceria.
+- **Achados**: nenhum bug novo. Nenhum item do `00-PLAN.md` alterado.
+
 ## [2026-08-04] Chat de execução — Fase 0 da Área de Parceiros VALIDADA em produção e CONCLUÍDA
 
 - Chat/sessão: chat de execução (mesma sessão da entrega abaixo). Fast-forward na `main`

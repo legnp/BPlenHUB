@@ -7,6 +7,7 @@ import { MemberQuotaWallet } from "@/types/entitlements";
 import { normalizeString } from "@/lib/utils";
 import { resolveStageAccess, conclusoesFromProgress } from "@/lib/access/journey-adapter";
 import { isStageEntitled } from "@/lib/access/stage-entitlement";
+import { JourneyAudience } from "@/lib/journey/audience";
 
 
 export interface StageTelemetry {
@@ -30,7 +31,7 @@ export interface StageTelemetry {
  * Logic hook for member journey progress and access control.
  * Fully persistent: fetches/saves stages and progress from Firestore.
  */
-export function useJourney(uid: string) {
+export function useJourney(uid: string, audience: JourneyAudience = "member") {
   const [stages, setStages] = useState<JourneyStep[]>([]);
   const [progress, setProgress] = useState<JourneyProgress | null>(null);
   const [quotas, setQuotas] = useState<MemberQuotaWallet | null>(null);
@@ -64,7 +65,7 @@ export function useJourney(uid: string) {
       console.log("🧬 [useJourney] Sincronizando telemetria dinâmica via Server Actions...");
       
       // 1. Fetch Stages from Firestore (via Action)
-      const dynamicStages = await getJourneyStagesAction();
+      const dynamicStages = await getJourneyStagesAction(audience);
       setStages(dynamicStages);
 
       // 2. Fetch Real Quotas for granular access
@@ -79,7 +80,7 @@ export function useJourney(uid: string) {
       setDispensaPreRequisito(userPermissions?.dispensaPreRequisito ?? []);
 
       // 3. Fetch Real Progress from Firestore
-      const dbProgress = await getJourneyProgressAction(uid);
+      const dbProgress = await getJourneyProgressAction(uid, audience);
       
       if (dbProgress) {
         const normalizedSteps: Record<string, UserStepProgress> = {};
@@ -126,7 +127,7 @@ export function useJourney(uid: string) {
   useEffect(() => {
     if (uid && uid !== "guest") init();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [uid]);
+  }, [uid, audience]);
 
   /**
    * Atualiza o progresso real no Firebase e atualiza o estado local 🛰️
@@ -135,7 +136,7 @@ export function useJourney(uid: string) {
     if (!progress || uid === "guest") return;
 
     try {
-      const result = await updateJourneySubStepAction(uid, stepId, subStepId, completed);
+      const result = await updateJourneySubStepAction(uid, stepId, subStepId, completed, audience);
       if (result.success && result.progress) {
         const normalizedSteps: Record<string, UserStepProgress> = {};
         for (const [key, val] of Object.entries(result.progress.steps)) {
@@ -209,7 +210,9 @@ export function useJourney(uid: string) {
     let pendentes: string[] = [];
 
     const motorDecision = stage ? resolveStageAccess(stage, {
-      selo: services?.member_area_access === true,
+      // O selo que abre a trilha e' o da propria audiencia: membro tem o selo de
+      // membro, parceiro tem o de parceiro. Os dois coexistem e nao se implicam.
+      selo: services?.[audience === "partner" ? "partner_area_access" : "member_area_access"] === true,
       legacyEntitled: finalHasAccessLogic,
       conclusoes: conclusoesFromProgress(mergedStages, progress),
       dispensaPreRequisito,

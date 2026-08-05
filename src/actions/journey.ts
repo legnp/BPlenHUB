@@ -12,6 +12,7 @@ import { normalizeString } from "@/lib/utils";
 import { getErrorMessage } from "@/lib/utils/errors";
 import { nextDynamicSubstepOrder } from "@/lib/journey/dynamic-substep-order";
 import { activityKeyOf, isCrossCompletable, repeatedActivityKeys } from "@/lib/journey/cross-completion";
+import { JourneyAudience, JOURNEY_PROGRESS_DOC, productServesJourneyAudience } from "@/lib/journey/audience";
 
 // `surveys` é indexado por IDs literais conhecidos, mas `capabilities.surveys`
 // vem de dados dinâmicos do Firestore (podem não corresponder a uma chave real).
@@ -27,7 +28,9 @@ const surveyRegistry = surveys as Record<string, SurveyConfig | undefined>;
  * Isso permite que múltiplos serviços (ex: Carreira Individual e Grupo) 
  * apareçam sob um único ícone de etapa.
  */
-export async function getJourneyStagesAction(): Promise<JourneyStep[]> {
+export async function getJourneyStagesAction(
+  audience: JourneyAudience = "member"
+): Promise<JourneyStep[]> {
   try {
     await requireAuth();
     const db = getAdminDb();
@@ -51,7 +54,11 @@ export async function getJourneyStagesAction(): Promise<JourneyStep[]> {
         const status = p.status?.toLowerCase();
         const isActive = !status || status === "active" || status === "ativo";
         const hasOrder = p.order !== undefined && p.order !== null;
-        return isActive && hasOrder && Number(p.order) >= 0;
+        // Filtro de audiencia (Fase 1 da Area de Parceiros): sem ele, os checkpoints
+        // do parceiro apareceriam na jornada de todos os membros. A regra e' pura e
+        // testada em __tests__/lib/journey-audience.test.ts — o membro nao perde
+        // nenhuma etapa que ja via.
+        return isActive && hasOrder && Number(p.order) >= 0 && productServesJourneyAudience(p, audience);
       });
 
     // 3. GROUP BY ORDER 📦
@@ -203,7 +210,7 @@ export async function getJourneyStagesAction(): Promise<JourneyStep[]> {
       })
       .sort((a, b) => a.order - b.order);
 
-    console.log(`✅ [JourneyAction] Arquitetura consolidada para ${stages.length} estágios únicos.`);
+    console.log(`✅ [JourneyAction] Arquitetura consolidada para ${stages.length} estágios únicos (audiencia: ${audience}).`);
     return stages;
 
   } catch (error) {
@@ -326,7 +333,10 @@ export async function getStandaloneStageAction(slug: string): Promise<JourneySte
 /**
  * Busca o progresso real do usuário no Firestore 🔐🧬
  */
-export async function getJourneyProgressAction(uid: string): Promise<JourneyProgress | null> {
+export async function getJourneyProgressAction(
+  uid: string,
+  audience: JourneyAudience = "member"
+): Promise<JourneyProgress | null> {
   try {
     const session = await requireAuth();
     if (session.uid !== uid && !session.isAdmin) {
@@ -340,8 +350,9 @@ export async function getJourneyProgressAction(uid: string): Promise<JourneyProg
     const matricula = uidMapSnap.data()?.matricula;
     if (!matricula) return null;
 
-    // 2. Buscar Documentos de Progresso
-    const progressRef = db.collection("User").doc(matricula).collection("User_Journey").doc("progress");
+    // 2. Buscar Documentos de Progresso (doc irmao por audiencia — ver
+    // src/lib/journey/audience.ts; a trilha de parceiro nunca escreve no doc do membro)
+    const progressRef = db.collection("User").doc(matricula).collection("User_Journey").doc(JOURNEY_PROGRESS_DOC[audience]);
     const progressSnap = await progressRef.get();
 
     if (!progressSnap.exists) return null;
@@ -349,7 +360,7 @@ export async function getJourneyProgressAction(uid: string): Promise<JourneyProg
     let data = progressSnap.data() as JourneyProgress;
 
     // NOVO: Lazy Sync on Read (Sincronizacao Retroativa Cross-Service)
-    const stages = await getJourneyStagesAction();
+    const stages = await getJourneyStagesAction(audience);
     const { updatedSteps, hasChanges } = applyCrossCompletionSweep(data?.steps || {}, stages);
 
     if (hasChanges) {
@@ -377,7 +388,9 @@ export async function getJourneyProgressAction(uid: string): Promise<JourneyProg
 
     return {
       matricula,
-      lastActiveStepId: data?.lastActiveStepId || "onboarding",
+      // "onboarding" e' a primeira parada da trilha de membro; a de parceiro resolve a
+      // primeira etapa pelo proprio catalogo (as etapas ja chegam ordenadas).
+      lastActiveStepId: data?.lastActiveStepId || (audience === "partner" ? (stages[0]?.id || "") : "onboarding"),
       steps: data?.steps || {},
       overallProgress: data?.overallProgress || 0
     };
@@ -391,10 +404,11 @@ export async function getJourneyProgressAction(uid: string): Promise<JourneyProg
  * Atualiza o progresso de um substep (Parada) no Firebase 🛰️✨
  */
 export async function updateJourneySubStepAction(
-  uid: string, 
-  stepId: string, 
-  subStepId: string, 
-  completed: boolean
+  uid: string,
+  stepId: string,
+  subStepId: string,
+  completed: boolean,
+  audience: JourneyAudience = "member"
 ): Promise<{ success: boolean; progress?: JourneyProgress }> {
   try {
     const session = await requireAuth();
@@ -408,8 +422,8 @@ export async function updateJourneySubStepAction(
     if (!uidMapSnap.exists) throw new Error("Usuário não mapeado.");
     const matricula = uidMapSnap.data()?.matricula;
 
-    const progressRef = db.collection("User").doc(matricula).collection("User_Journey").doc("progress");
-    
+    const progressRef = db.collection("User").doc(matricula).collection("User_Journey").doc(JOURNEY_PROGRESS_DOC[audience]);
+
     const trxResult = await db.runTransaction(async (transaction) => {
       const snap = await transaction.get(progressRef);
       const current = snap.exists ? snap.data() : { steps: {}, lastActiveStepId: stepId };
@@ -444,7 +458,7 @@ export async function updateJourneySubStepAction(
       }
 
       // Deteccao de conclusao robusta (Global & Standalone)
-      const stages = await getJourneyStagesAction();
+      const stages = await getJourneyStagesAction(audience);
       let stage = stages.find(s => s.id === stepId || normalizeString(s.id) === normalizeString(stepId));
       
       // Fallback para estagios especiais (Step 00 / Standalone)
@@ -509,7 +523,7 @@ export async function updateJourneySubStepAction(
 
     // 📡 Sincronizar Snapshot com o Google Drive (Assíncrono para não travar a UI)
     try {
-      getJourneyStagesAction().then(stages => {
+      getJourneyStagesAction(audience).then(stages => {
         const updatedAtStr = new Date().toLocaleDateString('pt-BR');
         const rowsData: (string | number | boolean | null)[][] = [];
 
