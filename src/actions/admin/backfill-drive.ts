@@ -58,6 +58,10 @@ export interface BackfillReport {
   feedbacksWritten: number;
   /** 1 se o snapshot de objetivos foi (re)gerado, 0 se nao havia objetivos. */
   objectivesWritten: number;
+  /** Chamados de suporte espelhados. */
+  ticketsWritten: number;
+  /** Transferencias de titularidade espelhadas. */
+  transfersWritten: number;
   failures: string[];
 }
 
@@ -74,6 +78,8 @@ async function backfillOneUser(matricula: string, dryRun: boolean): Promise<Back
     auditsWritten: 0,
     feedbacksWritten: 0,
     objectivesWritten: 0,
+    ticketsWritten: 0,
+    transfersWritten: 0,
     failures: [],
   };
 
@@ -185,18 +191,25 @@ async function backfillProofTrails(
 ): Promise<void> {
   const db = getAdminDb();
 
-  const [consentSnap, auditsSnap, feedbacksSnap, objectivesSnap] = await Promise.all([
-    db.collection(`User/${matricula}/User_Consent_History`).get(),
-    db.collection(`User/${matricula}/Legal_Audits`).get(),
-    db.collection(`User/${matricula}/Feedbacks`).get(),
-    db.collection(`User/${matricula}/Career_Objectives`).get(),
-  ]);
+  const [consentSnap, auditsSnap, feedbacksSnap, objectivesSnap, ticketsSnap, transfersSnap] =
+    await Promise.all([
+      db.collection(`User/${matricula}/User_Consent_History`).get(),
+      db.collection(`User/${matricula}/Legal_Audits`).get(),
+      db.collection(`User/${matricula}/Feedbacks`).get(),
+      db.collection(`User/${matricula}/Career_Objectives`).get(),
+      db.collection(`User/${matricula}/Support_Tickets`).get(),
+      // Colecao de raiz: a transferencia e indexada pela matricula que sobrevive.
+      // Igualdade em campo unico usa o indice automatico — nao exige indice novo.
+      db.collection("_AccountTransfers").where("sourceMatricula", "==", matricula).get(),
+    ]);
 
   const {
     syncConsentAcceptanceToDrive,
     syncLegalAuditToUserDrive,
     syncCareerFeedbackToUserDrive,
     syncCareerObjectivesToUserDrive,
+    syncSupportTicketToUserDrive,
+    syncAccountTransferToUserDrive,
   } = await import("@/lib/drive-sync");
 
   // 1. Comprovantes de aceite de termos.
@@ -283,7 +296,56 @@ async function backfillProofTrails(
     }
   }
 
-  // 4. Objetivos de carreira (snapshot unico, nao linha a linha).
+  // 4. Chamados de suporte.
+  for (const doc of ticketsSnap.docs) {
+    const data = doc.data();
+    const createdAt = toDate(data.createdAt);
+    if (dryRun) {
+      report.ticketsWritten += 1;
+      continue;
+    }
+
+    try {
+      await syncSupportTicketToUserDrive(matricula, {
+        // Mesma formatacao do gancho ao vivo — a chave de idempotencia e esta string.
+        createdAt: createdAt ? createdAt.toLocaleString("pt-BR") : "",
+        description: String(data.description || ""),
+        currentPage: data.currentPage ? String(data.currentPage) : null,
+        status: String(data.status || "open"),
+        priority: String(data.priority || "normal"),
+        attachment: data.imageName ? String(data.imageName) : null,
+      });
+      report.ticketsWritten += 1;
+    } catch (error: unknown) {
+      report.failures.push(`ticket ${doc.id}: ${getErrorMessage(error)}`);
+    }
+  }
+
+  // 5. Transferencias de titularidade.
+  for (const doc of transfersSnap.docs) {
+    const data = doc.data();
+    if (dryRun) {
+      report.transfersWritten += 1;
+      continue;
+    }
+
+    const performedAt = toDate(data.performedAt);
+    try {
+      await syncAccountTransferToUserDrive(matricula, {
+        // Mesma formatacao do gancho ao vivo — a chave de idempotencia e esta string.
+        performedAt: performedAt ? performedAt.toLocaleString("pt-BR") : "",
+        targetEmail: String(data.targetEmail || ""),
+        orphanMatricula: data.orphanMatricula ? String(data.orphanMatricula) : null,
+        removedUids: Array.isArray(data.removedUids) ? data.removedUids.length : 0,
+        performedBy: String(data.performedBy || ""),
+      });
+      report.transfersWritten += 1;
+    } catch (error: unknown) {
+      report.failures.push(`transferencia ${doc.id}: ${getErrorMessage(error)}`);
+    }
+  }
+
+  // 6. Objetivos de carreira (snapshot unico, nao linha a linha).
   if (!objectivesSnap.empty) {
     if (dryRun) {
       report.objectivesWritten = 1;

@@ -129,16 +129,40 @@ Registrado aqui para nao ser reaberto como se fosse esquecimento:
 
 ## Pendencias conhecidas
 
-Estado em 2026-08-04. Manter esta secao viva.
+Estado em 2026-08-05. Manter esta secao viva.
+
+Separadas pelo criterio que importa na priorizacao: **sem fluxo** gera passivo
+novo todo dia; **sem retroativo** e estatico.
+
+### Sem fluxo (dado de hoje ainda nao chega ao acervo)
 
 - **Area de Parceiros** (`Partner_Consent`, `Partner_Referrals`,
-  `Partner_Billing_Cycles`): sem espelhamento. A sessao que desenvolve a area
-  fecha isso ao concluir, seguindo este documento.
-- **Agendamentos** (`User_Bookings`): sem espelhamento. Adiado para evitar
-  colisao com o trabalho de agenda em andamento.
-- **Handlers curados parciais**: 8 surveys tem handler proprio que grava um
-  subconjunto dos campos (o de check-in, 13 colunas de ~36). Convivem hoje com o
-  registro completo. Decidir se sao aposentados.
-- **`form-effects.ts`**: usa `createSpreadsheet` em vez de
-  `getOrCreateSpreadsheet`, criando uma planilha nova a cada envio. Nao perde
-  dado, multiplica arquivos.
+  `Partner_Billing_Cycles`): a sessao que desenvolve a area fecha isso ao
+  concluir, seguindo este documento.
+- **Agendamentos** (`User_Bookings`, `Booking_Proposals`,
+  `User_Booking_History`): adiado para evitar colisao com o trabalho de agenda
+  em andamento.
+
+### Retroativo dispensado por decisao
+
+Decisao da Gestora (2026-08-05): nao executar o resgate na base restante — nao ha
+dado relevante a refletir para os membros efetivamente ativos. O caminho
+retroativo continua disponivel na aba `Pessoas > Acervo` caso mude.
+
+### Outros
+
+- **Resgate complementar nao e idempotente**: `triggerRetroactiveDriveSyncAction`
+  anexa sem checar o que ja existe, entao reexecutar duplica extrato financeiro e
+  backlog (a jornada escapa, por ser snapshot). Viola a regra 7 acima. A
+  ferramenta e anterior a este documento.
+- **Pastas partidas**: membros antigos podem ter `2.Documentos` e `5.Documentos`
+  ao mesmo tempo. A cura so renomeia a legada quando a padrao ainda nao existe,
+  entao com as duas presentes o conteudo antigo fica orfao. Ajuste manual da
+  Gestora.
+- **Handlers curados**: 8 surveys tem handler proprio que grava um subconjunto
+  dos campos MAIS os scores calculados (totais e percentuais) — dado derivado que
+  o registro generico nao produz. Nao podem ser simplesmente aposentados: a fase
+  de curadoria e de FUSAO, nao de substituicao.
+- **Sem matricula, sem espelhamento**: chamado aberto por quem ainda nao tem
+  matricula cai em `_SupportTickets/{uid}` e nao tem pasta de destino. Mesma
+  natureza do visitante anonimo.

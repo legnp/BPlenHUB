@@ -1,6 +1,7 @@
 "use server";
 
 import { z } from "zod";
+import { after } from "next/server";
 import { getAdminDb } from "@/lib/firebase-admin";
 import * as admin from "firebase-admin";
 import { verifySignedSession } from "@/actions/auth-session";
@@ -99,6 +100,40 @@ export async function submitSupportTicket(rawInput: SubmitTicketInput) {
     const ticketRef = await ticketsCol.add(ticketData);
 
     console.log(`🆘 [Suporte] Ticket criado: ${ticketRef.id} | ${userName} (${session.email})`);
+
+    // Espelho no acervo do membro. Sem matricula nao ha pasta (chamado cai na
+    // gaveta por uid), entao nao ha o que espelhar — mesma logica do visitante
+    // anonimo, registrada em WORKSPACE_GLOBAL.
+    if (matricula) {
+      const ticketMatricula = matricula;
+      after(async () => {
+        try {
+          // Rele o documento para pegar o `createdAt` ja resolvido: e ele a chave
+          // de idempotencia do resgate, e o serverTimestamp so vira data depois da
+          // escrita. Usar o relogio daqui produziria uma chave diferente da que o
+          // resgate calcularia depois.
+          const saved = await ticketRef.get();
+          const createdAt = saved.data()?.createdAt;
+          const createdAtStr =
+            createdAt && typeof createdAt.toDate === "function"
+              ? createdAt.toDate().toLocaleString("pt-BR")
+              : new Date().toLocaleString("pt-BR");
+
+          const { syncSupportTicketToUserDrive } = await import("@/lib/drive-sync");
+          await syncSupportTicketToUserDrive(ticketMatricula, {
+            createdAt: createdAtStr,
+            description,
+            currentPage: currentPage ?? null,
+            status: "open",
+            priority: "normal",
+            attachment: imageName ?? null,
+          });
+        } catch (mirrorError: unknown) {
+          const message = mirrorError instanceof Error ? mirrorError.message : String(mirrorError);
+          console.error("[Suporte] Falha ao espelhar chamado no acervo:", message);
+        }
+      });
+    }
 
     return { success: true, ticketId: ticketRef.id };
   } catch (error) {

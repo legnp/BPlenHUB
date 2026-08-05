@@ -564,6 +564,101 @@ export async function syncCareerFeedbackToUserDrive(
 }
 
 /**
+ * Chamados de suporte abertos pelo membro.
+ *
+ * E contato dele com a plataforma como qualquer outro: pergunta feita, resposta
+ * esperada. Ficava so no banco. Serie em `0.Acompanhamento`, junto do restante
+ * do historico de interacao.
+ *
+ * A planilha NAO leva uid nem e-mail: a pasta ja e do proprio membro, entao
+ * repetir identificadores so aumentaria a superficie de PII sem informar nada.
+ */
+export async function syncSupportTicketToUserDrive(
+  matricula: string,
+  ticket: {
+    createdAt: string;
+    description: string;
+    currentPage?: string | null;
+    status: string;
+    priority: string;
+    attachment?: string | null;
+  }
+): Promise<string> {
+  try {
+    const spreadsheetId = await appendToUserSeries({
+      matricula,
+      folder: DRIVE_FOLDERS.ACOMPANHAMENTO,
+      fileName: "Chamados_Suporte",
+      headers: ["Data/Hora", "Descricao", "Pagina de origem", "Status", "Prioridade", "Anexo"],
+      rowData: [
+        ticket.createdAt,
+        ticket.description,
+        ticket.currentPage || "nao informada",
+        ticket.status,
+        ticket.priority,
+        ticket.attachment || "sem anexo",
+      ],
+      skipIfFirstColumnMatches: ticket.createdAt,
+    });
+
+    console.log(`[DriveSync:Support] Chamado registrado para: ${matricula}`);
+    return spreadsheetId;
+  } catch (err) {
+    console.error(`[DriveSync:Support] Falha ao registrar chamado:`, err);
+    throw err;
+  }
+}
+
+/**
+ * Transferencia de titularidade da conta.
+ *
+ * Ato com valor probatorio: muda quem e dono do acervo. Vai para
+ * `5.Documentos`, ao lado dos contratos.
+ *
+ * `performedBy` passa pela mascara de identidade (regra 7 do CLAUDE.md): quem
+ * executa a transferencia e da equipe interna, e esta planilha e visivel para o
+ * membro. Sem a mascara, o e-mail do Master vazaria no acervo do cliente.
+ */
+export async function syncAccountTransferToUserDrive(
+  matricula: string,
+  transfer: {
+    performedAt: string;
+    targetEmail: string;
+    orphanMatricula?: string | null;
+    removedUids: number;
+    performedBy: string;
+  }
+): Promise<string> {
+  try {
+    const { maskInternalContact } = await import("@/lib/identity-mask");
+
+    const spreadsheetId = await appendToUserSeries({
+      matricula,
+      folder: DRIVE_FOLDERS.DOCUMENTOS,
+      legacyFolders: LEGACY_FOLDERS.DOCUMENTOS,
+      fileName: "Transferencias_de_Conta",
+      headers: [
+        "Data/Hora", "Novo acesso (e-mail)", "Matricula arquivada", "Acessos removidos", "Executado por",
+      ],
+      rowData: [
+        transfer.performedAt,
+        transfer.targetEmail,
+        transfer.orphanMatricula || "nenhuma",
+        transfer.removedUids,
+        maskInternalContact(transfer.performedBy),
+      ],
+      skipIfFirstColumnMatches: transfer.performedAt,
+    });
+
+    console.log(`[DriveSync:Transfer] Transferencia registrada para: ${matricula}`);
+    return spreadsheetId;
+  } catch (err) {
+    console.error(`[DriveSync:Transfer] Falha ao registrar transferencia:`, err);
+    throw err;
+  }
+}
+
+/**
  * Objetivos de carreira — SNAPSHOT, nao serie.
  *
  * Diferente de feedback ou acesso, objetivo e ESTADO: o status muda ("Em

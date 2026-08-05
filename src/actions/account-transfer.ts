@@ -1,6 +1,7 @@
 "use server";
 
 import * as admin from "firebase-admin";
+import { after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { Resend } from "resend";
 import { requireAdmin } from "@/lib/auth-guards";
@@ -251,8 +252,11 @@ export async function transferAccountAction(
         { merge: true }
       );
     }
-    // 5. Auditoria.
-    batch.set(db.collection("_AccountTransfers").doc(), {
+    // 5. Auditoria. A referencia fica guardada: `now` e um serverTimestamp, e o
+    // espelho precisa da data JA RESOLVIDA — e ela a chave de idempotencia, e
+    // usar o relogio daqui geraria uma chave diferente da que o resgate calcula.
+    const transferAuditRef = db.collection("_AccountTransfers").doc();
+    batch.set(transferAuditRef, {
       sourceMatricula,
       targetUid,
       targetEmail,
@@ -263,6 +267,31 @@ export async function transferAccountAction(
     });
 
     await batch.commit();
+
+    // Espelho no acervo da matricula que sobrevive: a transferencia muda quem e
+    // dono do acervo, entao o proprio acervo precisa registrar isso.
+    after(async () => {
+      try {
+        const saved = await transferAuditRef.get();
+        const performedAt = saved.data()?.performedAt;
+        const performedAtStr =
+          performedAt && typeof performedAt.toDate === "function"
+            ? performedAt.toDate().toLocaleString("pt-BR")
+            : new Date().toLocaleString("pt-BR");
+
+        const { syncAccountTransferToUserDrive } = await import("@/lib/drive-sync");
+        await syncAccountTransferToUserDrive(sourceMatricula, {
+          performedAt: performedAtStr,
+          targetEmail,
+          orphanMatricula: orphanIsDistinct ? (targetCurrentMatricula as string) : null,
+          removedUids: removedUids.length,
+          performedBy: session.email || session.uid,
+        });
+      } catch (mirrorError: unknown) {
+        const message = mirrorError instanceof Error ? mirrorError.message : String(mirrorError);
+        console.error("[AccountTransfer] Falha ao espelhar transferencia no acervo:", message);
+      }
+    });
 
     // Notificacao aos dois lados + registro na caixa da equipe (best-effort — nao
     // falha a transferencia ja feita).

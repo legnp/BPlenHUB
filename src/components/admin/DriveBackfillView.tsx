@@ -64,7 +64,9 @@ export function DriveBackfillView() {
         soma((r) => r.consentWritten) +
         soma((r) => r.auditsWritten) +
         soma((r) => r.feedbacksWritten) +
-        soma((r) => r.objectivesWritten),
+        soma((r) => r.objectivesWritten) +
+        soma((r) => r.ticketsWritten) +
+        soma((r) => r.transfersWritten),
       failures: soma((r) => r.failures.length),
     };
   }, [reports]);
@@ -337,7 +339,7 @@ export function DriveBackfillView() {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-[var(--input-bg)]/80 border-b border-[var(--border-primary)]">
-                    {["Matrícula", "Pesquisas", "Formulários", "Aceites", "Assinaturas", "Feedbacks", "Objetivos", "Falhas"].map((head) => (
+                    {["Matrícula", "Pesquisas", "Formulários", "Aceites", "Assinaturas", "Feedbacks", "Objetivos", "Chamados", "Transferências", "Falhas"].map((head) => (
                       <th
                         key={head}
                         className="px-6 py-4 text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-70"
@@ -357,6 +359,8 @@ export function DriveBackfillView() {
                         r.auditsWritten > 0 ||
                         r.feedbacksWritten > 0 ||
                         r.objectivesWritten > 0 ||
+                        r.ticketsWritten > 0 ||
+                        r.transfersWritten > 0 ||
                         r.failures.length > 0
                     )
                     .map((report) => (
@@ -385,6 +389,12 @@ export function DriveBackfillView() {
                         </td>
                         <td className="px-6 py-4 text-sm font-medium text-[var(--text-muted)]">
                           {report.objectivesWritten > 0 ? "sim" : "-"}
+                        </td>
+                        <td className="px-6 py-4 text-sm font-medium text-[var(--text-muted)]">
+                          {report.ticketsWritten}
+                        </td>
+                        <td className="px-6 py-4 text-sm font-medium text-[var(--text-muted)]">
+                          {report.transfersWritten}
                         </td>
                         <td className="px-6 py-4 text-sm font-medium">
                           {report.failures.length === 0 ? (
