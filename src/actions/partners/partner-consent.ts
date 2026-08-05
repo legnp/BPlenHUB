@@ -10,6 +10,10 @@ import {
   PartnerTermsDocumentSchema,
   PartnerConsentRecord,
 } from "@/types/partners";
+import {
+  PartnerTermsContext,
+  resolveTermsForPartner,
+} from "@/lib/partners/terms-template";
 
 /**
  * BPlen HUB — Termo de Parceria (leitura do documento e registro do aceite).
@@ -28,6 +32,47 @@ const DEFAULT_TERMS_DOCUMENT_ID = "formalizacao-parceria";
 
 function termsDocPath(documentId: string): string {
   return `Settings/PartnerTerms/documents/${documentId}`;
+}
+
+/**
+ * Dados do parceiro que alimentam o termo: quem ele e', qual a taxa dele e quais blocos
+ * condicionais se aplicam.
+ *
+ * `isCommercial` sai da propria taxa (parceria remunerada = tem percentual), e
+ * `hasPublicShowcase` do selo de vitrine concedido pelo Admin. Nenhum dos dois e'
+ * decidido na tela — sao dado.
+ */
+async function buildTermsContext(matricula: string): Promise<PartnerTermsContext> {
+  const db = getAdminDb();
+  const [userSnap, accessSnap, formSnap] = await Promise.all([
+    db.doc(`User/${matricula}`).get(),
+    db.doc(`User/${matricula}/User_Permissions/access`).get(),
+    db.doc(`User/${matricula}/Forms/partner_dados_cadastrais`).get(),
+  ]);
+
+  const user = userSnap.data() || {};
+  const access = accessSnap.data() || {};
+  const form = (formSnap.data()?.responses || {}) as Record<string, string>;
+
+  const commissionPercent =
+    typeof access.partnerCommissionPercent === "number" ? access.partnerCommissionPercent : 0;
+
+  const isPJ = form.partner_type === "PJ";
+  const endereco = isPJ
+    ? [form.company_rua, form.company_numero, form.company_bairro, form.company_cidade, form.company_uf]
+    : [form.rua, form.numero, form.bairro, form.cidade, form.uf];
+
+  return {
+    partnerName: isPJ
+      ? form.razao_social || String(user.Authentication_Name || "")
+      : form.full_name || String(user.Authentication_Name || user.User_Name || ""),
+    partnerDocument: isPJ ? form.cnpj || "" : form.cpf || "",
+    partnerAddress: endereco.filter(Boolean).join(", "),
+    partnerMatricula: matricula,
+    commissionPercent,
+    isCommercial: commissionPercent > 0,
+    hasPublicShowcase: access.services?.partner_public_showcase === true,
+  };
 }
 
 /** Documento vigente + o aceite ja registrado deste parceiro, se houver. */
@@ -51,6 +96,13 @@ export async function getPartnerTermsAction(documentId?: string): Promise<{
     const matricula = await findMatriculaByIdentity(session.uid, session.email || undefined);
     if (!matricula) return { document, consent: null };
 
+    // O termo exibido e' o DESTE parceiro: blocos condicionais resolvidos e marcadores
+    // preenchidos com o cadastro dele (ver `lib/partners/terms-template.ts`). Assim o
+    // texto assinado nunca diverge do que o sistema pratica.
+    const documentForPartner = document
+      ? resolveTermsForPartner(document, await buildTermsContext(matricula))
+      : null;
+
     const consentSnap = await db.doc(`User/${matricula}/Partner_Consent/current`).get();
     const consentData = consentSnap.exists ? (consentSnap.data() as PartnerConsentRecord) : null;
 
@@ -59,7 +111,7 @@ export async function getPartnerTermsAction(documentId?: string): Promise<{
     const consent =
       consentData && document && consentData.version === document.version ? consentData : null;
 
-    return { document, consent };
+    return { document: documentForPartner, consent };
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
     console.error("[partner-consent] Falha ao ler o termo de parceria:", message);

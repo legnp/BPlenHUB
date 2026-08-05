@@ -12,9 +12,17 @@ import { z } from "zod";
  * publique/edite o conteudo sem passar por codigo — a parada de Formalizacao exibe o
  * que estiver publicado, na ordem publicada.
  */
+/**
+ * Condicao de exibicao de um bloco do termo. O documento juridico da BPlen tem blocos
+ * marcados como "EXIBIDO APENAS SE ...", e eles precisam ser condicao de DADO, nao
+ * instrucao em texto para alguem lembrar de apagar na hora de assinar.
+ */
+export const PartnerTermsConditionSchema = z.enum(["always", "commercial", "public_showcase"]);
+
 export const PartnerTermsSectionSchema = z.object({
   title: z.string().optional(),
   body: z.string(),
+  condition: PartnerTermsConditionSchema.default("always"),
 });
 
 /**

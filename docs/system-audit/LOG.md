@@ -24,6 +24,48 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-05] Chat de execução — Termo de Parceria: modelo oficial, blocos condicionais e editor
+
+- Chat/sessão: chat de execução, mesma branch. Fast-forward na `main` autorizado.
+- **Insumo da Gestora**: o documento jurídico real ("Termo de Aliança e Parceria
+  Estratégica", B2B/B2C). A leitura dele **mudou o desenho** que estava previsto:
+  1. O documento tem **blocos condicionais** — "EXIBIDO APENAS SE A PARCERIA FOR
+     COMERCIAL/REMUNERADA" e "EXIBIDO APENAS SE O PARCEIRO TIVER DIREITO À VITRINE
+     PÚBLICA". Deixar isso como instrução escrita no meio do contrato seria contar com
+     alguém lembrar de apagar antes de cada assinatura. Virou **condição de dado**
+     (`always` | `commercial` | `public_showcase`) por bloco.
+  2. O documento tem **campos a preencher** ("[nome completo ou razão social]",
+     "[matrícula/ID do parceiro]"). Viraram **marcadores** resolvidos com o cadastro do
+     próprio parceiro na hora de exibir.
+  3. A cláusula 2.3 do original fixa **10%**; no modelo ela usa o marcador da taxa real do
+     parceiro. Sem isso, um parceiro com taxa diferente assinaria um texto que diverge do
+     que o sistema calcula — divergência entre contrato e prática.
+- **Entregue**:
+  1. `src/lib/partners/terms-template.ts` — regra pura de montagem (preenchimento de
+     marcadores + filtro de blocos) e o **modelo oficial** com o texto integral, já
+     seccionado e com as condições marcadas. 13 testes, entre eles: bloco comercial não
+     vaza para parceria não remunerada, bloco da vitrine só aparece para quem tem direito,
+     e **nenhum marcador sobra** no texto exibido.
+  2. `getPartnerTermsAction` passou a devolver o termo **daquele parceiro**: condições
+     resolvidas e marcadores preenchidos com o cadastro (`partner_dados_cadastrais`),
+     `isCommercial` derivado da própria taxa e `hasPublicShowcase` do selo.
+  3. `src/actions/partners/terms-admin.ts` — leitura/gravação do termo, com **publicar como
+     ato separado de salvar** (rascunho não vira contrato por distração) e recusa de
+     publicação sem texto, sem aceite obrigatório ou com id de aceite repetido. Informa
+     quantos parceiros já assinaram a versão vigente.
+  4. `PartnerTermsEditor` + aba "Termo de parceria" em `/admin/partners-program`: edição de
+     versão, título, introdução, blocos (com a condição de cada um) e caixas de aceite, com
+     botão para **carregar o modelo oficial** como ponto de partida.
+- **Aviso de versão na tela**: trocar a versão faz todos os que já assinaram reassinarem —
+  a tela diz isso com o número real de assinaturas, antes de a Gestora decidir.
+- **Validação**: lint sem erro, `tsc` limpo, build exit 0, suíte **51 arquivos / 480 testes**
+  (13 novos) verde.
+- **DECISÃO PENDENTE DA GESTORA**: o selo `partner_public_showcase` (direito à vitrine
+  pública, cláusula 4.2) foi previsto no código mas **ainda não tem concessão na ficha do
+  usuário** — hoje ninguém o recebe, então o bloco da vitrine nunca aparece. Falta ela
+  definir se a vitrine é concedida caso a caso (viro um toggle na ficha, como o de parceiro)
+  ou se vale para todo parceiro (o bloco passa a ser `always`).
+
 ## [2026-08-05] Chat de execução — Fase 4, parte 2: tela de admin do Programa de Parceria
 
 - Chat/sessão: chat de execução, mesma branch. Fast-forward na `main` autorizado.

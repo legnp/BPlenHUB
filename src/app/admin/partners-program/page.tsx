@@ -15,6 +15,7 @@ import {
 } from "@/actions/partners/billing-cycles";
 import { uploadToUserDrive } from "@/actions/upload-to-drive";
 import { PARTNER_CYCLE_STATUS_LABEL, PartnerCycleStatus } from "@/lib/partners/cycle-status";
+import { PartnerTermsEditor } from "@/components/admin/PartnerTermsEditor";
 import { cn } from "@/lib/utils";
 
 /**
@@ -68,6 +69,7 @@ export default function PartnersProgramPage() {
   const [loadingCycles, setLoadingCycles] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{ tone: "ok" | "erro"; text: string } | null>(null);
+  const [tab, setTab] = useState<"ciclos" | "termo">("ciclos");
   const [adjustDraft, setAdjustDraft] = useState<Record<string, string>>({});
   const [commentDraft, setCommentDraft] = useState<Record<string, string>>({});
 
@@ -216,7 +218,27 @@ export default function PartnersProgramPage() {
         icon={<Handshake size={24} />}
       />
 
-      {feedback ? (
+      <div className="flex gap-6 border-b border-[var(--border-primary)]/40">
+        {([
+          { id: "ciclos", label: "Ciclos de repasse" },
+          { id: "termo", label: "Termo de parceria" },
+        ] as const).map((item) => (
+          <button
+            key={item.id}
+            onClick={() => setTab(item.id)}
+            className={cn(
+              "pb-3 text-[9px] font-black uppercase tracking-[0.2em] border-b-2 transition-all",
+              tab === item.id
+                ? "border-[var(--accent-start)] text-[var(--accent-start)]"
+                : "border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+            )}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+
+      {feedback && tab === "ciclos" ? (
         <div
           className={cn(
             "p-5 rounded-2xl border text-sm font-medium",
@@ -229,7 +251,9 @@ export default function PartnersProgramPage() {
         </div>
       ) : null}
 
-      <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,320px)_minmax(0,1fr)] gap-8 items-start">
+      {tab === "termo" ? <PartnerTermsEditor /> : null}
+
+      <div className={cn("grid grid-cols-1 xl:grid-cols-[minmax(0,320px)_minmax(0,1fr)] gap-8 items-start", tab !== "ciclos" && "hidden")}>
         {/* Parceiros */}
         <aside className="space-y-3">
           <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--accent-start)]">
