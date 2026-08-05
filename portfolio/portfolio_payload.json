@@ -1484,5 +1484,196 @@
       "BPL-004",
       "BPL-005"
     ]
+  },
+  {
+    "id": "jornada-de-parceiro",
+    "slug": "jornada-de-parceiro",
+    "serviceCode": "BPP-001",
+    "title": "Jornada de Parceiro",
+    "kicker": "Parceria",
+    "price": 0.0,
+    "pricePix": 0.0,
+    "maxInstallments": 12,
+    "isStepJourney": true,
+    "order": 1,
+    "grantedQuotas": {},
+    "targetAudiences": [
+      "partners"
+    ],
+    "status": "active",
+    "sheet": {
+      "description": "Etapa da jornada de parceria: Jornada de Parceiro.",
+      "coverImage": "/images/products/onboarding.png",
+      "paymentConditions": "Etapa interna da parceria, sem custo.",
+      "faq": [
+        {
+          "question": "Para quem e esta etapa?",
+          "answer": "Para parceiros BPlen com acesso liberado."
+        }
+      ],
+      "termsAndConditions": "Etapa exclusiva do programa de parceria BPlen.",
+      "seo": {
+        "title": "Jornada de Parceiro | BPlen HUB",
+        "description": "Etapa da jornada de parceria: Jornada de Parceiro.",
+        "keywords": [
+          "parceria",
+          "bplen"
+        ]
+      }
+    },
+    "workflow": [],
+    "deliverySteps": [
+      {
+        "id": "ss-content-tour_guided_parceiro",
+        "type": "content",
+        "referenceId": "tour_guided_parceiro",
+        "title": "Introdução",
+        "description": "Conheça a BPlen HUB para Parceiros",
+        "order": "1"
+      },
+      {
+        "id": "ss-survey-partner_check_in",
+        "type": "survey",
+        "referenceId": "partner_check_in",
+        "title": "Check-in",
+        "description": "Alinhamento de Expectativas",
+        "order": "2.1"
+      },
+      {
+        "id": "ss-form-partner_dados_cadastrais",
+        "type": "form",
+        "referenceId": "partner_dados_cadastrais",
+        "title": "Check-in",
+        "description": "Configuração de Dados Cadastrais",
+        "order": "2.2"
+      },
+      {
+        "id": "ss-contract-formalizacao-parceria",
+        "type": "contract",
+        "referenceId": "formalizacao-parceria",
+        "title": "Formalização",
+        "description": "Validação e assinatura de formalização de parceria",
+        "order": "3"
+      },
+      {
+        "id": "ss-meeting-onboarding_de_parceiro",
+        "type": "meeting",
+        "referenceId": "onboarding_de_parceiro",
+        "title": "Sessão de Onboarding",
+        "description": "Boas-vindas e alinhamento de expectativas",
+        "order": "4"
+      }
+    ],
+    "capabilities": {
+      "surveys": [],
+      "forms": [],
+      "allowedEventTypes": []
+    }
+  },
+  {
+    "id": "configuracao-de-networking",
+    "slug": "configuracao-de-networking",
+    "serviceCode": "BPP-002",
+    "title": "Configuração de Networking",
+    "kicker": "Parceria",
+    "price": 0.0,
+    "pricePix": 0.0,
+    "maxInstallments": 12,
+    "isStepJourney": true,
+    "order": 2,
+    "grantedQuotas": {},
+    "targetAudiences": [
+      "partners"
+    ],
+    "status": "active",
+    "sheet": {
+      "description": "Etapa da jornada de parceria: Configuração de Networking.",
+      "coverImage": "/images/products/onboarding.png",
+      "paymentConditions": "Etapa interna da parceria, sem custo.",
+      "faq": [
+        {
+          "question": "Para quem e esta etapa?",
+          "answer": "Para parceiros BPlen com acesso liberado."
+        }
+      ],
+      "termsAndConditions": "Etapa exclusiva do programa de parceria BPlen.",
+      "seo": {
+        "title": "Configuração de Networking | BPlen HUB",
+        "description": "Etapa da jornada de parceria: Configuração de Networking.",
+        "keywords": [
+          "parceria",
+          "bplen"
+        ]
+      }
+    },
+    "workflow": [],
+    "deliverySteps": [
+      {
+        "id": "ss-action-/hub/profile_settings",
+        "type": "action",
+        "referenceId": "/hub/profile_settings",
+        "title": "Configurar Networking",
+        "description": "Configuração do Perfil para a Página de Networking",
+        "order": "1"
+      }
+    ],
+    "capabilities": {
+      "surveys": [],
+      "forms": [],
+      "allowedEventTypes": []
+    }
+  },
+  {
+    "id": "ativacao-de-parceria",
+    "slug": "ativacao-de-parceria",
+    "serviceCode": "BPP-003",
+    "title": "Ativação de Parceria",
+    "kicker": "Parceria",
+    "price": 0.0,
+    "pricePix": 0.0,
+    "maxInstallments": 12,
+    "isStepJourney": true,
+    "order": 3,
+    "grantedQuotas": {},
+    "targetAudiences": [
+      "partners"
+    ],
+    "status": "active",
+    "sheet": {
+      "description": "Etapa da jornada de parceria: Ativação de Parceria.",
+      "coverImage": "/images/products/onboarding.png",
+      "paymentConditions": "Etapa interna da parceria, sem custo.",
+      "faq": [
+        {
+          "question": "Para quem e esta etapa?",
+          "answer": "Para parceiros BPlen com acesso liberado."
+        }
+      ],
+      "termsAndConditions": "Etapa exclusiva do programa de parceria BPlen.",
+      "seo": {
+        "title": "Ativação de Parceria | BPlen HUB",
+        "description": "Etapa da jornada de parceria: Ativação de Parceria.",
+        "keywords": [
+          "parceria",
+          "bplen"
+        ]
+      }
+    },
+    "workflow": [],
+    "deliverySteps": [
+      {
+        "id": "ss-action-/hub/partners",
+        "type": "action",
+        "referenceId": "/hub/partners",
+        "title": "Gestão Contínua de Parceria",
+        "description": "Ativação de oficial da jornada de parceiro e acompanhamento do progresso",
+        "order": "1"
+      }
+    ],
+    "capabilities": {
+      "surveys": [],
+      "forms": [],
+      "allowedEventTypes": []
+    }
   }
 ]

@@ -24,6 +24,42 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-05] Chat de execução — Reimportação do portfólio executada + trava de acesso da jornada de parceria
+
+- Chat/sessão: chat de execução, mesma branch. Fast-forward na `main` autorizado.
+- **BUG NOVO (produção, não corrigido — decisão da Gestora de adiar)**: a reimportação do
+  portfólio pelo admin **não funciona em produção**. O fluxo grava o `.xlsx` em disco e roda
+  um script Python; na Vercel o sistema de arquivos é somente leitura:
+  `EROFS: read-only file system, open '/var/task/portfolio/portfolio_bplen.xlsx'`. O recurso
+  só nunca falhou porque sempre foi usado localmente. A Gestora pediu para não corrigir agora
+  e delegou a reimportação a esta sessão. **Registrar em `BUGS.md` como Médio** quando o chat
+  de planejamento reconciliar — a tela promete uma operação que não existe em produção.
+- **ACHADO CRÍTICO que teria travado a entrega inteira**: `isStageEntitled` (cálculo legado de
+  "o membro possui esta etapa?") procura **cota ou serviço com o nome da etapa**. As etapas de
+  parceria não são compradas, não concedem cota e não aparecem no catálogo — todas retornariam
+  `false`, e como elas nascem sem `preRequisitos` o motor de acesso devolve `null` e o legado
+  decide. Resultado: `hasAccess: false` em todas, e a página **expulsaria o parceiro da própria
+  jornada** com um redirect mudo. Corrigido em `useJourney`: na trilha de parceria o
+  entitlement é o **próprio selo**. O gate de autorização segue sendo o do servidor; isto só
+  responde "possui?". A função legada não foi tocada (segue byte a byte para o membro).
+- **Reimportação executada por esta sessão**, com a planilha real da Gestora:
+  - A coluna de audiência entrou como **coluna 1** da aba `Jornada` (ela inseriu no início,
+    empurrando ServiceCode para a 2). A leitura por nome de cabeçalho, feita na entrega
+    anterior, absorveu a mudança — leitura por posição teria lido "clientes_b2c" como código
+    de serviço e quebrado tudo em silêncio.
+  - Checagem **somente leitura** contra produção antes de escrever: 3 a criar, 12 a atualizar
+    sem mudança relevante, **0 a arquivar**. Só então a sincronização rodou (com backup
+    automático em `products_backup_20260805204206`).
+  - Resultado: **15 produtos** em produção (12 originais intactos + 3 de parceria), 1 cupom.
+- **Correção de robustez no parser**: tipo de parada escrito no plural/caixa alta é
+  normalizado (`forms` -> `form`), com aviso no log. A planilha é preenchida à mão e um tipo
+  inválido derrubava a validação do payload INTEIRO depois de tudo já parseado.
+- **PENDÊNCIA DE DESIGN PARA A GESTORA**: a parada "Introdução" (BPP-001, linha 55) está com
+  `type: content` e `referenceId: tour_guided_parceiro`. Com `content`, a tela renderiza o
+  quadro de vídeo, não o tour — o tipo que dispara o tour de parceria é **`tour`**. Uma célula.
+  Não alterei a planilha dela por conta própria.
+- **Validação**: `tsc` limpo, suíte 51/480 verde, build exit 0.
+
 ## [2026-08-05] Chat de execução — Configuração da parceria: 4 inconsistências achadas na planilha e no admin
 
 - Chat/sessão: chat de execução, mesma branch. Fast-forward na `main` autorizado.

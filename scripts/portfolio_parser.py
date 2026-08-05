@@ -300,6 +300,17 @@ try:
         order = cp_sheet.cell(row=r, column=4).value
         title = str(cp_sheet.cell(row=r, column=5).value or "").strip()
         type_val = str(cp_sheet.cell(row=r, column=6).value or "").strip()
+        # Planilha e preenchida a mao: plural e caixa alta sao o erro tipico, e um
+        # tipo invalido derruba a validacao do payload INTEIRO depois de tudo
+        # parseado. Normalizar aqui e' mais util do que recusar no fim.
+        TYPE_ALIASES = {"forms": "form", "surveys": "survey", "meetings": "meeting",
+                        "contents": "content", "uploads": "upload", "actions": "action",
+                        "contracts": "contract", "tours": "tour"}
+        if type_val.lower() in TYPE_ALIASES:
+            print(f"    * NOTA linha {r}: tipo '{type_val}' normalizado para '{TYPE_ALIASES[type_val.lower()]}'.")
+            type_val = TYPE_ALIASES[type_val.lower()]
+        elif type_val != type_val.lower():
+            type_val = type_val.lower()
         ref_id = str(cp_sheet.cell(row=r, column=7).value or "").strip()
         desc = str(cp_sheet.cell(row=r, column=8).value or "").strip()
 

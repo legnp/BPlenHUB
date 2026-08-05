@@ -191,7 +191,19 @@ export function useJourney(uid: string, audience: JourneyAudience = "member") {
     // Entitlement da etapa ("possui?") — calculo legado extraido para
     // `isStageEntitled`, porque a Fase C precisa dele para TODAS as etapas
     // (conjunto de espera), nao so para a corrente. Comportamento preservado.
-    const finalHasAccessLogic = stage ? isStageEntitled(stage, quotas, services) : false;
+    //
+    // Na trilha de PARCERIA o entitlement e' o proprio selo: as etapas nao sao
+    // compradas, nao concedem cota e nao aparecem no catalogo. O calculo legado
+    // procura cota/servico com o nome da etapa e devolveria `false` para todas —
+    // o parceiro seria expulso da propria jornada. Quem autoriza continua sendo o
+    // gate de servidor; isto so responde "possui?".
+    const partnerSelo = services?.partner_area_access === true;
+    const finalHasAccessLogic =
+      audience === "partner"
+        ? partnerSelo
+        : stage
+          ? isStageEntitled(stage, quotas, services)
+          : false;
 
     // Identificar se e' o "Proximo Passo" logico (Baseado em ID sequencial ou LastActive)
     const currentStepIndex = mergedStages.findIndex(s => s.id === progress?.lastActiveStepId);
