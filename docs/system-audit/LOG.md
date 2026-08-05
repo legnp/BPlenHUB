@@ -24,6 +24,26 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-04] Chat de execucao — pagina publica de Parceiros sem vitrine de servicos
+
+- Pedido pontual da Gestora: em `/servicos/parceiros`, ocultar TODOS os servicos e
+  tambem o titulo "Servicos Individuais", sem afetar a disponibilizacao na area logada
+  do parceiro.
+- Feito em `src/app/servicos/[audience]/page.tsx`: a secao da grade inteira passa a ser
+  condicionada a `config.id !== 'partners'`. Some o titulo, os cards e tambem o estado
+  vazio ("Nenhum servico disponivel neste segmento ainda") — que apareceria no lugar se
+  so os cards fossem escondidos.
+- **Nao toca a area logada.** A mudanca e so de renderizacao da vitrine publica; as
+  etapas da jornada de parceria seguem entregues normalmente pelo hub.
+- Verificado no preview (pagina publica, entao da para conferir sem autenticacao):
+  `/servicos/parceiros` renderiza so o hero e o rodape; `/servicos/pessoas` mantem a
+  tabela comparativa e os cards individuais; `/servicos/empresas` mantem o bloco de
+  proposta em desenvolvimento. Sem erro no console.
+- Validado: eslint do arquivo 0 erros, type-check limpo, 483 testes verdes, build exit 0.
+- Nota menor (nao corrigida, sem impacto visivel): para parceiros a pagina ainda faz o
+  `getProductsByAudience`, cujo resultado agora nao e usado. Uma leitura desperdicada por
+  visita; da para eliminar quando a pagina for mexida de novo.
+
 ## [2026-08-05] Chat de execução — Jornada de parceria completa em produção; parser recusa em vez de normalizar
 
 - Chat/sessão: chat de execução, mesma branch. Fast-forward na `main` autorizado.

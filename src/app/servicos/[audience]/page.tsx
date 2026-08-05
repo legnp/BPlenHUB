@@ -112,10 +112,18 @@ export default async function SegmentedServicesPage({ params }: PageProps) {
         </section>
       )}
 
-      {/* dynamic Products Grid */}
+      {/*
+        Grade de serviços. A página de PARCEIROS não expõe nenhum serviço: as etapas da
+        jornada de parceria (Jornada de Parceiro, Configuração de Networking, Ativação de
+        Parceria) são entregues na área logada do parceiro, não vendidas aqui. Some a
+        seção inteira — incluindo o título "Serviços Individuais" e o estado vazio.
+        Decisão da Gestora, 2026-08-04. NÃO altera a disponibilização na área logada:
+        isto é só a vitrine pública.
+      */}
+      {config.id !== 'partners' && (
       <section className="pb-32 px-6">
         <div className="max-w-6xl xl:max-w-[1360px] mx-auto">
-          
+
           {config.id === 'companies' ? (
             <div className="bg-white/5 border border-white/10 p-8 md:p-12 rounded-[2rem] max-w-4xl mx-auto shadow-2xl relative overflow-hidden group">
                {/* Decorative Gradient Background */}
@@ -262,6 +270,7 @@ export default async function SegmentedServicesPage({ params }: PageProps) {
           )}
         </div>
       </section>
+      )}
 
       {/* Footer & Global Elements */}
       <HomeFooter />
