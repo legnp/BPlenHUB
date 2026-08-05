@@ -37,18 +37,24 @@ export interface CalendarEventType {
    */
   atende: string[];
   /**
-   * De quem e' este tipo de sessao. Ausente = `member` (todo tipo existente hoje).
-   * A agenda do parceiro so oferece tipos `partner`, e a do membro nunca os mostra —
-   * mesma logica de audiencia da jornada (`src/lib/journey/audience.ts`).
+   * Quem pode agendar este tipo de sessao. Ausente/vazio = `["member"]` (todo tipo
+   * existente hoje). Um tipo PODE servir as duas audiencias — e' o caso do `1-to-1`,
+   * cuja grade e' deliberadamente disputada entre membro, parceiro e o funil publico
+   * (decisao da Gestora, 2026-08-05): o horario e' um so, quem chegar primeiro leva.
    */
-  audience?: "member" | "partner";
+  audiences?: Array<"member" | "partner">;
   /**
-   * Motivos oferecidos ao agendar uma sessao deste tipo (viram o tema do
-   * agendamento). Vazio/ausente = a sessao nao pergunta motivo, com uma excecao de
-   * transicao: o tipo `1-to-1` cai na lista global legada de razoes, configurada na
-   * mesma tela (ver `src/lib/booking/session-demands.ts`).
+   * Motivos oferecidos ao MEMBRO ao agendar este tipo (viram o tema do agendamento).
+   * Vazio/ausente = nao pergunta motivo, com uma excecao de transicao: o tipo `1-to-1`
+   * cai na lista global legada, configurada na mesma tela.
    */
   demandOptions?: string[];
+  /**
+   * Motivos oferecidos ao PARCEIRO no mesmo tipo. Lista separada de proposito: a
+   * grade e' compartilhada, a conversa nao — cada fluxo pergunta o que faz sentido
+   * para ele (o funil publico ja tem a triagem propria dele).
+   */
+  partnerDemandOptions?: string[];
 }
 
 /** Valor inicial do consultor, ate a Gestora atribuir (ver 8.2 do design). */

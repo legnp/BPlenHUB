@@ -16,8 +16,12 @@ import { Info } from "lucide-react";
  * valendo e' a janela de agendamento e a regra de cancelamento, aplicadas no servidor
  * pela mesma politica de sempre.
  *
- * A oferta e' filtrada por AUDIENCIA do tipo de evento, nao por texto de titulo: so
- * aparecem slots de tipos marcados como "Parceiro" na configuracao da agenda.
+ * A GRADE PODE SER A MESMA do membro e do funil publico (decisao da Gestora,
+ * 2026-08-05): um tipo de evento serve quantas audiencias a configuracao disser, e o
+ * horario e' disputado — quem agendar primeiro ocupa a vaga. O que nao se mistura e' a
+ * lista de motivos: aqui aparece a do parceiro, configurada no proprio tipo.
+ *
+ * A oferta e' filtrada por AUDIENCIA do tipo, nunca por texto de titulo.
  */
 export default function PartnerSessionBookingModal({
   isOpen,
@@ -58,8 +62,9 @@ export default function PartnerSessionBookingModal({
         <div className="flex items-start gap-3 p-4 rounded-2xl bg-[var(--input-bg)]/40 border border-[var(--border-primary)]">
           <Info size={16} className="text-[var(--accent-start)] mt-0.5 shrink-0" />
           <p className="text-[11px] font-medium text-[var(--text-secondary)] leading-relaxed">
-            As sessões de parceria são livres: não consomem créditos. Escolha um horário disponível
-            e informe o motivo do encontro para prepararmos a conversa.
+            As sessões de parceria são livres: não consomem créditos. Os horários são os mesmos
+            oferecidos às demais agendas, então quem confirmar primeiro garante a vaga. Escolha um
+            horário disponível e informe o motivo do encontro para prepararmos a conversa.
           </p>
         </div>
 
@@ -73,6 +78,7 @@ export default function PartnerSessionBookingModal({
         ) : (
           <Calendar
             events={partnerEvents}
+            audience="partner"
             onBookingSuccess={() => {
               onSuccess();
               onClose();

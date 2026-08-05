@@ -17,6 +17,7 @@ import { consumeQuota, refundQuota, ONE_TO_ONE_QUOTA_KEY } from "@/lib/quota-key
 import { MemberQuota } from "@/types/entitlements";
 import { isBlockerEvent } from "@/lib/booking/blocker";
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
+import { resolveUserPermissions } from "@/lib/user-permissions";
 import { GoogleCalendarEvent, AttendeeData } from "@/types/calendar";
 import { updateGlobalProgramacaoRegistryAction, recalculateEventMetrics } from "./post-event";
 import { getBookingConfirmationEmail, getAdminInclusionEmail, getCancellationEmail, getRescheduleEmail, getTeamBookingNotificationEmail, getTeamCancellationNotificationEmail, getTeamInclusionNotificationEmail, getTeamRescheduleNotificationEmail } from "@/lib/email-templates";
@@ -61,15 +62,38 @@ export async function bookEventAction(
    * deduzir do texto do titulo — que, com os titulos genericos, nao distingue a 1a da
    * 10a sessao de MentoCoach.
    */
-  origin?: { stageId: string; subStepId: string; serviceLabel: string }
+  origin?: { stageId: string; subStepId: string; serviceLabel: string },
+  /**
+   * Fluxo de onde partiu o agendamento. `partner` isenta a sessao da carteira de
+   * creditos — a grade do 1 to 1 e' compartilhada entre membro, parceiro e funil
+   * publico (decisao da Gestora, 2026-08-05), e so o membro paga com credito.
+   *
+   * NUNCA confiar neste parametro por si so: ele so vale se o CHAMADOR tiver o selo
+   * de parceiro, verificado abaixo contra o servidor (Licao 44 — a pergunta nao e'
+   * "tem guard?", e' "de onde vem a identidade em que ele acredita?"). Sem selo, o
+   * agendamento cai no fluxo de membro e a cota volta a valer.
+   */
+  audience: "member" | "partner" = "member"
 ) {
   try {
     // Guard de sessao: fluxo de membro exige sessao propria (ou admin); funil de
     // lead publico (sem matricula, com leadInfo) permanece aberto como hoje.
+    let isPartnerBooking = false;
     if (matricula) {
       const session = await requireAuth();
       if (session.matricula !== matricula && !session.isAdmin) {
         throw new AuthorizationError("Voce nao pode agendar em nome de outro membro.");
+      }
+      // A isencao de credito exige o selo real, resolvido ao vivo do banco pela
+      // sessao verificada — nunca o parametro do cliente.
+      if (audience === "partner") {
+        const { services } = await resolveUserPermissions(session.uid);
+        isPartnerBooking = services?.partner_area_access === true;
+        if (!isPartnerBooking) {
+          console.warn(
+            `[Booking] Agendamento pedido como parceiro sem o selo — UID ${session.uid} tratado como membro.`
+          );
+        }
       }
     } else if (!leadInfo) {
       throw new AuthorizationError("Requisicao de agendamento invalida.");
@@ -124,7 +148,10 @@ export async function bookEventAction(
       // `1-to-1`. Consultoria Individual/em Grupo, onboarding e offboarding NAO
       // entram (isOneToOneEvent decide por `tipoId`, nao por texto). O debito e
       // aplicado no MESMO commit da reserva (write phase abaixo) — atomico.
-      const oneToOne = isOneToOneEvent(eventData);
+      // Sessao agendada pelo parceiro nao toca a carteira: a grade e' a mesma, o
+      // credito nao. Mesmo tratamento que o funil publico ja tem hoje (sem matricula,
+      // sem cota) — aqui a isencao e' concedida pelo SELO, nao pelo pedido.
+      const oneToOne = isOneToOneEvent(eventData) && !isPartnerBooking;
       const walletRef = matricula
         ? db.doc(`User/${matricula}/User_Permissions/quotas`)
         : null;
@@ -195,6 +222,8 @@ export async function bookEventAction(
         stageId: origin?.stageId ?? null,
         subStepId: origin?.subStepId ?? null,
         serviceLabel: origin?.serviceLabel ?? null,
+        // Fluxo em que a reserva nasceu — auditoria de quem ocupou a vaga compartilhada.
+        audience: isPartnerBooking ? "partner" : "member",
         // Marca a reserva que DE FATO debitou cota 1:1 (BUG-013). O estorno no
         // cancelamento so credita reservas com esta flag — nunca as anteriores a
         // trava (que nunca consumiram), evitando creditar saldo do nada.

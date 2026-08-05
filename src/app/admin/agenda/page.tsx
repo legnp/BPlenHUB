@@ -51,6 +51,7 @@ export default function AgendaManagementPage() {
   const [oneToOneTypes, setOneToOneTypes] = useState<string[]>([]);
   // Input do motivo por tipo de evento (a lista global acima segue valendo para o 1 to 1).
   const [newDemandByType, setNewDemandByType] = useState<Record<string, string>>({});
+  const [newPartnerDemandByType, setNewPartnerDemandByType] = useState<Record<string, string>>({});
   const [newType, setNewType] = useState("");
   // Tipos de evento (Etapa 3.1): o significado do slot mora aqui, nao no titulo.
   const [eventTypes, setEventTypes] = useState<CalendarEventType[]>([]);
@@ -125,18 +126,48 @@ export default function AgendaManagementPage() {
     setIsSaving(false);
   };
 
-  const handleAddDemand = (tipoId: string) => {
-    const motivo = (newDemandByType[tipoId] || "").trim();
-    if (!motivo) return;
-    const atual = eventTypes.find((t) => t.id === tipoId)?.demandOptions || [];
-    if (atual.includes(motivo)) return;
-    updateTipo(tipoId, { demandOptions: [...atual, motivo] });
-    setNewDemandByType({ ...newDemandByType, [tipoId]: "" });
+  const audiencesDoTipo = (tipo: CalendarEventType): Array<"member" | "partner"> =>
+    tipo.audiences && tipo.audiences.length > 0 ? tipo.audiences : ["member"];
+
+  const toggleAudience = (tipoId: string, audiencia: "member" | "partner") => {
+    const tipo = eventTypes.find((t) => t.id === tipoId);
+    if (!tipo) return;
+    const atual = audiencesDoTipo(tipo);
+    const proxima = atual.includes(audiencia)
+      ? atual.filter((a) => a !== audiencia)
+      : [...atual, audiencia];
+    // Um tipo sem nenhuma audiencia nao seria agendavel por ninguem — mantemos membro.
+    updateTipo(tipoId, { audiences: proxima.length > 0 ? proxima : ["member"] });
   };
 
-  const handleRemoveDemand = (tipoId: string, motivo: string) => {
-    const atual = eventTypes.find((t) => t.id === tipoId)?.demandOptions || [];
-    updateTipo(tipoId, { demandOptions: atual.filter((m) => m !== motivo) });
+  const handleAddDemand = (tipoId: string, audiencia: "member" | "partner" = "member") => {
+    const origem = audiencia === "partner" ? newPartnerDemandByType : newDemandByType;
+    const motivo = (origem[tipoId] || "").trim();
+    if (!motivo) return;
+    const tipo = eventTypes.find((t) => t.id === tipoId);
+    const atual = (audiencia === "partner" ? tipo?.partnerDemandOptions : tipo?.demandOptions) || [];
+    if (atual.includes(motivo)) return;
+    updateTipo(
+      tipoId,
+      audiencia === "partner"
+        ? { partnerDemandOptions: [...atual, motivo] }
+        : { demandOptions: [...atual, motivo] }
+    );
+    if (audiencia === "partner") {
+      setNewPartnerDemandByType({ ...newPartnerDemandByType, [tipoId]: "" });
+    } else {
+      setNewDemandByType({ ...newDemandByType, [tipoId]: "" });
+    }
+  };
+
+  const handleRemoveDemand = (tipoId: string, motivo: string, audiencia: "member" | "partner" = "member") => {
+    const tipo = eventTypes.find((t) => t.id === tipoId);
+    const atual = (audiencia === "partner" ? tipo?.partnerDemandOptions : tipo?.demandOptions) || [];
+    const restante = atual.filter((m) => m !== motivo);
+    updateTipo(
+      tipoId,
+      audiencia === "partner" ? { partnerDemandOptions: restante } : { demandOptions: restante }
+    );
   };
 
   const updateTipo = (id: string, patch: Partial<CalendarEventType>) => {
@@ -531,24 +562,84 @@ export default function AgendaManagementPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-[var(--border-primary)]">
-                  <label className="space-y-1.5 block">
-                    <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)]">De quem e este tipo</span>
-                    <select
-                      value={tipo.audience || "member"}
-                      onChange={(e) => updateTipo(tipo.id, { audience: e.target.value === "partner" ? "partner" : "member" })}
-                      className="w-full px-4 py-3 bg-[var(--bg-primary)]/50 border border-[var(--input-border)] rounded-xl text-sm font-bold text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-start)]/50"
-                    >
-                      <option value="member">Membro</option>
-                      <option value="partner">Parceiro</option>
-                    </select>
-                  </label>
+                <div className="space-y-2 pt-3 border-t border-[var(--border-primary)]">
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
+                    Quem pode agendar este tipo
+                  </span>
+                  <div className="flex gap-2">
+                    {(["member", "partner"] as const).map((aud) => {
+                      const marcado = audiencesDoTipo(tipo).includes(aud);
+                      return (
+                        <label
+                          key={aud}
+                          className={`flex-1 flex items-center gap-2 px-4 py-3 rounded-xl border cursor-pointer transition-all ${marcado ? "bg-[var(--accent-start)]/10 border-[var(--accent-start)]/30" : "bg-[var(--bg-primary)]/40 border-[var(--input-border)]"}`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={marcado}
+                            onChange={() => toggleAudience(tipo.id, aud)}
+                            className="accent-[var(--accent-start)]"
+                          />
+                          <span className="text-[11px] font-bold text-[var(--text-primary)]">
+                            {aud === "member" ? "Membro" : "Parceiro"}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                  <p className="text-[10px] text-[var(--text-muted)] opacity-60 italic">
+                    Marcando os dois, o mesmo horario e disputado pelas duas audiencias — quem
+                    agendar primeiro ocupa a vaga. A sessao do parceiro nunca consome credito.
+                  </p>
                 </div>
+
+                {audiencesDoTipo(tipo).includes("partner") && (
+                  <div className="space-y-2 pt-3 border-t border-[var(--border-primary)]">
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
+                      Motivos do PARCEIRO neste tipo
+                    </span>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={newPartnerDemandByType[tipo.id] || ""}
+                        onChange={(e) => setNewPartnerDemandByType({ ...newPartnerDemandByType, [tipo.id]: e.target.value })}
+                        placeholder="Ex: Acompanhamento Geral"
+                        className="flex-1 px-4 py-3 bg-[var(--bg-primary)]/50 border border-[var(--input-border)] rounded-xl text-sm font-bold text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-start)]/50 placeholder:text-[var(--text-muted)] placeholder:opacity-40"
+                        onKeyDown={(e) => e.key === "Enter" && handleAddDemand(tipo.id, "partner")}
+                      />
+                      <button
+                        onClick={() => handleAddDemand(tipo.id, "partner")}
+                        className="px-5 py-3 bg-[var(--accent-start)] text-white rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-[var(--accent-end)] transition-all"
+                      >
+                        Adicionar
+                      </button>
+                    </div>
+                    {(tipo.partnerDemandOptions || []).length === 0 ? (
+                      <p className="text-[10px] text-[var(--text-muted)] opacity-60 italic">
+                        Sem motivos: ao agendar, nao pedimos o motivo da sessao ao parceiro.
+                      </p>
+                    ) : (
+                      <div className="space-y-1.5">
+                        {(tipo.partnerDemandOptions || []).map((motivo) => (
+                          <div key={motivo} className="flex items-center justify-between px-4 py-2.5 bg-[var(--bg-primary)]/40 border border-[var(--border-primary)] rounded-xl">
+                            <span className="text-[11px] font-medium text-[var(--text-primary)]">{motivo}</span>
+                            <button
+                              onClick={() => handleRemoveDemand(tipo.id, motivo, "partner")}
+                              className="text-[9px] font-bold uppercase tracking-widest text-red-500 hover:text-red-400 transition-colors"
+                            >
+                              Remover
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {tipo.id !== "1-to-1" && (
                   <div className="space-y-2 pt-3 border-t border-[var(--border-primary)]">
                     <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
-                      Motivos deste tipo (viram o tema do agendamento)
+                      Motivos do MEMBRO neste tipo (viram o tema do agendamento)
                     </span>
                     <div className="flex gap-2">
                       <input

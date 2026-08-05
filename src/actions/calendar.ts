@@ -61,9 +61,10 @@ export async function bookEventAction(
   nickname?: string,
   oneToOneData?: { type: string; expectations: string },
   leadInfo?: { name?: string; phone?: string },
-  origin?: { stageId: string; subStepId: string; serviceLabel: string }
+  origin?: { stageId: string; subStepId: string; serviceLabel: string },
+  audience: "member" | "partner" = "member"
 ) {
-  return Booking.bookEventAction(eventId, userUid, userEmail, matricula, nickname, oneToOneData, leadInfo, origin);
+  return Booking.bookEventAction(eventId, userUid, userEmail, matricula, nickname, oneToOneData, leadInfo, origin, audience);
 }
 
 export async function cancelBookingAction(matricula: string, bookingId: string, eventId: string, userUid: string) {

@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   eventServesAudience,
-  eventTypeAudience,
+  eventTypeAudiences,
   eventTypeIdsForAudience,
   resolveSessionDemands,
 } from "@/lib/booking/session-demands";
@@ -16,29 +16,38 @@ const tipo = (over: Partial<CalendarEventType> & { id: string }): CalendarEventT
   ...over,
 });
 
+/**
+ * O `1-to-1` e' o caso central: grade UNICA, disputada por membro, parceiro e funil
+ * publico, com lista de motivos propria por fluxo (decisao da Gestora, 2026-08-05).
+ */
 const TYPES: CalendarEventType[] = [
-  tipo({ id: "1-to-1" }),
-  tipo({ id: "onboarding" }),
   tipo({
-    id: "parceiro",
-    audience: "partner",
-    demandOptions: ["Acompanhamento Geral", "Dúvidas sobre Formalização"],
+    id: "1-to-1",
+    audiences: ["member", "partner"],
+    partnerDemandOptions: ["Acompanhamento Geral", "Proposta de Colaboração"],
   }),
-  tipo({ id: "onboarding-parceiro", audience: "partner" }),
+  tipo({ id: "onboarding" }),
+  tipo({ id: "onboarding-parceiro", audiences: ["partner"] }),
 ];
 
 const LEGACY_ONE_TO_ONE = ["Alinhamento Estratégico", "Revisão de Currículo"];
 
-describe("audiencia do tipo de evento", () => {
+describe("audiencias do tipo de evento", () => {
   it("trata tipo sem audiencia declarada como de membro", () => {
-    expect(eventTypeAudience(tipo({ id: "onboarding" }))).toBe("member");
-    expect(eventTypeAudience(tipo({ id: "x", audience: "member" }))).toBe("member");
-    expect(eventTypeAudience(tipo({ id: "y", audience: "partner" }))).toBe("partner");
+    expect(eventTypeAudiences(tipo({ id: "onboarding" }))).toEqual(["member"]);
+    expect(eventTypeAudiences(tipo({ id: "x", audiences: [] }))).toEqual(["member"]);
   });
 
-  it("lista os ids de cada audiencia", () => {
-    expect(eventTypeIdsForAudience(TYPES, "partner")).toEqual(["parceiro", "onboarding-parceiro"]);
+  it("aceita tipo que serve as duas audiencias", () => {
+    expect(eventTypeAudiences(tipo({ id: "1-to-1", audiences: ["member", "partner"] }))).toEqual([
+      "member",
+      "partner",
+    ]);
+  });
+
+  it("lista os ids de cada audiencia, com o tipo compartilhado nas duas", () => {
     expect(eventTypeIdsForAudience(TYPES, "member")).toEqual(["1-to-1", "onboarding"]);
+    expect(eventTypeIdsForAudience(TYPES, "partner")).toEqual(["1-to-1", "onboarding-parceiro"]);
   });
 });
 
@@ -52,11 +61,16 @@ describe("eventServesAudience", () => {
     expect(eventServesAudience({ summary: "1 to 1" }, TYPES, "partner")).toBe(false);
   });
 
-  it("separa as duas agendas por tipo", () => {
-    expect(eventServesAudience({ tipoId: "parceiro" }, TYPES, "partner")).toBe(true);
-    expect(eventServesAudience({ tipoId: "parceiro" }, TYPES, "member")).toBe(false);
+  it("oferece a MESMA grade de 1 to 1 para membro e parceiro", () => {
     expect(eventServesAudience({ tipoId: "1-to-1" }, TYPES, "member")).toBe(true);
-    expect(eventServesAudience({ tipoId: "1-to-1" }, TYPES, "partner")).toBe(false);
+    expect(eventServesAudience({ tipoId: "1-to-1" }, TYPES, "partner")).toBe(true);
+  });
+
+  it("mantem exclusivo o tipo que declara uma audiencia so", () => {
+    expect(eventServesAudience({ tipoId: "onboarding-parceiro" }, TYPES, "partner")).toBe(true);
+    expect(eventServesAudience({ tipoId: "onboarding-parceiro" }, TYPES, "member")).toBe(false);
+    expect(eventServesAudience({ tipoId: "onboarding" }, TYPES, "member")).toBe(true);
+    expect(eventServesAudience({ tipoId: "onboarding" }, TYPES, "partner")).toBe(false);
   });
 
   it("trata tipo desconhecido como de membro (nunca some da agenda de quem ja via)", () => {
@@ -65,26 +79,41 @@ describe("eventServesAudience", () => {
 });
 
 describe("resolveSessionDemands", () => {
-  it("usa a lista propria do tipo quando existe", () => {
-    expect(resolveSessionDemands({ tipoId: "parceiro" }, TYPES, LEGACY_ONE_TO_ONE)).toEqual([
+  it("da ao parceiro a lista dele no tipo compartilhado", () => {
+    expect(resolveSessionDemands({ tipoId: "1-to-1" }, TYPES, LEGACY_ONE_TO_ONE, "partner")).toEqual([
       "Acompanhamento Geral",
-      "Dúvidas sobre Formalização",
+      "Proposta de Colaboração",
     ]);
   });
 
-  it("mantem a lista global legada para o 1 to 1 (comportamento de hoje)", () => {
-    expect(resolveSessionDemands({ tipoId: "1-to-1" }, TYPES, LEGACY_ONE_TO_ONE)).toEqual(LEGACY_ONE_TO_ONE);
+  it("mantem a lista global legada para o membro no mesmo tipo", () => {
+    expect(resolveSessionDemands({ tipoId: "1-to-1" }, TYPES, LEGACY_ONE_TO_ONE, "member")).toEqual(
+      LEGACY_ONE_TO_ONE
+    );
   });
 
-  it("reconhece o 1 to 1 legado pelo titulo, sem tipoId", () => {
-    expect(resolveSessionDemands({ summary: "1 to 1 com a Lis" }, TYPES, LEGACY_ONE_TO_ONE)).toEqual(
+  it("nao vaza a lista do membro para o parceiro quando ele nao tem lista propria", () => {
+    const semListaDeParceiro = [tipo({ id: "1-to-1", audiences: ["member", "partner"] })];
+    expect(
+      resolveSessionDemands({ tipoId: "1-to-1" }, semListaDeParceiro, LEGACY_ONE_TO_ONE, "partner")
+    ).toEqual([]);
+  });
+
+  it("reconhece o 1 to 1 legado pelo titulo no fluxo de membro", () => {
+    expect(
+      resolveSessionDemands({ summary: "1 to 1 com a Lis" }, TYPES, LEGACY_ONE_TO_ONE, "member")
+    ).toEqual(LEGACY_ONE_TO_ONE);
+  });
+
+  it("assume membro quando a audiencia nao e informada (chamadas existentes)", () => {
+    expect(resolveSessionDemands({ tipoId: "1-to-1" }, TYPES, LEGACY_ONE_TO_ONE)).toEqual(
       LEGACY_ONE_TO_ONE
     );
   });
 
   it("nao pergunta motivo em tipo que nao declara lista", () => {
-    expect(resolveSessionDemands({ tipoId: "onboarding" }, TYPES, LEGACY_ONE_TO_ONE)).toEqual([]);
-    expect(resolveSessionDemands({ tipoId: "onboarding-parceiro" }, TYPES, LEGACY_ONE_TO_ONE)).toEqual([]);
-    expect(resolveSessionDemands(null, TYPES, LEGACY_ONE_TO_ONE)).toEqual([]);
+    expect(resolveSessionDemands({ tipoId: "onboarding" }, TYPES, LEGACY_ONE_TO_ONE, "member")).toEqual([]);
+    expect(resolveSessionDemands({ tipoId: "onboarding-parceiro" }, TYPES, LEGACY_ONE_TO_ONE, "partner")).toEqual([]);
+    expect(resolveSessionDemands(null, TYPES, LEGACY_ONE_TO_ONE, "partner")).toEqual([]);
   });
 });

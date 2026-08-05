@@ -38,7 +38,7 @@ import { bookEventAction, getUserBookingsAction } from "@/actions/calendar";
 import { getOneToOneTypes } from "@/actions/OneToOneActions";
 import { getCalendarEventTypes } from "@/actions/calendar-event-types";
 import { CalendarEventType } from "@/types/calendar-event-types";
-import { resolveSessionDemands } from "@/lib/booking/session-demands";
+import { resolveSessionDemands, SessionAudience } from "@/lib/booking/session-demands";
 import GlassModal from "@/components/ui/GlassModal";
 import { CALENDAR_CONFIG } from "@/config/calendarConfig";
 import {
@@ -84,6 +84,12 @@ interface CalendarProps {
    */
   origin?: { stageId: string; subStepId: string; serviceLabel: string };
   /**
+   * Fluxo em que este calendario esta sendo exibido. Decide QUAL lista de motivos
+   * aparece e se o agendamento consome credito — a grade em si e' a mesma para os
+   * dois (decisao da Gestora, 2026-08-05).
+   */
+  audience?: SessionAudience;
+  /**
    * Texto do card "Política de Agendamento". Quando omitido, usa a política
    * padrão (antecedência + janela de Onboarding + limite semanal). Cada
    * contexto pode passar a sua — ex.: o modal 1 to 1 (que não trata Onboarding
@@ -98,7 +104,8 @@ export default function Calendar({
   onMonthChange,
   onBookingSuccess,
   origin,
-  policyNote
+  policyNote,
+  audience = "member"
 }: CalendarProps) {
   const { user, matricula, nickname } = useAuthContext();
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -141,8 +148,8 @@ export default function Calendar({
   // Motivos oferecidos para o evento em confirmacao — regra pura e testada em
   // `src/lib/booking/session-demands.ts`. Lista vazia = a sessao nao pergunta motivo.
   const demandOptions = useMemo(
-    () => resolveSessionDemands(eventToConfirm, calendarEventTypes, oneToOneTypes),
-    [eventToConfirm, calendarEventTypes, oneToOneTypes]
+    () => resolveSessionDemands(eventToConfirm, calendarEventTypes, oneToOneTypes, audience),
+    [eventToConfirm, calendarEventTypes, oneToOneTypes, audience]
   );
 
   // --- LÓGICA DE DADOS ---
@@ -182,7 +189,8 @@ export default function Calendar({
         nickname, 
         oneToOneData,
         undefined,
-        origin
+        origin,
+        audience
       );
       if (result.success) {
         setBookingStatus({ id: eventId, message: "Agendamento realizado com sucesso!", type: 'success' });

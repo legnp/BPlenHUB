@@ -24,6 +24,44 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-05] Chat de execução — Grade de 1 to 1 compartilhada entre membro, parceiro e funil público
+
+- Chat/sessão: chat de execução, mesma branch. Fast-forward na `main` autorizado.
+- **Decisão nova da Gestora (2026-08-05)**, tomada a partir de uma pergunta dela que virou
+  investigação: ela perguntou se o 1 to 1 do funil público também disputa vaga e mistura
+  motivos. Verificado no código — **vaga: sim** (o funil lê os mesmos slots e a mesma
+  lotação); **motivos: não** (o público tem triagem própria, nunca a lista do membro). O
+  achado relevante: **o funil público já agenda esses slots sem consumir crédito nenhum**, ou
+  seja, a grade já servia duas audiências com regras de crédito diferentes. Diante disso a
+  Gestora decidiu: **grade única e disputada pelos três fluxos, com lista de motivos própria
+  para cada um.**
+- **Modelo revisado** (o de ontem, entregue em `a9ec5b1`, assumia audiência única por tipo):
+  - `CalendarEventType.audience` (singular) deu lugar a **`audiences: Array<"member"|"partner">`**
+    — um tipo serve quantas audiências a configuração disser. Ausente/vazio = `["member"]`.
+  - `partnerDemandOptions` entra ao lado de `demandOptions`: mesma grade, listas separadas. O
+    parceiro **nunca** cai na lista legada do 1 to 1 — a dele é a do tipo, ou nenhuma.
+  - Nenhuma configuração de produção usava os campos de ontem (a Gestora ainda não cadastrou o
+    tipo de parceria), então a troca de forma não deixou dado órfão.
+- **Isenção de crédito — a parte sensível**: `bookEventAction` ganhou o parâmetro `audience`, e
+  `audience: "partner"` **só isenta se o chamador tiver o selo de parceiro**, resolvido ao vivo
+  do banco pela sessão verificada (Lição 44). Sem selo, o pedido cai no fluxo de membro e a
+  cota volta a valer, com aviso no log. A reserva grava em qual fluxo nasceu, para auditoria de
+  quem ocupou a vaga compartilhada.
+- **RISCO DE NEGÓCIO REGISTRADO (não é defeito, é consequência da decisão)**: quem tiver os
+  **dois selos** — membro e parceiro — pode agendar 1 to 1 sem consumir crédito, bastando
+  entrar pela área de parceiro. O sistema não tem como distinguir a intenção; a regra é
+  "tem selo de parceiro, não paga crédito". Comunicado à Gestora nesta sessão.
+- **Entregue**: `session-demands.ts` reescrito (audiências múltiplas + motivos por audiência),
+  14 testes (4 novos, cobrindo o tipo compartilhado e o não-vazamento da lista do membro para o
+  parceiro); `Calendar` ganhou a prop `audience` (decide a lista de motivos e o fluxo do
+  agendamento); modal do parceiro passa `audience="partner"` e avisa na tela que a vaga é
+  disputada; tela de admin da agenda com as audiências em caixas de seleção e as duas listas de
+  motivos por tipo.
+- **Validação**: lint sem erro, `tsc` limpo, build exit 0, suíte **48 arquivos / 437 testes**.
+- **Configuração que fica com a Gestora**: no tipo `1-to-1`, marcar também a audiência
+  "Parceiro" e cadastrar os 5 motivos do parceiro. Nenhum evento novo no Google Calendar é
+  necessário para as sessões de parceria — só para a Reunião de Onboarding (checkpoint 4).
+
 ## [2026-08-04] Chat de execução — Fase 2: Agenda do Parceiro (audiência de slot e motivo por tipo)
 
 - Chat/sessão: chat de execução, mesma branch. Fast-forward na `main` autorizado.
