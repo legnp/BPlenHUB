@@ -109,5 +109,52 @@ export const BPLEN_NOMENCLATURE = {
         review: "Rever conteúdo",
       }
     }
+  },
+
+  // --- [ÁREA DE PARCEIROS] (Jornada de Parceria) ---
+  // Mesmas chaves da jornada de membro (o renderizador de paradas escolhe o
+  // dicionário pelo contexto). Sem isto, a trilha do parceiro exibiria os rótulos
+  // de membro — "Passaporte do Membro BPlen" e afins.
+  partner_journey: {
+    badge_survey: "Check-in de Parceria",
+    badge_form: "Cadastro da Parceria",
+    badge_content: "Conteúdo da Parceria",
+    badge_meeting: {
+      confirmed: "Reunião Confirmada",
+      completed: "Reunião Concluída",
+      booking: "Agendamento de Reunião",
+    },
+    badge_tour: "Boas-vindas ao Parceiro",
+    badge_action: "Próximo Passo",
+    badge_contract: "Formalização da Parceria",
+
+    checklist_label: "Checkpoints",
+    locked_title: "Etapa Bloqueada",
+    locked_desc: "Esta parte da parceria será liberada assim que você concluir os passos anteriores.",
+
+    instructions: {
+      welcome_title: "Boas-vindas à Parceria BPlen",
+      welcome_desc: "Vamos te apresentar como a parceria funciona por aqui.",
+      tour_play_label: "Aperte o Play para iniciar",
+      tour_helper_text: "A BPlen preparou um guia rápido sobre a sua área de parceiro.",
+      content_play_label: "Aperte o Play para iniciar",
+      form_helper_ready: "Complete as informações necessárias para esta etapa.",
+      survey_status_done: "100% Concluído",
+      action_helper: "Acesse a tela para concluir esta etapa e volte aqui quando terminar.",
+      contract_pending: "Documento em preparação",
+      contract_pending_desc: "O termo desta etapa ainda não foi disponibilizado. Assim que estiver pronto, ele aparece aqui para leitura e assinatura.",
+      contract_signed: "Termo assinado",
+      contract_signature_label: "Digite seu nome completo para assinar",
+    },
+
+    actions: {
+      survey_start: "Iniciar",
+      form_start: "Iniciar",
+      mark_as_done: "Marcar como Concluído",
+      start_tour: "Aperte o Play para iniciar",
+      review: "Rever conteúdo",
+      open_screen: "Abrir tela",
+      sign_contract: "Assinar e Concluir",
+    }
   }
 };

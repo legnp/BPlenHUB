@@ -25,6 +25,7 @@ import UserBookings from "@/components/ui/UserBookings";
 import { getUpcomingEvents, getUserBookingsAction, submitEvaluationAction } from "@/actions/calendar";
 import { UserBooking, GoogleCalendarEvent } from "@/types/calendar";
 import { SurveyEngine } from "@/components/forms/SurveyEngine";
+import { PartnerContractStep } from "./PartnerContractStep";
 import { getSurveyConfig } from "@/config/surveys";
 import { eventMatchesSubstep, bookingMatchesSubstep } from "@/lib/journey/booking-match";
 import { slotServesStage } from "@/lib/calendar/slot-offer";
@@ -39,7 +40,7 @@ interface StepRendererProps {
   substep: SubStepConfig;
   status: "locked" | "available" | "current" | "completed";
   onComplete: () => void;
-  context?: "primeiros_passos" | "member_journey";
+  context?: "primeiros_passos" | "member_journey" | "partner_journey";
   stageId?: string;
   /** `serviceCode` da etapa — resolve quais slots da agenda servem esta parada. */
   serviceCode?: string;
@@ -61,9 +62,16 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
   };
 
   // Selecionar o dicionário de textos baseado no contexto da página 🍱
-  const nomen = context === "primeiros_passos" 
-    ? BPLEN_NOMENCLATURE.primeiros_passos 
-    : BPLEN_NOMENCLATURE.member_area.journey;
+  const nomen = context === "primeiros_passos"
+    ? BPLEN_NOMENCLATURE.primeiros_passos
+    : context === "partner_journey"
+      ? BPLEN_NOMENCLATURE.partner_journey
+      : BPLEN_NOMENCLATURE.member_area.journey;
+
+  // As paradas `action` e `contract` nasceram na jornada de parceria e so existem la
+  // hoje; os rotulos delas moram no dicionario de parceiro. Se um dia uma trilha de
+  // membro usar esses tipos, e' aqui que o dicionario correspondente entra.
+  const partnerNomen = BPLEN_NOMENCLATURE.partner_journey;
 
   // BUG-100: os hooks abaixo (useState/useCallback/useEffect) precisam rodar em
   // TODA renderizacao, na mesma ordem. Por isso o early return de `status ===
@@ -362,6 +370,63 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
              </div>
           </div>
         );
+
+      // Parada que encaminha para uma tela da plataforma (Configuracao do Perfil,
+      // Gestao de Parceria). O destino vem do dado (`referenceId` = rota), nunca
+      // hardcoded aqui — a Gestora define no cadastro do produto.
+      case "action": {
+        const target = substep.referenceId?.startsWith("/") ? substep.referenceId : "";
+        return (
+          <div className="flex-1 flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-6 duration-1000">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-[var(--accent-start)]/10 rounded-xl flex items-center justify-center text-[var(--accent-start)]">
+                  <DynamicIcon name={icon} />
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--accent-start)]">
+                  {kicker || partnerNomen.badge_action}
+                </span>
+              </div>
+              <h2 className="text-3xl font-black tracking-tight">{substep.title}</h2>
+              <p className="text-[12px] font-medium text-[var(--text-muted)] max-w-xl leading-relaxed">
+                {substep.description}
+              </p>
+            </div>
+
+            <div className="p-10 border border-[var(--border-primary)] rounded-[2.5rem] bg-[var(--input-bg)]/30 flex flex-col items-center justify-center text-center gap-6">
+              <p className="text-sm text-[var(--text-secondary)] max-w-md leading-relaxed">
+                {partnerNomen.instructions.action_helper}
+              </p>
+              {target ? (
+                <Link
+                  href={target}
+                  className="px-10 py-4 bg-[var(--accent-start)] text-white rounded-full text-[10px] font-black uppercase tracking-[0.2em] hover:scale-105 active:scale-95 transition-all shadow-xl shadow-[var(--accent-start)]/20"
+                >
+                  {partnerNomen.actions.open_screen}
+                </Link>
+              ) : null}
+            </div>
+
+            <div className="flex justify-end">
+              {status === "completed" ? (
+                <div className="flex items-center gap-3 px-5 py-3 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl">
+                  <CheckCircle2 size={18} className="text-emerald-500" />
+                  <span className="text-[11px] font-black uppercase tracking-widest text-emerald-500">
+                    {partnerNomen.instructions.survey_status_done}
+                  </span>
+                </div>
+              ) : (
+                <ConfettiCheckbox label={partnerNomen.actions.mark_as_done} onComplete={onComplete} />
+              )}
+            </div>
+          </div>
+        );
+      }
+
+      // Formalizacao: o texto, as caixas de aceite e a assinatura vivem no componente
+      // dedicado, alimentado pelo documento publicado.
+      case "contract":
+        return <PartnerContractStep substep={substep} status={status} onComplete={onComplete} />;
 
       case "form":
       case "survey":

@@ -24,6 +24,47 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-04] Chat de execução — Fase 1, bloco B2: rotas e telas da Jornada de Parceria
+
+- Chat/sessão: chat de execução, mesma branch. Fast-forward na `main` autorizado.
+- **Entregue — rotas** (`/hub/partners/journey`, `/hub/partners/journey/[stepId]` e o índice
+  que encaminha para a etapa em que o parceiro parou). A moldura espelha a da jornada de
+  membro, com três diferenças de audiência: etapas e progresso vêm de
+  `useJourney(uid, "partner")`, o navegador roda em `variant="partner"` e o retorno leva à
+  área de parceiros. **A autorização não está aí** — o gate real continua sendo o layout de
+  servidor da subárvore, que roda a cada request.
+- **Entregue — `JourneyNav variant`**: em `partner`, desligados o upsell de serviço não
+  contratado e os gates especiais de Onboarding/Offboarding (conceitos da jornada de membro).
+  A trava de sequência continua valendo nas duas trilhas — é metodologia, não venda. Sem a
+  prop, o comportamento de membro é byte a byte o de antes.
+- **Entregue — dicionário de textos de parceria** (`BPLEN_NOMENCLATURE.partner_journey`) e o
+  contexto `partner_journey` no `StepRenderer`. Era o bloqueio declarado no bloco A: sem ele a
+  trilha do parceiro exibiria "Passaporte do Membro BPlen" e afins.
+- **Entregue — dois tipos novos de parada** (`ContentType`):
+  - `action`: parada que encaminha para uma tela da plataforma. O destino vem do DADO
+    (`referenceId` = rota), nunca hardcoded — serve os checkpoints 5 (Configuração do Perfil)
+    e 6 (Gestão de Parceria) sem código específico por parada.
+  - `contract`: a Formalização. Tela em `PartnerContractStep.tsx`, com texto, caixas de aceite
+    modulares (reaproveitando `ContractTermsCheckboxes`, CT-3b) e assinatura por nome completo.
+- **Formalização — decisão de arquitetura**: a tela é o continente, o conteúdo é dado. O
+  documento vive em `Settings/PartnerTerms/documents/{id}` (schema Zod em
+  `src/types/partners.ts`) com versão, blocos de texto e aceites; documentos novos entram sem
+  tocar em código, que é o que a Gestora pediu ("provisionar espaço ... de acordo com os docs
+  que serão adicionados posteriormente"). Sem documento publicado, a parada assume o estado
+  honesto "documento em preparação" e **não permite concluir**.
+- **Segurança do aceite** (`src/actions/partners/partner-consent.ts`, espelho de `consent.ts`):
+  identidade sempre da sessão verificada (Lição 44); aceites obrigatórios **revalidados no
+  servidor** (a checagem da tela é conforto); aceite versionado — mudou a versão do documento,
+  reassina; prova de requisição capturada; trilha append-only em `Partner_Consent_History`.
+  Zero mudança em `firestore.rules` (tudo sob `User/{matricula}`).
+- **Desvio corrigido durante a implementação**: a primeira versão da página de etapa copiava a
+  sincronização por efeito da página de membro e quebrava a regra `set-state-in-effect` (2
+  erros de lint). Reescrita para **derivar** a parada em foco em vez de sincronizá-la — trocar
+  de etapa reseta sozinho, sem cascata de renders. A página de membro não foi tocada.
+- **Validação**: lint sem erro nos arquivos novos, `tsc` limpo, build exit 0 com as 3 rotas
+  registradas, suíte 47 arquivos / 423 testes verde.
+- **Pendente**: checkpoint 1 (Boas-vindas/tour), que por decisão da Gestora entra por último.
+
 ## [2026-08-04] Chat de execução — Fase 1, bloco B1: coleta do Check-in de Parceria (survey + form)
 
 - Chat/sessão: chat de execução, mesma branch da Fase 0/bloco A. Fast-forward na `main`

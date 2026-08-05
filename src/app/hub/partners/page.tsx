@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { Handshake } from "lucide-react";
 import { fetchUserPermissionsStatus } from "@/actions/auth-permissions";
 import { verifySignedSession } from "@/actions/auth-session";
@@ -50,18 +51,23 @@ export default async function PartnerAreaPage() {
         statusTag={{ label: "Em preparação", tone: "warning" }}
       />
 
-      <section className="p-8 md:p-10 rounded-[2rem] border border-[var(--border-primary)] bg-[var(--input-bg)]/40 space-y-4">
+      <section className="p-8 md:p-10 rounded-[2rem] border border-[var(--border-primary)] bg-[var(--input-bg)]/40 space-y-5">
         <h2 className="text-lg font-black text-[var(--text-primary)] tracking-tight">
           Sua parceria já está ativa
         </h2>
         <p className="text-sm text-[var(--text-secondary)] leading-relaxed max-w-2xl">
-          O seu acesso de parceiro foi liberado. Estamos preparando os recursos desta área —
-          a sua jornada de parceria, a agenda de sessões, o acompanhamento das suas indicações
-          e os ciclos de repasse. Você vai encontrar tudo por aqui, e o time avisa assim que
-          cada parte estiver disponível.
+          Comece pela sua jornada de parceria: é lá que ficam o check-in, a formalização e os
+          próximos passos combinados com a BPlen. A agenda, o acompanhamento das suas indicações
+          e os ciclos de repasse chegam em seguida, e o time avisa a cada novidade.
         </p>
+        <Link
+          href="/hub/partners/journey"
+          className="inline-flex items-center gap-3 px-8 py-4 bg-[var(--accent-start)] text-white rounded-full text-[10px] font-black uppercase tracking-[0.2em] hover:scale-105 active:scale-95 transition-all shadow-xl shadow-[var(--accent-start)]/20"
+        >
+          Ir para a Jornada de Parceria
+        </Link>
         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)]">
-          Enquanto isso, use o seletor de contexto no menu para voltar à sua área de membro.
+          Use o seletor de contexto no menu para voltar à sua área de membro.
         </p>
       </section>
     </div>

@@ -11,6 +11,8 @@ export type ContentType =
   | "result"      // Results Visualization (DISC, Triad, etc)
   | "content"     // Informative Cards / Videos
   | "meeting"     // Schedule/Join 1-to-1 or group sessions
+  | "action"      // Parada que encaminha para uma tela da plataforma (referenceId = rota)
+  | "contract"    // Termo com texto, aceites modulares e assinatura (referenceId = id do termo)
   | "upload"      // Document submission
   | "feedback";   // Event feedback / Post-session notes
 

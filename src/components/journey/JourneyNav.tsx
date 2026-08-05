@@ -23,6 +23,15 @@ interface JourneyNavProps {
   stepStatusMap: Record<string, StepStatus>;
   getStageTelemetry?: (stepId: string) => StageTelemetry;
   onSelectStep?: (stepId: string) => void;
+  /**
+   * Trilha que este navegador esta servindo. `member` (default) mantem intacto todo
+   * o comportamento de negocio do membro — upsell de servico nao contratado e os
+   * gates especiais de Onboarding/Offboarding, que sao conceitos da jornada de
+   * membro. Em `partner` esses caminhos ficam desligados: a jornada de parceria nao
+   * vende servico nem tem essas duas etapas. A trava de sequencia continua valendo
+   * nas duas (e' metodologia, nao venda).
+   */
+  variant?: "member" | "partner";
 }
 
 // Mapeamento de Ícones Vibrantes e Cores Premium (Alinhado ao Apple IOS Pro) ✨🧬
@@ -99,7 +108,7 @@ const STAGE_THEMES: Record<string, { icon: LucideIcon, color: string, gradient: 
   },
 };
 
-export function JourneyNav({ stages, currentStepId, stepStatusMap, getStageTelemetry, onSelectStep }: JourneyNavProps) {
+export function JourneyNav({ stages, currentStepId, stepStatusMap, getStageTelemetry, onSelectStep, variant = "member" }: JourneyNavProps) {
   const [hoveredStep, setHoveredStep] = useState<string | null>(null);
   const [detailModalOpen, setDetailModalOpen] = useState<string | null>(null);
   
@@ -120,6 +129,20 @@ export function JourneyNav({ stages, currentStepId, stepStatusMap, getStageTelem
 
   // Manipulador de Clique Inteligente (Governança + Upsell + Sequência 🛡️✨)
   const handleStageClick = async (stage: JourneyStep, hasAccess: boolean, isSequenceLocked: boolean, pendentes: string[] = []) => {
+    // Trilha de parceria: sem upsell e sem os gates de Onboarding/Offboarding (regras
+    // que existem para a jornada de membro). Sem acesso aqui significa selo ausente ou
+    // revogado — quem decide isso e' o gate do servidor; o clique so nao navega.
+    if (variant === "partner") {
+      if (!hasAccess) return;
+      if (isSequenceLocked) {
+        setPendingStageTitles(resolvePendingStageTitles(pendentes, stages, stage.id));
+        setSequenceLockModalOpen(true);
+        return;
+      }
+      if (onSelectStep) onSelectStep(stage.id);
+      return;
+    }
+
     // 0. Exceção do Offboarding para Não-Membros
     if (!hasAccess && stage.id.toLowerCase() === 'offboarding') {
       setOffboardingLockedModalOpen(true);
