@@ -30,6 +30,13 @@ Mercado Pago + Google Workspace (Drive/Sheets) + Resend + Zustand + Tailwind v4.
 8. **Telas de carregamento padronizadas**: usar o componente único
    `AtmosphericLoading` com o texto "Carregando {nome da página}" — sem variações
    ("Sincronizando...", "Mapeando...").
+9. **Espelhamento no acervo do usuário**: todo dado gerado pelo contato do
+   usuário com a plataforma tem contrapartida na pasta dele — o default é gravar,
+   e não gravar é exceção que exige decisão registrada. Vale para respostas,
+   aceites, contratos, preferências, uploads e acessos. Toda categoria nova
+   precisa de dois caminhos: o gancho para frente e o resgate retroativo na aba
+   `Pessoas > Acervo`. Contrato completo, taxonomia de pastas e checklist em
+   `WORKSPACE_GLOBAL.md` — leitura obrigatória antes de implementar coleta nova.
 
 ## Estrutura de pastas
 - `src/components/ui/` — componentes atômicos puros
@@ -88,7 +95,8 @@ direto na `main` quando combinado explicitamente com o Gestor.
 
 ## Classificação de coleta de dados
 Toda nova demanda de coleta de dados (survey/form) deve ser classificada conforme
-`SURVEY_GLOBAL.md` / `FORMS_GLOBAL.md` antes da implementação.
+`SURVEY_GLOBAL.md` / `FORMS_GLOBAL.md` antes da implementação, e o espelhamento
+no acervo do usuário definido conforme `WORKSPACE_GLOBAL.md` (regra 9).
 
 ## Migração de governança
 Este arquivo consolida e substitui o conteúdo anterior de `.agent/rules/*`
