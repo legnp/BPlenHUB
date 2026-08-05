@@ -50,3 +50,52 @@ export function parsePartnerCommissionPercent(input: unknown): number {
   const factor = 10 ** PARTNER_COMMISSION_DECIMALS;
   return Math.round(raw * factor) / factor;
 }
+
+/**
+ * Valor do repasse de uma compra: percentual do parceiro sobre o valor EFETIVAMENTE
+ * PAGO pelo cliente (decisao da Gestora, 2026-08-05 — o valor vem da compra, ja com
+ * desconto aplicado). Arredonda em centavos.
+ */
+export function computeCommissionValue(paidValue: number, commissionPercent: number): number {
+  if (!Number.isFinite(paidValue) || !Number.isFinite(commissionPercent)) return 0;
+  if (paidValue <= 0 || commissionPercent <= 0) return 0;
+  return Math.round(paidValue * commissionPercent) / 100;
+}
+
+/**
+ * Ciclo mensal a que uma compra pertence — "AAAA-MM" da data da compra.
+ *
+ * A data de corte e' o ULTIMO DIA DO MES (decisao da Gestora, 2026-08-05): tudo o que
+ * foi comprado dentro do mes civil entra no ciclo daquele mes.
+ *
+ * Avaliado no fuso de Brasilia, e nao no do servidor: a Vercel roda em UTC, onde uma
+ * compra de 31/01 as 22:00 BRT ja e 01/02 — ela cairia no ciclo do mes SEGUINTE
+ * (mesma classe do BUG-093).
+ */
+export function cycleIdOf(dateISO: string): string {
+  const { year, month } = brasiliaParts(dateISO);
+  return `${year}-${String(month).padStart(2, "0")}`;
+}
+
+/** Data de corte do ciclo de uma compra: ultimo dia do mes, em ISO (AAAA-MM-DD). */
+export function cutoffDateOf(dateISO: string): string {
+  const { year, month } = brasiliaParts(dateISO);
+  // Dia 0 do mes seguinte = ultimo dia deste mes.
+  const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  return `${year}-${String(month).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+}
+
+/** Ano/mes (1-12) de uma data ISO, lidos no fuso de Brasilia. */
+function brasiliaParts(dateISO: string): { year: number; month: number } {
+  const date = new Date(dateISO);
+  if (Number.isNaN(date.getTime())) {
+    throw new Error("Data de compra invalida para o calculo do ciclo.");
+  }
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Sao_Paulo",
+    year: "numeric",
+    month: "2-digit",
+  });
+  const [year, month] = formatter.format(date).split("-").map(Number);
+  return { year, month };
+}

@@ -24,6 +24,32 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-05] Chat de execução — Fase 3, bloco 2: painel de Gestão de Indicações
+
+- Chat/sessão: chat de execução, mesma branch. Fast-forward na `main` autorizado.
+- **Decisões da Gestora que destravaram o bloco** (2026-08-05): `HashCPF` **fica interno**,
+  fora da interface do parceiro (ela reconfirmou a decisão do plano, contra a especificação
+  que pedia a coluna); o **valor do repasse sai da compra do cliente** (valor efetivamente
+  pago, já com desconto); e a **data de corte é o último dia do mês** da compra.
+- **Entregue**:
+  1. `src/lib/partners/commission.ts` += `computeCommissionValue`, `cycleIdOf` e
+     `cutoffDateOf`, puros, com 8 testes novos. `cycleIdOf`/`cutoffDateOf` resolvem o mês
+     **no fuso de Brasília, não no do servidor** — a suíte roda em UTC como a produção, e o
+     teste da compra de 31/01 às 22:00 BRT (que em UTC já é 01/02) trava a regressão da mesma
+     classe do `BUG-093`. Uma compra caindo no ciclo errado é dinheiro no mês errado.
+  2. `src/actions/partners/referrals.ts` — projeção ao vivo, espelhando o padrão do
+     networking: matrícula do chamador pela sessão verificada, selo reconfirmado no servidor
+     e leitura cross-user **campo a campo** com Admin SDK. O documento do indicado nunca é
+     devolvido, e o `cpfHash` **não sai** da action. Só pedidos com status aprovado geram
+     repasse.
+  3. `PartnerIndicationsTable` + `/hub/partners/gestao_indicacoes`: métricas no topo, busca
+     livre e ordenação por qualquer coluna, com o detalhe dos serviços adquiridos (valor
+     pago, percentual, valor do repasse e data de corte) por indicado. Item no menu.
+- **Nota de escopo**: a coluna de ciclos de repasse (lado direito do desenho da Gestora) é a
+  Fase 4 — a tela já nasce com o espaço previsto para ela.
+- **Validação**: lint sem erro, `tsc` limpo, build exit 0 com as 5 rotas de parceiro, suíte
+  **49 arquivos / 452 testes** verde.
+
 ## [2026-08-05] Chat de execução — Fase 3, bloco 1: captura da indicação (diretório + recepção + efeito)
 
 - Chat/sessão: chat de execução, mesma branch. Fast-forward na `main` autorizado.

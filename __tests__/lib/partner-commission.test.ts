@@ -1,6 +1,9 @@
 import { describe, it, expect } from "vitest";
 import {
   parsePartnerCommissionPercent,
+  computeCommissionValue,
+  cycleIdOf,
+  cutoffDateOf,
   PARTNER_COMMISSION_MAX_PERCENT,
   PARTNER_COMMISSION_MIN_PERCENT,
 } from "@/lib/partners/commission";
@@ -45,5 +48,59 @@ describe("parsePartnerCommissionPercent", () => {
   it("rejeita string vazia (Number('') e 0 — nao pode passar por engano)", () => {
     expect(() => parsePartnerCommissionPercent("")).toThrow(/numerico/);
     expect(() => parsePartnerCommissionPercent("   ")).toThrow(/numerico/);
+  });
+});
+
+/**
+ * Valor do repasse: percentual sobre o valor EFETIVAMENTE PAGO na compra (decisao da
+ * Gestora, 2026-08-05). Erro aqui vira dinheiro errado — por isso a regra e' pura.
+ */
+describe("computeCommissionValue", () => {
+  it("aplica o percentual sobre o valor pago", () => {
+    expect(computeCommissionValue(1000, 10)).toBe(100);
+    expect(computeCommissionValue(1500, 12.5)).toBe(187.5);
+  });
+
+  it("arredonda em centavos", () => {
+    expect(computeCommissionValue(333.33, 7.5)).toBe(25);
+    expect(computeCommissionValue(99.99, 33.33)).toBe(33.33);
+  });
+
+  it("devolve zero em compra sem valor, taxa zerada ou entrada invalida", () => {
+    expect(computeCommissionValue(0, 10)).toBe(0);
+    expect(computeCommissionValue(1000, 0)).toBe(0);
+    expect(computeCommissionValue(-50, 10)).toBe(0);
+    expect(computeCommissionValue(Number.NaN, 10)).toBe(0);
+    expect(computeCommissionValue(1000, Number.POSITIVE_INFINITY)).toBe(0);
+  });
+});
+
+/**
+ * Ciclo e data de corte: a compra entra no ciclo do MES CIVIL em que foi feita, e o
+ * corte e' o ultimo dia desse mes (decisao da Gestora, 2026-08-05).
+ *
+ * A suite roda em UTC (vitest.config), igual a producao — e' o que expoe o erro de
+ * fuso: 31/01 as 22:00 BRT ja e 01/02 em UTC (mesma classe do BUG-093).
+ */
+describe("cycleIdOf e cutoffDateOf", () => {
+  it("usa o mes civil da compra", () => {
+    expect(cycleIdOf("2026-08-05T14:00:00.000Z")).toBe("2026-08");
+    expect(cutoffDateOf("2026-08-05T14:00:00.000Z")).toBe("2026-08-31");
+  });
+
+  it("resolve o mes no fuso de Brasilia, nao no do servidor", () => {
+    // 31/01/2026 as 22:00 BRT = 01/02/2026 01:00 UTC. O ciclo e' o de JANEIRO.
+    expect(cycleIdOf("2026-02-01T01:00:00.000Z")).toBe("2026-01");
+    expect(cutoffDateOf("2026-02-01T01:00:00.000Z")).toBe("2026-01-31");
+  });
+
+  it("acerta o ultimo dia de meses curtos e de fevereiro bissexto", () => {
+    expect(cutoffDateOf("2026-04-10T12:00:00.000Z")).toBe("2026-04-30");
+    expect(cutoffDateOf("2026-02-10T12:00:00.000Z")).toBe("2026-02-28");
+    expect(cutoffDateOf("2028-02-10T12:00:00.000Z")).toBe("2028-02-29");
+  });
+
+  it("recusa data invalida em vez de inventar um ciclo", () => {
+    expect(() => cycleIdOf("nao-e-data")).toThrow(/invalida/);
   });
 });

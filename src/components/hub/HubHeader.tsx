@@ -181,6 +181,7 @@ export function HubHeader() {
             items: [
               { href: "/hub/partners", icon: Handshake, label: BPLEN_NOMENCLATURE.navigation.partner_area },
               { href: "/hub/partners/gestao_agenda", icon: CalendarDays, label: "Gestão de Agenda" },
+              { href: "/hub/partners/gestao_indicacoes", icon: Users, label: "Gestão de Indicações" },
             ],
           },
         ]
