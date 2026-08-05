@@ -1524,8 +1524,8 @@
     "workflow": [],
     "deliverySteps": [
       {
-        "id": "ss-content-tour_guided_parceiro",
-        "type": "content",
+        "id": "ss-tour-tour_guided_parceiro",
+        "type": "tour",
         "referenceId": "tour_guided_parceiro",
         "title": "Introdução",
         "description": "Conheça a BPlen HUB para Parceiros",

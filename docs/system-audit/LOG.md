@@ -24,6 +24,29 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-05] Chat de execução — Jornada de parceria completa em produção; parser recusa em vez de normalizar
+
+- Chat/sessão: chat de execução, mesma branch. Fast-forward na `main` autorizado.
+- **Decisão da Gestora — "vamos evitar normalizações"**: a normalização de tipo de parada
+  (`forms` -> `form`) que eu havia acrescentado foi **removida**. Ela tem razão: corrigir o
+  dado dela em silêncio esconde o erro e faz a planilha divergir do que foi de fato importado.
+  No lugar entrou **recusa explícita**, que é o oposto de mexer no dado: o parser para e diz
+  a aba, a LINHA, o serviço, o tipo inválido e a lista de tipos válidos. Sem isso o payload
+  quebraria só na validação final, com uma mensagem que não aponta onde.
+- **Constante `VALID_CHECKPOINT_TYPES`** no parser, espelhando `ContentType`
+  (`src/types/journey.ts`) e `DeliveryStepSchema` (`src/lib/validations/portfolio.ts`) — os
+  três precisam andar juntos, e o comentário registra isso nos três lugares.
+- **Reimportação refeita** com a planilha corrigida pela Gestora (`content` -> `tour` na
+  parada de Introdução; `forms` -> `form` no cadastro). Checagem somente leitura antes:
+  0 a criar, 0 a arquivar. Produção segue com **15 produtos** e a jornada de parceria completa:
+  - `BPP-001 Jornada de Parceiro`: tour, survey (check-in), form (cadastro), contract
+    (formalização), meeting (onboarding);
+  - `BPP-002 Configuração de Networking`: action para `/hub/profile_settings`;
+  - `BPP-003 Ativação de Parceria`: action para `/hub/partners`.
+- **Validação**: `tsc` limpo, build exit 0, suíte 51/480 verde.
+- **Estado da expansão**: Fases 0 a 5 entregues, configuração feita pela Gestora, dado em
+  produção. Falta a validação funcional dela ponta a ponta com o usuário de teste 002.
+
 ## [2026-08-05] Chat de execução — Reimportação do portfólio executada + trava de acesso da jornada de parceria
 
 - Chat/sessão: chat de execução, mesma branch. Fast-forward na `main` autorizado.

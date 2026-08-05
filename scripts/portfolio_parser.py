@@ -268,6 +268,13 @@ except KeyError:
 
 
 # 4. PARSE CHECKPOINTS FROM EXCEL (READ ONLY)
+# Espelha `ContentType` (src/types/journey.ts) e `DeliveryStepSchema`
+# (src/lib/validations/portfolio.ts). Os tres precisam andar juntos.
+VALID_CHECKPOINT_TYPES = {
+    "survey", "form", "meeting", "content", "upload", "feedback",
+    "action", "contract", "tour",
+}
+
 print("\nStep 4: Reading checkpoints from 'Checkpoints' sheet...")
 try:
     cp_sheet = wb_config["Checkpoints"]
@@ -300,17 +307,15 @@ try:
         order = cp_sheet.cell(row=r, column=4).value
         title = str(cp_sheet.cell(row=r, column=5).value or "").strip()
         type_val = str(cp_sheet.cell(row=r, column=6).value or "").strip()
-        # Planilha e preenchida a mao: plural e caixa alta sao o erro tipico, e um
-        # tipo invalido derruba a validacao do payload INTEIRO depois de tudo
-        # parseado. Normalizar aqui e' mais util do que recusar no fim.
-        TYPE_ALIASES = {"forms": "form", "surveys": "survey", "meetings": "meeting",
-                        "contents": "content", "uploads": "upload", "actions": "action",
-                        "contracts": "contract", "tours": "tour"}
-        if type_val.lower() in TYPE_ALIASES:
-            print(f"    * NOTA linha {r}: tipo '{type_val}' normalizado para '{TYPE_ALIASES[type_val.lower()]}'.")
-            type_val = TYPE_ALIASES[type_val.lower()]
-        elif type_val != type_val.lower():
-            type_val = type_val.lower()
+        # Sem normalizacao (decisao da Gestora, 2026-08-05): corrigir o dado dela em
+        # silencio esconde o erro e faz a planilha divergir do que foi importado. O
+        # parser RECUSA e diz ONDE — um tipo invalido derrubaria a validacao do
+        # payload inteiro la na frente, com uma mensagem que nao aponta a linha.
+        if type_val not in VALID_CHECKPOINT_TYPES:
+            raise SystemExit(
+                f"ERRO na aba Checkpoints, linha {r} (servico {service_code}): "
+                f"tipo '{type_val}' nao existe. Tipos validos: {', '.join(sorted(VALID_CHECKPOINT_TYPES))}."
+            )
         ref_id = str(cp_sheet.cell(row=r, column=7).value or "").strip()
         desc = str(cp_sheet.cell(row=r, column=8).value or "").strip()
 
