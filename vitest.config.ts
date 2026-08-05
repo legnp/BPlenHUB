@@ -19,6 +19,11 @@ export default defineConfig({
     env: { TZ: 'UTC' },
     globals: true,
     setupFiles: ['./vitest.setup.ts'],
-    exclude: ['node_modules', 'scripts/**'],
+    // `'node_modules'` (sem glob) casa SO com a pasta da raiz. Quando surgiu um
+    // git worktree em `.claude/worktrees/`, a suite passou a varrer o
+    // `node_modules` de dentro dele e a rodar teste de biblioteca de terceiros
+    // (zod, svix, tailwind/typography) — 61 falhas que nao sao do projeto. O
+    // worktree tambem traz uma copia inteira do repo, que duplicava a suite.
+    exclude: ['**/node_modules/**', 'scripts/**', '.claude/**'],
   },
 })
