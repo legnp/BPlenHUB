@@ -221,7 +221,7 @@ export async function bookEventAction(
         leadInfo: leadInfo || null,
         stageId: origin?.stageId ?? null,
         subStepId: origin?.subStepId ?? null,
-        serviceLabel: origin?.serviceLabel ?? null,
+        serviceLabel: origin?.serviceLabel ?? oneToOneData?.type ?? null,
         // Fluxo em que a reserva nasceu — auditoria de quem ocupou a vaga compartilhada.
         audience: isPartnerBooking ? "partner" : "member",
         // Marca a reserva que DE FATO debitou cota 1:1 (BUG-013). O estorno no
@@ -244,7 +244,7 @@ export async function bookEventAction(
           oneToOneData: oneToOneData || null,
           stageId: origin?.stageId ?? null,
           subStepId: origin?.subStepId ?? null,
-          serviceLabel: origin?.serviceLabel ?? null,
+          serviceLabel: origin?.serviceLabel ?? oneToOneData?.type ?? null,
           attendanceStatus: "pending"
         }, { merge: true });
       }

@@ -528,8 +528,8 @@ function BookingRow({
       {/* Event Name + Theme */}
       <div className="min-w-0">
         <p className="text-xs font-black text-[var(--text-primary)] truncate leading-tight">{event.summary}</p>
-        {event.theme && (
-          <span className="text-[9px] font-medium text-[var(--accent-start)] opacity-60 truncate block mt-0.5"># {event.theme}</span>
+        {(booking.serviceLabel || event.theme) && (
+          <span className="text-[9px] font-medium text-[var(--accent-start)] opacity-60 truncate block mt-0.5"># {booking.serviceLabel || event.theme}</span>
         )}
       </div>
 
@@ -674,7 +674,7 @@ export function BookingDetailModal({
       isOpen={isOpen}
       onClose={onClose}
       title={event.summary}
-      subtitle={event.theme ? `# ${event.theme}` : undefined}
+      subtitle={(booking.serviceLabel || event.theme) ? `# ${booking.serviceLabel || event.theme}` : undefined}
       maxWidth="max-w-2xl"
     >
       <div className="space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar pr-2">

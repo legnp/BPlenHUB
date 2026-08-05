@@ -23,10 +23,9 @@ export interface CalendarEventType {
   /** Titulo EXATO do evento no Google Calendar com que este tipo casa. */
   googleTitle: string;
   /**
-   * Consultor padrao das ocorrencias deste tipo. Nasce como "a definir" (decisao
-   * da Gestora) para criar fila de trabalho visivel em vez de um padrao
-   * inventado. A atribuicao por ocorrencia (Fase 3.2) sobrescreve este valor —
-   * e "atribuicao", nunca "substituicao".
+   * Consultor padrao das ocorrencias deste tipo — ver `CONSULTOR_PADRAO`. A
+   * atribuicao por ocorrencia (Fase 3.2) sobrescreve este valor; e "atribuicao",
+   * nunca "substituicao".
    */
   consultorPadrao: string;
   /** Vagas padrao das ocorrencias deste tipo. */
@@ -57,8 +56,17 @@ export interface CalendarEventType {
   partnerDemandOptions?: string[];
 }
 
-/** Valor inicial do consultor, ate a Gestora atribuir (ver 8.2 do design). */
-export const CONSULTOR_A_DEFINIR = "a definir";
+/**
+ * Consultor padrao das ocorrencias de um tipo.
+ *
+ * ATENCAO — isto REVERTE, a pedido da Gestora (2026-08-05), a decisao registrada na
+ * secao 8.2 do AGENDA-SYNC-DESIGN, que fazia o campo nascer como "a definir" para
+ * criar fila de trabalho visivel em vez de um padrao inventado. O padrao deixou de ser
+ * inventado: hoje a BPlen tem uma consultora, e a atribuicao por ocorrencia continua
+ * disponivel no admin para quando houver mais. A estrutura ja esta pronta para virar
+ * lista suspensa quando o papel de consultor existir como usuario (secao 8.6).
+ */
+export const CONSULTOR_PADRAO = "Lisandra Lencina";
 
 /**
  * Os 5 tipos da lista fechada aprovada pela Gestora. Servem de seed quando a
@@ -78,7 +86,7 @@ export const DEFAULT_EVENT_TYPES: CalendarEventType[] = [
     id: "1-to-1",
     label: "1 to 1",
     googleTitle: "1 to 1",
-    consultorPadrao: CONSULTOR_A_DEFINIR,
+    consultorPadrao: CONSULTOR_PADRAO,
     vagasPadrao: 1,
     atende: [],
   },
@@ -86,7 +94,7 @@ export const DEFAULT_EVENT_TYPES: CalendarEventType[] = [
     id: "consultoria-individual",
     label: "Consultoria Individual",
     googleTitle: "Consultoria Individual",
-    consultorPadrao: CONSULTOR_A_DEFINIR,
+    consultorPadrao: CONSULTOR_PADRAO,
     vagasPadrao: 1,
     atende: [],
   },
@@ -94,7 +102,7 @@ export const DEFAULT_EVENT_TYPES: CalendarEventType[] = [
     id: "consultoria-em-grupo",
     label: "Consultoria em Grupo",
     googleTitle: "Consultoria em Grupo",
-    consultorPadrao: CONSULTOR_A_DEFINIR,
+    consultorPadrao: CONSULTOR_PADRAO,
     vagasPadrao: 10,
     atende: [],
   },
@@ -102,7 +110,7 @@ export const DEFAULT_EVENT_TYPES: CalendarEventType[] = [
     id: "onboarding",
     label: "Onboarding",
     googleTitle: "Onboarding",
-    consultorPadrao: CONSULTOR_A_DEFINIR,
+    consultorPadrao: CONSULTOR_PADRAO,
     vagasPadrao: 10,
     atende: [],
   },
@@ -110,7 +118,7 @@ export const DEFAULT_EVENT_TYPES: CalendarEventType[] = [
     id: "offboarding",
     label: "Offboarding",
     googleTitle: "Offboarding",
-    consultorPadrao: CONSULTOR_A_DEFINIR,
+    consultorPadrao: CONSULTOR_PADRAO,
     vagasPadrao: 10,
     atende: [],
   },

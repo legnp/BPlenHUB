@@ -24,6 +24,33 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-05] Chat de execucao — Fases 3 e 4 do afinamento dos agendamentos
+
+- Estado conferido antes de retomar (sonda read-only): **a sincronizacao da agenda rodou
+  e as vagas voltaram** — 1-to-1=1, Consultoria Individual=1, Consultoria em Grupo=10,
+  Onboarding=10, Offboarding=10 gravados nos eventos futuros. A Fase 1 esta de pe.
+- **Achado do estado:** existe um 6o tipo, `onboarding-de-parceiros`, criado DEPOIS da
+  ultima sincronizacao — por isso os 26 eventos "Onboarding de Parceiros" ainda estao com
+  `tipoId: null` e **capacidade 0** (que o guard trata como ilimitado). Basta rodar o sync
+  de novo para classificar e capar. Nao mexi: a Gestora pediu para nao tocar em parceiros.
+- **Fase 4 — consultor padrao.** `CONSULTOR_A_DEFINIR` ("a definir") virou
+  `CONSULTOR_PADRAO` ("Lisandra Lencina"). Isto REVERTE a decisao da secao 8.2 do
+  AGENDA-SYNC-DESIGN, e o comentario no ponto de mudanca registra a reversao — o padrao
+  deixou de ser inventado. `scripts/set-consultor-padrao.js` (dry-run por padrao)
+  aplicado na configuracao viva: **6 de 6 tipos** atualizados, conferido depois.
+- **Fase 3 — o motivo vira o rotulo.** Outra sessao (trilha de Parceiros) ja havia
+  generalizado a coleta: `demandOptions`/`partnerDemandOptions` por tipo e por audiencia,
+  no lugar da lista global do 1 to 1. Construi em cima em vez de duplicar: sem parada de
+  origem (agendamento avulso), o `serviceLabel` passa a vir do motivo escolhido, e o
+  `UserBookings` exibe `serviceLabel` com o tema do evento como fallback. Como nenhum
+  evento tem mais `theme`, era esse fallback que estava deixando a linha sem rotulo.
+- Validado: eslint dos arquivos tocados 0 erros, type-check limpo, **483 testes** verdes,
+  build exit 0.
+- **Fase 2 segue nao iniciada** (confirmado por busca: nenhum `overrideTema`/`subStepId`
+  no lado do evento). E a atribuicao, no admin, de qual parada do GDC cada ocorrencia de
+  Consultoria em Grupo atende. Ha uma decisao pendente da Gestora antes de codar: slot de
+  grupo AINDA sem atribuicao deve aparecer para as 10 paradas (como hoje) ou para nenhuma?
+
 ## [2026-08-04] Chat de execucao — pagina publica de Parceiros sem vitrine de servicos
 
 - Pedido pontual da Gestora: em `/servicos/parceiros`, ocultar TODOS os servicos e

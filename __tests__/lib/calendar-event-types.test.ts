@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { DEFAULT_EVENT_TYPES, CONSULTOR_A_DEFINIR } from "@/types/calendar-event-types";
+import { DEFAULT_EVENT_TYPES, CONSULTOR_PADRAO } from "@/types/calendar-event-types";
 import { normalizeEventTitle, resolveEventTypeByTitle } from "@/lib/calendar/event-title";
 
 /**
@@ -40,9 +40,12 @@ describe("lista fechada de tipos de evento", () => {
     expect(new Set(chaves).size).toBe(chaves.length);
   });
 
-  it("consultor padrao nasce 'a definir', nao um nome inventado", () => {
+  it("consultor padrao nasce preenchido (reverte a decisao de 8.2, a pedido da Gestora)", () => {
+    // Era "a definir" para criar fila de trabalho visivel. Hoje o padrao nao e
+    // inventado — a atribuicao por ocorrencia segue disponivel no admin.
+    expect(CONSULTOR_PADRAO).toBe("Lisandra Lencina");
     for (const t of DEFAULT_EVENT_TYPES) {
-      expect(t.consultorPadrao).toBe(CONSULTOR_A_DEFINIR);
+      expect(t.consultorPadrao).toBe(CONSULTOR_PADRAO);
     }
   });
 
