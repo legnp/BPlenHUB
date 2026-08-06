@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Compass, Target, ChevronRight, ArrowLeft } from "lucide-react";
 import { useAuthContext } from "@/context/AuthContext";
@@ -26,24 +26,20 @@ export function MemberJourneyHero({ showAction = false, variant = "default" }: M
   
   // Journey Integration
   const { stages, progress, loading, getStageTelemetry } = useJourney(user?.uid || "guest");
-  const [activeStageId, setActiveStageId] = useState<string>("onboarding");
-
-  // Sincronizar estágio ativo baseado no progresso
-  useEffect(() => {
-    if (progress?.lastActiveStepId) {
-       setActiveStageId(progress.lastActiveStepId);
-    } else if (stages.length > 0) {
-       setActiveStageId(stages[0].id);
-    }
-  }, [progress, stages]);
+  // Estágio ativo é derivado dos dados, não guardado em estado: nada mais no
+  // componente o altera, e derivar elimina o render inicial com valor errado que
+  // o efeito anterior corrigia num segundo passo. Mantém a mesma precedência:
+  // último passo ativo, senão o primeiro estágio, senão "onboarding".
+  const activeStageId = progress?.lastActiveStepId || stages[0]?.id || "onboarding";
   
   // Otimização: Memoizar o mapa de status para evitar re-cálculos caros no render 🚀
+  const steps = progress?.steps;
   const stepStatusMap = useMemo(() => {
-    if (!progress?.steps) return {};
+    if (!steps) return {};
     return Object.fromEntries(
-      Object.entries(progress.steps).map(([k, v]) => [k, v.status])
+      Object.entries(steps).map(([k, v]) => [k, v.status])
     );
-  }, [progress?.steps]);
+  }, [steps]);
 
   // Removido o return null para suportar renderização progressiva.
   // O JourneyNav interno lidará com o estado vazio se necessário.

@@ -1,8 +1,8 @@
 # T-06 — Correção dos 16 erros de lint do React Compiler
 
-**Status:** Onda 1 concluída (parcial). Ondas 2 e 3 abertas.
+**Status:** Ondas 1 e 2 concluídas. Onda 3 aberta (9 erros restantes).
 **Aberto em:** 2026-08-06
-**Última atualização:** 2026-08-06 — Onda 1 executada; `admin/partners` reclassificado para a Onda 3 (ver 6.1).
+**Última atualização:** 2026-08-06 — Onda 2 concluída sem supressão e levando junto o `MemberJourneyHero:34` (ver 7.1, 8.2 e 8.2.1).
 
 ---
 
@@ -196,12 +196,26 @@ não há nada que assuma o lugar da memoização manual. Removê-la faria o
 na Área de Membro — regressão real de performance, em nome de satisfazer uma
 regra que fiscaliza um compilador desligado.
 
-Correção correta: `// eslint-disable-next-line react-hooks/preserve-manual-memoization`
-acompanhada de comentário justificando, no mesmo espírito do override que
-`eslint.config.mjs` já mantém para `scripts/` e `templates/`.
+**RESOLVIDO EM 2026-08-06 — e sem supressão.** O plano previa
+`eslint-disable-next-line` com justificativa. Antes de recorrer a isso, testou-se
+o conserto real, que funcionou: a regra reclamava do optional chaining
+`progress?.steps` usado como dependência do `useMemo`. Extrair para uma const
+local resolve, mantendo a memoização e sem alterar comportamento:
 
-**Reavaliar quando:** o React Compiler for habilitado em `next.config.ts`. Nesse
-dia, a supressão deve ser removida e a memoização manual reavaliada de verdade.
+```ts
+const steps = progress?.steps;
+const stepStatusMap = useMemo(() => {
+  if (!steps) return {};
+  return Object.fromEntries(
+    Object.entries(steps).map(([k, v]) => [k, v.status])
+  );
+}, [steps]);
+```
+
+**Aprendizado para a Onda 3:** antes de suprimir uma regra do React Compiler,
+verificar se ela não está apontando para um detalhe de escrita — optional chaining
+em dependência, expressão complexa no array de deps — que tem conserto trivial e
+sem risco. A supressão é último recurso, não primeiro.
 
 ---
 
@@ -248,20 +262,39 @@ navegador (abrir o formulário com Master CV preenchido, conferir prefill; salva
 sair e voltar, conferir restauração), e só então replicar o padrão validado nos
 outros quatro.
 
-### 8.2. `src/components/hub/MemberJourneyHero.tsx:34`
+### 8.2. `src/components/hub/MemberJourneyHero.tsx:34` — RESOLVIDO EM 2026-08-06
 
-Situação: efeito com dependências `[progress, stages]` que ressincroniza
-`activeStageId` para `progress.lastActiveStepId`, ou para `stages[0].id` quando
-não há progresso.
+Resolvido junto com a Onda 2, por necessidade: os dois erros viviam no **mesmo
+arquivo**, e o `lint-staged` exige o arquivo inteiro limpo para permitir o commit.
+Ver o aprendizado em 8.2.1.
 
-Efeito colateral atual: sempre que `progress` muda de identidade (por exemplo, ao
-chegar atualização de dados), a seleção manual de estágio feita pelo usuário é
-desfeita e volta para `lastActiveStepId`. Corrigir elimina esse salto — comportamento
-observável que pode surpreender quem já se acostumou.
+**A avaliação de risco original estava errada.** O plano supunha que corrigir esse
+efeito mudaria comportamento observável, desfazendo a "seleção manual de estágio
+do usuário". Ao mapear o arquivo, constatou-se que `setActiveStageId` **só é
+chamado dentro do próprio efeito** — nada mais no componente altera esse estado, e
+o único outro uso é a leitura em `currentStepId={activeStageId}`. Não existe
+seleção manual. Era estado derivado guardado em `useState` sem necessidade.
 
-Atenção: `stages` chega assíncrono via `useJourney`. O valor inicial de
-`activeStageId` é a string fixa `"onboarding"`. Qualquer correção precisa
-preservar o comportamento de assumir o primeiro estágio quando a lista carrega.
+Correção aplicada: remover estado e efeito, derivando no render com a mesma
+precedência do código anterior.
+
+```ts
+const activeStageId = progress?.lastActiveStepId || stages[0]?.id || "onboarding";
+```
+
+Usa `||` e não `??` de propósito, para reproduzir a semântica de veracidade do
+`if` original. Ganho adicional: elimina o render inicial com `"onboarding"` que o
+efeito depois corrigia num segundo passo.
+
+### 8.2.1. Aprendizado: dividir ondas por ARQUIVO, não por regra
+
+O plano original agrupou os erros por regra de lint. Isso quebrou na prática: o
+`MemberJourneyHero` tinha um item na Onda 2 e outro na Onda 3, e como o hook de
+pre-commit reprova o arquivo inteiro, a Onda 2 não podia ser commitada sozinha.
+
+**Para o resto da Onda 3:** verificar antes quantos erros cada arquivo tem, e
+tratar arquivo por arquivo até zerar. Um arquivo com erro remanescente não entra
+em commit nenhum.
 
 ### 8.3. `src/app/admin/partners/page.tsx` (reclassificado da Onda 1)
 
@@ -356,7 +389,18 @@ atualização" no topo do documento.
 | Onda | Erros | Status | Branch / PR | Concluída em |
 | --- | --- | --- | --- | --- |
 | 1 — purity (`ConfettiCheckbox`) | 5 | **Concluída** | `fix/lint-onda-1-purity-immutability` | 2026-08-06 |
-| 2 — memoização (suprimir) | 1 | Aberta | — | — |
-| 3 — set-state-in-effect + `admin/partners` | 10 | Aberta | — | — |
+| 2 — `MemberJourneyHero` (memoização + efeito) | 2 | **Concluída** | `fix/lint-onda-2-memoizacao` | 2026-08-06 |
+| 3 — set-state-in-effect + `admin/partners` | 9 | Aberta | — | — |
 
-Contagem de erros: 16 na abertura, **11** após a Onda 1.
+Contagem de erros: 16 na abertura, 11 após a Onda 1, **9** após a Onda 2.
+
+Duas correções ao plano original, ambas descobertas ao executar:
+
+1. A Onda 2 foi resolvida com conserto real, não com a supressão prevista (ver 7.1).
+2. Levou junto o item `MemberJourneyHero:34`, que era da Onda 3, porque os dois
+   erros dividiam o mesmo arquivo e o hook de pre-commit reprova arquivo parcial.
+   A avaliação de risco daquele item também estava errada — ver 8.2 e 8.2.1.
+
+**Restam 9 erros na Onda 3**, distribuídos assim por arquivo: 5 campos `Cv*`
+(1 cada), `hub/journey/[stepId]/page.tsx` (2), `admin/marketing/page.tsx` (1) e
+`admin/partners/page.tsx` (1, `immutability`).
