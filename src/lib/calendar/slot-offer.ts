@@ -19,7 +19,7 @@ import type { CalendarEventType } from "@/types/calendar-event-types";
  * inteiro se houver cancelamento ou remarcacao.
  */
 
-type SlotLike = { tipoId?: string | null };
+type SlotLike = { tipoId?: string | null; subStepId?: string | null };
 
 /** O tipo configurado para este slot, ou null se o evento nao foi classificado. */
 export function resolveSlotType(
@@ -68,4 +68,27 @@ export function resolveSlotCapacity(
     return tipo.vagasPadrao;
   }
   return Number.isFinite(descriptionCapacity) && descriptionCapacity > 0 ? descriptionCapacity : 0;
+}
+
+/**
+ * Este slot pode ser oferecido NESTA parada?
+ *
+ * Refina `slotServesStage` com a atribuicao por ocorrencia (Fase 3.2):
+ *
+ * - slot JA atribuido a uma parada -> serve so ela. E o que faz cada tema do GDC
+ *   mostrar apenas os horarios daquele tema.
+ * - slot SEM atribuicao -> so entra na oferta se o tipo nao exigir parada. Para a
+ *   Consultoria em Grupo isso significa nenhuma oferta ate a Gestora atribuir
+ *   (decisao dela, 2026-08-05): melhor sem horario do que com horario cujo tema
+ *   ninguem decidiu. Para a Consultoria Individual, que e polivalente, segue valendo.
+ */
+export function slotServesCheckpoint(
+  slot: SlotLike,
+  types: readonly CalendarEventType[],
+  serviceCode: string | undefined | null,
+  subStepId: string | undefined | null
+): boolean {
+  if (!slotServesStage(slot, types, serviceCode)) return false;
+  if (slot.subStepId) return slot.subStepId === subStepId;
+  return !resolveSlotType(slot, types)?.exigeParada;
 }

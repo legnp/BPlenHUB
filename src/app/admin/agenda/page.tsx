@@ -21,6 +21,8 @@ import {
   Loader2
 } from "lucide-react";
 import { getOneToOneTypes, updateOneToOneTypes } from "@/actions/OneToOneActions";
+import { getJourneyStagesAction } from "@/actions/journey";
+import { assignEventCheckpointAction } from "@/actions/calendar";
 import { getCalendarEventTypes, updateCalendarEventTypes } from "@/actions/calendar-event-types";
 import { getAdminProducts } from "@/actions/products";
 import { CalendarEventType } from "@/types/calendar-event-types";
@@ -58,6 +60,12 @@ export default function AgendaManagementPage() {
   const [eventTypes, setEventTypes] = useState<CalendarEventType[]>([]);
   const [servicos, setServicos] = useState<{ serviceCode: string; title: string }[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+  /**
+   * Paradas atribuiveis por serviceCode (Fase 3.2). Um slot de tipo `exigeParada` so
+   * entra na oferta do membro depois de ser ligado a uma delas.
+   */
+  const [paradasPorServico, setParadasPorServico] = useState<Record<string, { id: string; title: string }[]>>({});
+  const [atribuindo, setAtribuindo] = useState<string>("");
 
   // Carregar preview dos eventos já sincronizados
   useEffect(() => {
@@ -72,11 +80,21 @@ export default function AgendaManagementPage() {
         setOneToOneTypes(types);
 
         // Tipos de evento + catalogo de servicos para o campo "atende"
-        const [tiposEvento, produtos] = await Promise.all([
+        const [tiposEvento, produtos, etapas] = await Promise.all([
           getCalendarEventTypes(),
           getAdminProducts(),
+          getJourneyStagesAction(),
         ]);
         setEventTypes(tiposEvento);
+        setParadasPorServico(
+          etapas.reduce((acc, etapa) => {
+            if (!etapa.serviceCode) return acc;
+            acc[etapa.serviceCode] = etapa.substeps
+              .filter(ss => ss.type === "meeting")
+              .map(ss => ({ id: ss.id, title: ss.title }));
+            return acc;
+          }, {} as Record<string, { id: string; title: string }[]>)
+        );
         setServicos(
           produtos
             .filter(p => p.serviceCode)
@@ -91,6 +109,33 @@ export default function AgendaManagementPage() {
     }
     load();
   }, []);
+
+  /**
+   * Paradas oferecidas para ESTE evento: as dos servicos que o tipo dele atende. Lista
+   * vazia = o tipo nao exige atribuicao (ou nao atende servico com sessao).
+   */
+  const paradasDoEvento = (event: GoogleCalendarEvent): { id: string; title: string }[] => {
+    const tipo = eventTypes.find(t => t.id === event.tipoId);
+    if (!tipo?.exigeParada) return [];
+    return (tipo.atende || []).flatMap(codigo => paradasPorServico[codigo] || []);
+  };
+
+  const handleAtribuirParada = async (eventId: string, subStepId: string) => {
+    setAtribuindo(eventId);
+    try {
+      const res = await assignEventCheckpointAction(eventId, subStepId || null);
+      if (!res.success) {
+        setError(res.message || "Erro ao atribuir a parada.");
+        return;
+      }
+      // Espelha em memoria em vez de re-buscar a lista inteira por um campo.
+      setSyncedEvents(anteriores =>
+        anteriores.map(ev => (ev.id === eventId ? { ...ev, subStepId: subStepId || null } : ev))
+      );
+    } finally {
+      setAtribuindo("");
+    }
+  };
 
   const handleSync = async () => {
     setIsSyncing(true);
@@ -508,6 +553,27 @@ export default function AgendaManagementPage() {
                     {event.start && format(new Date(event.start), "HH:mm")}&ndash;{event.end && format(new Date(event.end), "HH:mm")}
                   </span>
                 </div>
+
+                {paradasDoEvento(event).length > 0 && (
+                  <div className="hidden lg:flex items-center gap-2 shrink-0 w-[260px]">
+                    <select
+                      value={event.subStepId || ""}
+                      disabled={atribuindo === event.id}
+                      onChange={(e) => handleAtribuirParada(event.id, e.target.value)}
+                      className={`w-full px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-all focus:outline-none disabled:opacity-40 ${
+                        event.subStepId
+                          ? "bg-[var(--input-bg)] border-[var(--border-primary)] text-[var(--text-primary)]"
+                          : "bg-amber-500/10 border-amber-500/40 text-amber-600"
+                      }`}
+                      title={event.subStepId ? "Parada atribuida" : "Sem parada: este horario NAO aparece para o membro"}
+                    >
+                      <option value="">Sem parada — nao ofertado</option>
+                      {paradasDoEvento(event).map(parada => (
+                        <option key={parada.id} value={parada.id}>{parada.title}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
                 <a
                   href={event.htmlLink}

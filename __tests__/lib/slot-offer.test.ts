@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { resolveSlotType, slotServesStage, resolveSlotCapacity } from "@/lib/calendar/slot-offer";
+import { resolveSlotType, slotServesStage, slotServesCheckpoint, resolveSlotCapacity } from "@/lib/calendar/slot-offer";
 import type { CalendarEventType } from "@/types/calendar-event-types";
 
 /**
@@ -85,5 +85,47 @@ describe("resolveSlotCapacity — vaga vem do tipo, nao mais do corpo do evento"
     // `isBlockerEvent`, e por isso um slot real jamais pode cair aqui por acidente.
     expect(resolveSlotCapacity(null, 0)).toBe(0);
     expect(resolveSlotCapacity(null, Number.NaN)).toBe(0);
+  });
+});
+
+describe("slotServesCheckpoint — atribuicao por ocorrencia (Fase 3.2)", () => {
+  const grupo = TIPOS.find((t) => t.id === "consultoria-em-grupo")!;
+  const TIPOS_COM_EXIGENCIA = TIPOS.map((t) =>
+    t.id === "consultoria-em-grupo" ? { ...grupo, exigeParada: true } : t
+  );
+  const PARADA_A = "ss-meeting-orientacao-em-grupo-1";
+  const PARADA_B = "ss-meeting-orientacao-em-grupo-2";
+
+  it("slot de grupo SEM atribuicao nao e ofertado a parada nenhuma", () => {
+    // Decisao da Gestora: melhor o GDC sem horario do que com horario cujo tema
+    // ninguem decidiu.
+    const slot = { tipoId: "consultoria-em-grupo" };
+    expect(slotServesCheckpoint(slot, TIPOS_COM_EXIGENCIA, "BPL-004", PARADA_A)).toBe(false);
+    expect(slotServesCheckpoint(slot, TIPOS_COM_EXIGENCIA, "BPL-004", PARADA_B)).toBe(false);
+  });
+
+  it("slot de grupo atribuido serve SO a parada dele", () => {
+    const slot = { tipoId: "consultoria-em-grupo", subStepId: PARADA_A };
+    expect(slotServesCheckpoint(slot, TIPOS_COM_EXIGENCIA, "BPL-004", PARADA_A)).toBe(true);
+    expect(slotServesCheckpoint(slot, TIPOS_COM_EXIGENCIA, "BPL-004", PARADA_B)).toBe(false);
+  });
+
+  it("Consultoria Individual segue polivalente mesmo sem atribuicao", () => {
+    const slot = { tipoId: "consultoria-individual" };
+    expect(slotServesCheckpoint(slot, TIPOS_COM_EXIGENCIA, "BPL-005", "qualquer-parada")).toBe(true);
+    expect(slotServesCheckpoint(slot, TIPOS_COM_EXIGENCIA, "BPL-002", "outra-parada")).toBe(true);
+  });
+
+  it("atribuicao tem precedencia mesmo em tipo polivalente", () => {
+    // Se a Gestora atribuir uma Consultoria Individual a uma parada, o slot passa a
+    // servir so ela — atribuicao explicita vale mais que o padrao do tipo.
+    const slot = { tipoId: "consultoria-individual", subStepId: "ss-meeting-devolutiva" };
+    expect(slotServesCheckpoint(slot, TIPOS_COM_EXIGENCIA, "BPL-002", "ss-meeting-devolutiva")).toBe(true);
+    expect(slotServesCheckpoint(slot, TIPOS_COM_EXIGENCIA, "BPL-002", "outra")).toBe(false);
+  });
+
+  it("servico que o tipo nao atende continua fora, atribuido ou nao", () => {
+    const slot = { tipoId: "consultoria-em-grupo", subStepId: PARADA_A };
+    expect(slotServesCheckpoint(slot, TIPOS_COM_EXIGENCIA, "BPL-005", PARADA_A)).toBe(false);
   });
 });

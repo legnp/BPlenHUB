@@ -30,7 +30,7 @@ import { useTourStore } from "@/store/tour-store";
 import { partnerOnboardingSteps } from "@/config/tour/partner-onboarding";
 import { getSurveyConfig } from "@/config/surveys";
 import { eventMatchesSubstep, bookingMatchesSubstep } from "@/lib/journey/booking-match";
-import { slotServesStage } from "@/lib/calendar/slot-offer";
+import { slotServesCheckpoint } from "@/lib/calendar/slot-offer";
 import { getCalendarEventTypes } from "@/actions/calendar-event-types";
 import { useAuthContext } from "@/context/AuthContext";
 import { BPLEN_NOMENCLATURE } from "@/config/nomenclature";
@@ -114,7 +114,7 @@ export function StepRenderer({ substep, status, onComplete, context = "member_jo
       // (Fase 3.3). O casamento por texto fica como fallback para evento ainda sem
       // tipo — com os titulos genericos, nenhuma palavra-chave casa mais.
       const filteredEvents = allEvents.filter(ev =>
-        slotServesStage(ev, tipos, serviceCode) || eventMatchesSubstep(ev, substep)
+        slotServesCheckpoint(ev, tipos, serviceCode, substep.id) || eventMatchesSubstep(ev, substep)
       );
       setEvents(filteredEvents);
 

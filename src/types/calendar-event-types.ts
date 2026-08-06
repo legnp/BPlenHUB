@@ -43,6 +43,17 @@ export interface CalendarEventType {
    */
   audiences?: Array<"member" | "partner">;
   /**
+   * Este tipo so entra na oferta depois que a OCORRENCIA for atribuida a uma parada
+   * (Fase 3.2). E o caso do `consultoria-em-grupo`: as 10 paradas do GDC sao temas
+   * distintos, entao um slot sem tema definido nao pode ser oferecido — apareceria para
+   * as dez indistintamente e o membro agendaria algo que ainda nao foi decidido.
+   * Decisao da Gestora (2026-08-05): sem atribuicao, sem oferta.
+   *
+   * Ausente/false = slot polivalente, ofertado a qualquer parada dos servicos que ele
+   * atende (o caso do `consultoria-individual`).
+   */
+  exigeParada?: boolean;
+  /**
    * Motivos oferecidos ao MEMBRO ao agendar este tipo (viram o tema do agendamento).
    * Vazio/ausente = nao pergunta motivo, com uma excecao de transicao: o tipo `1-to-1`
    * cai na lista global legada, configurada na mesma tela.
@@ -105,6 +116,7 @@ export const DEFAULT_EVENT_TYPES: CalendarEventType[] = [
     consultorPadrao: CONSULTOR_PADRAO,
     vagasPadrao: 10,
     atende: [],
+    exigeParada: true,
   },
   {
     id: "onboarding",

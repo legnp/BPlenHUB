@@ -26,6 +26,13 @@ export interface GoogleCalendarEvent {
    * casado. Usado pela trava de cota 1:1 (BUG-013) via `isOneToOneEvent`.
    */
   tipoId?: string | null;
+  /**
+   * Parada da jornada a que ESTA ocorrencia foi atribuida no admin (Fase 3.2).
+   * Usada pelos tipos com `exigeParada` — hoje so a Consultoria em Grupo, cujas 10
+   * paradas do GDC sao temas distintos. Sem atribuicao, o slot nao e ofertado.
+   * Sobrevive ao sync, que grava com `merge`.
+   */
+  subStepId?: string | null;
 
   // Post-event Fields
   lifecycleStatus?: EventLifecycleStatus | null;

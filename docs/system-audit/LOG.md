@@ -24,6 +24,35 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-05] Chat de execucao — Fase 2: atribuicao do slot de grupo a parada do GDC
+
+- Fecha o afinamento dos agendamentos. **Decisao da Gestora:** slot de Consultoria em
+  Grupo AINDA sem atribuicao **nao aparece** para o membro — o GDC fica sem oferta ate
+  ela atribuir. Melhor sem horario do que com horario cujo tema ninguem decidiu.
+- Modelo: o tipo ganhou `exigeParada`, e a ocorrencia ganhou `subStepId`.
+  - `exigeParada: true` so no `consultoria-em-grupo` (as 10 paradas do GDC sao temas
+    distintos). A Consultoria Individual segue polivalente, sem exigir atribuicao.
+  - `slotServesCheckpoint` (17 testes no total no arquivo): atribuido -> serve so a
+    parada dele; sem atribuicao -> so entra na oferta se o tipo nao exigir. Atribuicao
+    explicita tem precedencia inclusive em tipo polivalente.
+- `assignEventCheckpointAction` (novo `calendar-module/event-assignment.ts`) grava com
+  **merge** de proposito: o documento do evento tambem carrega o que o sync escreve e o
+  `registeredCount` que o agendamento mantem — escrita cheia apagaria os dois.
+- **Conferido antes de codar:** o sync grava com `batch.set(..., { merge: true })`, entao
+  a atribuicao feita no admin **sobrevive** as sincronizacoes. Era o risco que mataria a
+  fase inteira.
+- Admin (`/admin/agenda`): a linha do evento ganhou um seletor de parada, so para os
+  tipos que exigem. Sem atribuicao o seletor fica **ambar** com "Sem parada — nao
+  ofertado", o que transforma a pendencia em fila de trabalho visivel em vez de silencio
+  (mesmo principio da secao 8.2 do design).
+- `exigeParada: true` aplicado tambem na configuracao viva.
+- Validado: eslint 0 erros nos arquivos tocados, type-check limpo, **488 testes** verdes,
+  build exit 0.
+- **Pendente de operacao:** (a) atribuir os 48 slots de Consultoria em Grupo no admin —
+  ate la o GDC nao oferta, como decidido; (b) rodar a sincronizacao da agenda para
+  classificar os 26 eventos "Onboarding de Parceiros", cujo tipo foi criado depois da
+  ultima rodada e que seguem com capacidade 0 (que o guard le como ilimitada).
+
 ## [2026-08-05] Chat de execucao — Fases 3 e 4 do afinamento dos agendamentos
 
 - Estado conferido antes de retomar (sonda read-only): **a sincronizacao da agenda rodou

@@ -4,6 +4,7 @@ import * as Queries from "./calendar-module/queries";
 import * as Sync from "./calendar-module/sync";
 import * as Booking from "./calendar-module/booking";
 import * as PostEvent from "./calendar-module/post-event";
+import * as EventAssignment from "./calendar-module/event-assignment";
 
 /**
  * BPlen HUB — Calendar Actions Dispatcher (Hardened 🛡️)
@@ -114,4 +115,12 @@ export async function rescheduleAttendeeAction(oldEventId: string, newEventId: s
 
 export async function baixarEventoAction(eventId: string, idToken: string) {
   return PostEvent.baixarEventoAction(eventId, idToken);
+}
+
+/**
+ * Atribui uma ocorrencia da agenda a uma parada da jornada (Fase 3.2). Ver
+ * `calendar-module/event-assignment.ts`.
+ */
+export async function assignEventCheckpointAction(eventId: string, subStepId: string | null) {
+  return EventAssignment.assignEventCheckpointAction(eventId, subStepId);
 }
