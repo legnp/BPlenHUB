@@ -173,8 +173,9 @@ Resultado real, medido em 2026-08-06:
 - `npm run test`: 485 passando, sem alteração.
 - `npm run type-check`: limpo.
 - `npm run build`: sucesso.
-- **Pendente de validação manual pelo Gestor:** página de admin de parceiros
-  carregando com uma única requisição, e aparência do efeito de confete.
+- **Validação visual do confete: aprovada pelo Gestor** em 2026-08-06, em
+  ambiente local. A nova aparência (trajetórias fixas, sem redirecionamento em
+  voo) foi considerada correta.
 
 ---
 
@@ -293,6 +294,31 @@ assíncrono, ou sincronização de prop para estado local).
 ---
 
 ## 9. Como validar cada entrega
+
+### 9.1. Validação visual: usar ambiente local, não preview da Vercel
+
+**O preview da Vercel não autentica.** Constatado em 2026-08-06: o site carrega
+normalmente (variáveis de ambiente do Preview estão corretas e não há Deployment
+Protection), mas o login falha. A causa é que `signInWithPopup`
+(`src/hooks/use-auth.ts`) exige que a origem esteja na lista de domínios
+autorizados do Firebase Auth, e essa lista é de **correspondência exata, sem
+curinga**. Cada preview ganha um domínio novo derivado do nome do branch, então
+nenhum deles está autorizado — e cadastrar um a um é inviável.
+
+Consequência: **qualquer mudança que precise de validação em área logada deve ser
+verificada localmente.** `localhost` já vem autorizado de fábrica no Firebase.
+
+```
+npm run dev
+```
+
+A solução durável seria um domínio fixo de preview (ex.: `preview.bplen.com`
+amarrado a um branch de longa vida na Vercel, e esse host cadastrado no Firebase).
+Foi avaliada e **descartada em 2026-08-06**: para validar interface, o ambiente
+local resolve melhor, recarrega na hora e não depende de DNS nem de dois painéis
+de configuração.
+
+### 9.2. Comandos
 
 ```
 npx eslint
