@@ -1,0 +1,664 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BPlen — Termo de Aliança e Parceria Estratégica (Template)</title>
+    <link rel="stylesheet" href="../sistema/tokens.css" />
+    <link rel="stylesheet" href="../sistema/chassi-a-encadernado.css" />
+    <link rel="stylesheet" href="../sistema/chassi-b-timbrado.css" />
+  </head>
+
+  <!--
+    ============================================================
+    BPlen — Termo de Aliança e Parceria Estratégica
+    Chassi B (Papel Timbrado) · A4 vertical · v1.0
+
+    Este e o instrumento formal para relacoes B2B/B2C fora do
+    checkout do HUB (parceiros de indicacao, alianca estrategica).
+    NAO e o contrato de compra de servico dentro da plataforma —
+    aquele e gerado pelo sistema (ver src/lib/contract-content.ts),
+    e-gated e nao deve ser tocado por este kit.
+
+    Conteudo juridico preservado verbatim do documento fonte
+    ("8 - BPlen (B2B e B2C) 1.Termo de Alianca e Parceria
+    Estrategica.txt"). Este template so adiciona estrutura visual
+    e converte marcadores [entre colchetes] para {{entre chaves}}.
+    Qualquer alteracao de MERITO juridico (nao so preenchimento de
+    dado variavel) exige validacao de quem responde legalmente
+    pela BPlen antes do envio a um parceiro real.
+
+    COMO USAR
+    1. Duplique este arquivo para a pasta do parceiro.
+    2. Substitua os campos {{ENTRE CHAVES}}.
+    3. Blocos marcados <!-- CONDICIONAL --> só entram se a
+       parceria for do tipo descrito no aviso — apague os que
+       não se aplicarem (o aviso amarelo não sai na impressão,
+       mas serve para você decidir agora).
+    4. Na Formalização final: mantenha APENAS o bloco
+       correspondente ao meio de assinatura realmente usado
+       (Digital ou Física) e apague o outro.
+    5. Exporte pela barra do topo: PDF, Word ou HTML.
+    ============================================================
+  -->
+
+  <body data-tipo="CTR">
+    <div class="barra-apoio nao-imprime">
+      <button type="button" onclick="document.body.classList.toggle('modo-limpo')">
+        Ocultar marcações
+      </button>
+      <span>Termo de Aliança e Parceria · Chassi B · A4</span>
+      <button type="button" onclick="exportarPdf()">PDF</button>
+      <button type="button" onclick="exportarWord()">Word</button>
+      <button type="button" onclick="exportarHtml()">HTML</button>
+    </div>
+
+    <!-- =========================================================
+         FOLHA 1 — IDENTIFICAÇÃO + PARTES + SEÇÃO 1
+         ========================================================= -->
+    <section class="folha">
+      <header class="cabecalho-b">
+        <div class="cabecalho-b__marca">
+          <img class="cabecalho-b__logo" src="../sistema/assets/bplen-logo-preto.png" alt="BPlen" />
+          <div class="cabecalho-b__linha"></div>
+          <span class="cabecalho-b__doc">Termo de Aliança e Parceria Estratégica</span>
+        </div>
+        <p class="cabecalho-b__contexto">
+          <span class="ph">{{BPL-TIPO-CTR-AAMMDDHHMM}}</span><br />v<span class="ph">{{1.0}}</span>
+        </p>
+      </header>
+
+      <div class="miolo">
+        <div class="identificacao-b">
+          <p class="identificacao-b__tipo">
+            <span class="selo-classificacao cls-confidencial ph">{{CONFIDENCIAL}}</span>
+          </p>
+          <h1 class="identificacao-b__titulo">Termo de Aliança e Parceria Estratégica</h1>
+          <div class="identificacao-b__meta">
+            <div>
+              <span class="rotulo">Parceiro</span>
+              <p class="valor"><span class="ph">{{Nome completo ou razão social do parceiro}}</span></p>
+            </div>
+            <div>
+              <span class="rotulo">Emissão</span>
+              <p class="valor"><span class="ph">{{DD/MM/AAAA}}</span></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="secao-clausulas">
+          <h2 class="secao-clausulas__titulo">Das Partes e da Natureza da Parceria</h2>
+
+          <p class="clausula__texto">
+            <strong>CONTRATADA (BPlen):</strong> LENCINA ESTRATÉGIA E GESTÃO DE NEGÓCIOS E
+            PESSOAS LTDA, inscrita no CNPJ 62.857.668/0001-07, com sede em São Paulo/SP.
+          </p>
+          <p class="clausula__texto mt-2">
+            <strong>PARCEIRO:</strong> <span class="ph">{{nome completo ou razão social}}</span>,
+            inscrito no <span class="ph">{{CPF ou CNPJ}}</span>, residente/sediado em
+            <span class="ph">{{endereço}}</span>, identificado na plataforma pelo código
+            <span class="ph">{{matrícula/ID do parceiro}}</span>.
+          </p>
+
+          <div class="clausula mt-4">
+            <p class="clausula__texto">
+              <span class="clausula__numero">Cláusula 1.1 — Do Objeto:</span> O presente Termo
+              estabelece as regras, os direitos e os deveres para a atuação do PARCEIRO na
+              indicação e captação de novos clientes para os serviços de desenvolvimento
+              profissional e ecossistema digital da BPlen HUB.
+            </p>
+          </div>
+
+          <div class="clausula">
+            <p class="clausula__texto">
+              <span class="clausula__numero">Cláusula 1.2 — Independência das Relações:</span>
+              Fica expressamente estabelecido que a figura do "Parceiro" não se confunde com a
+              de "Cliente" ou "Embaixador". O fato de o PARCEIRO ser ou já ter sido um cliente
+              da BPlen em jornadas de desenvolvimento não altera a natureza comercial deste
+              instrumento.
+            </p>
+          </div>
+
+          <div class="clausula">
+            <p class="clausula__texto">
+              <span class="clausula__numero">Cláusula 1.3 — Ausência de Vínculo Trabalhista:</span>
+              A relação ora estabelecida é de natureza estritamente civil e comercial. O
+              PARCEIRO atuará com total autonomia, sem exclusividade, sem controle de jornada,
+              sem metas obrigatórias de vendas e sem qualquer subordinação jurídica,
+              administrativa ou técnica, restando expressamente afastado qualquer vínculo
+              empregatício com a BPlen.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <footer class="rodape-b">
+        <span class="rodape-b__esquerda">BPlen · Termo de Aliança e Parceria · <span class="ph">{{BPL-TIPO-CTR-AAMMDDHHMM}}</span></span>
+        <span class="rodape-b__folio">1</span>
+        <span class="rodape-b__rubrica">
+          <span class="rodape-b__rubrica-linha"></span>
+          <span class="rodape-b__rubrica-legenda">Rubrica</span>
+        </span>
+      </footer>
+    </section>
+
+    <!-- =========================================================
+         FOLHA 2 — SEÇÃO 2 (CONDICIONAL: PARCERIA COMERCIAL/REMUNERADA)
+         ========================================================= -->
+    <section class="folha">
+      <header class="cabecalho-b">
+        <div class="cabecalho-b__marca">
+          <img class="cabecalho-b__logo" src="../sistema/assets/bplen-logo-preto.png" alt="BPlen" />
+          <div class="cabecalho-b__linha"></div>
+          <span class="cabecalho-b__doc">Termo de Aliança e Parceria Estratégica</span>
+        </div>
+        <p class="cabecalho-b__contexto">
+          <span class="ph">{{BPL-TIPO-CTR-AAMMDDHHMM}}</span><br />v<span class="ph">{{1.0}}</span>
+        </p>
+      </header>
+
+      <div class="miolo">
+        <!-- CONDICIONAL: manter esta secao inteira apenas se a parceria
+             for comercial/remunerada (comissionamento por indicacao).
+             Se for uma alianca institucional sem repasse financeiro,
+             apagar a secao 2 completa e renumerar a secao 3 -> 2 e 4 -> 3. -->
+        <div class="bloco-condicional">
+          <span class="bloco-condicional__aviso">
+            Exibido apenas se a parceria for comercial/remunerada
+          </span>
+
+          <div class="secao-clausulas">
+            <h2 class="secao-clausulas__titulo">Da Jornada, Comissionamento e Regras Financeiras</h2>
+
+            <div class="clausula">
+              <p class="clausula__texto">
+                <span class="clausula__numero">Cláusula 2.1 — A Jornada do Parceiro:</span> A
+                atuação comercial do PARCEIRO seguirá uma trilha de autonomia estruturada em 3
+                (três) etapas:
+              </p>
+              <ul class="lista-circulo mt-2">
+                <li><strong>Conexão:</strong> Ativação do cadastro e alinhamento com as
+                  diretrizes e valores da marca BPlen.</li>
+                <li><strong>Tração:</strong> Inclusão do nome do PARCEIRO na lista oficial de
+                  indicações da plataforma BPlen HUB, com liberdade total para captação de
+                  clientes.</li>
+                <li><strong>Escala:</strong> Acompanhamento do ciclo de vida dos clientes
+                  indicados, estimulando o consumo de novos pacotes (upsell) para a geração de
+                  receitas recorrentes.</li>
+              </ul>
+            </div>
+
+            <div class="clausula">
+              <p class="clausula__texto">
+                <span class="clausula__numero">Cláusula 2.2 — Da Propriedade do Cliente (Regra
+                de First-Touch):</span> Para que uma indicação seja considerada válida, o
+                cliente final deverá, no ato do seu cadastro ou compra na BPlen, selecionar o
+                PARCEIRO na lista de indicações.
+              </p>
+              <p class="clausula__paragrafo">
+                <span class="clausula__paragrafo-marca">§1º — Exclusividade de Primeira
+                Origem:</span> A indicação só será validada se for o primeiro contato do
+                cliente com a BPlen. Clientes que já possuam cadastro prévio na base de dados
+                da BPlen, provenientes de outras fontes, não serão contabilizados para o
+                PARCEIRO, mesmo que este tenha influenciado em uma nova compra ou upsell.
+              </p>
+              <p class="clausula__paragrafo">
+                <span class="clausula__paragrafo-marca">§2º — Ciclo de Vida:</span> Respeitada
+                a regra do §1º, o cliente pertencerá à carteira do PARCEIRO por tempo
+                indeterminado. O PARCEIRO será comissionado sobre todas as aquisições de
+                serviços, pacotes ou upsells realizados por este cliente enquanto este contrato
+                estiver vigente.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="rodape-b">
+        <span class="rodape-b__esquerda">BPlen · Termo de Aliança e Parceria · <span class="ph">{{BPL-TIPO-CTR-AAMMDDHHMM}}</span></span>
+        <span class="rodape-b__folio">2</span>
+        <span class="rodape-b__rubrica">
+          <span class="rodape-b__rubrica-linha"></span>
+          <span class="rodape-b__rubrica-legenda">Rubrica</span>
+        </span>
+      </footer>
+    </section>
+
+    <!-- =========================================================
+         FOLHA 3 — SEÇÃO 2, CONTINUAÇÃO (CLÁUSULAS 2.3 A 2.5)
+         ========================================================= -->
+    <section class="folha">
+      <header class="cabecalho-b">
+        <div class="cabecalho-b__marca">
+          <img class="cabecalho-b__logo" src="../sistema/assets/bplen-logo-preto.png" alt="BPlen" />
+          <div class="cabecalho-b__linha"></div>
+          <span class="cabecalho-b__doc">Termo de Aliança e Parceria Estratégica</span>
+        </div>
+        <p class="cabecalho-b__contexto">
+          <span class="ph">{{BPL-TIPO-CTR-AAMMDDHHMM}}</span><br />v<span class="ph">{{1.0}}</span>
+        </p>
+      </header>
+
+      <div class="miolo">
+        <div class="bloco-condicional">
+          <span class="bloco-condicional__aviso">
+            Continuação — exibido apenas se a parceria for comercial/remunerada
+          </span>
+
+          <div class="secao-clausulas">
+            <h2 class="secao-clausulas__titulo">
+              Da Jornada, Comissionamento e Regras Financeiras
+              <span style="color: var(--doc-tinta-4); text-transform: none; font-weight: 400">(continuação)</span>
+            </h2>
+            <div class="clausula">
+              <p class="clausula__texto">
+                <span class="clausula__numero">Cláusula 2.3 — Do Comissionamento:</span> A
+                BPlen repassará ao PARCEIRO o percentual fixo de 10% (dez por cento) sobre o
+                valor líquido efetivamente pago pelo cliente final na contratação de qualquer
+                pacote ou serviço.
+              </p>
+              <p class="clausula__paragrafo">
+                <span class="clausula__paragrafo-marca">Parágrafo único:</span> Entende-se por
+                "valor líquido" o montante final pago após a aplicação de eventuais descontos
+                promocionais, cupons ou abatimentos concedidos no momento da venda.
+              </p>
+            </div>
+
+            <div class="clausula">
+              <p class="clausula__texto">
+                <span class="clausula__numero">Cláusula 2.4 — Do Fluxo Operacional e SLA de
+                Pagamento:</span> O processo de apuração e repasse financeiro obedecerá ao
+                seguinte ciclo mensal:
+              </p>
+              <ul class="lista-circulo mt-2">
+                <li><strong>I. Apuração:</strong> Ao final de cada ciclo de faturamento, a
+                  BPlen disponibilizará ao PARCEIRO um relatório transparente com a listagem
+                  dos clientes convertidos no período e o respectivo cálculo da comissão
+                  gerada.</li>
+                <li><strong>II. Faturamento:</strong> Após a conferência do relatório, o
+                  PARCEIRO deverá emitir e enviar à BPlen a respectiva Nota Fiscal de Prestação
+                  de Serviços (ou Recibo/RPA em caso de Pessoa Física).</li>
+                <li><strong>III. Pagamento:</strong> Mediante a entrega da documentação fiscal,
+                  a BPlen realizará a transferência bancária do valor da comissão até o dia 15
+                  (quinze) do mês subsequente ao pagamento efetuado pelo cliente final.</li>
+              </ul>
+            </div>
+
+            <div class="clausula">
+              <p class="clausula__texto">
+                <span class="clausula__numero">Cláusula 2.5 — Proteção contra Inadimplência e
+                Cancelamentos (Chargeback):</span> O comissionamento é devido exclusivamente
+                sobre valores efetivamente recebidos pela BPlen.
+              </p>
+              <p class="clausula__paragrafo">
+                <span class="clausula__paragrafo-marca">Parágrafo único:</span> Na ocorrência
+                de cancelamento do serviço por parte do cliente final (seja pelo direito de
+                arrependimento legal do CDC ou rescisão proporcional) que obrigue a BPlen a
+                realizar reembolso de valores, a comissão do PARCEIRO sobre o montante devolvido
+                será automaticamente cancelada. Caso a comissão já tenha sido paga ao PARCEIRO,
+                o respectivo valor será descontado/compensado no ciclo de pagamento do mês
+                subsequente.
+              </p>
+            </div>
+          </div>
+        </div>
+        <!-- FIM DO BLOCO CONDICIONAL COMERCIAL -->
+      </div>
+
+      <footer class="rodape-b">
+        <span class="rodape-b__esquerda">BPlen · Termo de Aliança e Parceria · <span class="ph">{{BPL-TIPO-CTR-AAMMDDHHMM}}</span></span>
+        <span class="rodape-b__folio">3</span>
+        <span class="rodape-b__rubrica">
+          <span class="rodape-b__rubrica-linha"></span>
+          <span class="rodape-b__rubrica-legenda">Rubrica</span>
+        </span>
+      </footer>
+    </section>
+
+    <!-- =========================================================
+         FOLHA 4 — SEÇÃO 3 (GOVERNANÇA E REGRAS INEGOCIÁVEIS)
+         ========================================================= -->
+    <section class="folha">
+      <header class="cabecalho-b">
+        <div class="cabecalho-b__marca">
+          <img class="cabecalho-b__logo" src="../sistema/assets/bplen-logo-preto.png" alt="BPlen" />
+          <div class="cabecalho-b__linha"></div>
+          <span class="cabecalho-b__doc">Termo de Aliança e Parceria Estratégica</span>
+        </div>
+        <p class="cabecalho-b__contexto">
+          <span class="ph">{{BPL-TIPO-CTR-AAMMDDHHMM}}</span><br />v<span class="ph">{{1.0}}</span>
+        </p>
+      </header>
+
+      <div class="miolo">
+        <div class="secao-clausulas">
+          <h2 class="secao-clausulas__titulo">Governança e Regras Inegociáveis</h2>
+
+          <div class="clausula">
+            <p class="clausula__texto">
+              <span class="clausula__numero">Cláusula 3.1 — Confidencialidade e Sigilo (NDA):</span>
+              O PARCEIRO compromete-se a manter em absoluto sigilo todas as informações
+              comerciais, financeiras, metodológicas, listas de preços e estratégias de
+              negócios da BPlen a que tiver acesso em virtude desta parceria, sendo vedada a
+              divulgação a terceiros sob pena de responsabilização civil e criminal, além da
+              rescisão imediata do contrato.
+            </p>
+          </div>
+
+          <div class="clausula">
+            <p class="clausula__texto">
+              <span class="clausula__numero">Cláusula 3.2 — Uso da Marca:</span> O PARCEIRO
+              está autorizado a utilizar o nome e os materiais de divulgação fornecidos pela
+              BPlen estritamente para o propósito de captação de clientes. É terminantemente
+              proibido modificar logos, criar promessas enganosas sobre os serviços ou
+              apresentar-se como sócio, funcionário ou representante legal da BPlen.
+            </p>
+          </div>
+
+          <div class="clausula">
+            <p class="clausula__texto">
+              <span class="clausula__numero">Cláusula 3.3 — Proteção de Dados (LGPD):</span> O
+              PARCEIRO declara possuir base legal válida (preferencialmente consentimento) para
+              o compartilhamento de dados de potenciais clientes com a BPlen, comprometendo-se
+              a, mediante solicitação, comprovar a origem lícita desses dados. A BPlen
+              reserva-se o direito de recusar ou excluir indicações cuja origem dos dados não
+              possa ser comprovada, sem prejuízo de outras medidas cabíveis.
+            </p>
+          </div>
+
+          <div class="clausula">
+            <p class="clausula__texto">
+              <span class="clausula__numero">Cláusula 3.4 — Modificação e Rescisão:</span> A
+              BPlen reserva-se o direito de alterar o portfólio de serviços, valores e a
+              presente política de parceria mediante aviso prévio. Este instrumento poderá ser
+              rescindido por qualquer uma das partes, a qualquer momento, sem incidência de
+              multas, mediante comunicação prévia, resguardado o direito de recebimento de
+              comissões por vendas já integralmente concluídas até a data do encerramento.
+            </p>
+          </div>
+
+          <div class="clausula">
+            <p class="clausula__texto">
+              <span class="clausula__numero">Cláusula 3.5 — Do Foro:</span> Fica eleito o Foro
+              da Comarca de São Paulo/SP para dirimir quaisquer dúvidas decorrentes deste
+              instrumento.
+            </p>
+          </div>
+
+          <div class="clausula">
+            <p class="clausula__texto">
+              <span class="clausula__numero">Cláusula 3.6 — Aceite Eletrônico:</span> Ao
+              prosseguir e formalizar este termo via plataforma digital (Clickwrap), mediante
+              registro sistêmico e Timestamp, o PARCEIRO declara ter lido e concordado com
+              todas as cláusulas, com validade jurídica reconhecida (MP 2.200-2/2001).
+            </p>
+            <p class="clausula__paragrafo">
+              <span class="clausula__paragrafo-marca">Nota de uso:</span> esta cláusula pressupõe
+              formalização digital. Se este instrumento for assinado fisicamente (ver
+              Formalização, ao final), ajustar a redação para referenciar a assinatura manuscrita
+              em vez do Clickwrap.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <footer class="rodape-b">
+        <span class="rodape-b__esquerda">BPlen · Termo de Aliança e Parceria · <span class="ph">{{BPL-TIPO-CTR-AAMMDDHHMM}}</span></span>
+        <span class="rodape-b__folio">4</span>
+        <span class="rodape-b__rubrica">
+          <span class="rodape-b__rubrica-linha"></span>
+          <span class="rodape-b__rubrica-legenda">Rubrica</span>
+        </span>
+      </footer>
+    </section>
+
+    <!-- =========================================================
+         FOLHA 5 — SEÇÃO 4 (BENEFÍCIOS DE VISIBILIDADE E ECOSSISTEMA)
+         ========================================================= -->
+    <section class="folha">
+      <header class="cabecalho-b">
+        <div class="cabecalho-b__marca">
+          <img class="cabecalho-b__logo" src="../sistema/assets/bplen-logo-preto.png" alt="BPlen" />
+          <div class="cabecalho-b__linha"></div>
+          <span class="cabecalho-b__doc">Termo de Aliança e Parceria Estratégica</span>
+        </div>
+        <p class="cabecalho-b__contexto">
+          <span class="ph">{{BPL-TIPO-CTR-AAMMDDHHMM}}</span><br />v<span class="ph">{{1.0}}</span>
+        </p>
+      </header>
+
+      <div class="miolo">
+        <div class="secao-clausulas">
+          <h2 class="secao-clausulas__titulo">Dos Benefícios de Visibilidade e Ecossistema BPlen</h2>
+
+          <div class="clausula">
+            <p class="clausula__texto">
+              <span class="clausula__numero">Cláusula 4.1 — Do Diretório de Networking Interno
+              (BPlen HUB):</span> A BPlen disponibiliza aos seus clientes a página de
+              ecossistema "Networking BPlen" (bplen.com/hub/networking). O PARCEIRO terá a
+              oportunidade de criar um perfil de destaque neste diretório interno para gerar
+              conexões, parcerias e negócios com outros membros e clientes da plataforma.
+            </p>
+            <p class="clausula__paragrafo">
+              <span class="clausula__paragrafo-marca">§1º — Do Compartilhamento de Dados
+              Peer-to-Peer:</span> O PARCEIRO declara-se ciente de que a inclusão no Diretório
+              de Networking pressupõe a exibição mútua e voluntária de dados profissionais para
+              outros usuários logados no ecossistema (tratamento de dados na modalidade de
+              compartilhamento entre pares). Os dados visíveis incluirão, limitadamente: nome
+              profissional, foto de perfil, minibiografia, especialidades de atuação e links
+              diretos para contatos profissionais ou redes sociais por ele cadastrados.
+            </p>
+            <p class="clausula__paragrafo">
+              <span class="clausula__paragrafo-marca">§2º — Do Controle de Privacidade pelo
+              Titular:</span> Em estrita observância à autodeterminação informativa da LGPD, a
+              ativação e exibição do perfil no diretório de networking não ocorrerá de forma
+              automática. Caberá única e exclusivamente ao PARCEIRO, por meio de ato inequívoco
+              em sua área logada na plataforma BPlen HUB, ativar voluntariamente a visibilidade
+              de sua conta para ingressar no ecossistema, e gerenciar, modificar ou desativar a
+              exibição de seus dados a qualquer tempo, bastando alterar suas preferências no
+              menu de configurações de privacidade, o que resultará na ocultação imediata do
+              seu perfil para os demais usuários.
+            </p>
+            <p class="clausula__paragrafo">
+              <span class="clausula__paragrafo-marca">§3º — Da Limitação de Responsabilidade
+              nas Interações:</span> A BPlen atua meramente como provedora da infraestrutura
+              tecnológica do ecossistema digital (obrigação de meio). As negociações, troca de
+              mensagens, contratos ou parcerias comerciais firmadas diretamente entre o
+              PARCEIRO e terceiros dentro da Área de Networking são de responsabilidade
+              exclusiva dos transacionantes, não gerando qualquer vínculo de solidariedade
+              jurídica ou financeira por parte da BPlen.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <footer class="rodape-b">
+        <span class="rodape-b__esquerda">BPlen · Termo de Aliança e Parceria · <span class="ph">{{BPL-TIPO-CTR-AAMMDDHHMM}}</span></span>
+        <span class="rodape-b__folio">5</span>
+        <span class="rodape-b__rubrica">
+          <span class="rodape-b__rubrica-linha"></span>
+          <span class="rodape-b__rubrica-legenda">Rubrica</span>
+        </span>
+      </footer>
+    </section>
+
+    <!-- =========================================================
+         FOLHA 6 — SEÇÃO 4, CONTINUAÇÃO (CLÁUSULA 4.2, CONDICIONAL)
+         ========================================================= -->
+    <section class="folha">
+      <header class="cabecalho-b">
+        <div class="cabecalho-b__marca">
+          <img class="cabecalho-b__logo" src="../sistema/assets/bplen-logo-preto.png" alt="BPlen" />
+          <div class="cabecalho-b__linha"></div>
+          <span class="cabecalho-b__doc">Termo de Aliança e Parceria Estratégica</span>
+        </div>
+        <p class="cabecalho-b__contexto">
+          <span class="ph">{{BPL-TIPO-CTR-AAMMDDHHMM}}</span><br />v<span class="ph">{{1.0}}</span>
+        </p>
+      </header>
+
+      <div class="miolo">
+        <h2 class="secao-clausulas__titulo">
+          Dos Benefícios de Visibilidade e Ecossistema BPlen
+          <span style="color: var(--doc-tinta-4); text-transform: none; font-weight: 400">(continuação)</span>
+        </h2>
+
+        <!-- CONDICIONAL: manter apenas se o parceiro tiver direito a
+             vitrine publica (status "Parceiro Destaque"). Caso
+             contrario, apagar a clausula 4.2 inteira — e, se esta
+             folha ficar vazia, remove-la e renumerar a Formalizacao. -->
+        <div class="bloco-condicional">
+          <span class="bloco-condicional__aviso">
+            Exibido apenas se o parceiro tiver direito à vitrine pública
+          </span>
+          <div class="clausula">
+            <p class="clausula__texto">
+              <span class="clausula__numero">Cláusula 4.2 — Da Vitrine Pública de Parceiros
+              Oficiais:</span> Como reconhecimento pelo seu engajamento e alinhamento
+              estratégico, a BPlen concede ao PARCEIRO o status de "Parceiro Destaque".
+            </p>
+            <p class="clausula__paragrafo">
+              <span class="clausula__paragrafo-marca">§1º — Exposição de Marca:</span> O
+              PARCEIRO terá o seu nome, logotipo (se aplicável) e um link de contato ou
+              portfólio exibidos na página pública oficial de parceiros da BPlen
+              (bplen.com/servicos/parceiros).
+            </p>
+            <p class="clausula__paragrafo">
+              <span class="clausula__paragrafo-marca">§2º — Licença de Uso:</span> Para a
+              efetivação deste benefício, o PARCEIRO concede à BPlen uma licença gratuita,
+              revogável a qualquer momento mediante solicitação ao Encarregado de Dados,
+              comprometendo-se a BPlen a remover o perfil da página pública em até 15 (quinze)
+              dias corridos a contar do pedido de revogação.
+            </p>
+            <p class="clausula__paragrafo">
+              <span class="clausula__paragrafo-marca">§3º — Manutenção do Benefício:</span> A
+              BPlen reserva-se o direito de remover o perfil do PARCEIRO da página pública a
+              qualquer momento, seja por inatividade comercial, por solicitação do próprio
+              parceiro, ou por desalinhamento com o Código de Conduta da marca.
+            </p>
+          </div>
+        </div>
+        <!-- FIM DO BLOCO CONDICIONAL DA VITRINE PÚBLICA -->
+      </div>
+
+      <footer class="rodape-b">
+        <span class="rodape-b__esquerda">BPlen · Termo de Aliança e Parceria · <span class="ph">{{BPL-TIPO-CTR-AAMMDDHHMM}}</span></span>
+        <span class="rodape-b__folio">6</span>
+        <span class="rodape-b__rubrica">
+          <span class="rodape-b__rubrica-linha"></span>
+          <span class="rodape-b__rubrica-legenda">Rubrica</span>
+        </span>
+      </footer>
+    </section>
+
+    <!-- =========================================================
+         FOLHA 7 — FORMALIZAÇÃO (HÍBRIDA: DIGITAL OU FÍSICA)
+         ========================================================= -->
+    <section class="folha">
+      <header class="cabecalho-b">
+        <div class="cabecalho-b__marca">
+          <img class="cabecalho-b__logo" src="../sistema/assets/bplen-logo-preto.png" alt="BPlen" />
+          <div class="cabecalho-b__linha"></div>
+          <span class="cabecalho-b__doc">Termo de Aliança e Parceria Estratégica</span>
+        </div>
+        <p class="cabecalho-b__contexto">
+          <span class="ph">{{BPL-TIPO-CTR-AAMMDDHHMM}}</span><br />v<span class="ph">{{1.0}}</span>
+        </p>
+      </header>
+
+      <div class="miolo">
+        <div class="formalizacao">
+          <h2 class="formalizacao__titulo">Formalização</h2>
+          <p class="nota mb-3">
+            Duas vias de formalização convivem abaixo. <strong>Mantenha apenas a que
+            corresponde ao meio efetivamente usado</strong> e apague a outra antes de enviar
+            ou imprimir a versão final.
+          </p>
+
+          <!-- ---------- VARIANTE A: DIGITAL / CLICKWRAP ---------- -->
+          <div class="formalizacao-digital">
+            <p class="formalizacao-digital__rotulo">Formalização Eletrônica</p>
+            <p class="clausula__texto">
+              O presente Termo foi lido e aceito pelo PARCEIRO por meio da plataforma digital
+              BPlen HUB (Clickwrap), com validade jurídica reconhecida nos termos da Medida
+              Provisória nº 2.200-2/2001.
+            </p>
+            <div class="formalizacao-digital__grade mt-3">
+              <div>
+                <span class="formalizacao-digital__campo-rotulo">Data e hora do aceite</span>
+                <p class="formalizacao-digital__campo-valor"><span class="ph">{{DD/MM/AAAA HH:MM}}</span></p>
+              </div>
+              <div>
+                <span class="formalizacao-digital__campo-rotulo">Endereço IP</span>
+                <p class="formalizacao-digital__campo-valor"><span class="ph">{{000.000.000.000}}</span></p>
+              </div>
+              <div>
+                <span class="formalizacao-digital__campo-rotulo">Código de verificação</span>
+                <p class="formalizacao-digital__campo-valor"><span class="ph">{{BPLEN-CTR-000000}}</span></p>
+              </div>
+              <div>
+                <span class="formalizacao-digital__campo-rotulo">Hash do documento</span>
+                <p class="formalizacao-digital__campo-valor"><span class="ph">{{sha256:...}}</span></p>
+              </div>
+            </div>
+            <p class="formalizacao-digital__nota">
+              Campos preenchidos automaticamente pelo sistema BPlen HUB no momento do aceite —
+              não editar manualmente.
+            </p>
+          </div>
+
+          <p class="formalizacao__ou nao-imprime">ou, se assinado fisicamente</p>
+
+          <!-- ---------- VARIANTE B: FISICA / ASSINATURA A MAO ---------- -->
+          <div class="formalizacao-fisica">
+            <p class="formalizacao-fisica__local-data">
+              <span class="ph">{{Cidade}}</span>, <span class="ph">{{DD de mês de AAAA}}</span>.
+            </p>
+
+            <div class="assinaturas-b">
+              <div>
+                <div class="assinatura-b__linha"></div>
+                <p class="assinatura-b__nome">LENCINA ESTRATÉGIA E GESTÃO DE NEGÓCIOS E PESSOAS LTDA</p>
+                <p class="assinatura-b__papel">
+                  <span class="ph">{{Nome do representante legal}}</span> — CNPJ 62.857.668/0001-07
+                </p>
+              </div>
+              <div>
+                <div class="assinatura-b__linha"></div>
+                <p class="assinatura-b__nome"><span class="ph">{{Nome completo ou razão social do parceiro}}</span></p>
+                <p class="assinatura-b__papel"><span class="ph">{{CPF ou CNPJ do parceiro}}</span></p>
+              </div>
+            </div>
+
+            <div class="testemunhas-b">
+              <p class="testemunhas-b__titulo">Testemunhas</p>
+              <div class="testemunhas-b__grade">
+                <div>
+                  <div class="assinatura-b__linha"></div>
+                  <p class="assinatura-b__nome"><span class="ph">{{Nome completo}}</span></p>
+                  <p class="assinatura-b__papel">CPF <span class="ph">{{000.000.000-00}}</span></p>
+                </div>
+                <div>
+                  <div class="assinatura-b__linha"></div>
+                  <p class="assinatura-b__nome"><span class="ph">{{Nome completo}}</span></p>
+                  <p class="assinatura-b__papel">CPF <span class="ph">{{000.000.000-00}}</span></p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="rodape-b">
+        <span class="rodape-b__esquerda">BPlen · Termo de Aliança e Parceria · <span class="ph">{{BPL-TIPO-CTR-AAMMDDHHMM}}</span></span>
+        <span class="rodape-b__folio">7</span>
+        <span class="rodape-b__rubrica">
+          <span class="rodape-b__rubrica-linha"></span>
+          <span class="rodape-b__rubrica-legenda">Rubrica</span>
+        </span>
+      </footer>
+    </section>
+
+    <script src="../sistema/exportar.js"></script>
+  </body>
+</html>

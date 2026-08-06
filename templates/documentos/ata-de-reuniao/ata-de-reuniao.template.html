@@ -1,0 +1,644 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BPlen — Ata de Reunião (Template)</title>
+    <link rel="stylesheet" href="../sistema/tokens.css" />
+    <link rel="stylesheet" href="../sistema/chassi-a-encadernado.css" />
+  </head>
+
+  <!--
+    ============================================================
+    BPlen — Template de Ata de Reunião
+    Chassi A (Encadernado) · A4 vertical · v2.0
+
+    COMO USAR
+    1. Duplique este arquivo para a pasta do registro do encontro.
+    2. Substitua todos os campos {{ENTRE CHAVES}} — eles estão
+       marcados em âmbar na tela.
+    3. Blocos marcados com REPETIVEL podem ser duplicados
+       quantas vezes forem necessárias.
+    4. Blocos marcados com OPCIONAL podem ser removidos.
+    5. Confira com o botão "Ocultar marcações" antes de exportar.
+    6. Exporte pela barra do topo: PDF, Word ou HTML.
+
+    TOM DE VOZ
+    Este é um documento da BPlen: sério no conteúdo, acolhedor na
+    forma. Escreva como quem conta a um colega o que aconteceu no
+    encontro — sem jargão corporativo, sem linguagem de auditoria.
+    ============================================================
+  -->
+
+  <body data-tipo="ATA">
+    <!-- ---------------------------------------------------------
+         BARRA DE APOIO — não aparece na exportação
+         --------------------------------------------------------- -->
+    <div class="barra-apoio nao-imprime">
+      <button type="button" onclick="document.body.classList.toggle('modo-limpo')">
+        Ocultar marcações
+      </button>
+      <span>Ata de Reunião · Chassi A · A4</span>
+      <button type="button" onclick="exportarPdf()">PDF</button>
+      <button type="button" onclick="exportarWord()">Word</button>
+      <button type="button" onclick="exportarHtml()">HTML</button>
+    </div>
+
+    <!-- =========================================================
+         FOLHA 1 — CAPA
+         ========================================================= -->
+    <section class="folha folha--escura capa">
+      <div class="capa__circulo" aria-hidden="true"></div>
+      <div class="capa__circulo capa__circulo--interno" aria-hidden="true"></div>
+
+      <header class="capa__topo">
+        <img class="capa__logo" src="../sistema/assets/bplen-logo-branco.png" alt="BPlen" />
+      </header>
+
+      <div class="capa__centro">
+        <p class="capa__tipo">Ata de Reunião</p>
+        <h1 class="capa__titulo"><span class="ph">{{TITULO DO ENCONTRO}}</span></h1>
+        <p class="capa__subtitulo"><span class="ph">{{Uma frase sobre o que conversamos neste encontro}}</span></p>
+        <div class="capa__regua" aria-hidden="true"></div>
+      </div>
+
+      <footer class="capa__base">
+        <div class="capa__identificacao">
+          <div>
+            <p class="capa__campo-rotulo">Documento</p>
+            <p class="capa__campo-valor"><span class="ph">{{BPL-TIPO-ATA-AAMMDDHHMM}}</span></p>
+          </div>
+          <div>
+            <p class="capa__campo-rotulo">Data do encontro</p>
+            <p class="capa__campo-valor"><span class="ph">{{DD/MM/AAAA}}</span></p>
+          </div>
+          <div>
+            <p class="capa__campo-rotulo">Circulação</p>
+            <p class="capa__campo-valor">
+              <span class="selo-classificacao cls-interno ph">{{INTERNO}}</span>
+            </p>
+          </div>
+        </div>
+      </footer>
+    </section>
+
+    <!-- =========================================================
+         FOLHA 2 — SOBRE ESTE ENCONTRO
+         ========================================================= -->
+    <section class="folha">
+      <header class="cabecalho">
+        <div class="cabecalho__marca">
+          <img class="cabecalho__logo" src="../sistema/assets/bplen-logo-preto.png" alt="BPlen" />
+          <span class="cabecalho__doc">Ata de Reunião</span>
+        </div>
+        <p class="cabecalho__contexto">
+          <span class="ph">{{BPL-TIPO-ATA-AAMMDDHHMM}}</span> · <span class="ph">{{DD/MM/AAAA}}</span>
+        </p>
+      </header>
+
+      <div class="miolo">
+        <div class="secao">
+          <p class="secao__indice">Sobre este encontro</p>
+          <h1 class="h1-doc mt-1"><span class="ph">{{TITULO DO ENCONTRO}}</span></h1>
+          <p class="texto-abertura mt-2">
+            <span class="ph">{{Uma frase sobre o que conversamos neste encontro}}</span>
+          </p>
+        </div>
+
+        <div class="secao">
+          <h2 class="h2-doc"><span>Quando e onde</span></h2>
+          <div class="grade-campos grade-campos--3">
+            <div>
+              <span class="rotulo">Data</span>
+              <p class="campo__valor"><span class="ph">{{DD/MM/AAAA, dia da semana}}</span></p>
+            </div>
+            <div>
+              <span class="rotulo">Começamos</span>
+              <p class="campo__valor"><span class="ph">{{HH:MM}}</span></p>
+            </div>
+            <div>
+              <span class="rotulo">Terminamos</span>
+              <p class="campo__valor"><span class="ph">{{HH:MM}}</span></p>
+            </div>
+            <div>
+              <span class="rotulo">Formato</span>
+              <p class="campo__valor"><span class="ph">{{Presencial, online ou híbrido}}</span></p>
+            </div>
+            <div>
+              <span class="rotulo">Onde</span>
+              <p class="campo__valor"><span class="ph">{{Endereço ou sala virtual}}</span></p>
+            </div>
+            <div>
+              <span class="rotulo">Tipo de encontro</span>
+              <p class="campo__valor"><span class="ph">{{Da nossa agenda regular ou extra}}</span></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="secao">
+          <h2 class="h2-doc"><span>Quem cuidou deste registro</span></h2>
+          <div class="grade-campos grade-campos--2">
+            <div>
+              <span class="rotulo">Conduziu o encontro</span>
+              <p class="campo__valor">Lisandra Lencina</p>
+            </div>
+            <div>
+              <span class="rotulo">Anotações durante a conversa</span>
+              <p class="campo__valor">Gemini Notes</p>
+            </div>
+            <div>
+              <span class="rotulo">Escreveu e revisou a ata</span>
+              <p class="campo__valor">Lisandra Lencina</p>
+            </div>
+            <div>
+              <span class="rotulo">Fale com a gente</span>
+              <p class="campo__valor">lisandra.lencina@bplen.com<br />+55 11 94515 2088</p>
+            </div>
+          </div>
+
+          <div class="quadro quadro--neutro mt-3">
+            <p class="nota">
+              <strong>Como esta ata foi feita.</strong> As anotações da conversa foram capturadas
+              por uma ferramenta automática e depois lidas, editadas e conferidas por uma pessoa
+              da equipe antes de chegar até você. Se algo aqui não corresponder ao que você
+              lembra, ou se ficou faltando alguma coisa importante, é só escrever para o contato
+              acima em até <span class="ph">{{5}}</span> dias úteis — ajustamos e reenviamos.
+              Passado esse prazo, seguimos com esta versão.
+            </p>
+          </div>
+        </div>
+
+        <div class="secao">
+          <h2 class="h2-doc"><span>Identificação do documento</span></h2>
+          <div class="grade-campos grade-campos--4">
+            <div>
+              <span class="rotulo">Código</span>
+              <p class="campo__valor"><span class="ph">{{BPL-TIPO-ATA-AAMMDDHHMM}}</span></p>
+            </div>
+            <div>
+              <span class="rotulo">Versão</span>
+              <p class="campo__valor"><span class="ph">{{v1.0}}</span></p>
+            </div>
+            <div>
+              <span class="rotulo">Enviado em</span>
+              <p class="campo__valor"><span class="ph">{{DD/MM/AAAA}}</span></p>
+            </div>
+            <div>
+              <span class="rotulo">Circulação</span>
+              <p class="campo__valor">
+                <span class="selo-classificacao cls-interno ph">{{INTERNO}}</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="rodape">
+        <span>BPlen · <span class="ph">{{BPL-TIPO-ATA-AAMMDDHHMM}}</span> · <span class="ph">{{v1.0}}</span></span>
+        <span class="rodape__folio">2</span>
+      </footer>
+    </section>
+
+    <!-- =========================================================
+         FOLHA 3 — QUEM PARTICIPOU
+         ========================================================= -->
+    <section class="folha">
+      <header class="cabecalho">
+        <div class="cabecalho__marca">
+          <img class="cabecalho__logo" src="../sistema/assets/bplen-logo-preto.png" alt="BPlen" />
+          <span class="cabecalho__doc">Ata de Reunião</span>
+        </div>
+        <p class="cabecalho__contexto">
+          <span class="ph">{{BPL-TIPO-ATA-AAMMDDHHMM}}</span> · <span class="ph">{{DD/MM/AAAA}}</span>
+        </p>
+      </header>
+
+      <div class="miolo">
+        <div class="secao">
+          <p class="secao__indice">Parte 01</p>
+          <h1 class="h1-doc mt-1">Quem participou</h1>
+          <p class="texto-abertura mt-2">
+            As pessoas que estiveram neste encontro e o papel de cada uma na conversa.
+          </p>
+        </div>
+
+        <div class="secao">
+          <table class="tabela">
+            <thead>
+              <tr>
+                <th class="tabela__num">N</th>
+                <th>Nome</th>
+                <th style="width: 36mm">Papel no encontro</th>
+                <th style="width: 30mm">Área ou empresa</th>
+                <th style="width: 26mm">Presença</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- REPETIVEL: uma linha por pessoa -->
+              <tr>
+                <td class="tabela__num">01</td>
+                <td>Lisandra Lencina</td>
+                <td>Conduziu o encontro</td>
+                <td>BPlen</td>
+                <td><span class="status status--concluido">Esteve presente</span></td>
+              </tr>
+              <tr>
+                <td class="tabela__num">02</td>
+                <td><span class="ph">{{Nome completo}}</span></td>
+                <td><span class="ph">{{Papel}}</span></td>
+                <td><span class="ph">{{Área}}</span></td>
+                <td><span class="status status--concluido">Esteve presente</span></td>
+              </tr>
+              <tr>
+                <td class="tabela__num">03</td>
+                <td><span class="ph">{{Nome completo}}</span></td>
+                <td><span class="ph">{{Papel}}</span></td>
+                <td><span class="ph">{{Área}}</span></td>
+                <td><span class="status status--concluido">Esteve presente</span></td>
+              </tr>
+              <tr>
+                <td class="tabela__num">04</td>
+                <td><span class="ph">{{Nome completo}}</span></td>
+                <td>Convidado</td>
+                <td><span class="ph">{{Empresa}}</span></td>
+                <td><span class="status status--andamento">Participou em parte</span></td>
+              </tr>
+              <tr>
+                <td class="tabela__num">05</td>
+                <td><span class="ph">{{Nome completo}}</span></td>
+                <td><span class="ph">{{Papel}}</span></td>
+                <td><span class="ph">{{Área}}</span></td>
+                <td><span class="status status--aberto">Avisou que não viria</span></td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="nota mt-2">
+            Sobre a coluna de presença: <strong>Esteve presente</strong> acompanhou o encontro
+            todo. <strong>Participou em parte</strong> entrou em um momento específico.
+            <strong>Avisou que não viria</strong> comunicou antes.
+            <strong>Não pôde vir</strong> quando não houve aviso prévio.
+          </p>
+        </div>
+
+        <div class="secao">
+          <h2 class="h2-doc"><span>Resumo da participação</span></h2>
+          <div class="grade-campos grade-campos--3">
+            <div>
+              <span class="rotulo">Pessoas convidadas</span>
+              <p class="campo__valor"><span class="ph">{{00}}</span></p>
+            </div>
+            <div>
+              <span class="rotulo">Estiveram no encontro</span>
+              <p class="campo__valor"><span class="ph">{{00}}</span></p>
+            </div>
+            <div>
+              <span class="rotulo">Não puderam vir</span>
+              <p class="campo__valor"><span class="ph">{{00}}</span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="rodape">
+        <span>BPlen · <span class="ph">{{BPL-TIPO-ATA-AAMMDDHHMM}}</span> · <span class="ph">{{v1.0}}</span></span>
+        <span class="rodape__folio">3</span>
+      </footer>
+    </section>
+
+    <!-- =========================================================
+         FOLHA 4 — O QUE ESTAVA PREVISTO (PAUTA)
+         ========================================================= -->
+    <section class="folha">
+      <header class="cabecalho">
+        <div class="cabecalho__marca">
+          <img class="cabecalho__logo" src="../sistema/assets/bplen-logo-preto.png" alt="BPlen" />
+          <span class="cabecalho__doc">Ata de Reunião</span>
+        </div>
+        <p class="cabecalho__contexto">
+          <span class="ph">{{BPL-TIPO-ATA-AAMMDDHHMM}}</span> · <span class="ph">{{DD/MM/AAAA}}</span>
+        </p>
+      </header>
+
+      <div class="miolo">
+        <div class="secao">
+          <p class="secao__indice">Parte 02</p>
+          <h1 class="h1-doc mt-1">Pauta</h1>
+          <p class="texto-abertura mt-2">
+            <span class="ph">{{Em uma ou duas frases: por que nos reunimos e o que queríamos
+            sair daqui tendo resolvido.}}</span>
+          </p>
+        </div>
+
+        <div class="secao">
+          <h2 class="h2-doc"><span>O que estava previsto</span></h2>
+          <table class="tabela">
+            <thead>
+              <tr>
+                <th class="tabela__num">N</th>
+                <th>Assunto</th>
+                <th style="width: 34mm">Quem apresentou</th>
+                <th style="width: 20mm">Tempo</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- REPETIVEL: uma linha por assunto -->
+              <tr>
+                <td class="tabela__num">01</td>
+                <td><span class="ph">{{Assunto}}</span></td>
+                <td><span class="ph">{{Nome}}</span></td>
+                <td class="tabela__prazo"><span class="ph">{{00 min}}</span></td>
+              </tr>
+              <tr>
+                <td class="tabela__num">02</td>
+                <td><span class="ph">{{Assunto}}</span></td>
+                <td><span class="ph">{{Nome}}</span></td>
+                <td class="tabela__prazo"><span class="ph">{{00 min}}</span></td>
+              </tr>
+              <tr>
+                <td class="tabela__num">03</td>
+                <td><span class="ph">{{Assunto}}</span></td>
+                <td><span class="ph">{{Nome}}</span></td>
+                <td class="tabela__prazo"><span class="ph">{{00 min}}</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- OPCIONAL: remover quando for o primeiro encontro do ciclo -->
+        <div class="secao">
+          <h2 class="h2-doc"><span>De onde paramos</span></h2>
+          <p class="nota mb-3">
+            Combinados do nosso encontro anterior:
+            <span class="ph">{{BPL-TIPO-ATA-AAMMDDHHMM, de DD/MM/AAAA}}</span>
+          </p>
+          <table class="tabela">
+            <thead>
+              <tr>
+                <th class="tabela__num">N</th>
+                <th>O que tínhamos combinado</th>
+                <th style="width: 30mm">Com quem ficou</th>
+                <th style="width: 26mm">Como está</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- REPETIVEL -->
+              <tr>
+                <td class="tabela__num">01</td>
+                <td><span class="ph">{{Combinado do encontro anterior}}</span></td>
+                <td><span class="ph">{{Nome}}</span></td>
+                <td><span class="status status--concluido">Feito</span></td>
+              </tr>
+              <tr>
+                <td class="tabela__num">02</td>
+                <td><span class="ph">{{Combinado do encontro anterior}}</span></td>
+                <td><span class="ph">{{Nome}}</span></td>
+                <td><span class="status status--andamento">Em andamento</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <footer class="rodape">
+        <span>BPlen · <span class="ph">{{BPL-TIPO-ATA-AAMMDDHHMM}}</span> · <span class="ph">{{v1.0}}</span></span>
+        <span class="rodape__folio">4</span>
+      </footer>
+    </section>
+
+    <!-- =========================================================
+         FOLHA 5 — COMO FOI A CONVERSA
+         FOLHA REPETIVEL: duplique esta section inteira quantas
+         vezes precisar e continue a numeração dos assuntos.
+         ========================================================= -->
+    <section class="folha">
+      <header class="cabecalho">
+        <div class="cabecalho__marca">
+          <img class="cabecalho__logo" src="../sistema/assets/bplen-logo-preto.png" alt="BPlen" />
+          <span class="cabecalho__doc">Ata de Reunião</span>
+        </div>
+        <p class="cabecalho__contexto">
+          <span class="ph">{{BPL-TIPO-ATA-AAMMDDHHMM}}</span> · <span class="ph">{{DD/MM/AAAA}}</span>
+        </p>
+      </header>
+
+      <div class="miolo">
+        <div class="secao">
+          <p class="secao__indice">Parte 03</p>
+          <h1 class="h1-doc mt-1">Como foi a conversa</h1>
+          <p class="texto-abertura mt-2">
+            Nos encontramos em <span class="ph">{{DD/MM/AAAA}}</span>, às
+            <span class="ph">{{HH:MM}}</span>, <span class="ph">{{presencialmente ou online}}</span>,
+            com as pessoas listadas nesta ata. Abaixo, o que foi conversado em cada assunto e o
+            que ficou decidido.
+          </p>
+        </div>
+
+        <!-- REPETIVEL: um bloco por assunto -->
+        <div class="secao">
+          <h2 class="h2-doc">
+            <span class="secao__indice">01</span><span><span class="ph">{{Assunto}}</span></span>
+          </h2>
+
+          <h3 class="h3-doc">O que conversamos</h3>
+          <p class="texto">
+            <span class="ph ph--bloco">{{Conte o que foi trazido e discutido, como quem explica a
+            um colega que não pôde vir. Registre os fatos, os dados e os pontos de vista. Quando
+            houver visões diferentes, mostre as duas — isso ajuda quem for ler depois a entender
+            por que a decisão foi essa.}}</span>
+          </p>
+
+          <h3 class="h3-doc mt-3">O que ficou decidido</h3>
+          <div class="quadro quadro--realce">
+            <p class="texto">
+              <span class="ph">{{Escreva a decisão de um jeito que se sustente sozinha: quem
+              decidiu, o que foi decidido e a partir de quando vale. Se ainda não chegamos a uma
+              conclusão, escreva "Ficou para conversarmos no próximo encontro".}}</span>
+            </p>
+          </div>
+        </div>
+
+        <!-- REPETIVEL -->
+        <div class="secao">
+          <h2 class="h2-doc">
+            <span class="secao__indice">02</span><span><span class="ph">{{Assunto}}</span></span>
+          </h2>
+
+          <h3 class="h3-doc">O que conversamos</h3>
+          <p class="texto">
+            <span class="ph ph--bloco">{{O que foi trazido e discutido neste assunto.}}</span>
+          </p>
+
+          <h3 class="h3-doc mt-3">O que ficou decidido</h3>
+          <div class="quadro quadro--realce">
+            <p class="texto"><span class="ph">{{A decisão deste assunto.}}</span></p>
+          </div>
+        </div>
+      </div>
+
+      <footer class="rodape">
+        <span>BPlen · <span class="ph">{{BPL-TIPO-ATA-AAMMDDHHMM}}</span> · <span class="ph">{{v1.0}}</span></span>
+        <span class="rodape__folio">5</span>
+      </footer>
+    </section>
+
+    <!-- =========================================================
+         FOLHA 6 — NOSSOS COMBINADOS E FECHAMENTO
+         ========================================================= -->
+    <section class="folha">
+      <header class="cabecalho">
+        <div class="cabecalho__marca">
+          <img class="cabecalho__logo" src="../sistema/assets/bplen-logo-preto.png" alt="BPlen" />
+          <span class="cabecalho__doc">Ata de Reunião</span>
+        </div>
+        <p class="cabecalho__contexto">
+          <span class="ph">{{BPL-TIPO-ATA-AAMMDDHHMM}}</span> · <span class="ph">{{DD/MM/AAAA}}</span>
+        </p>
+      </header>
+
+      <div class="miolo">
+        <div class="secao">
+          <p class="secao__indice">Parte 04</p>
+          <h1 class="h1-doc mt-1">Nossos combinados</h1>
+          <p class="texto-abertura mt-2">
+            O que sai deste encontro como próximo passo. Cada linha tem uma pessoa e uma data, e
+            retomamos esta lista na abertura do próximo encontro.
+          </p>
+        </div>
+
+        <div class="secao">
+          <table class="tabela">
+            <thead>
+              <tr>
+                <th class="tabela__num">N</th>
+                <th>O que vamos fazer</th>
+                <th style="width: 30mm">Com quem fica</th>
+                <th style="width: 22mm">Até quando</th>
+                <th style="width: 24mm">Como está</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- REPETIVEL: uma linha por combinado -->
+              <tr>
+                <td class="tabela__num">01</td>
+                <td><span class="ph">{{O que fazer, começando por um verbo, e o resultado esperado}}</span></td>
+                <td><span class="ph">{{Nome}}</span></td>
+                <td class="tabela__prazo"><span class="ph">{{DD/MM}}</span></td>
+                <td><span class="status status--aberto">A começar</span></td>
+              </tr>
+              <tr>
+                <td class="tabela__num">02</td>
+                <td><span class="ph">{{O que vamos fazer}}</span></td>
+                <td><span class="ph">{{Nome}}</span></td>
+                <td class="tabela__prazo"><span class="ph">{{DD/MM}}</span></td>
+                <td><span class="status status--aberto">A começar</span></td>
+              </tr>
+              <tr>
+                <td class="tabela__num">03</td>
+                <td><span class="ph">{{O que vamos fazer}}</span></td>
+                <td><span class="ph">{{Nome}}</span></td>
+                <td class="tabela__prazo"><span class="ph">{{DD/MM}}</span></td>
+                <td><span class="status status--aberto">A começar</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="secao">
+          <h2 class="h2-doc"><span>Nosso próximo encontro</span></h2>
+          <div class="grade-campos grade-campos--3">
+            <div>
+              <span class="rotulo">Data</span>
+              <p class="campo__valor"><span class="ph">{{DD/MM/AAAA}}</span></p>
+            </div>
+            <div>
+              <span class="rotulo">Horário</span>
+              <p class="campo__valor"><span class="ph">{{HH:MM}}</span></p>
+            </div>
+            <div>
+              <span class="rotulo">Onde</span>
+              <p class="campo__valor"><span class="ph">{{A combinar}}</span></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- OPCIONAL -->
+        <div class="secao">
+          <h2 class="h2-doc"><span>Materiais de apoio</span></h2>
+          <ul class="lista-circulo lista-circulo--vazado">
+            <!-- REPETIVEL -->
+            <li class="nota">
+              Anexo I — Transcrição da conversa na íntegra
+              (<span class="ph">{{BPL-TIPO-TRC-AAMMDDHHMM}}</span>)
+            </li>
+            <li class="nota"><span class="ph">{{Anexo II — Nome do material}}</span></li>
+          </ul>
+        </div>
+
+        <div class="secao">
+          <h2 class="h2-doc"><span>Fechamento</span></h2>
+          <p class="texto">
+            O encontro se encerrou às <span class="ph">{{HH:MM}}</span>. Obrigada pelo tempo e
+            pela presença de cada uma das pessoas que estiveram aqui.
+          </p>
+
+          <div class="assinaturas">
+            <div>
+              <div class="assinatura__linha"></div>
+              <p class="assinatura__nome">Lisandra Lencina</p>
+              <p class="assinatura__papel">Conduziu o encontro e escreveu a ata</p>
+            </div>
+            <div>
+              <div class="assinatura__linha"></div>
+              <p class="assinatura__nome"><span class="ph">{{Nome}}</span></p>
+              <p class="assinatura__papel"><span class="ph">{{Papel}}</span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="rodape">
+        <span>BPlen · <span class="ph">{{BPL-TIPO-ATA-AAMMDDHHMM}}</span> · <span class="ph">{{v1.0}}</span></span>
+        <span class="rodape__folio">6</span>
+      </footer>
+    </section>
+
+    <!-- =========================================================
+         FOLHA 7 — CONTRACAPA
+         ========================================================= -->
+    <section class="folha folha--escura contracapa">
+      <div class="capa__circulo" aria-hidden="true"></div>
+
+      <div class="contracapa__bloco contracapa__bloco--topo">
+        <img class="capa__logo" src="../sistema/assets/bplen-logo-branco.png" alt="BPlen" />
+        <p class="contracapa__frase mt-5">
+          Conversas viram mudança quando os combinados não se perdem pelo caminho.
+        </p>
+      </div>
+
+      <div class="contracapa__bloco contracapa__bloco--base">
+        <div class="contracapa__contatos">
+          <div>
+            <p class="capa__campo-rotulo">Fale com a gente</p>
+            <p class="mt-1">Lisandra Lencina<br />lisandra.lencina@bplen.com<br />+55 11 94515 2088</p>
+          </div>
+          <div>
+            <p class="capa__campo-rotulo">Este documento</p>
+            <p class="mt-1">
+              <span class="ph">{{BPL-TIPO-ATA-AAMMDDHHMM}}</span><br />
+              Versão <span class="ph">{{v1.0}}</span> · <span class="ph">{{DD/MM/AAAA}}</span><br />
+              <span class="ph">{{00}}</span> páginas
+            </p>
+          </div>
+        </div>
+
+        <p class="contracapa__aviso">
+          Este registro é de circulação <span class="ph">{{interna}}</span>. Pedimos que não seja
+          compartilhado com pessoas de fora do encontro sem falar com a gente antes. Os dados
+          pessoais que aparecem aqui são tratados conforme a Lei n. 13.709/2018.
+        </p>
+      </div>
+    </section>
+
+    <script src="../sistema/exportar.js"></script>
+  </body>
+</html>

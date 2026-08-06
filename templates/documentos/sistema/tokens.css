@@ -1,0 +1,130 @@
+/* ============================================================
+   BPlen — Sistema de Documentos
+   tokens.css — Camada 1: fundacao (cor, tipografia, ritmo, papel)
+
+   Este arquivo e a unica fonte de verdade visual do kit de
+   documentos. Nenhum template deve declarar cor ou tamanho de
+   fonte em valor literal: sempre consumir os tokens abaixo.
+
+   Universo: DOCUMENTO IMPRESSO / PDF.
+   Nao confundir com o design system da area logada (glassmorphism,
+   Inter, acento rosa). Sao dois universos distintos e deliberados.
+   ============================================================ */
+
+@import url("https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&family=Inter:wght@400;500;600;700&display=swap");
+
+:root {
+  /* ---------- Tinta (texto) ----------------------------------
+     Preto BPlen como tinta primaria. Nunca usar #000 puro em
+     corpo de texto impresso: satura demais em laser e e-ink.  */
+  --doc-tinta: #0d0d0d;
+  --doc-tinta-2: #3a3a3d;
+  --doc-tinta-3: #6b6b70;
+  --doc-tinta-4: #9a9aa0;
+
+  /* ---------- Cor institucional -------------------------------
+     Petroleo e a cor de autoridade do documento: titulos de
+     secao, fios, cabecalhos de tabela, capa.                   */
+  --doc-institucional: #044159;
+  --doc-institucional-90: #0a5273;
+  --doc-institucional-30: #b3c6d0;
+  --doc-institucional-12: #e2ebef;
+  --doc-institucional-profundo: #022a3a;
+
+  /* ---------- Realce (uso pontual, nunca em corpo) ------------ */
+  --doc-realce: #9c389d; /* Ametista — marcador de secao, deliberacao */
+  --doc-realce-suave: #9558a6;
+  --doc-realce-12: #f2e7f2;
+  --doc-ambar: #f2be05; /* Fio de destaque, status de atencao */
+  --doc-ambar-12: #fdf5db;
+  --doc-verde: #3c7369; /* Status concluido / positivo */
+  --doc-verde-12: #e3ecea;
+
+  /* ---------- Papel ------------------------------------------- */
+  --doc-papel: #ffffff;
+  --doc-papel-quente: #faf9f7; /* Blocos de respiro, quadros */
+  --doc-papel-frio: #f6f8f9; /* Blocos de dados / catalograficos */
+  --doc-capa: #0d0d0d; /* Fundo de capa e contracapa */
+
+  /* ---------- Fios e bordas ----------------------------------- */
+  --doc-fio: 0.4pt solid rgba(13, 13, 13, 0.18);
+  --doc-fio-forte: 0.8pt solid var(--doc-institucional);
+  --doc-fio-suave: 0.4pt solid rgba(13, 13, 13, 0.09);
+  --doc-fio-inverso: 0.4pt solid rgba(255, 255, 255, 0.22);
+
+  /* ---------- Assinatura grafica ------------------------------
+     Gradiente petroleo -> ametista. Presente na paleta oficial.
+     Usado como fio de 2mm no topo da capa e rodape das paginas. */
+  --doc-assinatura: linear-gradient(
+    90deg,
+    var(--doc-institucional) 0%,
+    var(--doc-realce-suave) 62%,
+    var(--doc-realce) 100%
+  );
+
+  /* ---------- Tipografia --------------------------------------
+     Serifa (Source Serif 4) para tudo que se le em prosa —
+     desenhada para tela e mantida legivel em mobile.
+     Inter para dados, rotulos, tabelas e numeros — amarra o
+     documento ao HUB sem quebrar a sobriedade.                 */
+  --doc-serifa: "Source Serif 4", "Source Serif Pro", Georgia, "Times New Roman", serif;
+  --doc-dados: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Escala tipografica — base 10.5pt para leitura confortavel
+     em A4 impresso e em PDF lido no celular.                   */
+  --ts-micro: 6.5pt; /* Foliacao, notas de rodape de controle */
+  --ts-rotulo: 7.5pt; /* Rotulos de campo (versalete) */
+  --ts-mini: 8.5pt; /* Tabelas densas, notas */
+  --ts-apoio: 9.5pt; /* Metadados, legendas */
+  --ts-corpo: 10.5pt; /* Corpo de texto */
+  --ts-corpo-g: 11.5pt; /* Corpo destacado / abertura */
+  --ts-h3: 12pt;
+  --ts-h2: 15pt;
+  --ts-h1: 21pt;
+  --ts-titulo-capa: 34pt;
+
+  --lh-apertado: 1.25;
+  --lh-corpo: 1.6;
+  --lh-solto: 1.75;
+
+  --tk-versalete: 0.14em; /* Tracking de rotulos em caixa alta */
+  --tk-titulo: -0.012em;
+
+  /* ---------- Geometria da pagina A4 --------------------------- */
+  --pg-largura: 210mm;
+  --pg-altura: 297mm;
+  --pg-margem-x: 20mm;
+  --pg-margem-topo: 18mm;
+  --pg-margem-base: 16mm;
+
+  /* ---------- Ritmo vertical ----------------------------------- */
+  --e-1: 2mm;
+  --e-2: 4mm;
+  --e-3: 6mm;
+  --e-4: 9mm;
+  --e-5: 13mm;
+  --e-6: 18mm;
+
+  --raio: 1.6mm; /* Eco do quadrado arredondado da logomarca */
+}
+
+/* ============================================================
+   Classificacao de confidencialidade — cores de selo.
+   Aplicar como classe no elemento .selo-classificacao.
+   ============================================================ */
+.cls-publico {
+  --cls-cor: var(--doc-verde);
+  --cls-fundo: var(--doc-verde-12);
+}
+.cls-interno {
+  --cls-cor: var(--doc-institucional);
+  --cls-fundo: var(--doc-institucional-12);
+}
+.cls-confidencial {
+  --cls-cor: var(--doc-realce);
+  --cls-fundo: var(--doc-realce-12);
+}
+.cls-restrito {
+  --cls-cor: #8a6a00;
+  --cls-fundo: var(--doc-ambar-12);
+}

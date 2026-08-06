@@ -1,0 +1,706 @@
+/* ============================================================
+   BPlen — Sistema de Documentos
+   chassi-a-encadernado.css — Camada 2: estrutura
+
+   CHASSI A — "Documento Encadernado"
+   Capa > Folha de Rosto > (Sumario) > Miolo > Contracapa.
+   Serve: Ata de Reuniao, Relatorio, Ebook, Material Didatico,
+   Plano de Aula, Diagnostico.
+
+   Formato: A4 vertical (210 x 297 mm).
+   Geracao de PDF: abrir no navegador > Imprimir > Salvar como PDF
+   > Margens: Nenhuma > Graficos de plano de fundo: ATIVADO.
+
+   Depende de: tokens.css (importar antes deste arquivo).
+   ============================================================ */
+
+/* ---------- Reset minimo ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+p,
+h1,
+h2,
+h3,
+h4,
+ul,
+ol,
+figure,
+table {
+  margin: 0;
+}
+ul,
+ol {
+  padding: 0;
+  list-style: none;
+}
+
+body {
+  background: #6f7276; /* Mesa de trabalho — nao imprime */
+  font-family: var(--doc-serifa);
+  font-size: var(--ts-corpo);
+  line-height: var(--lh-corpo);
+  color: var(--doc-tinta);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-variant-numeric: oldstyle-nums;
+}
+
+/* ============================================================
+   FOLHA
+   ============================================================ */
+.folha {
+  position: relative;
+  width: var(--pg-largura);
+  height: var(--pg-altura);
+  margin: 8mm auto;
+  padding: var(--pg-margem-topo) var(--pg-margem-x) var(--pg-margem-base);
+  background: var(--doc-papel);
+  overflow: hidden;
+  box-shadow: 0 2mm 8mm rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+}
+
+.folha--escura {
+  background: var(--doc-capa);
+  color: #ffffff;
+}
+
+.folha--quente {
+  background: var(--doc-papel-quente);
+}
+
+/* ============================================================
+   CAPA
+   ============================================================ */
+.capa {
+  padding: 0;
+  justify-content: space-between;
+}
+
+/* Fio de assinatura de 2.5mm no topo da capa */
+.capa::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 2.5mm;
+  background: var(--doc-assinatura);
+}
+
+/* Marca d'agua: o circulo da logomarca, ampliado e sangrado.
+   Elemento grafico assinatura do sistema BPlen. */
+.capa__circulo {
+  position: absolute;
+  right: -46mm;
+  bottom: -52mm;
+  width: 148mm;
+  height: 148mm;
+  border-radius: 50%;
+  border: 0.8mm solid rgba(255, 255, 255, 0.13);
+}
+.capa__circulo--interno {
+  right: -18mm;
+  bottom: -24mm;
+  width: 92mm;
+  height: 92mm;
+  border: none;
+  background: radial-gradient(
+    circle at 30% 30%,
+    rgba(156, 56, 157, 0.34),
+    rgba(4, 65, 89, 0.16) 62%,
+    transparent 72%
+  );
+}
+
+.capa__topo,
+.capa__centro,
+.capa__base {
+  position: relative;
+  z-index: 1;
+  padding: 0 var(--pg-margem-x);
+}
+.capa__topo {
+  padding-top: 24mm;
+}
+.capa__base {
+  padding-bottom: 20mm;
+}
+
+.capa__logo {
+  width: 52mm;
+  height: auto;
+  display: block;
+}
+
+.capa__tipo {
+  margin-top: 22mm;
+  font-family: var(--doc-dados);
+  font-size: var(--ts-rotulo);
+  font-weight: 600;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--doc-ambar);
+}
+
+.capa__titulo {
+  margin-top: var(--e-3);
+  font-size: var(--ts-titulo-capa);
+  font-weight: 400;
+  line-height: 1.14;
+  letter-spacing: var(--tk-titulo);
+  color: #ffffff;
+  max-width: 148mm;
+}
+
+.capa__subtitulo {
+  margin-top: var(--e-3);
+  font-size: var(--ts-corpo-g);
+  font-style: italic;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.72);
+  max-width: 132mm;
+}
+
+.capa__regua {
+  margin-top: var(--e-4);
+  width: 26mm;
+  height: 0.6mm;
+  background: var(--doc-assinatura);
+}
+
+/* Bloco de identificacao no pe da capa */
+.capa__identificacao {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--e-3);
+  padding-top: var(--e-3);
+  border-top: var(--doc-fio-inverso);
+}
+
+.capa__campo-rotulo {
+  font-family: var(--doc-dados);
+  font-size: var(--ts-micro);
+  font-weight: 600;
+  letter-spacing: var(--tk-versalete);
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+}
+.capa__campo-valor {
+  margin-top: 1.2mm;
+  font-family: var(--doc-dados);
+  font-size: var(--ts-apoio);
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.94);
+}
+
+/* ============================================================
+   CABECALHO E RODAPE DAS PAGINAS DE MIOLO
+   ============================================================ */
+.cabecalho {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--e-3);
+  padding-bottom: var(--e-2);
+  border-bottom: var(--doc-fio);
+  flex: 0 0 auto;
+}
+
+.cabecalho__marca {
+  display: flex;
+  align-items: center;
+  gap: 2.6mm;
+}
+.cabecalho__logo {
+  width: 20mm;
+  height: auto;
+  display: block;
+}
+.cabecalho__doc {
+  font-family: var(--doc-dados);
+  font-size: var(--ts-micro);
+  font-weight: 600;
+  letter-spacing: var(--tk-versalete);
+  text-transform: uppercase;
+  color: var(--doc-tinta-3);
+  padding-left: 2.6mm;
+  border-left: var(--doc-fio-suave);
+}
+.cabecalho__contexto {
+  font-family: var(--doc-dados);
+  font-size: var(--ts-micro);
+  letter-spacing: 0.06em;
+  text-align: right;
+  color: var(--doc-tinta-3);
+}
+
+.rodape {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-3);
+  margin-top: auto;
+  padding-top: var(--e-2);
+  border-top: var(--doc-fio-suave);
+  font-family: var(--doc-dados);
+  font-size: var(--ts-micro);
+  letter-spacing: 0.06em;
+  color: var(--doc-tinta-4);
+  flex: 0 0 auto;
+}
+.rodape__folio {
+  font-weight: 600;
+  color: var(--doc-tinta-3);
+}
+
+/* Corpo rolavel entre cabecalho e rodape */
+.miolo {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: var(--e-4) 0 var(--e-3);
+}
+
+/* ============================================================
+   TITULOS DE SECAO
+   ============================================================ */
+.secao {
+  margin-bottom: var(--e-4);
+}
+.secao:last-child {
+  margin-bottom: 0;
+}
+
+.secao__indice {
+  font-family: var(--doc-dados);
+  font-size: var(--ts-rotulo);
+  font-weight: 700;
+  letter-spacing: var(--tk-versalete);
+  color: var(--doc-realce);
+}
+
+.h1-doc {
+  font-size: var(--ts-h1);
+  font-weight: 400;
+  line-height: 1.16;
+  letter-spacing: var(--tk-titulo);
+  color: var(--doc-institucional);
+}
+
+.h2-doc {
+  display: flex;
+  align-items: baseline;
+  gap: 3mm;
+  font-size: var(--ts-h2);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: var(--tk-titulo);
+  color: var(--doc-institucional);
+  padding-bottom: var(--e-1);
+  border-bottom: var(--doc-fio-forte);
+  margin-bottom: var(--e-3);
+}
+
+.h3-doc {
+  font-size: var(--ts-h3);
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--doc-tinta);
+  margin-bottom: var(--e-1);
+}
+
+/* Rotulo de campo — versalete Inter */
+.rotulo {
+  display: block;
+  font-family: var(--doc-dados);
+  font-size: var(--ts-rotulo);
+  font-weight: 600;
+  letter-spacing: var(--tk-versalete);
+  text-transform: uppercase;
+  color: var(--doc-tinta-3);
+}
+
+.valor {
+  font-family: var(--doc-dados);
+  font-size: var(--ts-apoio);
+  font-weight: 500;
+  color: var(--doc-tinta);
+}
+
+.texto {
+  font-size: var(--ts-corpo);
+  line-height: var(--lh-corpo);
+  text-align: justify;
+  hyphens: auto;
+}
+.texto + .texto {
+  margin-top: var(--e-2);
+}
+
+.texto-abertura {
+  font-size: var(--ts-corpo-g);
+  line-height: var(--lh-solto);
+  color: var(--doc-tinta-2);
+}
+
+.nota {
+  font-family: var(--doc-dados);
+  font-size: var(--ts-mini);
+  line-height: 1.45;
+  color: var(--doc-tinta-3);
+}
+
+/* ============================================================
+   MARCADOR-CIRCULO — bullet proprietario BPlen
+   ============================================================ */
+.lista-circulo > li {
+  position: relative;
+  padding-left: 6mm;
+  margin-bottom: var(--e-2);
+  font-size: var(--ts-corpo);
+  line-height: var(--lh-corpo);
+}
+.lista-circulo > li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 1.9mm;
+  width: 2.2mm;
+  height: 2.2mm;
+  border-radius: 50%;
+  background: var(--doc-realce);
+}
+.lista-circulo--vazado > li::before {
+  background: transparent;
+  border: 0.45mm solid var(--doc-institucional);
+}
+
+/* ============================================================
+   QUADROS E BLOCOS DE DADOS
+   ============================================================ */
+.quadro {
+  padding: var(--e-3);
+  background: var(--doc-papel-frio);
+  border-left: 1mm solid var(--doc-institucional);
+  border-radius: 0 var(--raio) var(--raio) 0;
+}
+.quadro--realce {
+  background: var(--doc-realce-12);
+  border-left-color: var(--doc-realce);
+}
+.quadro--atencao {
+  background: var(--doc-ambar-12);
+  border-left-color: var(--doc-ambar);
+}
+.quadro--neutro {
+  background: var(--doc-papel-quente);
+  border-left-color: var(--doc-tinta-4);
+}
+
+/* Grade de campos catalograficos */
+.grade-campos {
+  display: grid;
+  gap: var(--e-3) var(--e-3);
+}
+.grade-campos--2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+.grade-campos--3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+.grade-campos--4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+.campo__valor {
+  margin-top: 1mm;
+  font-family: var(--doc-dados);
+  font-size: var(--ts-apoio);
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--doc-tinta);
+}
+
+/* ============================================================
+   TABELAS
+   ============================================================ */
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--doc-dados);
+  font-size: var(--ts-mini);
+}
+.tabela thead th {
+  padding: 2.2mm 2.6mm;
+  background: var(--doc-institucional);
+  color: #ffffff;
+  font-size: var(--ts-micro);
+  font-weight: 600;
+  letter-spacing: var(--tk-versalete);
+  text-transform: uppercase;
+  text-align: left;
+  vertical-align: bottom;
+}
+.tabela tbody td {
+  padding: 2.6mm;
+  border-bottom: var(--doc-fio-suave);
+  vertical-align: top;
+  line-height: 1.45;
+}
+.tabela tbody tr:nth-child(even) td {
+  background: var(--doc-papel-quente);
+}
+.tabela__num {
+  width: 9mm;
+  color: var(--doc-tinta-3);
+  font-variant-numeric: tabular-nums;
+}
+.tabela__prazo {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Selo de status em celula de tabela */
+.status {
+  display: inline-block;
+  padding: 0.6mm 2mm;
+  border-radius: 6mm;
+  font-size: var(--ts-micro);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.status--aberto {
+  background: var(--doc-ambar-12);
+  color: #8a6a00;
+}
+.status--andamento {
+  background: var(--doc-institucional-12);
+  color: var(--doc-institucional);
+}
+.status--concluido {
+  background: var(--doc-verde-12);
+  color: var(--doc-verde);
+}
+
+/* ============================================================
+   SELO DE CLASSIFICACAO
+   ============================================================ */
+.selo-classificacao {
+  display: inline-block;
+  padding: 0.8mm 2.4mm;
+  border: 0.3mm solid var(--cls-cor, var(--doc-tinta-3));
+  border-radius: 6mm;
+  background: var(--cls-fundo, transparent);
+  color: var(--cls-cor, var(--doc-tinta-3));
+  font-family: var(--doc-dados);
+  font-size: var(--ts-micro);
+  font-weight: 600;
+  letter-spacing: var(--tk-versalete);
+  text-transform: uppercase;
+}
+.folha--escura .selo-classificacao {
+  border-color: rgba(255, 255, 255, 0.45);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+/* ============================================================
+   PLACEHOLDERS — campos a preencher
+   Marcados visualmente na tela; discretos na impressao para que
+   um documento incompleto ainda saia legivel, mas evidente.
+   ============================================================ */
+.ph {
+  background: rgba(242, 190, 5, 0.24);
+  box-shadow: inset 0 -0.35mm 0 rgba(242, 190, 5, 0.85);
+  border-radius: 0.6mm;
+  padding: 0 0.6mm;
+}
+.ph--bloco {
+  display: block;
+  padding: 1.6mm;
+}
+/* Ativar .modo-limpo no <body> para conferir o documento sem as
+   marcacoes amarelas de placeholder. */
+.modo-limpo .ph {
+  background: transparent;
+  box-shadow: none;
+}
+
+/* ============================================================
+   ASSINATURAS / VALIDACAO
+   ============================================================ */
+.assinaturas {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--e-4) var(--e-5);
+  margin-top: var(--e-4);
+}
+.assinatura__linha {
+  border-bottom: 0.4pt solid var(--doc-tinta);
+  height: 12mm;
+}
+.assinatura__nome {
+  margin-top: 1.8mm;
+  font-family: var(--doc-dados);
+  font-size: var(--ts-apoio);
+  font-weight: 600;
+}
+.assinatura__papel {
+  font-family: var(--doc-dados);
+  font-size: var(--ts-mini);
+  color: var(--doc-tinta-3);
+}
+
+/* ============================================================
+   CONTRACAPA
+   ============================================================ */
+.contracapa {
+  padding: 0;
+  justify-content: space-between;
+}
+.contracapa::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 2.5mm;
+  background: var(--doc-assinatura);
+}
+.contracapa__bloco {
+  position: relative;
+  z-index: 1;
+  padding: 0 var(--pg-margem-x);
+}
+.contracapa__bloco--topo {
+  padding-top: 30mm;
+}
+.contracapa__bloco--base {
+  padding-bottom: 22mm;
+}
+.contracapa__frase {
+  font-size: var(--ts-h2);
+  font-weight: 400;
+  font-style: italic;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.9);
+  max-width: 128mm;
+}
+.contracapa__contatos {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--e-3);
+  padding-top: var(--e-3);
+  border-top: var(--doc-fio-inverso);
+  font-family: var(--doc-dados);
+  font-size: var(--ts-apoio);
+  color: rgba(255, 255, 255, 0.86);
+}
+.contracapa__aviso {
+  margin-top: var(--e-4);
+  font-family: var(--doc-dados);
+  font-size: var(--ts-micro);
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.42);
+  max-width: 130mm;
+}
+
+/* ============================================================
+   UTILITARIOS
+   ============================================================ */
+.mt-1 { margin-top: var(--e-1); }
+.mt-2 { margin-top: var(--e-2); }
+.mt-3 { margin-top: var(--e-3); }
+.mt-4 { margin-top: var(--e-4); }
+.mt-5 { margin-top: var(--e-5); }
+.mb-2 { margin-top: 0; margin-bottom: var(--e-2); }
+.mb-3 { margin-bottom: var(--e-3); }
+.mb-4 { margin-bottom: var(--e-4); }
+
+/* ============================================================
+   IMPRESSAO
+   ============================================================ */
+@page {
+  size: A4 portrait;
+  margin: 0;
+}
+
+@media print {
+  body {
+    background: none;
+  }
+  .folha {
+    margin: 0;
+    box-shadow: none;
+    page-break-after: always;
+    break-after: page;
+  }
+  .folha:last-of-type {
+    page-break-after: auto;
+    break-after: auto;
+  }
+  .nao-imprime {
+    display: none !important;
+  }
+  .tabela thead {
+    display: table-header-group;
+  }
+  .secao,
+  .quadro,
+  .tabela tr {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+/* ============================================================
+   BARRA DE APOIO (somente tela)
+   ============================================================ */
+.barra-apoio {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 99;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 8px 16px;
+  background: rgba(13, 13, 13, 0.94);
+  color: #fff;
+  font-family: var(--doc-dados);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+.barra-apoio button {
+  font: inherit;
+  font-weight: 600;
+  color: #0d0d0d;
+  background: #f2be05;
+  border: 0;
+  border-radius: 999px;
+  padding: 5px 14px;
+  cursor: pointer;
+}
+.barra-apoio span {
+  color: rgba(255, 255, 255, 0.62);
+}
+body {
+  padding-top: 42px;
+}
+@media print {
+  body {
+    padding-top: 0;
+  }
+}

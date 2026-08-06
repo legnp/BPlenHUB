@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BPlen — Transcrição do Encontro (Template)</title>
+    <link rel="stylesheet" href="../sistema/tokens.css" />
+    <link rel="stylesheet" href="../sistema/chassi-a-encadernado.css" />
+    <style>
+      /* ---------------------------------------------------------
+         Estilos próprios da transcrição.
+         Promover para o chassi se outro template vier a usá-los.
+         --------------------------------------------------------- */
+      .fala {
+        display: grid;
+        grid-template-columns: 26mm 1fr;
+        gap: 0 4mm;
+        margin-bottom: var(--e-2);
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+      .fala__quem {
+        font-family: var(--doc-dados);
+        font-size: var(--ts-mini);
+        font-weight: 600;
+        line-height: 1.5;
+        color: var(--doc-institucional);
+        text-align: right;
+      }
+      .fala__tempo {
+        display: block;
+        font-weight: 400;
+        font-variant-numeric: tabular-nums;
+        color: var(--doc-tinta-4);
+        font-size: var(--ts-micro);
+      }
+      .fala__texto {
+        font-size: var(--ts-apoio);
+        line-height: 1.55;
+        padding-left: 4mm;
+        border-left: var(--doc-fio-suave);
+      }
+      .fala--bplen .fala__texto {
+        border-left-color: var(--doc-realce);
+      }
+      .marca-tempo {
+        margin: var(--e-3) 0 var(--e-2);
+        padding-top: var(--e-1);
+        border-top: var(--doc-fio-suave);
+        font-family: var(--doc-dados);
+        font-size: var(--ts-micro);
+        font-weight: 600;
+        letter-spacing: var(--tk-versalete);
+        text-transform: uppercase;
+        color: var(--doc-tinta-4);
+      }
+    </style>
+  </head>
+
+  <!--
+    ============================================================
+    BPlen — Template de Transcrição do Encontro
+    Chassi A · A4 vertical · v1.0
+
+    Este documento é o Anexo I das atas. Nasce da exportação do
+    Gemini Notes e existe para quem quiser consultar a conversa
+    na íntegra, sem inchar a ata.
+
+    Código: BPL-TIPO-TRC-AAMMDDHHMM
+    TIPO = rotulo curto do tipo de encontro (1to1, onboarding, comite...).
+    O timestamp é o mesmo da ata correspondente — reflete a data/hora
+    de início do encontro, não a de emissão do documento.
+    Ex.: ata BPL-1to1-ATA-2607301526 -> transcrição BPL-1to1-TRC-2607301526
+
+    COMO MONTAR
+    1. Exporte a transcrição do Gemini Notes.
+    2. Cole o conteúdo nos blocos .fala (um por intervenção).
+    3. Não edite o conteúdo das falas: transcrição se corrige com
+       nota de revisão, nunca por reescrita silenciosa.
+    4. Duplique a folha de conteúdo quantas vezes precisar.
+    ============================================================
+  -->
+
+  <body data-tipo="TRC">
+    <div class="barra-apoio nao-imprime">
+      <button type="button" onclick="document.body.classList.toggle('modo-limpo')">
+        Ocultar marcações
+      </button>
+      <span>Transcrição do Encontro · Anexo I</span>
+      <button type="button" onclick="exportarPdf()">PDF</button>
+      <button type="button" onclick="exportarWord()">Word</button>
+      <button type="button" onclick="exportarHtml()">HTML</button>
+    </div>
+
+    <!-- =========================================================
+         FOLHA 1 — CAPA
+         ========================================================= -->
+    <section class="folha folha--escura capa">
+      <div class="capa__circulo" aria-hidden="true"></div>
+      <div class="capa__circulo capa__circulo--interno" aria-hidden="true"></div>
+
+      <header class="capa__topo">
+        <img class="capa__logo" src="../sistema/assets/bplen-logo-branco.png" alt="BPlen" />
+      </header>
+
+      <div class="capa__centro">
+        <p class="capa__tipo">Anexo I · Transcrição</p>
+        <h1 class="capa__titulo"><span class="ph">{{TITULO DO ENCONTRO}}</span></h1>
+        <p class="capa__subtitulo">
+          Registro da conversa na íntegra, anexo à ata
+          <span class="ph">{{BPL-TIPO-ATA-AAMMDDHHMM}}</span>
+        </p>
+        <div class="capa__regua" aria-hidden="true"></div>
+      </div>
+
+      <footer class="capa__base">
+        <div class="capa__identificacao">
+          <div>
+            <p class="capa__campo-rotulo">Documento</p>
+            <p class="capa__campo-valor"><span class="ph">{{BPL-TIPO-TRC-AAMMDDHHMM}}</span></p>
+          </div>
+          <div>
+            <p class="capa__campo-rotulo">Data do encontro</p>
+            <p class="capa__campo-valor"><span class="ph">{{DD/MM/AAAA}}</span></p>
+          </div>
+          <div>
+            <p class="capa__campo-rotulo">Circulação</p>
+            <p class="capa__campo-valor">
+              <span class="selo-classificacao cls-confidencial ph">{{CONFIDENCIAL}}</span>
+            </p>
+          </div>
+        </div>
+      </footer>
+    </section>
+
+    <!-- =========================================================
+         FOLHA 2 — SOBRE ESTA TRANSCRIÇÃO
+         ========================================================= -->
+    <section class="folha">
+      <header class="cabecalho">
+        <div class="cabecalho__marca">
+          <img class="cabecalho__logo" src="../sistema/assets/bplen-logo-preto.png" alt="BPlen" />
+          <span class="cabecalho__doc">Transcrição</span>
+        </div>
+        <p class="cabecalho__contexto">
+          <span class="ph">{{BPL-TIPO-TRC-AAMMDDHHMM}}</span> · <span class="ph">{{DD/MM/AAAA}}</span>
+        </p>
+      </header>
+
+      <div class="miolo">
+        <div class="secao">
+          <p class="secao__indice">Sobre esta transcrição</p>
+          <h1 class="h1-doc mt-1"><span class="ph">{{TITULO DO ENCONTRO}}</span></h1>
+          <p class="texto-abertura mt-2">
+            Este é o registro do que foi dito no encontro, do começo ao fim. Ele acompanha a ata
+            para quem quiser voltar a algum trecho da conversa com as palavras originais.
+          </p>
+        </div>
+
+        <div class="secao">
+          <h2 class="h2-doc"><span>Como esta transcrição foi feita</span></h2>
+          <div class="quadro quadro--neutro">
+            <p class="nota">
+              A conversa foi captada e transcrita automaticamente pelo Gemini Notes. O texto passou
+              por uma conferência da equipe para corrigir nomes, termos técnicos e trechos que a
+              ferramenta não captou bem — o conteúdo das falas foi preservado como dito.
+              <br /><br />
+              Transcrição automática erra: pode trocar palavras parecidas, juntar falas
+              sobrepostas ou marcar quem falou de forma equivocada. Onde houver diferença entre
+              este documento e a ata, <strong>vale o que está na ata</strong>, que passou por
+              revisão humana completa. Se você encontrar algum trecho que não reflete o que foi
+              dito, é só avisar a gente.
+            </p>
+          </div>
+
+          <div class="grade-campos grade-campos--3 mt-3">
+            <div>
+              <span class="rotulo">Ata correspondente</span>
+              <p class="campo__valor"><span class="ph">{{BPL-TIPO-ATA-AAMMDDHHMM}}</span></p>
+            </div>
+            <div>
+              <span class="rotulo">Duração do encontro</span>
+              <p class="campo__valor"><span class="ph">{{0h00}}</span></p>
+            </div>
+            <div>
+              <span class="rotulo">Conferida por</span>
+              <p class="campo__valor">Lisandra Lencina</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="secao">
+          <h2 class="h2-doc"><span>Quem fala nesta transcrição</span></h2>
+          <ul class="lista-circulo">
+            <!-- REPETIVEL: uma linha por pessoa -->
+            <li class="nota">Lisandra Lencina — conduziu o encontro</li>
+            <li class="nota"><span class="ph">{{Nome completo}}</span> — <span class="ph">{{papel}}</span></li>
+            <li class="nota"><span class="ph">{{Nome completo}}</span> — <span class="ph">{{papel}}</span></li>
+          </ul>
+        </div>
+
+        <div class="secao">
+          <h2 class="h2-doc"><span>Ajustes feitos na conferência</span></h2>
+          <p class="nota mb-3">
+            Correções aplicadas ao texto automático. Quando não houver nenhuma, escrever
+            "Nenhum ajuste necessário".
+          </p>
+          <ul class="lista-circulo lista-circulo--vazado">
+            <!-- REPETIVEL / OPCIONAL -->
+            <li class="nota"><span class="ph">{{Trecho e o que foi corrigido}}</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <footer class="rodape">
+        <span>BPlen · <span class="ph">{{BPL-TIPO-TRC-AAMMDDHHMM}}</span> · Anexo I</span>
+        <span class="rodape__folio">2</span>
+      </footer>
+    </section>
+
+    <!-- =========================================================
+         FOLHA 3 — A CONVERSA
+         FOLHA REPETIVEL: duplique esta section inteira até
+         acomodar a transcrição completa e ajuste o folio.
+         ========================================================= -->
+    <section class="folha">
+      <header class="cabecalho">
+        <div class="cabecalho__marca">
+          <img class="cabecalho__logo" src="../sistema/assets/bplen-logo-preto.png" alt="BPlen" />
+          <span class="cabecalho__doc">Transcrição</span>
+        </div>
+        <p class="cabecalho__contexto">
+          <span class="ph">{{BPL-TIPO-TRC-AAMMDDHHMM}}</span> · <span class="ph">{{DD/MM/AAAA}}</span>
+        </p>
+      </header>
+
+      <div class="miolo">
+        <div class="secao">
+          <p class="secao__indice">A conversa</p>
+          <h1 class="h1-doc mt-1">Transcrição</h1>
+        </div>
+
+        <div class="secao">
+          <p class="marca-tempo">Abertura · <span class="ph">{{HH:MM}}</span></p>
+
+          <!-- REPETIVEL: um bloco .fala por intervenção.
+               Use fala--bplen para quem fala pela BPlen. -->
+          <div class="fala fala--bplen">
+            <div class="fala__quem">
+              Lisandra Lencina
+              <span class="fala__tempo"><span class="ph">{{00:00}}</span></span>
+            </div>
+            <div class="fala__texto"><span class="ph">{{Fala transcrita.}}</span></div>
+          </div>
+
+          <div class="fala">
+            <div class="fala__quem">
+              <span class="ph">{{Nome}}</span>
+              <span class="fala__tempo"><span class="ph">{{00:00}}</span></span>
+            </div>
+            <div class="fala__texto"><span class="ph">{{Fala transcrita.}}</span></div>
+          </div>
+
+          <div class="fala fala--bplen">
+            <div class="fala__quem">
+              Lisandra Lencina
+              <span class="fala__tempo"><span class="ph">{{00:00}}</span></span>
+            </div>
+            <div class="fala__texto"><span class="ph">{{Fala transcrita.}}</span></div>
+          </div>
+
+          <p class="marca-tempo"><span class="ph">{{Assunto da pauta}}</span> · <span class="ph">{{HH:MM}}</span></p>
+
+          <div class="fala">
+            <div class="fala__quem">
+              <span class="ph">{{Nome}}</span>
+              <span class="fala__tempo"><span class="ph">{{00:00}}</span></span>
+            </div>
+            <div class="fala__texto"><span class="ph">{{Fala transcrita.}}</span></div>
+          </div>
+
+          <div class="fala fala--bplen">
+            <div class="fala__quem">
+              Lisandra Lencina
+              <span class="fala__tempo"><span class="ph">{{00:00}}</span></span>
+            </div>
+            <div class="fala__texto"><span class="ph">{{Fala transcrita.}}</span></div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="rodape">
+        <span>BPlen · <span class="ph">{{BPL-TIPO-TRC-AAMMDDHHMM}}</span> · Anexo I</span>
+        <span class="rodape__folio">3</span>
+      </footer>
+    </section>
+
+    <!-- =========================================================
+         FOLHA FINAL — CONTRACAPA
+         ========================================================= -->
+    <section class="folha folha--escura contracapa">
+      <div class="capa__circulo" aria-hidden="true"></div>
+
+      <div class="contracapa__bloco contracapa__bloco--topo">
+        <img class="capa__logo" src="../sistema/assets/bplen-logo-branco.png" alt="BPlen" />
+        <p class="contracapa__frase mt-5">
+          Guardamos a conversa inteira para que nada importante dependa só da memória.
+        </p>
+      </div>
+
+      <div class="contracapa__bloco contracapa__bloco--base">
+        <div class="contracapa__contatos">
+          <div>
+            <p class="capa__campo-rotulo">Fale com a gente</p>
+            <p class="mt-1">Lisandra Lencina<br />lisandra.lencina@bplen.com<br />+55 11 94515 2088</p>
+          </div>
+          <div>
+            <p class="capa__campo-rotulo">Este documento</p>
+            <p class="mt-1">
+              <span class="ph">{{BPL-TIPO-TRC-AAMMDDHHMM}}</span><br />
+              Anexo I da ata <span class="ph">{{BPL-TIPO-ATA-AAMMDDHHMM}}</span><br />
+              <span class="ph">{{00}}</span> páginas
+            </p>
+          </div>
+        </div>
+
+        <p class="contracapa__aviso">
+          Transcrição de circulação restrita às pessoas que participaram do encontro. Por conter
+          falas na íntegra, pedimos cuidado redobrado no compartilhamento. Os dados pessoais aqui
+          registrados são tratados conforme a Lei n. 13.709/2018, e qualquer participante pode
+          pedir a revisão ou a exclusão de trechos que lhe digam respeito.
+        </p>
+      </div>
+    </section>
+
+    <script src="../sistema/exportar.js"></script>
+  </body>
+</html>

@@ -1,0 +1,355 @@
+/* ============================================================
+   BPlen — Sistema de Documentos
+   chassi-b-timbrado.css — Camada 2: estrutura
+
+   CHASSI B — "Papel Timbrado"
+   Sem capa, sem contracapa escura: cabecalho e rodape identicos
+   em toda pagina, do inicio ao fim. Serve instrumento formal —
+   contrato, termo, aditivo, carta, declaracao, certificado, NDA.
+
+   Diferenca do Chassi A: aquele e para leitura (ata, relatorio,
+   ebook) e abre com capa/vitrine. Este e para ASSINATURA — a
+   primeira pagina ja e conteudo, com a identificacao do
+   documento embutida no alto da folha 1.
+
+   Formato: A4 vertical (210 x 297 mm), mesma geometria do Chassi A.
+   Depende de: tokens.css (importar antes deste arquivo). Reusa
+   .folha, .lista-circulo, .quadro, .selo-classificacao e o reset
+   ja definidos em chassi-a-encadernado.css — importar OS DOIS.
+   ============================================================ */
+
+/* ============================================================
+   CABECALHO TIMBRADO — repete em toda folha
+   ============================================================ */
+.cabecalho-b {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-3);
+  padding-bottom: var(--e-2);
+  border-bottom: var(--doc-fio-forte);
+  flex: 0 0 auto;
+}
+
+.cabecalho-b__marca {
+  display: flex;
+  align-items: center;
+  gap: 3mm;
+}
+.cabecalho-b__logo {
+  width: 22mm;
+  height: auto;
+  display: block;
+}
+.cabecalho-b__linha {
+  width: 0;
+  height: 7mm;
+  border-left: var(--doc-fio-suave);
+}
+.cabecalho-b__doc {
+  font-family: var(--doc-dados);
+  font-size: var(--ts-rotulo);
+  font-weight: 700;
+  letter-spacing: var(--tk-versalete);
+  text-transform: uppercase;
+  color: var(--doc-institucional);
+}
+.cabecalho-b__contexto {
+  text-align: right;
+  font-family: var(--doc-dados);
+  font-size: var(--ts-micro);
+  letter-spacing: 0.05em;
+  color: var(--doc-tinta-3);
+}
+
+/* ============================================================
+   RODAPE TIMBRADO — repete em toda folha, com espaco de rubrica
+   ============================================================ */
+.rodape-b {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--e-3);
+  margin-top: auto;
+  padding-top: var(--e-2);
+  border-top: var(--doc-fio-suave);
+  font-family: var(--doc-dados);
+  font-size: var(--ts-micro);
+  color: var(--doc-tinta-4);
+  flex: 0 0 auto;
+}
+.rodape-b__esquerda {
+  letter-spacing: 0.04em;
+}
+.rodape-b__folio {
+  font-weight: 700;
+  color: var(--doc-tinta-3);
+}
+
+/* Espaco de rubrica — so faz sentido na via impressa assinada a
+   mao. Discreto o bastante para nao incomodar quando o documento
+   for assinado digitalmente (nesse caso, ignorar/remover). */
+.rodape-b__rubrica {
+  width: 22mm;
+  text-align: center;
+}
+.rodape-b__rubrica-linha {
+  height: 6mm;
+  border-bottom: 0.3pt solid var(--doc-tinta-4);
+  margin-bottom: 0.8mm;
+}
+.rodape-b__rubrica-legenda {
+  font-size: var(--ts-micro);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--doc-tinta-4);
+}
+
+/* ============================================================
+   BLOCO DE IDENTIFICACAO — topo da folha 1, substitui a capa
+   ============================================================ */
+.identificacao-b {
+  padding: var(--e-4) 0 var(--e-3);
+  border-bottom: var(--doc-fio);
+  margin-bottom: var(--e-4);
+}
+.identificacao-b__tipo {
+  font-family: var(--doc-dados);
+  font-size: var(--ts-rotulo);
+  font-weight: 700;
+  letter-spacing: var(--tk-versalete);
+  text-transform: uppercase;
+  color: var(--doc-realce);
+}
+.identificacao-b__titulo {
+  margin-top: var(--e-1);
+  font-size: var(--ts-h1);
+  font-weight: 400;
+  line-height: 1.2;
+  color: var(--doc-institucional);
+}
+.identificacao-b__meta {
+  margin-top: var(--e-2);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e-3);
+}
+
+/* ============================================================
+   CLAUSULAS — numeracao hierarquica de instrumento juridico
+   ============================================================ */
+.secao-clausulas {
+  margin-bottom: var(--e-4);
+}
+.secao-clausulas:last-child {
+  margin-bottom: 0;
+}
+
+.secao-clausulas__titulo {
+  font-family: var(--doc-dados);
+  font-size: var(--ts-h3);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--doc-institucional);
+  padding-bottom: var(--e-1);
+  border-bottom: var(--doc-fio-forte);
+  margin-bottom: var(--e-3);
+}
+
+.clausula {
+  margin-bottom: var(--e-3);
+}
+.clausula:last-child {
+  margin-bottom: 0;
+}
+.clausula__numero {
+  font-weight: 700;
+  color: var(--doc-tinta);
+}
+.clausula__texto {
+  font-size: var(--ts-corpo);
+  line-height: var(--lh-corpo);
+  text-align: justify;
+  hyphens: auto;
+}
+.clausula__paragrafo {
+  margin-top: var(--e-2);
+  padding-left: 6mm;
+  font-size: var(--ts-corpo);
+  line-height: var(--lh-corpo);
+  text-align: justify;
+}
+.clausula__paragrafo-marca {
+  font-weight: 700;
+  font-style: italic;
+}
+
+/* Bloco condicional — presente apenas em certos tipos de acordo
+   (ex.: parceria remunerada, direito a vitrine publica). Visual
+   discreto em tela para lembrar quem prepara o documento de
+   decidir se o bloco fica; nao aparece na impressao/PDF. */
+.bloco-condicional {
+  position: relative;
+  padding: var(--e-2);
+  margin: var(--e-2) 0;
+  background: var(--doc-ambar-12);
+  border: 0.4pt dashed var(--doc-ambar);
+  border-radius: var(--raio);
+}
+.bloco-condicional__aviso {
+  display: block;
+  margin-bottom: var(--e-2);
+  font-family: var(--doc-dados);
+  font-size: var(--ts-rotulo);
+  font-weight: 700;
+  letter-spacing: var(--tk-versalete);
+  text-transform: uppercase;
+  color: #8a6a00;
+}
+@media print {
+  .bloco-condicional {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: var(--e-3) 0;
+  }
+  .bloco-condicional__aviso {
+    display: none;
+  }
+}
+
+/* ============================================================
+   FORMALIZACAO — bloco final hibrido (assinatura digital OU
+   fisica). As duas variantes convivem no template; manter
+   apenas a que corresponde ao meio efetivamente usado.
+   ============================================================ */
+.formalizacao {
+  margin-top: var(--e-3);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.formalizacao__titulo {
+  font-size: var(--ts-h2);
+  font-weight: 600;
+  color: var(--doc-institucional);
+  margin-bottom: var(--e-3);
+}
+
+/* ---------- Variante digital ---------- */
+.formalizacao-digital {
+  padding: var(--e-3);
+  background: var(--doc-papel-frio);
+  border-left: 1mm solid var(--doc-institucional);
+  border-radius: 0 var(--raio) var(--raio) 0;
+}
+.formalizacao-digital__rotulo {
+  font-family: var(--doc-dados);
+  font-size: var(--ts-rotulo);
+  font-weight: 700;
+  letter-spacing: var(--tk-versalete);
+  text-transform: uppercase;
+  color: var(--doc-institucional);
+  margin-bottom: var(--e-2);
+}
+.formalizacao-digital__grade {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--e-2) var(--e-3);
+  margin-bottom: var(--e-2);
+}
+.formalizacao-digital__campo-rotulo {
+  display: block;
+  font-family: var(--doc-dados);
+  font-size: var(--ts-micro);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--doc-tinta-3);
+}
+.formalizacao-digital__campo-valor {
+  font-family: var(--doc-dados);
+  font-size: var(--ts-apoio);
+  font-weight: 500;
+  color: var(--doc-tinta);
+  word-break: break-all;
+}
+.formalizacao-digital__nota {
+  font-size: var(--ts-mini);
+  line-height: 1.5;
+  color: var(--doc-tinta-3);
+}
+
+/* ---------- Variante fisica (assinatura a mao) ---------- */
+.formalizacao-fisica__local-data {
+  font-size: var(--ts-corpo);
+  margin-bottom: var(--e-4);
+}
+.assinaturas-b {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--e-4) var(--e-5);
+}
+.assinatura-b__linha {
+  border-bottom: 0.4pt solid var(--doc-tinta);
+  height: 8mm;
+}
+.assinatura-b__nome {
+  margin-top: 1.6mm;
+  font-family: var(--doc-dados);
+  font-size: var(--ts-apoio);
+  font-weight: 700;
+}
+.assinatura-b__papel {
+  font-family: var(--doc-dados);
+  font-size: var(--ts-mini);
+  color: var(--doc-tinta-3);
+}
+.testemunhas-b {
+  margin-top: var(--e-3);
+  padding-top: var(--e-2);
+  border-top: var(--doc-fio-suave);
+}
+.testemunhas-b__titulo {
+  font-family: var(--doc-dados);
+  font-size: var(--ts-rotulo);
+  font-weight: 700;
+  letter-spacing: var(--tk-versalete);
+  text-transform: uppercase;
+  color: var(--doc-tinta-3);
+  margin-bottom: var(--e-3);
+}
+.testemunhas-b__grade {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--e-4) var(--e-5);
+}
+
+/* Separador visual entre as duas variantes quando ambas
+   aparecem lado a lado na tela, para quem esta decidindo qual
+   manter. Nao imprime. */
+.formalizacao__ou {
+  display: flex;
+  align-items: center;
+  gap: var(--e-2);
+  margin: var(--e-4) 0;
+  font-family: var(--doc-dados);
+  font-size: var(--ts-rotulo);
+  font-weight: 700;
+  letter-spacing: var(--tk-versalete);
+  text-transform: uppercase;
+  color: var(--doc-tinta-4);
+}
+.formalizacao__ou::before,
+.formalizacao__ou::after {
+  content: "";
+  flex: 1;
+  height: 0.4pt;
+  background: var(--doc-tinta-4);
+  opacity: 0.4;
+}
+@media print {
+  .formalizacao__ou {
+    display: none;
+  }
+}

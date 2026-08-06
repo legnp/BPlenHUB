@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BPlen — Assinatura de E-mail (Template)</title>
+  </head>
+
+  <!--
+    ============================================================
+    BPlen — Assinatura de E-mail (Padrao V01)
+    Segue a mesma paleta de src/lib/emails/email-layout.ts:
+    petroleo #044159 + ametista #9558A6/#9677D9. Nao usa o
+    gradiente magenta/roxo do site publico — aquele e tratamento
+    de landing page, este e correspondencia.
+
+    REGRAS DE E-MAIL (nao sao as mesmas do kit de documentos)
+    - So tabela com estilo inline. Sem <style>, sem classe, sem
+      flex/grid — o Gmail descarta ao colar, e outros clientes
+      (Outlook) nunca leram flex/grid de qualquer forma.
+    - So fonte de sistema (Arial/Helvetica). Fonte customizada nao
+      carrega em cliente de e-mail.
+    - Logo por URL hospedada (nao base64). Confirmado ativo em
+      https://www.bplen.com/logo_bplen/logo.png
+
+    COMO GERAR A VERSAO DE UMA PESSOA
+    1. Duplique este arquivo com o nome da pessoa.
+    2. Troque os campos {{ENTRE CHAVES}}.
+    3. Abra no navegador — nao no editor de codigo.
+    4. Selecione tudo dentro do quadro pontilhado (Ctrl+A dentro
+       dele, nao a pagina toda) e copie (Ctrl+C).
+    5. Cole na configuracao de assinatura do Gmail.
+    Detalhes completos: COMO-INSTALAR.md nesta pasta.
+    ============================================================
+  -->
+
+  <body style="margin:0; padding:24px; background:#F5F7FA; font-family:Arial,Helvetica,sans-serif;">
+    <p style="max-width:520px; margin:0 auto 10px; font-size:11px; color:#9CA3AF; text-transform:uppercase; letter-spacing:.08em;">
+      Selecione apenas o conteudo dentro do quadro abaixo e copie
+    </p>
+
+    <!-- ================================================================
+         INICIO DA ASSINATURA — tudo daqui ate o comentario de FIM
+         ================================================================ -->
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0"
+      style="border-collapse:collapse; font-family:Arial,Helvetica,sans-serif; max-width:480px;">
+      <tr>
+        <td style="padding-right:18px; vertical-align:top;">
+          <img
+            src="https://www.bplen.com/logo_bplen/logo.png"
+            width="108"
+            alt="BPlen"
+            style="display:block; width:108px; height:auto; border:0;"
+          />
+        </td>
+        <td style="border-left:2px solid #044159; padding-left:18px; vertical-align:top;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+            <tr>
+              <td style="font-size:15px; font-weight:bold; color:#1D1D1F; padding-bottom:2px; font-family:Arial,Helvetica,sans-serif;">
+                {{NOME}}
+              </td>
+            </tr>
+            <tr>
+              <td style="font-size:11px; font-weight:bold; letter-spacing:.05em; text-transform:uppercase; color:#044159; padding-bottom:12px; font-family:Arial,Helvetica,sans-serif;">
+                {{CARGO}} &middot; BPlen
+              </td>
+            </tr>
+            <tr>
+              <td style="font-size:12px; color:#3F3F46; padding-bottom:4px; font-family:Arial,Helvetica,sans-serif;">
+                <a href="mailto:{{EMAIL}}" style="color:#3F3F46; text-decoration:none;">{{EMAIL}}</a>
+              </td>
+            </tr>
+            <tr>
+              <td style="font-size:12px; color:#3F3F46; padding-bottom:4px; font-family:Arial,Helvetica,sans-serif;">
+                <a href="{{WHATSAPP_LINK}}" style="color:#3F3F46; text-decoration:none;">{{TELEFONE}}</a>
+              </td>
+            </tr>
+            <tr>
+              <td style="font-size:12px; color:#3F3F46; padding-bottom:12px; font-family:Arial,Helvetica,sans-serif;">
+                <a href="https://www.bplen.com" style="color:#3F3F46; text-decoration:none;">bplen.com</a>
+              </td>
+            </tr>
+            <tr>
+              <td style="font-family:Arial,Helvetica,sans-serif;">
+                <a href="{{LINKEDIN_LINK}}" style="font-size:11px; font-weight:bold; color:#044159; text-decoration:none; margin-right:14px;">LinkedIn</a>
+                <a href="{{INSTAGRAM_LINK}}" style="font-size:11px; font-weight:bold; color:#044159; text-decoration:none;">Instagram</a>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+    <!-- ================================================================
+         FIM DA ASSINATURA
+         ================================================================ -->
+  </body>
+</html>

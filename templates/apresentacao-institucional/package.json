@@ -1,0 +1,13 @@
+{
+  "name": "bplen-apresentacao-institucional",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Gerador do deck institucional BPlen (.pptx) — ver COMO-EDITAR.md",
+  "type": "commonjs",
+  "dependencies": {
+    "pptxgenjs": "^4.0.1",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-icons": "^5.7.0"
+  }
+}

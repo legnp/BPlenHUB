@@ -48,6 +48,9 @@ Mercado Pago + Google Workspace (Drive/Sheets) + Resend + Zustand + Tailwind v4.
 - `src/app/` — páginas como orquestradoras; evitar lógica de negócio pesada aqui
 - `scripts/` — scripts reutilizáveis e nomeados de forma estável (não descartáveis)
 - `scratch/` — investigação ad-hoc, descartável, ignorado pelo git
+- `templates/` — kit de documentos/artefatos formais da BPlen fora do produto
+  (ata, contrato, apresentação, assinatura de e-mail). `templates/TEMPLATES_GLOBAL.md`
+  — leitura obrigatória antes de criar ou alterar qualquer template.
 
 ## Identidade e segurança
 - Matrícula BPlen (`BP-xxx-PF-AAMMDD`) é a chave primária de usuário.
