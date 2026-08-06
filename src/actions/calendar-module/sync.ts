@@ -129,12 +129,11 @@ export async function runCalendarSync(options: { guardMassDeletion?: boolean } =
       if (!item.id) return;
       const ref = db.collection("Calendar_Events").doc(item.id);
 
-      const rawDescription = item.description || "";
-      const plainDescription = rawDescription.replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, "\n");
-      const capacityMatch = plainDescription.match(/Vagas:\s*(\d+)/i);
-      const mentorMatch = plainDescription.match(/Orientador:\s*([^\n;]+)/i);
-      const themeMatch = plainDescription.match(/Tema:\s*([^\n;]+)/i);
-
+      // O corpo do evento NAO carrega mais dado estruturado. `Vagas:`, `Orientador:` e
+      // `Tema:` sairam do Google quando a Gestora enxugou os tipos (2026-08-04): vagas e
+      // consultor vem do TIPO, e o tema vem do agendamento (o motivo escolhido) ou da
+      // atribuicao por ocorrencia. O parser que lia esses campos foi removido — nao lia
+      // mais nada e dava a entender que a descricao ainda importava.
       const tipo = tipoPorTitulo.get(normalizeEventTitle(item.summary));
 
       ops.push({ kind: "set", ref, data: {
@@ -150,9 +149,10 @@ export async function runCalendarSync(options: { guardMassDeletion?: boolean } =
         // todo evento novo passou a gravar 0 — e o guard do agendamento trata 0 como
         // ILIMITADO, entao um slot de 1 vaga aceitava inscricao sem fim. A descricao
         // fica como fallback para evento legado ainda sem tipo.
-        totalCapacity: resolveSlotCapacity(tipo ?? null, capacityMatch ? parseInt(capacityMatch[1]) : 0),
-        mentor: mentorMatch ? mentorMatch[1].trim() : "",
-        theme: themeMatch ? themeMatch[1].trim() : undefined,
+        totalCapacity: resolveSlotCapacity(tipo ?? null, 0),
+        // Consultor vem do tipo, mesmo caminho das vagas. A atribuicao por ocorrencia
+        // (resto da Fase 3.2) sobrescrevera este valor quando existir.
+        mentor: tipo?.consultorPadrao ?? "",
         slug: getEventStandardSlug(item.summary || "", item.start?.dateTime || item.start?.date || "", item.id),
         // Classificado na gravacao para que os leitores filtrem por identificador,
         // e nao refazendo cada um o seu casamento de texto no titulo.

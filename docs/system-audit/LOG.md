@@ -24,6 +24,40 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-06] Chat de execucao — Fase 3.5: rotulo Consultor + parser morto removido
+
+- **Sync validado apos a Gestora rodar**: TODOS os eventos futuros classificados, nenhum
+  sem tipo fora os bloqueios. 1 to 1 206/vagas 1, Consultoria Individual 102/1,
+  Consultoria em Grupo 49/10, Onboarding 26/10, **Onboarding de Parceiros 26/10** (estava
+  sem tipo e com capacidade 0, que o guard le como ilimitada), Offboarding 9/10,
+  Bloqueado 112/0 (correto, nao e agendavel). Era o criterio de aceite da correcao da
+  capacidade.
+- **Orfao do Santiago apagado** a pedido da Gestora (`BP-012`, evento
+  `3k5l62a2lnpfjgk9ei4emro3s6_20260623T183500Z`). Conteudo conferido antes: pendente, sem
+  ata, sem feedback, sem presenca — nada a preservar. Restam 3 orfaos, todos da conta de
+  teste `BP-002`. Registrado tambem que o orfao era **inerte**: o `UserBookings` tem
+  guarda (`if (!event) return null`), entao o fantasma nao renderizava nem quebrava a tela.
+- **Recriar o evento no Google NAO reconecta um orfao** — o agendamento aponta para o id
+  do evento, nao para data/hora; evento novo nasce com id novo. Fica registrado porque foi
+  duvida da Gestora e e contra-intuitivo.
+- Fase 3.5 entregue, em duas frentes na mesma passada:
+  1. **Rotulo visivel "Orientador" -> "Consultor"** (Calendar, UserBookings x2,
+     ProgramacaoResumo). Camada visual, o campo de dado `mentor` segue com o nome antigo
+     — a renomeacao do dado continua sendo o BUG-098, adiado por tocar producao e o
+     historico de carreira.
+  2. **Parser morto removido do sync**: `Vagas:`, `Orientador:` e `Tema:` nao existem mais
+     no corpo do evento desde a limpeza do calendario. O codigo continuava lendo e dava a
+     entender que a descricao ainda importava. Com ele foi embora tambem o ultimo uso da
+     descricao como fonte de dado estruturado.
+  3. Consequencia necessaria: **o consultor passou a vir do TIPO** (`consultorPadrao`),
+     mesmo caminho que as vagas ja seguiam. Sem isso, remover o parser esvaziaria o campo
+     `mentor` de todo evento.
+- Validado: eslint 0 erros nos arquivos tocados, type-check limpo, **488 testes** verdes,
+  build exit 0.
+- Resta para o fechamento: **(A)** mecanismo de orfaos (Fase 3.4) e **(B)** aposentar o
+  fallback textual — que depende de um backfill do `subStepId` nos 14 agendamentos
+  existentes (trabalho de script, nao manual).
+
 ## [2026-08-05] Chat de execucao — Fase 2: atribuicao do slot de grupo a parada do GDC
 
 - Fecha o afinamento dos agendamentos. **Decisao da Gestora:** slot de Consultoria em

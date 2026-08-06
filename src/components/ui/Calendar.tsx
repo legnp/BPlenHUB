@@ -443,7 +443,7 @@ export default function Calendar({
                     <div className="flex items-center gap-2 min-w-0">
                       <User className="w-3 h-3 text-[var(--text-muted)] opacity-40 shrink-0" />
                       <span className="text-[11px] font-bold text-[var(--text-muted)] opacity-70 whitespace-nowrap truncate">
-                        Orientador: <span className="text-[var(--text-primary)] opacity-90">{ev.mentor || "BPlen"}</span>
+                        Consultor: <span className="text-[var(--text-primary)] opacity-90">{ev.mentor || "BPlen"}</span>
                       </span>
                     </div>
 

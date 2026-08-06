@@ -401,7 +401,7 @@ export default function UserBookings({
           <span>Evento</span>
           <SortIcon field="name" />
         </button>
-        <div>Orientador</div>
+        <div>Consultor</div>
         <button onClick={() => handleSortToggle("status")} className="flex items-center gap-1.5 hover:text-[var(--accent-start)] transition-colors text-left">
           <span>Status</span>
           <SortIcon field="status" />
@@ -693,7 +693,7 @@ export function BookingDetailModal({
           />
           <InfoPill 
             icon={<User className="w-3.5 h-3.5" />}
-            label="Orientador"
+            label="Consultor"
             value={event.mentor || "BPlen"}
           />
           <InfoPill 

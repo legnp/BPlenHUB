@@ -471,7 +471,7 @@ export default function ProgramacaoResumo() {
             <SortIcon field="name" />
           </button>
         </div>
-        <div>Orientador</div>
+        <div>Consultor</div>
         <div>Status</div>
         <button onClick={() => handleSortToggle("nps")} className="flex items-center justify-center gap-1.5 hover:text-[var(--accent-start)] transition-colors">
           <span>NPS</span>
