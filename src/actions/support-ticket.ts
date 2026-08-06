@@ -5,6 +5,7 @@ import { after } from "next/server";
 import { getAdminDb } from "@/lib/firebase-admin";
 import * as admin from "firebase-admin";
 import { verifySignedSession } from "@/actions/auth-session";
+import { findMatriculaByIdentity } from "@/lib/identity/find-matricula";
 
 /**
  * BPlen HUB — Support Ticket Action (Suporte 🆘)
@@ -50,10 +51,18 @@ export async function submitSupportTicket(rawInput: SubmitTicketInput) {
 
     const { description, imageBase64, imageName, currentPage } = parsed.data;
 
-    // Buscar matrícula do usuário via _AuthMap
-    const uidMapRef = getAdminDb().collection("_AuthMap").doc(session.uid);
-    const uidMapSnap = await uidMapRef.get();
-    const matricula: string | null = uidMapSnap.exists ? (uidMapSnap.data()?.matricula ?? null) : null;
+    // Resolucao canonica da identidade (AuthMap -> UID -> E-mail, com auto-healing).
+    //
+    // Antes lia `_AuthMap/{uid}` direto — uma QUARTA copia da resolucao, sem o
+    // passo de e-mail. Quem tem matricula mas esta com o mapeamento faltando
+    // (troca de provedor, transferencia de conta) era tratado como se nao tivesse
+    // identidade: o chamado caia na gaveta por uid, separado da propria pasta, e
+    // o espelhamento nao acontecia. E o modo de falha que o cabecalho de
+    // `find-matricula.ts` descreve — copia que diverge e sobrevive ao conserto.
+    const matricula: string | null = await findMatriculaByIdentity(
+      session.uid,
+      session.email ?? undefined
+    );
 
     // Buscar nome do usuário
     let userName = session.email ?? "Desconhecido";

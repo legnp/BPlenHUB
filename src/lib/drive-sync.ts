@@ -411,23 +411,51 @@ ${formatProofBlock(details.proof)}
  */
 export async function syncCookiePreferenceToDrive(
   matricula: string,
-  details: { choice: string; version: string; proof: AcceptanceProof }
+  details: {
+    choice: string;
+    version: string;
+    proof: AcceptanceProof;
+    /**
+     * Visitante sem conta, gravando na pasta unica de anonimos.
+     *
+     * Muda duas coisas. Primeira: o arquivo e particionado por mes, porque aqui
+     * a planilha e COMPARTILHADA por todos os visitantes e cresceria sem limite
+     * — o nome carrega o ano-mes e a planilha do mes seguinte nasce sozinha, sem
+     * rotina de virada. Segunda: sem IP e sem user-agent (decisao da Gestora,
+     * 2026-08-05). Guardar o IP de quem recusou rastreamento para provar que ele
+     * recusou seria cobrar um preco de privacidade justamente de quem pediu
+     * menos; data, escolha, dispositivo e pais bastam como prova.
+     */
+    anonymous?: boolean;
+  }
 ): Promise<string> {
   try {
+    const monthKey = details.proof.acceptedAt.toISOString().slice(0, 7);
+
     const spreadsheetId = await appendToUserSeries({
       matricula,
       folder: DRIVE_FOLDERS.ACOMPANHAMENTO,
-      fileName: "Preferencias_Cookies",
-      headers: ["Data/Hora", "Escolha", "Versao", "IP", "Dispositivo", "Localizacao", "User-Agent"],
-      rowData: [
-        details.proof.acceptedAt.toLocaleString("pt-BR"),
-        details.choice === "all" ? "Todos os cookies" : "Apenas essenciais",
-        details.version,
-        details.proof.ip,
-        details.proof.deviceType,
-        details.proof.location,
-        details.proof.userAgent,
-      ],
+      fileName: details.anonymous ? `Preferencias_Cookies_${monthKey}` : "Preferencias_Cookies",
+      headers: details.anonymous
+        ? ["Data/Hora", "Escolha", "Versao", "Dispositivo", "Pais"]
+        : ["Data/Hora", "Escolha", "Versao", "IP", "Dispositivo", "Localizacao", "User-Agent"],
+      rowData: details.anonymous
+        ? [
+            details.proof.acceptedAt.toLocaleString("pt-BR"),
+            details.choice === "all" ? "Todos os cookies" : "Apenas essenciais",
+            details.version,
+            details.proof.deviceType,
+            details.proof.location,
+          ]
+        : [
+            details.proof.acceptedAt.toLocaleString("pt-BR"),
+            details.choice === "all" ? "Todos os cookies" : "Apenas essenciais",
+            details.version,
+            details.proof.ip,
+            details.proof.deviceType,
+            details.proof.location,
+            details.proof.userAgent,
+          ],
     });
 
     console.log(`[DriveSync:Cookies] Preferencia de cookies registrada para: ${matricula}`);

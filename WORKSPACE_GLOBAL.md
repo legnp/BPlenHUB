@@ -121,11 +121,28 @@ Antes de considerar pronta qualquer feature que grave dado do usuario:
 
 Registrado aqui para nao ser reaberto como se fosse esquecimento:
 
-- **Preferencia de cookies de visitante anonimo** — decisao da Gestora
-  (2026-08-03): registrar apenas usuario identificado, para nao criar registro de
-  quem nunca abriu conta. Visitante segue so em `localStorage`.
 - **Historico de acessos anterior ao deploy** — nunca existiu serie a resgatar; o
   `_AuthMap` guardava so o ultimo login.
+
+## A pasta de anonimos (`BP-ANON`)
+
+Visitante sem conta tem uma pasta unica e compartilhada, `BP-ANON`, que ja recebe
+survey e formulario respondidos sem login e agora tambem a preferencia de
+cookies. Duas regras proprias valem la:
+
+1. **Registro reduzido.** Sem IP e sem user-agent (decisao da Gestora,
+   2026-08-05). Guardar o IP de quem recusou rastreamento, para provar que
+   recusou, cobraria preco de privacidade justamente de quem pediu menos.
+2. **Particionar por mes** o que tem volume aberto. A planilha e compartilhada
+   por todos os visitantes; o nome carrega o ano-mes e a do mes seguinte nasce
+   sozinha, sem rotina de virada.
+
+**O que NAO vai para `BP-ANON`: PII de pessoa identificavel.** A pasta e
+compartilhada, entao jogar la o dado de alguem com uid e e-mail recriaria a
+mistura de PII que a subcolecao privada de chamados ja corrigiu uma vez. Quem
+tem identidade tem pasta propria — e se a resolucao nao encontrar a matricula, o
+caminho e consertar a resolucao (`findMatriculaByIdentity`), nao desviar para a
+pasta comum.
 
 ## Pendencias conhecidas
 
