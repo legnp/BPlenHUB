@@ -19,6 +19,12 @@ interface Particle {
   size: number;
   shape: "circle" | "square" | "triangle";
   scale: number;
+  // Trajetória e tempo sorteados uma única vez, no nascimento da partícula.
+  // Sortear no render faria a animação ser redirecionada a cada re-render.
+  targetX: number;
+  targetY: number;
+  rotationEnd: number;
+  duration: number;
 }
 
 const PREMIUM_COLORS = [
@@ -46,16 +52,25 @@ export function ConfettiCheckbox({ label, onComplete, disabled = false }: Confet
     const newParticles: Particle[] = Array.from({ length: 60 }).map((_, i) => {
       const size = Math.random() * 8 + 6;
       const shapes: Array<"circle" | "square" | "triangle"> = ["circle", "square", "triangle"];
-      
+      const rotation = Math.random() * 360;
+
+      // Dispersão circular e impulso para cima
+      const angle = Math.random() * Math.PI * 2;
+      const speed = Math.random() * 250 + 150;
+
       return {
         id: Date.now() + i,
         x: startX,
         y: startY,
-        rotation: Math.random() * 360,
+        rotation,
         color: PREMIUM_COLORS[Math.floor(Math.random() * PREMIUM_COLORS.length)],
         size,
         shape: shapes[Math.floor(Math.random() * shapes.length)],
         scale: Math.random() * 0.4 + 0.8,
+        targetX: Math.cos(angle) * speed * 1.5,
+        targetY: -Math.abs(Math.sin(angle)) * speed * 2 - (Math.random() * 200 + 100),
+        rotationEnd: rotation + (Math.random() * 360 + 180),
+        duration: 1.8 + Math.random() * 0.8,
       };
     });
 
@@ -160,14 +175,7 @@ export function ConfettiCheckbox({ label, onComplete, disabled = false }: Confet
       <AnimatePresence>
         {particles.length > 0 && (
           <div className="fixed inset-0 pointer-events-none z-[9999]">
-            {particles.map((particle) => {
-              const angle = Math.random() * Math.PI * 2;
-              // Dispersão circular e impulso para cima
-              const speed = Math.random() * 250 + 150;
-              const targetX = Math.cos(angle) * speed * 1.5;
-              const targetY = -Math.abs(Math.sin(angle)) * speed * 2 - (Math.random() * 200 + 100);
-
-              return (
+            {particles.map((particle) => (
                 <motion.div
                   key={particle.id}
                   initial={{
@@ -178,14 +186,14 @@ export function ConfettiCheckbox({ label, onComplete, disabled = false }: Confet
                     opacity: 1,
                   }}
                   animate={{
-                    x: particle.x + targetX,
-                    y: particle.y + targetY,
-                    rotate: particle.rotation + (Math.random() * 360 + 180),
+                    x: particle.x + particle.targetX,
+                    y: particle.y + particle.targetY,
+                    rotate: particle.rotationEnd,
                     scale: [0, particle.scale, particle.scale * 0.7, 0],
                     opacity: [1, 1, 0.8, 0],
                   }}
                   transition={{
-                    duration: 1.8 + Math.random() * 0.8,
+                    duration: particle.duration,
                     ease: "easeOut",
                   }}
                   style={{
@@ -198,8 +206,7 @@ export function ConfettiCheckbox({ label, onComplete, disabled = false }: Confet
                     borderRadius: particle.shape === "circle" ? "50%" : particle.shape === "triangle" ? "0 50% 50% 50%" : "2px",
                   }}
                 />
-              );
-            })}
+            ))}
           </div>
         )}
       </AnimatePresence>

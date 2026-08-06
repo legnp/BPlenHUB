@@ -1,8 +1,8 @@
 # T-06 — Correção dos 16 erros de lint do React Compiler
 
-**Status:** Aberto. Nenhuma onda executada.
+**Status:** Onda 1 concluída (parcial). Ondas 2 e 3 abertas.
 **Aberto em:** 2026-08-06
-**Última atualização:** 2026-08-06
+**Última atualização:** 2026-08-06 — Onda 1 executada; `admin/partners` reclassificado para a Onda 3 (ver 6.1).
 
 ---
 
@@ -105,20 +105,45 @@ Números de linha valem para a `main` em `07e60bb`. Se divergirem, reconfirmar c
 
 **Branch sugerida:** `fix/lint-onda-1-purity-immutability`
 
-### 6.1. `src/app/admin/partners/page.tsx:40`
+### 6.1. `src/app/admin/partners/page.tsx` — RECLASSIFICADO PARA A ONDA 3
 
-Situação: `useEffect(() => { loadPartners(); }, [])` com `loadPartners` declarada
-logo abaixo, no corpo do componente.
+**Diagnóstico original (incorreto):** o erro `react-hooks/immutability` na linha 40
+parecia problema isolado de hoisting — `useEffect(() => { loadPartners(); }, [])`
+com `loadPartners` declarada logo abaixo como `async function`.
 
-Correção: envolver `loadPartners` em `useCallback` e declará-la antes do efeito,
-ou mover o corpo da função para dentro do próprio efeito.
+**O que se descobriu ao executar:** envolver `loadPartners` em `useCallback` e
+declará-la antes do efeito remove o erro de `immutability`, mas o arquivo passa a
+acusar `react-hooks/set-state-in-effect` no ponto da chamada. A regra sinaliza
+qualquer efeito que invoque função que escreve estado, e **não** considera a
+fronteira do `await` suficiente.
 
-**ARMADILHA CRÍTICA:** se `loadPartners` for adicionada ao array de dependências
-**sem** `useCallback`, ela é recriada a cada render e o efeito entra em **loop
-infinito de requisições** ao backend (`getPartnersAction`). Este é o modo de falha
-mais comum desta correção específica. Validar abrindo a página de admin de
-parceiros e confirmando no painel de rede do navegador que há **uma** chamada, não
-um fluxo contínuo.
+O rótulo `immutability` era sintoma; a causa real é que a página busca dados
+dentro de um `useEffect`. Isso é a mesma natureza dos 9 itens da Onda 3, e o
+conserto que a regra pede é arquitetural: carregar os parceiros em Server
+Component e passar por props, ou adotar biblioteca de data fetching. **Não é
+correção de risco baixo.**
+
+**O que foi feito e depois revertido:** a conversão para `useCallback` chegou a ser
+implementada, junto com a separação entre carga inicial e recarga por ação do
+usuário (`refreshPartners`, reexibindo o indicador de carregamento). Foi
+**revertida**, e o arquivo está idêntico à `main`.
+
+O motivo da reversão é instrutivo e vale registrar: o hook de pre-commit
+(`husky` + `lint-staged`) **barrou o commit**, porque o arquivo continuava com um
+erro de lint. O portão do próprio projeto demonstrou que a mudança não pertencia a
+uma onda de risco baixo. Mantê-la exigiria `--no-verify`, o que desligaria a
+proteção para todos os arquivos do commit — preço alto por uma alteração que não
+reduzia a contagem de erros.
+
+Aprendizado para as próximas ondas: **só entra no commit arquivo que sai com zero
+erros.** Arquivo que continua com erro depois da correção deve ser revertido e
+tratado na onda apropriada, nunca commitado com bypass.
+
+**ARMADILHA que segue valendo para a Onda 3:** se `loadPartners` for adicionada ao
+array de dependências **sem** `useCallback`, ela é recriada a cada render e o
+efeito entra em **loop infinito de requisições** ao backend (`getPartnersAction`).
+Validar abrindo a página de admin de parceiros e confirmando no painel de rede do
+navegador que há **uma** chamada, não um fluxo contínuo.
 
 ### 6.2. `src/components/journey/ConfettiCheckbox.tsx` (5 erros)
 
@@ -139,13 +164,17 @@ sem trepidação, e com ritmo constante (hoje `duration` oscila a cada render).
 Isto é o conserto correto, não uma regressão. Ainda assim, validar visualmente e
 confirmar com o Gestor se a nova aparência agrada, já que é elemento de interface.
 
-### 6.3. Definição de pronto da Onda 1
+### 6.3. Definição de pronto da Onda 1 — ATINGIDA
 
-- `npx eslint` reporta **10 erros** (16 menos 6).
-- `npm run test` continua com 485 passando.
-- `npm run build` conclui com sucesso.
-- Página de admin de parceiros carrega e faz uma única requisição.
-- Efeito de confete validado visualmente na jornada.
+Resultado real, medido em 2026-08-06:
+
+- `npx eslint` reporta **11 erros** (16 menos 5). A meta original era 10; a
+  diferença é o `admin/partners` reclassificado em 6.1.
+- `npm run test`: 485 passando, sem alteração.
+- `npm run type-check`: limpo.
+- `npm run build`: sucesso.
+- **Pendente de validação manual pelo Gestor:** página de admin de parceiros
+  carregando com uma única requisição, e aparência do efeito de confete.
 
 ---
 
@@ -233,13 +262,26 @@ Atenção: `stages` chega assíncrono via `useJourney`. O valor inicial de
 `activeStageId` é a string fixa `"onboarding"`. Qualquer correção precisa
 preservar o comportamento de assumir o primeiro estágio quando a lista carrega.
 
-### 8.3. `src/app/hub/journey/[stepId]/page.tsx:37` e `:55`, `src/app/admin/marketing/page.tsx:92`
+### 8.3. `src/app/admin/partners/page.tsx` (reclassificado da Onda 1)
+
+Ver 6.1 para o histórico completo. A página carrega parceiros via
+`getPartnersAction()` dentro de um `useEffect`, e o arquivo está no estado
+original — a tentativa de correção foi revertida.
+
+Correção arquitetural: mover a carga inicial para Server Component com passagem
+por props, ou adotar biblioteca de data fetching. Ao refazer, vale reaproveitar a
+separação que já foi desenhada e descartada: `loadPartners` para a carga inicial
+(sem ligar `isLoading`, que já nasce `true`) e `refreshPartners` para a recarga
+por ação do usuário (ligando o indicador). Os pontos de chamada da recarga são
+`handleSave` e `handleDelete`.
+
+### 8.4. `src/app/hub/journey/[stepId]/page.tsx:37` e `:55`, `src/app/admin/marketing/page.tsx:92`
 
 Ainda não analisados em profundidade. Antes de corrigir, ler o efeito completo e
 classificar em qual dos padrões acima se encaixa (semeadura a partir de dado
 assíncrono, ou sincronização de prop para estado local).
 
-### 8.4. Definição de pronto da Onda 3
+### 8.5. Definição de pronto da Onda 3
 
 - `npx eslint` reporta **0 erros**.
 - `npm run check` completo passa de ponta a ponta, cumprindo a regra #5.
@@ -287,6 +329,8 @@ atualização" no topo do documento.
 
 | Onda | Erros | Status | Branch / PR | Concluída em |
 | --- | --- | --- | --- | --- |
-| 1 — purity + immutability | 6 | Aberta | — | — |
+| 1 — purity (`ConfettiCheckbox`) | 5 | **Concluída** | `fix/lint-onda-1-purity-immutability` | 2026-08-06 |
 | 2 — memoização (suprimir) | 1 | Aberta | — | — |
-| 3 — set-state-in-effect | 9 | Aberta | — | — |
+| 3 — set-state-in-effect + `admin/partners` | 10 | Aberta | — | — |
+
+Contagem de erros: 16 na abertura, **11** após a Onda 1.
