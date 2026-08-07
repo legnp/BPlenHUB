@@ -3697,7 +3697,7 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   `firebase deploy --only firestore:rules`, que exige credencial de proprietário do
   projeto (Lição 49 — operação manual da Gestora). **Enquanto o deploy não ocorrer, a
   exposição permanece em produção**, com o arquivo do repositório já corrigido.
-- Commit/PR: (a preencher)
+- Commit/PR: `2ffb223` (branch `fix/settings-leitura-publica`)
 
 ---
 
