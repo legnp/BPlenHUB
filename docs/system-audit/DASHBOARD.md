@@ -25,7 +25,29 @@
 > registro permanente e completo de toda sessão está em `LOG.md`, que nunca foi
 > editado e continua a fonte primária de história.
 >
-> **Última atualização:** 2026-08-03 (chat de planejamento — **reconciliação da
+> **Última atualização:** 2026-08-07 (chat de planejamento — **reconciliação de 4
+> dias de entregas fora da grade**, feita numa máquina nova; confirmada contra git,
+> `main == origin/main == 885d503`, 41 commits à frente do último estado
+> reconciliado). O **checklist da auditoria não se moveu** — nenhuma % abaixo muda.
+> O que entrou: **Área de Parceiros, Fases 0 a 5 completas em produção** (o plano
+> `PARTNER-AREA-EXPANSION-PLAN.md` saiu de "aguardando execução" para executado
+> inteiro, mais Termo de Parceria, selo de vitrine e correções do parser do
+> portfólio — §12 do plano); **afinamento da agenda, Fases 2/3/4/3.5** (atribuição
+> do slot de grupo à parada do GDC, consultor padrão, motivo virando rótulo, morte
+> do parser da descrição do evento); **lint do React Compiler zerado** (2026-08-07,
+> 16 → 0 erros em 6 ondas, sem nenhuma supressão — `npm run check` volta a passar de
+> ponta a ponta, restaurando a regra 5 do `CLAUDE.md`, que foi atualizada no mesmo
+> commit); e a **remoção dos instrumentos `showroom_interest`/`revisao_curriculo`**.
+> Suíte: 417 → **520 testes**. **`BUG-119` aberto** (reimportação do portfólio falha
+> em produção, `EROFS` — registrado a pedido da própria entrada de execução) e
+> **risco aceito 6** adicionado ao `00-PLAN.md` (membro-parceiro agenda 1 to 1 sem
+> consumir crédito; aguarda ratificação). **Fila de severidade segue vazia.** Dois
+> status defasados corrigidos de passagem: `BUG-114`/`BUG-115` ainda constavam como
+> "aguardando deploy manual" no topo do `00-PLAN.md` (corrigidos desde 2026-07-24) e
+> o caminho do repositório no `AGENTS-SCOPES.md` (`D:\BPlen_HUB\Dev` →
+> `C:\DevGeral\Projects\BPlenHUB`).
+>
+> **Reconciliação anterior:** 2026-08-03 (chat de planejamento — **reconciliação da
 > expansão de autenticação, CONCLUÍDA em produção 2026-08-01**). Fases 0/1/1b/2/3
 > entregues e validadas ao vivo (`AUTH-PROVIDERS-EXPANSION.md`): página `/entrar` (Google +
 > Microsoft + magic link), `returnTo` unificado same-origin, trava de CPF
@@ -408,7 +430,7 @@ _Nenhuma no momento._
 
 ## Bugs registrados (resumo)
 
-115 bugs registrados até `BUG-115`. Ver `BUGS.md` para o registro completo e
+119 bugs registrados até `BUG-119`. Ver `BUGS.md` para o registro completo e
 `00-PLAN.md#índice--bug--itemtrack` para a associação bug→item/track de todos
 eles. Destaques que não se encaixam num único item de fase:
 
@@ -426,6 +448,10 @@ eles. Destaques que não se encaixam num único item de fase:
 - **BUG-110** (Alto → **Corrigido**, PR #131) — reconciliação de 2026-07-22 o marcou aberto por engano (Lição 45); ver Triagem por severidade acima
 - **BUG-112 escopo C** (Melhoria, adiado) — papel real de "Consultor" + migração, programado para depois da auditoria
 - **BUG-114/BUG-115** (Médio, **Corrigido**, 2026-07-24) — índices criados pela Gestora no console do Firebase; efeito confirmado por sonda read-only
+- **BUG-116** (Médio, **Corrigido**, validado em produção 2026-08-03) — welcome survey renderizava com o chrome do hub por cima; virou 3º gate no `HubShell`
+- **BUG-117** (Médio, corrigido no código 2026-08-03) — subcheckpoint dinâmico com `order` não-numérico. **Reparo de dado pendente** (`scripts/fix-dynamic-substep-order.js --apply`)
+- **BUG-118** (Alto, corrigido no código 2026-08-03) — conclusão cruzada marcava as 10 sessões ao concluir 1. Alcance: só a conta de teste `BP-002`. **Reparo de dado pendente** (`scripts/fix-cross-completed-sessions.js --apply`, aguarda a Gestora)
+- **BUG-119** (Médio, **aberto/adiado** pela Gestora 2026-08-05) — reimportação do portfólio pelo admin falha em produção (`EROFS`: filesystem da Vercel é somente leitura). Sem perda de dado; a tela promete uma operação que só funciona local
 
 ---
 

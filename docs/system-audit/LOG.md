@@ -24,6 +24,96 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-07] Chat de planejamento — reconciliação de 41 commits; a gestão de auditoria muda de máquina
+
+- Chat/sessão: chat de planejamento. **Docs-only, nenhum arquivo de `src/`, `scripts/` ou
+  `public/` tocado.** Primeira sessão de planejamento na máquina nova.
+- **Mudança de máquina registrada**: a gestão da auditoria estava na máquina anterior
+  (`D:\BPlen_HUB\Dev`) e passa a rodar em `C:\DevGeral\Projects\BPlenHUB`. O
+  `AGENTS-SCOPES.md` §5b foi atualizado — ele citava o caminho antigo como "o mesmo
+  repositório local" das duas contas, que é justamente a regra mais perigosa do documento.
+- **Confirmação contra git antes de qualquer coisa (Lição 45, e desta vez ela pagou caro)**:
+  `git fetch origin main` → `main == origin/main == 885d503`, árvore limpa, 0 à frente / 0
+  atrás. O comando de handoff que abriu esta sessão descrevia o estado do commit `d07e2d9`
+  — **41 commits atrás**. Ele afirmava, como "ESTADO CONFIRMADO", que a Área de Parceiros
+  estava "aguardando execução, Fase 0 ainda não iniciada". Na verdade **as 6 fases já
+  estavam em produção**. A afirmação não foi invenção do chat que gerou o handoff: ele leu
+  o `00-PLAN.md`, que dizia exatamente isso. Ver Lição 51.
+- **Diagnóstico da dívida**: desde `d07e2d9`, dentro de `docs/system-audit/` só `LOG.md` e
+  `T-06-REACT-COMPILER-LINT-PLAN.md` haviam sido tocados. `00-PLAN.md`, `DASHBOARD.md` e
+  `BUGS.md` estavam congelados através de 4 dias de entregas intensas.
+
+### O que foi reconciliado para dentro dos documentos agregados
+
+- **Área de Parceiros — Fases 0 a 5, todas entregues em produção** (2026-08-04/05). O
+  `00-PLAN.md` ganhou o detalhamento por fase e o `PARTNER-AREA-EXPANSION-PLAN.md` ganhou
+  uma **§12 "Estado de execução"** com tabela por fase, o que a execução entregou fora do
+  plano (Termo de Parceria com blocos condicionais, selo `partner_public_showcase`,
+  `/servicos/parceiros` sem vitrine, 4 correções no parser do portfólio, "Criar tipo novo"
+  na agenda do admin) e os 3 achados que valem memória — em especial o `isStageEntitled`,
+  que teria expulsado o parceiro da própria jornada com um redirect mudo se não tivesse
+  sido pego. O cabeçalho do plano saiu de "pronto para iniciar a Fase 0" para "EXECUTADO".
+- **Afinamento dos agendamentos — Fases 2, 3, 4 e 3.5** (2026-08-05/06), continuação da
+  3.3. Registrado como entrega fora da grade, com o que resta explícito: Fase 3.4
+  (mecanismo de órfãos) e a aposentadoria do fallback textual, que depende de backfill de
+  `subStepId` em 14 agendamentos.
+- **Lint do React Compiler: 16 → 0 erros** (2026-08-07, 6 ondas, nenhuma supressão de
+  regra). `npm run check` volta a passar de ponta a ponta pela primeira vez, restaurando a
+  regra inegociável 5 do `CLAUDE.md`. Verificado nesta sessão rodando o comando, não só
+  lido do documento (Lição 31: o que vale é o efeito). Suíte: 417 → **520 testes**.
+- **Remoção dos instrumentos `showroom_interest` e `revisao_curriculo`** (2026-08-07),
+  incluindo a limpeza do dado órfão — só a conta de teste `BP-002` tinha registro.
+- **3 entregas que não tinham entrada no `LOG.md`** ficam cobertas por esta: ondas 3C/3D do
+  lint, o script de auditoria de `completedSubSteps` (primeira execução: 10 usuários, 5
+  documentos, **zero entradas vazias** — a janela de corrida descrita no plano de lint não
+  se materializou) e a remoção dos instrumentos.
+
+### Bug e risco abertos nesta reconciliação
+
+- **`BUG-119` (Médio, Aberto/adiado)** — a reimportação do portfólio pelo admin **não
+  funciona em produção**: o fluxo grava o `.xlsx` em disco e a Vercel tem filesystem
+  somente leitura (`EROFS`). Não é regressão; o recurso nunca falhou porque sempre foi
+  usado localmente. Sem perda de dado — a falha é antes de qualquer escrita no Firestore.
+  A tela promete uma operação que não existe em produção. **A entrada de execução de
+  2026-08-05 pedia explicitamente este registro** e ele ficou 2 dias pendente — ver
+  Lição 52.
+- **Risco aceito 6 no `00-PLAN.md`** — membro que também é parceiro pode agendar 1 to 1
+  **sem consumir crédito**, entrando pela área de parceiro. Não é defeito: é consequência
+  direta da decisão da Gestora de ter grade única disputada, com a isenção resolvida pelo
+  selo. Foi comunicado a ela na sessão de entrega, mas **ainda não foi ratificado
+  formalmente** — fica no radar como decisão de negócio pendente, não como bug.
+
+### Status defasados corrigidos de passagem
+
+- **`BUG-114`/`BUG-115`** ainda constavam no topo do `00-PLAN.md` como "fecham após o
+  deploy manual". Estão **corrigidos desde 2026-07-24** (índices criados pela Gestora,
+  efeito confirmado por sonda). Duas semanas de defasagem, no bloco mais lido do documento.
+- **Contagem de bugs**: 115 → 119, no `00-PLAN.md` e no `DASHBOARD.md`.
+- **`CLAUDE.md` regra 5** — declarava "Débito conhecido em aberto: hoje o comando falha no
+  estágio de lint por 16 erros" e mandava validar os quatro estágios separadamente.
+  Atualizada com autorização explícita do Gestor nesta sessão (é documento de governança).
+- **`AGENTS-SCOPES.md` §5b** — caminho do repositório compartilhado.
+
+### Grupo novo na lista priorizada: 4c (pendências operacionais)
+
+O checklist formal continua curto, mas as pendências **operacionais** cresceram bastante e
+estavam espalhadas por 15 entradas de `LOG.md`. Foram reunidas no grupo 4c do `00-PLAN.md`.
+A de maior impacto visível: **os 48 slots de Consultoria em Grupo precisam ser atribuídos
+às paradas do GDC no admin** — por decisão da Gestora, slot sem atribuição não é ofertado,
+então **hoje o GDC não oferece nenhum horário**.
+
+### Estado da auditoria (não mudou)
+
+Fases 0-2 completas, 6 tracks fechados, `F3-03` segue como o único item do checklist
+original nunca iniciado, e a rodada de validação humana (Caminho B) segue diferida. **Fila
+de severidade vazia**: 0 `Alto`, 0 `Crítico`. Nenhuma % se moveu — as últimas 4 sessões de
+execução foram inteiramente fora da grade, o que era esperado e foi decisão da Gestora.
+
+### Reconciliado até
+
+`885d503` (`main == origin/main`, 2026-08-07). Este é o marco: entregas posteriores a este
+commit ainda não estão absorvidas no estado agregado.
+
 ## [2026-08-06] Chat de execucao — Fase 3.5: rotulo Consultor + parser morto removido
 
 - **Sync validado apos a Gestora rodar**: TODOS os eventos futuros classificados, nenhum

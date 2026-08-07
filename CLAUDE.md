@@ -17,13 +17,15 @@ Mercado Pago + Google Workspace (Drive/Sheets) + Resend + Zustand + Tailwind v4.
    nunca em coleções raiz soltas. Nunca commitar `.env*`, `*.pem`, ou credenciais
    de service account — ver `.gitignore`.
 5. **Build limpo obrigatório antes de considerar algo pronto**: `npm run check`
-   (lint + test + type-check + build) precisa passar. **Débito conhecido em
-   aberto**: hoje o comando falha no estágio de lint por 16 erros pré-existentes
-   de `react-hooks/*`, e por isso não avança para teste, tipos e build. Enquanto
-   isso durar, validar rodando os quatro estágios separadamente. Plano de
-   correção, riscos e ordem de execução em
-   `docs/system-audit/T-06-REACT-COMPILER-LINT-PLAN.md` — ler antes de mexer em
-   qualquer um dos arquivos listados lá.
+   (lint + test + type-check + build) precisa passar. **O débito que impedia isso
+   foi quitado em 2026-08-07**: os 16 erros de `react-hooks/*` foram zerados em 6
+   ondas, sem nenhuma supressão de regra, e o comando passa de ponta a ponta
+   (verificado nesta data, exit 0). **A regra volta a valer sem exceção** — não
+   validar mais por estágios separados, e não abrir exceção nova sem registrar
+   aqui. O histórico da correção, incluindo por que a memoização manual foi
+   preservada (o React Compiler **não** está habilitado neste projeto, então
+   removê-la causaria regressão real de performance), está em
+   `docs/system-audit/T-06-REACT-COMPILER-LINT-PLAN.md`.
 6. **Infra invisível ao cliente**: nunca expor nomes de infraestrutura na interface
    voltada ao cliente ("Drive", "Google Drive", "Firebase", "Firestore", "Vercel",
    etc.). Para o usuário, tudo vive "no BPlen HUB" — vale para textos, botões e

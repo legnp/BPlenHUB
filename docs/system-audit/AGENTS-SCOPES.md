@@ -70,9 +70,10 @@ escritora por vez na `main`.**
 
 ## 5b. Diretório de trabalho compartilhado (o risco mais perigoso)
 
-Se as duas contas usam o **mesmo repositório local** (mesmo `D:\BPlen_HUB\Dev`),
-a árvore de trabalho e o branch ativo são **um só** — trocar de branch numa conta
-muda o que a outra vê. Regras:
+Se as duas contas usam o **mesmo repositório local** (hoje
+`C:\DevGeral\Projects\BPlenHUB`; era `D:\BPlen_HUB\Dev` até a migração da máquina em
+2026-08-06), a árvore de trabalho e o branch ativo são **um só** — trocar de branch
+numa conta muda o que a outra vê. Regras:
 
 - **Deixe o repositório no mesmo branch em que o encontrou.** Se precisar mudar de
   branch para commitar docs na `main` (ex.: a sessão está numa branch de código

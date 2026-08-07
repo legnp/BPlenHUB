@@ -10,7 +10,11 @@ fonte de verdade); `F0-DECISIONS.md` guarda o detalhe longo das decisões de Fas
 Populado pelo chat de planejamento a partir dos 5 mapas (`01` a `05`). **Status
 de cobertura dos mapas**: os 5 mapas estão **completos**.
 
-**Status de execução (atualizado 2026-07-23):**
+**Status de execução do CHECKLIST DA AUDITORIA (atualizado 2026-07-23; conferido
+sem mudanças em 2026-08-07).** As entregas **fora da grade** — Área de Parceiros,
+afinamento da agenda, expansão de autenticação, aba Recepção, e-mail V01, lint do
+React Compiler — **não aparecem aqui de propósito** (não entram em nenhuma % desta
+auditoria); estão listadas na seção "Estado da auditoria" ao final.
 - **Fase 0 — completa** (6/6 decididos). `F0-01`: parte GlassModal concluída
   (lotes 1/A/B); resta só o 2º componente-base para modais grandes app-shell
   (`BUG-034`, futuro). `F0-04` concluído.
@@ -51,10 +55,13 @@ de cobertura dos mapas**: os 5 mapas estão **completos**.
   presumido-ok, E2E com custo → protocolo humano,
   `T-05-INTEGRATIONS-FINDINGS.md`).
 - **Triagem por severidade: fila vazia — 0 Alto, 0 Crítico aberto**, confirmado
-  por checagem cruzada dos 115 bugs registrados.
-- **2 bugs novos pré-existentes expostos pela medição do T-01** (`BUG-114`/
-  `BUG-115`, Médio) — índice já versionado no `firestore.indexes.json`, fecham
-  **após o deploy manual** (`firebase deploy --only firestore:indexes`).
+  por checagem cruzada dos 119 bugs registrados. Único aberto: `BUG-119` (Médio,
+  adiado pela Gestora).
+- **`BUG-114`/`BUG-115` (Médio, expostos pela medição do T-01) — CORRIGIDOS em
+  2026-07-24**: os índices foram criados pela Gestora no console do Firebase e o
+  efeito foi confirmado por sonda read-only. *(Este item dizia "fecham após o
+  deploy manual" até 2026-08-07 — status defasado por 2 semanas, corrigido nesta
+  reconciliação. Lição 50.)*
 - **EXP-01 (dashboard de KPIs do `/admin`)** é uma **expansão de plataforma**
   (`PLATFORM-EXPANSION-PLAN.md`), fora do escopo/checklist da auditoria — não
   entra em nenhuma % acima. Fase 0 (escopo) concluída; build represado por
@@ -1611,6 +1618,7 @@ sessões): `BUG-010` (PR #69, desde 2026-07-11), `BUG-040`/`041`/`042` (Trilha
 | BUG-116 | Médio | **Corrigido (2026-08-02, validado em produção 2026-08-03)** | Hub/Recepção — welcome survey renderizava com chrome (header/ações flutuantes) por cima; virou 3º gate no `HubShell` (`1f70e7b`) *(adicionado nesta reconciliação)* |
 | BUG-117 | Médio | **Corrigido no código (2026-08-03)** | Jornada (modularização de instrumentos) — subcheckpoint dinâmico com `order` não-numérico; ordem passa a ser decimal da parada do pai. **Dados legados pendentes** (`scripts/fix-dynamic-substep-order.js --apply`) *(adicionado nesta reconciliação)* |
 | BUG-118 | **Alto** | **Corrigido no código na `main` (2026-08-03)** | Jornada — conclusão cruzada marcava as 10 sessões ao concluir 1 (chave `type:referenceId` repetida); regra de chave repetida corrige. Mesmo sintoma do BUG-077 por outro caminho. Alcance: **1 conta de teste (`BP-002`)**, nenhum membro real. **Reparo do dado pendente** (`scripts/fix-cross-completed-sessions.js --apply`, aguarda Gestora) *(adicionado nesta reconciliação)* |
+| BUG-119 | Médio | **Aberto — adiado pela Gestora (2026-08-05)** | Área de Parceiros (fora da grade) — reimportação do portfólio pelo admin falha em produção (`EROFS`: filesystem da Vercel é somente leitura); recurso só funcionava porque sempre foi usado local. Sem perda de dado; saída atual é rodar a reimportação localmente *(adicionado nesta reconciliação)* |
 
 ---
 
@@ -1637,6 +1645,18 @@ Pontos que este processo **não cobre por limite estrutural**, não por omissão
    pela Gestora (2026-07-02) — fluxos logados são validados em produção. Reabrir
    só se QA de telas logadas em preview virar necessidade recorrente (aí avaliar
    staging com domínio próprio).
+6. **Membro que também é parceiro agenda 1 to 1 sem consumir crédito**
+   (registrado 2026-08-05, na entrega da grade compartilhada de 1 to 1). Decorre
+   diretamente da decisão da Gestora de ter **grade única disputada pelos três
+   fluxos** (membro, parceiro, funil público) com listas de motivo próprias: a
+   isenção de crédito é resolvida pelo selo (`audience: "partner"` só isenta quem
+   tem `partner_area_access`, conferido ao vivo no servidor). Quem tiver os **dois**
+   selos pode entrar pela área de parceiro e agendar sem debitar cota — o sistema
+   não tem como distinguir a intenção por trás do agendamento. **Não é defeito**, é
+   consequência da regra aprovada. Comunicado à Gestora na sessão de entrega;
+   **aguarda ratificação formal** como risco aceito. Se for recusado, a saída não é
+   código de detecção de intenção e sim uma decisão de negócio (ex.: parceiro que
+   também é membro não recebe isenção, ou recebe um teto de sessões isentas).
 
 Esses pontos ficam registrados como risco aceito e conhecido, não como pendência
 esquecida.
@@ -1645,7 +1665,8 @@ esquecida.
 
 ## Estado da auditoria e próximos itens de execução
 
-*(Seção viva — atualizar a cada reconciliação geral. Última: 2026-08-03.)*
+*(Seção viva — atualizar a cada reconciliação geral. Última: 2026-08-07, contra
+`main == origin/main == 885d503`.)*
 
 ### Onde a auditoria está
 
@@ -1679,18 +1700,70 @@ sem decisão pendente ou adiados de propósito.
   2026-07-24, snapshot validado em produção em 2026-07-28; Momento 2 é
   trabalho futuro fora desta auditoria), `T-04` (escopo reduzido), `T-05`
   (escopo misto).
-- **Severidade: fila vazia — 0 `Alto`, 0 `Crítico` aberto**, confirmado por
-  checagem cruzada dos 115 bugs registrados nesta reconciliação.
+- **Severidade: 0 `Alto`, 0 `Crítico` aberto** — a fila de severidade segue vazia.
+  O único bug aberto é o `BUG-119` (**Médio**, reimportação do portfólio em
+  produção), adiado por decisão da Gestora. 119 bugs registrados no total.
 - **`BUG-114`/`BUG-115` corrigidos** (2026-07-24) — índices criados pela
   Gestora no console do Firebase, efeito confirmado por sonda read-only.
 - **EXP-01:** fora do checklist da auditoria; represado por decisão da
   Gestora até o fim desta.
-- **Área de Parceiros — PLANO APROVADO (2026-08-04), aguardando execução.** Expansão de
-  plataforma fora da grade (como `EXP-01`): nova área do hub para parceiros (role via admin,
-  jornada própria, agenda sem cota, Gestão de Indicações com ciclos de repasse). Plano técnico
-  completo em `PARTNER-AREA-EXPANSION-PLAN.md` (v2.2) — estrutura de dados, zero mudança em
-  `firestore.rules`, toggle de contexto via Zustand, mapa de fluxo dos ciclos, arquivos legados
-  tocados por subsistema. Não entra em nenhuma % desta auditoria.
+- **Área de Parceiros — FASES 0 A 5 ENTREGUES EM PRODUÇÃO** (2026-08-04 a 08-05, plano
+  aprovado em 2026-08-04, `PARTNER-AREA-EXPANSION-PLAN.md` v2.2). Expansão de plataforma
+  fora da grade (como `EXP-01`) — **não entra em nenhuma % desta auditoria**. O plano foi
+  executado inteiro, na ordem proposta, em ~2 dias:
+  - **Fase 0** — selo `partner_area_access` + `partnerCommissionPercent`, gate de rota em
+    `hub/partners/layout.tsx`, store Zustand do contexto, `HubHeader` condicional. Roteiro
+    validado em produção pela Gestora e fase declarada concluída.
+  - **Fase 1** — motor de jornada por audiência (`src/lib/journey/audience.ts`, docs de
+    progresso irmãos), coleta do Check-in (`partner_check_in` survey + `partner_dados_cadastrais`
+    form), rotas/telas da Jornada de Parceria, dicionário `partner_journey`, dois tipos novos de
+    parada (`action`, `contract`) e o aceite versionado em `Partner_Consent_History`.
+  - **Fase 2** — Agenda do Parceiro. Revisada no dia seguinte por decisão nova da Gestora:
+    `audience` (singular) virou `audiences[]` e a **grade de 1 to 1 passou a ser única e
+    disputada** pelos três fluxos (membro, parceiro, funil público), com lista de motivos
+    própria por audiência. Isenção de crédito resolvida pelo selo, no servidor — ver o risco
+    aceito 6 acima.
+  - **Fase 3** — captura da indicação pela recepção (`Settings/PartnerDirectory` + opções
+    dinâmicas em "Como você nos conheceu?", sem link nem código de indicação) e o painel de
+    Gestão de Indicações com projeção ao vivo.
+  - **Fase 4** — ciclos de repasse: máquina de estados pura (`cycle-status.ts`), geração
+    idempotente por ação do Admin (nunca cron) e a tela `/admin/partners-program`.
+  - **Fase 5** — Home do parceiro, tour de boas-vindas (tipo de parada `tour`) e pop-up único
+    com o "já vi" persistido no banco.
+  - **Fora do plano original, entregue junto**: Termo de Parceria com blocos condicionais
+    (`always`/`commercial`/`public_showcase`) + editor no admin, selo
+    `partner_public_showcase` (vitrine concedida caso a caso — decisão da Gestora de
+    2026-08-05), e a página pública `/servicos/parceiros` sem vitrine de serviços.
+  - **Dado em produção**: portfólio reimportado, **15 produtos** (12 B2C/internos intactos +
+    3 de parceria: `BPP-001` Jornada de Parceiro, `BPP-002` Configuração de Networking,
+    `BPP-003` Ativação de Parceria). O parser da planilha passou a ler a aba `Jornada` por
+    **nome de cabeçalho** e a **recusar** tipo de parada inválido em vez de normalizar
+    (decisão da Gestora: "vamos evitar normalizações").
+  - **Pendente**: a validação funcional ponta a ponta pela Gestora com o usuário de teste
+    `BP-002`, e o `BUG-119` (reimportação do portfólio em produção).
+- **Afinamento dos agendamentos (migração de tipos de evento) — FASES 2, 3, 4 e 3.5
+  ENTREGUES** (2026-08-05/06), continuação da Fase 3.3. Também **fora da grade**. Resumo:
+  atribuição do slot de Consultoria em Grupo à parada do GDC (`exigeParada` + `subStepId`,
+  com o admin exibindo "Sem parada — não ofertado" em âmbar para transformar a pendência em
+  fila de trabalho visível); consultor padrão preenchido (`CONSULTOR_PADRAO`, revertendo a
+  seção 8.2 do `AGENDA-SYNC-DESIGN.md`); o motivo da sessão virando o rótulo; rótulo visível
+  "Orientador" → "Consultor"; e a **remoção do parser da descrição do evento** (`Vagas:`,
+  `Orientador:`, `Tema:`), que era o último uso da descrição como fonte de dado estruturado.
+  Sync validado pela Gestora: todos os eventos futuros classificados. **Resta**: Fase 3.4
+  (mecanismo de órfãos) e aposentar o fallback textual, que depende de um backfill de
+  `subStepId` nos 14 agendamentos existentes.
+- **Lint do React Compiler — CONCLUÍDO (2026-08-07), `npm run check` volta a passar de
+  ponta a ponta.** Os 16 erros pré-existentes de `react-hooks/*` foram zerados em 6 ondas
+  (`T-06-REACT-COMPILER-LINT-PLAN.md`), **sem nenhuma supressão de regra**. Isso restaura a
+  regra inegociável 5 do `CLAUDE.md`, que estava formalmente descumprida desde antes desta
+  auditoria. Suíte de testes foi de 417 para **520 testes**. **Atenção ao nome**: o arquivo
+  usa o prefixo `T-06`, que nesta auditoria já designa o track **Compliance/LGPD** (fechado
+  2/2) — são coisas distintas, o documento de lint não é um track da grade.
+- **Instrumentos `showroom_interest` e `revisao_curriculo` REMOVIDOS** (2026-08-07).
+  Descontinuados; como eram inteiramente registry-driven, saíram as definições, as entradas
+  nos registros e o efeito curado, mais o `handleCVReviewEffect` que só existia para eles.
+  A limpeza do dado correspondente rodou (`scripts/cleanup-instrumentos-removidos.js`):
+  só a conta de teste `BP-002` tinha dado. Fora da grade.
 - **Aba "Autenticações" (funil de Recepção) do admin — ENTREGUE EM PRODUÇÃO**
   (2026-07-29/30, PRs #163/#164, `AUTH-TRACKING-DESIGN.md`). Feature read-only
   de observabilidade **fora da grade** de fases/tracks/bugs (como `EXP-01`):
@@ -1790,6 +1863,10 @@ a auditoria segue aberta.
      "Consultor"). Pendência registrada de propósito, a pedido da Gestora.
    - `BUG-112` escopo C (networking: papel real de "Consultor" + migração) —
      programado para depois da auditoria, por decisão explícita da Gestora.
+   - `BUG-119` (Área de Parceiros) — reimportação do portfólio pelo admin falha em
+     produção (`EROFS`). Adiado pela Gestora em 2026-08-05; a correção real muda a
+     arquitetura do recurso, não é fix localizado. Saída atual: rodar a
+     reimportação localmente.
 
 **4. Trabalho que exige plano+aprovação de área sensível, fora do escopo
    desta auditoria (decisão da Gestora, pós-auditoria):**
@@ -1821,9 +1898,47 @@ a auditoria segue aberta.
      segurança (só a **transferência** — trocar quem loga, sem migrar dado — é
      automática, via a ferramenta de admin da Fase 3).
 
+**4c. Pendências OPERACIONAIS e de decisão da Área de Parceiros e da agenda
+   (não-código; fora da grade, acumuladas nas entregas de 2026-08-04 a 08-07):**
+   - **Atribuir os 48 slots de Consultoria em Grupo** às paradas do GDC, no admin.
+     Por decisão da Gestora, slot de grupo **sem atribuição não é ofertado** — até
+     que a atribuição seja feita, **o GDC não oferece nenhum horário**. É a
+     pendência operacional de maior impacto visível para o membro.
+   - **Validação funcional ponta a ponta da Área de Parceiros** com o usuário de
+     teste `BP-002` (jornada completa: check-in, formalização, agenda, indicações,
+     ciclos). Único item que falta para as Fases 0-5 estarem validadas, não só
+     entregues.
+   - **Ratificar (ou recusar) o risco aceito 6** — membro que também é parceiro
+     agenda 1 to 1 sem consumir crédito. Comunicado, ainda sem decisão formal.
+   - **Configuração de agenda que depende da Gestora**: marcar a audiência
+     "Parceiro" no tipo `1-to-1` e cadastrar os 5 motivos do parceiro.
+   - **3 órfãos de agendamento restantes**, todos na conta de teste `BP-002` (o 4º,
+     do `BP-012`, foi apagado a pedido da Gestora em 2026-08-06 após conferência de
+     conteúdo). Registrado que órfão é **inerte** — `UserBookings` tem guarda e o
+     fantasma não renderiza nem quebra a tela —, e que **recriar o evento no Google
+     não reconecta um órfão** (o agendamento aponta para o id do evento, não para
+     data/hora).
+   - **Fase 3.4 da agenda** (mecanismo de órfãos) e a **aposentadoria do fallback
+     textual**, que depende de um backfill de `subStepId` nos 14 agendamentos
+     existentes — trabalho de script, é execução, não decisão.
+   - **Reparos de dado ainda aguardando o `--apply` da Gestora**:
+     `scripts/fix-cross-completed-sessions.js` (`BUG-118`) e
+     `scripts/fix-dynamic-substep-order.js` (`BUG-117`). Ambos com dry-run já
+     conferido, alcance limitado à conta de teste `BP-002`.
+
 ### Recomendação de por onde começar
 
-Com a fila de severidade **vazia**, todos os 6 tracks fechados e as Fases 0-2
+**Observação desta reconciliação (2026-08-07):** o checklist formal da auditoria
+**não se moveu** desde 2026-08-03 — o que consumiu as últimas quatro sessões de
+execução foi trabalho **fora da grade** (Área de Parceiros inteira, afinamento da
+agenda, lint do React Compiler, remoção de instrumentos). Isso é esperado e foi
+decisão da Gestora; fica registrado para que a leitura das % não sugira estagnação.
+O efeito colateral a vigiar é o oposto: a lista abaixo é curta, mas o grupo **4c**
+(pendências operacionais) cresceu bastante e hoje é onde está o risco real de coisa
+esquecida.
+
+Com a fila de severidade **vazia** (0 `Alto`/`Crítico`; o único aberto é o
+`BUG-119`, Médio e adiado), todos os 6 tracks fechados e as Fases 0-2
 completas, o que resta do checklist formal é pequeno: **(a) `F3-03`** é o
 único item de auditoria nunca tocado — é majoritariamente uma pergunta à
 Gestora (reembolso, bypasses), não investigação de código, e fechá-lo deixa a

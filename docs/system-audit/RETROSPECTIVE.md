@@ -505,6 +505,41 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
     sistema em mudanca tem prazo de validade. _(Caso real: `F4-03`, `F4-JOURNEYS-MAP.md`, criterio
     atualizado e ratificado pela Gestora em 2026-07-28.)_
 
+51. **Reconciliação atrasada não deixa o documento velho — deixa o documento MENTIROSO, e a
+    mentira se propaga pelo handoff.** Entre 2026-08-04 e 2026-08-07 a execução entregou 41
+    commits (Área de Parceiros inteira, 4 fases de agenda, lint zerado, remoção de
+    instrumentos) sem que o planejamento reconciliasse. O `00-PLAN.md` não ficou apenas
+    desatualizado: ele **afirmava** que a Área de Parceiros estava "aguardando execução"
+    quando as 6 fases já estavam em produção. Um chat gerou o comando de handoff lendo esse
+    documento e transmitiu a afirmação falsa para a sessão seguinte como "ESTADO CONFIRMADO".
+    A Lição 45 (confirme contra o git) foi o que salvou — mas note a assimetria: **o custo de
+    reconciliar é linear no número de entregas, o custo de NÃO reconciliar é quadrático**,
+    porque cada sessão nova relê, herda e repropaga o estado errado. Corolário operacional: o
+    `LOG.md` sozinho não substitui a reconciliação. Ele é append-only e narrativo — quem lê o
+    topo não tem como saber **até onde** o estado agregado já absorveu. A marca de "reconciliado
+    até o commit X" precisa existir no documento agregado, não no log. _(Caso real: esta
+    reconciliação, 2026-08-07, primeira feita na máquina nova.)_
+
+52. **"Registrar depois" dentro do `LOG.md` é uma dívida sem dono e sem prazo — quem acha o bug
+    registra o bug.** A entrada de 2026-08-05 dizia, textualmente, "Registrar em `BUGS.md` como
+    Médio quando o chat de planejamento reconciliar", sobre a reimportação do portfólio que não
+    funciona em produção. Ficou 2 dias fora do `BUGS.md` — invisível para qualquer triagem de
+    severidade, ausente de qualquer contagem — porque a reconciliação não veio quando se
+    esperava. O `AGENTS-SCOPES.md` §1 já diz que **registrar bug é papel da execução**; o que
+    cabe ao planejamento é só a associação bug→track e o estado agregado. Delegar o registro em
+    si inverte a regra e cria uma janela em que o achado existe apenas em prosa. Regra: a
+    execução abre o `BUG-NNN` na hora, mesmo que incompleto, mesmo que adiado pela Gestora.
+    _(Caso real: `BUG-119`, aberto nesta reconciliação em vez de na sessão que o encontrou.)_
+
+53. **Prefixo de nome de arquivo é namespace — reusá-lo cria dois documentos com a mesma
+    identidade.** `T-06-REACT-COMPILER-LINT-PLAN.md` foi criado com o prefixo `T-06`, que nesta
+    auditoria já designa o track **Compliance/LGPD** (fechado 2/2 desde muito antes). Não é
+    ambiguidade teórica: quem procurar "o estado do T-06" acha um track fechado e um plano de
+    lint, sem nenhum sinal de qual é qual. Custou uma verificação cruzada nesta reconciliação
+    para confirmar que não eram a mesma coisa. Regra: prefixo `F<n>`/`T-<n>` pertence à grade
+    da auditoria; trabalho fora da grade usa nome próprio (`AUTH-PROVIDERS-EXPANSION.md`,
+    `PARTNER-AREA-EXPANSION-PLAN.md` são os bons exemplos que já existiam no diretório).
+
 ---
 
 ## Melhorias sugeridas para o PLANO (para o chat de planejamento refinar)
@@ -551,6 +586,13 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
 
 ## Registro de revisões deste documento
 
+- 2026-08-07 — Lições 51 (reconciliação atrasada deixa o documento mentiroso, e a
+  mentira se propaga pelo handoff — custo de não reconciliar é quadrático), 52
+  (quem acha o bug registra o bug; "registrar depois" no `LOG.md` é dívida sem
+  dono — origem do `BUG-119`) e 53 (prefixo de arquivo é namespace — a colisão do
+  `T-06` de lint com o track T-06 de Compliance) adicionadas, a partir da
+  reconciliação de 41 commits feita na máquina nova
+  (`C:\DevGeral\Projects\BPlenHUB`).
 - 2026-07-29 — Lições 49 (deploy de índice do Firestore não é automatizável
   pelo agente — sempre passo manual da Gestora, mesmo padrão vale para
   qualquer operação que exija credencial de proprietário do projeto) e 50 (um

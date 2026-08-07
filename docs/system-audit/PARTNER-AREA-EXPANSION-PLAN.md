@@ -1,6 +1,11 @@
 # Área de Parceiros — Plano de Implementação (v2.2 — APROVADO)
 
-Status: **APROVADO pela Gestora em 2026-08-04 — pronto para a conta de execução iniciar a Fase 0.**
+Status: **EXECUTADO — Fases 0 a 5 entregues em produção entre 2026-08-04 e 2026-08-05.**
+Aprovado pela Gestora em 2026-08-04. O plano foi cumprido inteiro, na ordem proposta em §11;
+o estado por fase e o que a execução acrescentou fora do plano estão em §12, no final.
+**Pendente**: validação funcional ponta a ponta pela Gestora com o usuário de teste `BP-002`,
+e o `BUG-119` (reimportação do portfólio não funciona em produção).
+
 Escopo deste documento: análise de viabilidade + desenho técnico. Nenhum arquivo de produto
 (`src/`, `scripts/`, `public/`) foi tocado para produzir este plano — só leitura.
 
@@ -375,3 +380,54 @@ src/app/admin/partners-program/
 *Aprovado pela Gestora em 2026-08-04. Única ratificação operacional pendente (não bloqueia a Fase
 0): estender a lista fechada de `CalendarEventTypes` de 5 para 6 tipos, quando a Fase 2 chegar
 (§5). A conta de execução pode abrir a Fase 0 a partir deste documento.*
+
+---
+
+## 12. Estado de execução (reconciliado pelo chat de planejamento em 2026-08-07)
+
+Todas as fases de §11 foram entregues e estão na `main`/produção. O detalhe narrativo de
+cada uma está no `LOG.md`; esta tabela existe para que o plano não seja lido como pendente.
+
+| Fase | Estado | Entregue em | Observação |
+| --- | --- | --- | --- |
+| 0 — Fundamentos | **Concluída e validada em produção** | 2026-08-04 | Roteiro executado pela Gestora (selo, toggle, gate, revogação). Auditoria de fechamento contra `CLAUDE.md` achou e corrigiu 1 desvio (rótulos do menu hardcoded no `HubHeader` → `nomenclature.ts`). |
+| 1 — Jornada do Parceiro | **Concluída** | 2026-08-04 | Entregue em 2 blocos (A: motor por audiência; B1: coleta; B2: rotas/telas). Checkpoint 1 (Boas-vindas/tour) foi para a Fase 5, por pedido da Gestora. |
+| 2 — Agenda do Parceiro | **Concluída, com o modelo revisado no dia seguinte** | 2026-08-04/05 | `audience` (singular) virou `audiences[]`: decisão nova da Gestora de ter grade de 1 to 1 **única e disputada** pelos 3 fluxos, com motivos por audiência. Nenhuma configuração de produção usava os campos antigos, então a troca não deixou dado órfão. |
+| 3 — Captura + Gestão de Indicações | **Concluída** | 2026-08-05 | 2 blocos (captura pela recepção; painel com projeção ao vivo). `HashCPF` confirmado como **interno, nunca exposto** ao parceiro — a especificação original pedia a coluna, a Gestora reconfirmou o plano. |
+| 4 — Ciclos de Repasse | **Concluída** | 2026-08-05 | 2 partes (máquina de estados + painel do parceiro; tela `/admin/partners-program`). Geração por ação do Admin, nunca cron (§9.2). |
+| 5 — Home + polimento | **Concluída** | 2026-08-05 | Home real do parceiro, tour de boas-vindas (tipo de parada `tour` novo) e pop-up único com o "já vi" no banco, não só no `localStorage`. |
+
+**Entregue fora do plano, na mesma janela:**
+
+- **Termo de Parceria** — o documento jurídico real da Gestora mudou o desenho previsto: os
+  blocos "EXIBIDO APENAS SE..." viraram **condição de dado** (`always`/`commercial`/
+  `public_showcase`) em vez de instrução escrita no meio do contrato, e a cláusula 2.3
+  passou a usar o marcador da taxa real do parceiro (fixá-la em 10% faria o contrato
+  divergir do que o sistema calcula). Editor no admin, com publicar separado de salvar.
+- **Selo `partner_public_showcase`** — a vitrine pública é concedida **caso a caso**
+  (decisão da Gestora, 2026-08-05), com toggle próprio na ficha do usuário. É ele que
+  libera a cláusula 4.2 do termo.
+- **`/servicos/parceiros` sem vitrine de serviços** — pedido pontual da Gestora; a área
+  logada do parceiro não foi afetada.
+- **Correções no parser do portfólio** que a configuração da Gestora expôs: aba `Jornada`
+  lida por **nome de cabeçalho** (a leitura por posição quebrava em silêncio a cada coluna
+  inserida), caminho separado para serviços de jornada de parceria sem tocar na lista fixa
+  do Step 7, `DeliveryStepSchema` aceitando `action`/`contract`/`tour`, e **recusa
+  explícita** de tipo de parada inválido em vez de normalização silenciosa (decisão da
+  Gestora: "vamos evitar normalizações").
+- **"Criar tipo novo" na tela de agenda do admin** — a lista de tipos só podia ser editada,
+  nunca acrescida; criar o "Onboarding de Parceiros" exigia código.
+
+**Achados que valem registro** (detalhe no `LOG.md`):
+
+- **`isStageEntitled` teria travado a entrega inteira**: o cálculo legado de "o membro
+  possui esta etapa?" procura cota ou serviço com o nome da etapa. Etapas de parceria não
+  são compradas, não concedem cota e não estão no catálogo — todas retornariam `false`, e
+  a página **expulsaria o parceiro da própria jornada** com um redirect mudo. Resolvido em
+  `useJourney`: na trilha de parceria o entitlement é o próprio selo. A função legada não
+  foi tocada.
+- **A invariante do `BUG-103` pegou o código da Fase 4**: guard chamado através de helper é
+  invisível para a auditoria de superfície, e o teste acusou. Corrigido pondo `requireAuth()`
+  no corpo de cada action.
+- **Risco de negócio** — membro que também é parceiro agenda 1 to 1 sem consumir crédito.
+  Registrado como risco aceito 6 no `00-PLAN.md`, aguardando ratificação formal.

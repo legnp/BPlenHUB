@@ -3600,6 +3600,32 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Commit/PR: ver LOG de 2026-08-03.
 
 
+### BUG-119 Reimportação do portfólio pelo admin não funciona em produção
+
+- Severidade: Médio
+- Área/fase onde foi achado: Área de Parceiros (expansão fora da grade) — achado
+  pela execução em 2026-08-05, ao reimportar a planilha com a jornada de parceria
+- Arquivo(s) afetado(s): fluxo de reimportação do admin (grava o `.xlsx` em disco e
+  invoca `scripts/portfolio_parser.py`)
+- Cenário de falha: a Gestora usa a reimportação do portfólio pela tela do admin **em
+  produção** → o fluxo tenta gravar o arquivo no filesystem da Vercel, que é somente
+  leitura → `EROFS: read-only file system, open
+  '/var/task/portfolio/portfolio_bplen.xlsx'`. A operação falha inteira. O recurso nunca
+  havia falhado porque **sempre foi usado localmente**; não é regressão, é uma
+  incompatibilidade que existe desde que a tela foi criada.
+- Impacto: a tela **promete uma operação que não existe em produção**. Não há perda nem
+  corrupção de dado — a falha é no primeiro passo, antes de qualquer escrita no
+  Firestore. A saída atual é operacional: a reimportação é executada por uma sessão de
+  execução rodando local (foi assim em 2026-08-05, com backup automático
+  `products_backup_20260805204206` e checagem read-only antes de escrever).
+- Status: **Aberto — adiado por decisão da Gestora (2026-08-05)**, que pediu para não
+  corrigir na hora e delegou aquela reimportação à sessão de execução.
+- Decisão de execução: precisa plano+aprovação. A correção real muda a arquitetura do
+  recurso (parser Python em disco → execução fora do runtime serverless, ou upload
+  direto para storage), não é um fix localizado.
+- Commit/PR: — (registrado nesta reconciliação, a pedido explícito da entrada de
+  `LOG.md` de 2026-08-05)
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em
