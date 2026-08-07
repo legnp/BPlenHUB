@@ -1,8 +1,10 @@
 # T-06 — Correção dos 16 erros de lint do React Compiler
 
-**Status:** Ondas 1, 2, 3A e 3B concluídas. **Restam 3 erros**, ambos em frentes que exigem aprovação do Gestor (3C e 3D).
+**Status:** CONCLUÍDO. **0 erros de lint.** `npm run check` passa de ponta a ponta,
+restaurando a regra inegociável #5 do `CLAUDE.md`.
 **Aberto em:** 2026-08-06
-**Última atualização:** 2026-08-06 — 3B concluída: os 5 campos `Cv*` corrigidos, com 25 testes novos. Ver 8.1.
+**Concluído em:** 2026-08-07
+**Última atualização:** 2026-08-07 — 3C e 3D concluídas. Nenhuma supressão de regra foi usada em todo o trabalho.
 
 ---
 
@@ -364,7 +366,26 @@ Efeito colateral esperado e aceitável: a rota passa a ser renderizada
 dinamicamente (usa cookies no servidor), aparecendo no build junto de
 `/admin/partners-program`, que já era assim.
 
-### 8.3.1. `src/app/admin/marketing/page.tsx:92` — BLOQUEADO, EXIGE APROVAÇÃO
+### 8.3.1. `src/app/admin/marketing` — RESOLVIDO EM 2026-08-07
+
+Aprovado pelo Gestor e implementado no mesmo formato de 8.3: `page.tsx` virou
+Server Component, e o antigo arquivo virou `MarketingClient.tsx` (movido com
+`git mv`), recebendo `initialCoupons`, `initialBatches` e `initialV2Coupons`.
+
+**A avaliação inicial estava errada e foi corrigida.** O texto abaixo dizia que
+seria preciso trocar o mecanismo de autenticação. Não foi: `getAdminCouponsList`
+e `getAdminCouponsV2Action` já declaravam `idToken` como **opcional**, e
+`getServerSession` já tinha os dois caminhos escritos — com token valida o JWT,
+sem token cai no cookie de sessão assinado. Os dois convergem para a mesma
+resolução de permissões no Firestore. O Server Component chama as actions sem
+token; a recarga por ação do usuário, que roda no cliente, segue enviando o
+token porque já o tem em mãos.
+
+A exigência de aprovação continuou válida — cupons são fluxo financeiro pelo
+`CLAUDE.md` —, mas o risco técnico era muito menor do que o diagnóstico original
+sugeria.
+
+O texto original do bloqueio, preservado para registro:
 
 Mesmo padrão de busca dentro de `useEffect`, mas **não** pode seguir o caminho de
 8.3, por dois motivos:
@@ -485,8 +506,15 @@ atualização" no topo do documento.
 | 2 — `MemberJourneyHero` (memoização + efeito) | 2 | **Concluída** | `fix/lint-onda-2-memoizacao` | 2026-08-06 |
 | 3A — `admin/partners` para Server Component | 1 | **Concluída** | `fix/lint-onda-3a-partners-server` | 2026-08-06 |
 | 3B — 5 campos `Cv*` | 5 | **Concluída** | `fix/lint-onda-3b-campos-cv` | 2026-08-06 |
-| 3C — `hub/journey/[stepId]` | 2 | Aberta, **exige aprovação** | — | — |
-| 3D — `admin/marketing` | 1 | Aberta, **exige aprovação** | — | — |
+| 3C — `hub/journey/[stepId]` | 2 | **Concluída** | `fix/lint-onda-3c-journey-substep` | 2026-08-07 |
+| 3D — `admin/marketing` | 1 | **Concluída** | `fix/lint-onda-3d-marketing-server` | 2026-08-07 |
+
+**Resultado final: 16 erros na abertura, 0 no fechamento.** `npm run check` passa
+em ~48s. Testes: 485 na abertura, 520 no fechamento.
+
+**Nenhuma supressão de regra foi usada.** O plano previa `eslint-disable` em dois
+pontos (7.1 e, mais tarde, 3C). Nos dois casos o conserto real se mostrou viável
+ao ser investigado, e em ambos deixou o código mais simples do que estava.
 
 Contagem de erros: 16 na abertura, 11 após a Onda 1, 9 após a Onda 2, 8 após a
 3A, **3** após a 3B. Testes: 485 na abertura, **510** após a 3B.
