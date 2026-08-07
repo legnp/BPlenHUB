@@ -24,6 +24,35 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-07] Chat de planejamento — grupo 4c esvaziado: 3 itens fechados, 1 movido para o Caminho B
+
+- Chat/sessão: chat de planejamento, escrito de um `git worktree` separado (§5b).
+  **Docs-only.** Nenhuma mudança de código.
+- **Configuração do `1-to-1` FEITA pela Gestora**: audiência "Parceiro" marcada e os 5
+  motivos do parceiro cadastrados. Era a única pendência de configuração que **bloqueava
+  funcionalidade** — sem ela, `audiences` ausente equivale a `["member"]` e o parceiro não
+  via nenhum slot de 1 to 1. A Gestão de Agenda do parceiro passa a ofertar horários; o
+  comportamento em si fica para conferir na rodada de validação.
+- **Validação da Área de Parceiros MOVIDA para o Caminho B** (item 5 novo), por decisão da
+  Gestora. Ela não vai correr como validação avulsa: entra junto com a validação e2e da
+  plataforma, depois da limpeza da conta de teste. O raciocínio que sustenta isso e ficou
+  registrado no documento: **os resíduos de dado da auditoria estão justamente em `BP-002`**
+  (os 3 órfãos de agendamento e os dois reparos pendentes), então validar antes da limpeza
+  seria validar contra dado sujo.
+  - *Consequência de escopo registrada*: a rodada do Caminho B deixa de ser só da auditoria
+    e passa a cobrir também a expansão fora da grade. **Não** muda o critério de fechamento
+    formal da auditoria — a Área de Parceiros continua não entrando em nenhuma %.
+- **Estado do grupo 4c**: das 6 linhas originais, 3 fecharam (slots do GDC, risco 6,
+  configuração do `1-to-1`) e 1 foi movida. **Nada no 4c depende mais de decisão da
+  Gestora.** O que resta se separa em duas naturezas: resíduos de dado em `BP-002`, que a
+  limpeza resolve de uma vez junto com o item que já existia no grupo 4b; e trabalho de
+  execução (Fase 3.4 da agenda + backfill de `subStepId`), que não depende dela.
+- **Correção de uma afirmação que este chat havia escrito sem base**: a reconciliação de
+  hoje afirmou que os dois reparos de dado tinham "alcance limitado à conta de teste
+  `BP-002`". Isso está medido e registrado para o `BUG-118`; para o **`BUG-117` não há
+  alcance registrado em lugar nenhum** — foi generalização indevida a partir do bug irmão.
+  O documento passa a pedir o dry-run antes da limpeza, em vez de assumir.
+
 ## [2026-08-07] INCIDENTE — commit de docs caiu no branch do outro chat (árvore compartilhada)
 
 - Chat/sessão: chat de planejamento. Registrado por decisão do Gestor, que pediu o registro e
