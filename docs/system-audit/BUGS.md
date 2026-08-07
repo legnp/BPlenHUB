@@ -3626,6 +3626,41 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Commit/PR: — (registrado nesta reconciliação, a pedido explícito da entrada de
   `LOG.md` de 2026-08-05)
 
+### BUG-120 Progresso de jornada das duas audiências colide na mesma planilha do acervo
+
+- Severidade: Alto
+- Área/fase onde foi achado: Área de Parceiros — achado pela execução em 2026-08-07,
+  durante o levantamento do plano de nomenclatura de uploads, ao conferir se a jornada
+  de parceiro chegava ao acervo
+- Arquivo(s) afetado(s): `src/lib/drive-sync.ts` (`syncJourneyToUserDrive`),
+  `src/actions/journey.ts` (`updateJourneySubStepAction`)
+- Cenário de falha: um mesmo usuário tem os dois selos (membro e parceiro) → conclui um
+  checkpoint na jornada de parceiro → `syncJourneyToUserDrive` grava em
+  `Progresso_Jornada - {matricula}`, **um único nome para as duas trilhas** → como este
+  espelho é snapshot (`syncDataToSheet` limpa a aba inteira antes de escrever), o
+  retrato da jornada de membro é apagado e substituído pelo da parceria. E vice-versa,
+  a cada conclusão.
+- Impacto: **perda silenciosa de dado no acervo**, que é justamente a estratégia de
+  backup independente da plataforma. O Firestore não é afetado — `audience.ts` já
+  mantinha `progress` e `partner_progress` como documentos irmãos de propósito ("o
+  progresso do membro nunca é reescrito pelo do parceiro"); a proteção é que nunca foi
+  replicada no espelho. Não é regressão: nasceu junto com a jornada de parceiro, que
+  reusou o sincronizador do membro sem discriminar audiência.
+- Exposição medida antes da correção (varredura read-only da base, 2026-08-07): de 10
+  usuários, 3 tinham só jornada de membro, 0 só de parceiro e **1 tinha as duas** —
+  `BP-002-PF-260331`, usuário de teste. Nenhum dado de membro real foi perdido; o bug
+  morderia quando a Área de Parceiros entrasse em produção com parceiros reais.
+- Status: **Corrigido**
+- Decisão de execução: corrigido inline, com aprovação da Gestora. Não toca área
+  sensível — é o nome do arquivo de destino no espelho, sem mexer em gating, sessão,
+  fluxo financeiro ou `firestore.rules`. A regra virou função pura
+  (`journeySheetName`) em `src/lib/journey/audience.ts`, ao lado de
+  `JOURNEY_PROGRESS_DOC`, com 5 testes — um deles trava que nenhuma audiência declarada
+  caia num destino compartilhado, para a colisão não voltar em silêncio se surgir uma
+  terceira trilha. O nome do membro foi preservado de propósito: as planilhas
+  existentes seguem válidas, sem migração.
+- Commit/PR: `e768152` (branch `fix/progresso-jornada-colisao-audiencia`)
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em

@@ -25,6 +25,22 @@ export const JOURNEY_PROGRESS_DOC: Record<JourneyAudience, string> = {
   partner: "partner_progress",
 };
 
+/**
+ * Planilha de progresso de cada audiencia no acervo do usuario.
+ *
+ * Contraparte de `JOURNEY_PROGRESS_DOC` no Drive. O espelho da jornada e'
+ * snapshot — a aba e' limpa antes de cada escrita —, entao um nome unico para as
+ * duas trilhas fazia a conclusao de um checkpoint numa apagar o retrato da
+ * outra, para quem e' membro E parceiro ao mesmo tempo.
+ *
+ * O nome do membro e' o legado DE PROPOSITO: as planilhas que ja existem
+ * continuam validas, sem migracao.
+ */
+export function journeySheetName(matricula: string, audience: JourneyAudience): string {
+  const base = `Progresso_Jornada - ${matricula}`;
+  return audience === "partner" ? `${base} - Parceria` : base;
+}
+
 /** Audiencia de portfolio que marca um produto como trilha de parceiro. */
 const PARTNER_AUDIENCE = "partners";
 

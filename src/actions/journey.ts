@@ -571,7 +571,9 @@ export async function updateJourneySubStepAction(
         });
 
         if (rowsData.length > 0) {
-          syncJourneyToUserDrive(matricula, rowsData).catch(err => console.error("🚨 [DriveSync:Journey] Erro na background task:", err));
+          // A audiencia vai junto: sem ela as duas trilhas colidiriam na mesma
+          // planilha do acervo, e o snapshot de uma apagaria o da outra.
+          syncJourneyToUserDrive(matricula, rowsData, audience).catch(err => console.error("🚨 [DriveSync:Journey] Erro na background task:", err));
         }
       }).catch(err => console.error("🚨 [DriveSync:Journey] Erro buscando estágios:", err));
     } catch (e) {
