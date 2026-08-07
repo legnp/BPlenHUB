@@ -3683,7 +3683,8 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
 - Alcance: divulgação de leitura, não de escrita. `allow write: if false` já valia, e
   as regras de `User/` seguem exigindo auth e posse — conhecer a matrícula **não** abre
   a conta de ninguém. Não há indício de exploração; o que se registra é a via aberta.
-- Status: **Corrigido (código); aguarda deploy das regras pela Gestora**
+- Status: **Corrigido** (código + regras publicadas em produção pela Gestora em
+  2026-08-07, confirmado por sonda read-only — ver "Verificação" abaixo)
 - Decisão de execução: `allow read` passa de `if true` para `if false`. Fechar por
   completo, em vez de exigir apenas login, porque **nenhum código cliente lê
   `Settings`** — varredura do `src/` por `doc(db`/`getDoc`/`onSnapshot`/`collection(db`
@@ -3693,10 +3694,18 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   logado. Precedente no próprio arquivo: `Support_Tickets` já usa `read, write: if
   false`. Mudança de área sensível (`firestore.rules`), aprovada explicitamente antes
   da implementação.
-- Pendência operacional: regra de Firestore só vale após
-  `firebase deploy --only firestore:rules`, que exige credencial de proprietário do
-  projeto (Lição 49 — operação manual da Gestora). **Enquanto o deploy não ocorrer, a
-  exposição permanece em produção**, com o arquivo do repositório já corrigido.
+- Pendência operacional: **CUMPRIDA em 2026-08-07.** Regra de Firestore só passa a
+  valer após publicação com credencial de proprietário do projeto (Lição 49 — operação
+  manual da Gestora); foi publicada pelo console do Firebase, não por
+  `firebase deploy` (o CLI não está instalado na máquina de desenvolvimento).
+- Verificação (sonda read-only, 2026-08-07, sem autenticação, contra a API REST do
+  Firestore do projeto `bplenhub`):
+  - `GET .../documents/Settings/PartnerDirectory` -> **HTTP 403**, era o que a
+    correção precisava produzir.
+  - Controle `GET .../documents/products` (coleção legitimamente pública) -> **HTTP
+    200**. O controle é o que dá valor à sonda: sem ele, um 403 poderia ser erro de
+    rede ou de caminho em vez da regra agindo. Padrão a repetir em qualquer
+    verificação de regra futura — medir o negado E o permitido.
 - Commit/PR: `2ffb223` (branch `fix/settings-leitura-publica`)
 
 ---

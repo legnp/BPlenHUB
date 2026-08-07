@@ -66,8 +66,21 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
   do diff deles.
 - Itens do `00-PLAN.md` atualizados: **nenhum** — estado agregado é do chat de
   planejamento. O rastro fica aqui e no `BUGS.md`, para reconciliação posterior.
-- **Ação pendente da Gestora**: `firebase deploy --only firestore:rules`. Sem isso a
-  exposição do `BUG-122` continua viva em produção.
+- **Ação da Gestora: CUMPRIDA no mesmo dia.** Regras publicadas pelo console do
+  Firebase (o CLI não está instalado nesta máquina). Confirmado por sonda read-only
+  sem autenticação: `Settings/PartnerDirectory` devolve **403** e o controle
+  `products`, público por regra, devolve **200** — o par negado/permitido é o que
+  distingue a regra agindo de um erro de rede. `BUG-122` fechado de ponta a ponta.
+- **Nota de processo**: o merge na `main` foi local (`--no-ff`) e não pelo GitHub, a
+  pedido da Gestora e sem o `gh` disponível — logo **sem preview da Vercel**. Sem risco
+  no caso concreto, porque `firestore.rules` não é lido pela aplicação em tempo de
+  execução e o preview nada mostraria. Registrado por ser desvio do fluxo do
+  `CLAUDE.md`.
+- **Conflito previsto para a `feat/acervo-naming`**: simulação de merge (`merge-tree`,
+  sem alterar nada) contra a `main` nova acusa **um único conflito**, em
+  `docs/system-audit/BUGS.md` — o `BUG-121` daquela branch e o `BUG-122` desta foram
+  escritos no mesmo ponto, no fim do arquivo. Resolução é manter os dois registros; a
+  numeração não colide. Nenhum conflito em `firestore.rules` nem em código.
 
 ## [2026-08-07] Chat de planejamento — grupo 4c esvaziado: 3 itens fechados, 1 movido para o Caminho B
 
