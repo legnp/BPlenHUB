@@ -3661,6 +3661,44 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   existentes seguem válidas, sem migração.
 - Commit/PR: `e768152` (branch `fix/progresso-jornada-colisao-audiencia`)
 
+### BUG-122 Subárvore `Settings` é legível sem autenticação, expondo matrícula de parceiro e minuta de contrato
+
+- Severidade: Alto
+- Área/fase onde foi achado: Área de Parceiros — achado pela execução em 2026-08-07,
+  na varredura de conformidade da área contra as regras do `CLAUDE.md`
+- Arquivo(s) afetado(s): `firestore.rules` (bloco `match /Settings/{document=**}`)
+- Cenário de falha: a regra concede `allow read: if true` a toda a subárvore
+  `Settings`. Qualquer pessoa, **sem conta e sem login**, lê os documentos crus pelo
+  SDK Web e obtém: (a) `Settings/PartnerDirectory` — matrícula e nome de todos os
+  parceiros, ativos e inativos; (b) `Settings/PartnerTerms/documents/{id}` — texto
+  integral do Termo de Parceria, **inclusive versão com `published: false`**;
+  (c) `Settings/CalendarEventTypes` e `Settings/OneToOne`.
+- Contrato violado: `src/actions/partners/directory.ts` e `src/types/partners.ts`
+  declaram, ambos, que "a matrícula do parceiro não chega ao navegador de terceiros".
+  A `getPartnerDirectoryOptionsAction` cumpre isso e ainda exige sessão — mas a
+  garantia vivia só na Server Action, e era contornável lendo o documento cru. É o
+  padrão da Lição 44: ter guard é metade da pergunta; a outra metade é se há caminho
+  que não passa por ele. Vale igual para a separação rascunho/publicado do termo
+  (`terms-admin.ts`), que também só existia no servidor.
+- Alcance: divulgação de leitura, não de escrita. `allow write: if false` já valia, e
+  as regras de `User/` seguem exigindo auth e posse — conhecer a matrícula **não** abre
+  a conta de ninguém. Não há indício de exploração; o que se registra é a via aberta.
+- Status: **Corrigido (código); aguarda deploy das regras pela Gestora**
+- Decisão de execução: `allow read` passa de `if true` para `if false`. Fechar por
+  completo, em vez de exigir apenas login, porque **nenhum código cliente lê
+  `Settings`** — varredura do `src/` por `doc(db`/`getDoc`/`onSnapshot`/`collection(db`
+  mostra o SDK Web tocando só `_AuthMap`, `User`, `products` e `_internal`; os cinco
+  consumidores de `Settings` são Server Actions com Admin SDK, que ignora as regras.
+  Exigir só login seria mais fraco e ainda entregaria as matrículas a qualquer membro
+  logado. Precedente no próprio arquivo: `Support_Tickets` já usa `read, write: if
+  false`. Mudança de área sensível (`firestore.rules`), aprovada explicitamente antes
+  da implementação.
+- Pendência operacional: regra de Firestore só vale após
+  `firebase deploy --only firestore:rules`, que exige credencial de proprietário do
+  projeto (Lição 49 — operação manual da Gestora). **Enquanto o deploy não ocorrer, a
+  exposição permanece em produção**, com o arquivo do repositório já corrigido.
+- Commit/PR: (a preencher)
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em

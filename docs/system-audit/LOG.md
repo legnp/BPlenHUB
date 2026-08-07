@@ -24,6 +24,51 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-07] Chat de execução — varredura de conformidade da Área de Parceiros + BUG-122
+
+- Chat/sessão: chat de execução, em `git worktree` próprio
+  (`C:\DevGeral\Projects\BPlenHUB-lis`, branch `fix/settings-leitura-publica`), aberto
+  a partir da `main` em `dd2fe96`. Terceira árvore: as duas existentes ficaram
+  intocadas, incluindo a `feat/acervo-naming` do outro chat (§5b do AGENTS-SCOPES).
+- Escopo: varredura read-only da Área de Parceiros (30 arquivos — rotas do hub,
+  actions, componentes, tipos, configs de survey/form/tour, motor de audiência,
+  máquina de ciclos) contra as 9 regras inegociáveis do `CLAUDE.md`, o sistema de
+  design e o contrato do `WORKSPACE_GLOBAL.md`. Depois, correção de 1 dos 3 achados.
+- **Conformes**: regra 1 (zero `any`), 3 (comissão vem de `partnerCommissionPercent`
+  no Firestore, textos de `BPLEN_NOMENCLATURE`), 4 (tudo sob `User/{matricula}/...`),
+  5 (`npm run check` exit 0 na baseline), 6 (nenhum nome de infra em texto de
+  interface — os hits são `import` e código de servidor), 7, 8 e sistema de design
+  (os dois modais usam `GlassModal`). Nota da regra 8: `partners/gestao_agenda`
+  delega o loading ao `AgendaManagementView` compartilhado, igual à agenda do membro
+  — débito pré-existente do componente, já citado no `00-PLAN.md`, não desvio da área.
+- **Achados (3)**:
+  1. **Regra 9 sem cumprimento** — `Partner_Consent`, `Partner_Referrals` e
+     `Partner_Billing_Cycles` não têm gancho para frente nem caminho retroativo
+     (zero chamadas de espelhamento em `src/actions/partners/`; zero cobertura de
+     parceiro em `backfill-drive.ts`). O `WORKSPACE_GLOBAL.md` já listava as três como
+     pendência "sem fluxo", com a nota de que a sessão que desenvolvesse a área
+     fecharia isso — a área foi a produção (Fases 0-5) sem fechar. Coberto de fato:
+     o comprovante de repasse (`RECIBO_PARCERIA_${cycleId}`) e o check-in/cadastro,
+     que pegam carona no espelhamento genérico por registry.
+  2. **`BUG-122`** (este) — subárvore `Settings` legível sem autenticação. Corrigido.
+  3. **Regra 2** — 7 emoji em `src/actions/admin/partners.ts` (código legado da
+     vitrine de Parceiros Estratégicos, anterior à Área de Parceiros).
+- **Decisão de sequenciamento**: o achado 1 **não** foi atacado, apesar de ser o mais
+  grave. Ele está dentro do escopo da `feat/acervo-naming`, que não está publicada:
+  aquela branch reescreve `syncConsentAcceptanceToDrive` para usar
+  `buildAcervoFileName`, cria `src/lib/acervo-naming.ts` (inexistente na `main`) e
+  muda a assinatura de `uploadFileToDrive` (novo parâmetro `description`).
+  Implementar o espelhamento de parceiro agora produziria arquivos novos que **não
+  conflitam textualmente** com os deles — logo o merge passaria em silêncio — mas que
+  ignorariam o contrato de nomenclatura. Divergência silenciosa é exatamente o que o
+  `WORKSPACE_GLOBAL.md` existe para evitar. Fica para depois do merge daquela branch,
+  quando ficará inclusive mais simples. O achado 3 também espera, por tocar um arquivo
+  do diff deles.
+- Itens do `00-PLAN.md` atualizados: **nenhum** — estado agregado é do chat de
+  planejamento. O rastro fica aqui e no `BUGS.md`, para reconciliação posterior.
+- **Ação pendente da Gestora**: `firebase deploy --only firestore:rules`. Sem isso a
+  exposição do `BUG-122` continua viva em produção.
+
 ## [2026-08-07] Chat de planejamento — grupo 4c esvaziado: 3 itens fechados, 1 movido para o Caminho B
 
 - Chat/sessão: chat de planejamento, escrito de um `git worktree` separado (§5b).
