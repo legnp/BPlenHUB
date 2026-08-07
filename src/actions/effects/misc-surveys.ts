@@ -95,33 +95,6 @@ export async function handleContentFeedbackEffect(
 }
 
 /**
- * EFEITO: Revisão de Currículo 📄
- */
-export async function handleCVReviewEffect(
-  responses: Record<string, SurveyValue>,
-  matricula: string
-) {
-  try {
-    await syncSurveyToUserDrive({
-      matricula,
-      surveyTitle: "Revisão de Currículo",
-      headers: ["Timestamp", "Matrícula", "Possuía Resumo?", "Resumo Original/Criado", "Alinhamento (Escala)", "Resumo Otimizado", "Descrição Formação"],
-      rowData: [
-        new Date().toLocaleString("pt-BR"),
-        matricula,
-        responses.has_resumo === "sim" ? "Sim" : "Não",
-        String(responses.resumo_atual || responses.resumo_criado || "N/A"),
-        String(responses.alinhamento || "N/A"),
-        String(responses.resumo_otimizado || "N/A"),
-        String(responses.descricao_formacao || "N/A")
-      ]
-    });
-  } catch (err) {
-    console.error(`❌ [Effects:CV Review] Erro na sincronização Drive:`, err);
-  }
-}
-
-/**
  * EFEITO: Desmistificando Candidaturas 🧬📋
  */
 export async function handleDesmistificandoCandidaturasEffect(
