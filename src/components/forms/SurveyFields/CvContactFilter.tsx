@@ -24,21 +24,30 @@ const FIELD_LABELS: Record<string, string> = {
   localizacao: "Localização"
 };
 
+const montarContatosDoMestre = (
+  master: Record<string, SurveyValue>
+): Record<string, ContactItem> => ({
+  nome_completo: { value: String(master.nome_completo || ""), visible: true },
+  email_profissional: { value: String(master.email_profissional || ""), visible: true },
+  telefone: { value: String(master.telefone || ""), visible: true },
+  linkedin: { value: String(master.linkedin || ""), visible: true },
+  portfolio: { value: String(master.portfolio || "nd"), visible: true },
+  localizacao: { value: String(master.localizacao || ""), visible: true }
+});
+
 export function CvContactFilter({ value, masterCvData, onChange }: CvContactFilterProps) {
-  const [data, setData] = useState<Record<string, ContactItem>>(() => {
-    if (value && typeof value === "object" && Object.keys(value).length > 0) {
-      return value as Record<string, ContactItem>;
-    }
-    const master = masterCvData || {};
-    return {
-      nome_completo: { value: String(master.nome_completo || ""), visible: true },
-      email_profissional: { value: String(master.email_profissional || ""), visible: true },
-      telefone: { value: String(master.telefone || ""), visible: true },
-      linkedin: { value: String(master.linkedin || ""), visible: true },
-      portfolio: { value: String(master.portfolio || "nd"), visible: true },
-      localizacao: { value: String(master.localizacao || ""), visible: true }
-    };
-  });
+  const respostaSalva =
+    value && typeof value === "object" && Object.keys(value).length > 0
+      ? (value as Record<string, ContactItem>)
+      : null;
+
+  // `rascunho` guarda so o que o usuario alterou nesta sessao. Enquanto for
+  // `null`, os dados sao DERIVADOS das props: resposta salva tem prioridade,
+  // senao monta a partir do curriculo mestre. Derivar garante que os campos
+  // aparecam preenchidos assim que `masterCvData` chegar, sem depender de uma
+  // segunda passada dentro de um efeito.
+  const [rascunho, setRascunho] = useState<Record<string, ContactItem> | null>(null);
+  const data = rascunho ?? respostaSalva ?? montarContatosDoMestre(masterCvData || {});
 
   const toggleVisibility = (key: string) => {
     const updated = {
@@ -48,22 +57,16 @@ export function CvContactFilter({ value, masterCvData, onChange }: CvContactFilt
         visible: !data[key].visible
       }
     };
-    setData(updated);
+    setRascunho(updated);
     onChange(updated);
   };
 
+  // Permanece apenas para PROPAGAR o preenchimento ao motor de formularios: sem
+  // isto os campos apareceriam na tela mas nao seriam gravados como resposta.
+  // Nao escreve estado local, so notifica o pai.
   useEffect(() => {
-    if (masterCvData && (!value || Object.keys(value).length === 0)) {
-      const initial = {
-        nome_completo: { value: String(masterCvData.nome_completo || ""), visible: true },
-        email_profissional: { value: String(masterCvData.email_profissional || ""), visible: true },
-        telefone: { value: String(masterCvData.telefone || ""), visible: true },
-        linkedin: { value: String(masterCvData.linkedin || ""), visible: true },
-        portfolio: { value: String(masterCvData.portfolio || "nd"), visible: true },
-        localizacao: { value: String(masterCvData.localizacao || ""), visible: true }
-      };
-      setData(initial);
-      onChange(initial);
+    if (masterCvData && !respostaSalva) {
+      onChange(montarContatosDoMestre(masterCvData));
     }
   }, [masterCvData]);
 
