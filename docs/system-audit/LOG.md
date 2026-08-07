@@ -24,6 +24,46 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-07] INCIDENTE — commit de docs caiu no branch do outro chat (árvore compartilhada)
+
+- Chat/sessão: chat de planejamento. Registrado por decisão do Gestor, que pediu o registro e
+  pôs o chat de execução em espera para esta escrita.
+- **O que aconteceu**: entre o início das edições de docs e o `git commit`, o chat de execução
+  **trocou o branch da árvore de trabalho compartilhada** (`main` →
+  `fix/progresso-jornada-colisao-audiencia`). O commit de docs caiu **no branch dele**. É
+  literalmente o cenário descrito na §5b do `AGENTS-SCOPES.md` como "o risco mais perigoso"
+  — a diretriz existia e mesmo assim o erro aconteceu.
+- **Por que a checagem inicial não pegou**: este chat confirmou `main == origin/main` no
+  começo da sessão e de novo antes do commit anterior, mas usou `git status --short` (sem
+  `--branch`) na verificação imediatamente anterior a este commit. A janela entre "conferi" e
+  "commitei" é justamente onde o outro agente atuou. **Confirmar cedo não substitui confirmar
+  no instante do commit.**
+- **Circunstância que tornou o reparo fácil, e que não se pode contar com ela**: o branch do
+  outro chat tinha sido criado a partir do `dd9fb70` (o commit de docs anterior, já na `main`)
+  e **ainda não tinha nenhum commit próprio**. O commit intruso era, portanto, um
+  fast-forward puro sobre a `main`.
+- **Reparo executado — sem `reset --hard`, de propósito** (o chat de execução tinha 4 arquivos
+  de `src/` modificados e NÃO commitados na mesma árvore; `--hard` os teria destruído):
+  1. `git branch -f main <commit>` — a `main` não estava em checkout, então dá para movê-la
+     sem tocar na árvore. Era fast-forward.
+  2. `git push origin main`.
+  3. `git reset --mixed <base>` — devolve o branch do outro chat ao ponto original **sem
+     alterar a árvore de trabalho**.
+  4. `git checkout <base> -- docs/system-audit/` — restaura só os documentos naquela árvore,
+     deixando `src/` intocado.
+  Resultado conferido: branch dele de volta na base, os 4 arquivos de `src/` ainda
+  modificados e íntegros, `main == origin/main`. Durante a operação apareceu um **5º arquivo
+  modificado** (`src/lib/journey/audience.ts`) — prova de que o outro chat estava editando ao
+  vivo, e de que `--hard` teria sido destrutivo de verdade, não hipoteticamente.
+- **Este registro foi escrito de dentro de um `git worktree` separado**, criado exatamente
+  para não repetir o problema — a árvore principal ficou o tempo todo no branch do outro
+  chat, sem nenhum comando deste chat sobre ela.
+- **Encaminhamento**: §5b do `AGENTS-SCOPES.md` reforçada com a regra do instante do commit e
+  com a receita de reparo acima. Lição 55 no `RETROSPECTIVE.md`. A saída estrutural continua
+  sendo a que a própria §5b já recomendava e que agora tem caso real para sustentá-la:
+  **clone ou `worktree` por conta**, deixando o `push` para `origin/main` como único ponto de
+  colisão.
+
 ## [2026-08-07] Chat de planejamento — 2 decisões da Gestora sobre a agenda (grade compartilhada e slots do GDC)
 
 - Chat/sessão: chat de planejamento, mesma sessão da reconciliação abaixo. **Docs-only.**

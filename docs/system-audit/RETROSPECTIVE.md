@@ -561,6 +561,25 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
     real: grade compartilhada de 1 to 1, ratificada em 2026-08-07; proposta de tipo
     dedicado retirada.)_
 
+55. **Numa árvore de trabalho compartilhada, o branch pode mudar ENTRE a sua verificação e o
+    seu commit — confirme no instante do commit, ou trabalhe num `worktree`.** Este chat
+    conferiu `main == origin/main` no início da sessão e de novo antes do commit anterior;
+    ainda assim um commit de docs caiu no branch de código do outro chat, que trocou o branch
+    da árvore no meio do caminho. O detalhe operacional que fechou a armadilha: **`git status
+    --short` não mostra o branch** — parecia verificação, não era. Use `--branch` ou
+    `git branch --show-current` **na mesma chamada** do `git commit`. **Corolário sobre o
+    reparo, que é onde estava o dano real:** o instinto é `git reset --hard` para limpar o
+    branch alheio. Seria destrutivo — a outra conta tinha 4 arquivos de `src/` modificados e
+    **não commitados na mesma árvore**, e durante o próprio reparo apareceu um 5º, provando
+    que ela editava ao vivo. O reparo correto não toca a árvore: `git branch -f main <commit>`
+    (a `main` não está em checkout, então move de graça), push, `git reset --mixed <base>`
+    (devolve o branch sem mexer nos arquivos) e `git checkout <base> -- docs/` (restaura só o
+    que é seu). **Corolário estrutural:** a §5b já recomendava clones ou `worktree` separados
+    e mesmo assim o erro aconteceu, porque a recomendação era "quando possível" e o custo
+    parecia alto. Não é: `git worktree add <tmp> main`, commitar, `git worktree remove` custa
+    três comandos e elimina a classe inteira de problema. Disciplina falha; topologia não.
+    _(Caso real: 2026-08-07, incidente registrado no `LOG.md` com o reparo completo.)_
+
 ---
 
 ## Melhorias sugeridas para o PLANO (para o chat de planejamento refinar)
@@ -607,6 +626,12 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
 
 ## Registro de revisões deste documento
 
+- 2026-08-07 — Lição 55 (numa árvore compartilhada o branch muda entre a
+  verificação e o commit; `git status --short` não mostra branch; reparo sem
+  `--hard` porque a outra conta tem trabalho não-commitado na mesma árvore)
+  adicionada, a partir do incidente em que um commit de docs caiu no branch do
+  chat de execução. §5b do `AGENTS-SCOPES.md` reforçada com a regra e a receita
+  de reparo.
 - 2026-08-07 — Lição 54 (frase que admite duas leituras opostas se confirma antes
   de virar projeto; o modelo de dados diz o que é possível, não o que é verdade
   sobre o mundo) adicionada, a partir da ratificação da grade compartilhada de
