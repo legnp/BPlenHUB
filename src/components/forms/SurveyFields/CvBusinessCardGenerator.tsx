@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Eye, EyeOff, Palette, QrCode, User, Phone, Mail, Linkedin, Globe, Check } from "lucide-react";
 import { BusinessCardEngine } from "@/components/ui/BusinessCardEngine";
 import type { SurveyValue } from "@/types/survey";
@@ -30,52 +30,73 @@ interface CvBusinessCardGeneratorProps {
   onChange: (val: BusinessCardData) => void;
 }
 
+const VISIBILIDADE_PADRAO = {
+  name: true,
+  phone: true,
+  email: true,
+  linkedin: true,
+  website: true
+};
+
+/** Monta o cartao a partir do curriculo mestre. */
+const montarCartaoDoMestre = (
+  masterCvData: Record<string, SurveyValue> | null | undefined
+): BusinessCardData => {
+  if (!masterCvData) return {};
+
+  return {
+    name: String(masterCvData.nome_completo || ""),
+    phone: String(masterCvData.telefone || ""),
+    email: String(masterCvData.email_profissional || ""),
+    linkedin: String(masterCvData.linkedin || ""),
+    website: String(masterCvData.portfolio || "")
+  };
+};
+
 export function CvBusinessCardGenerator({ value, masterCvData, onChange }: CvBusinessCardGeneratorProps) {
-  // Valores Locais
-  const [skipCard, setSkipCard] = useState(false);
-  const [name, setName] = useState("");
-  const [pitch, setPitch] = useState("");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
-  const [linkedin, setLinkedin] = useState("");
-  const [website, setWebsite] = useState("");
+  // `rascunho` guarda so o que o usuario alterou nesta sessao. O restante e'
+  // DERIVADO das props, com precedencia: rascunho > resposta salva > curriculo
+  // mestre. Derivar em vez de copiar dentro de um efeito garante que o cartao
+  // apareca preenchido assim que `masterCvData` chegar, sem segunda passada.
+  const [rascunho, setRascunho] = useState<BusinessCardData | null>(null);
 
-  // Visibilidade de campos
-  const [visibleFields, setVisibleFields] = useState({
-    name: true,
-    phone: true,
-    email: true,
-    linkedin: true,
-    website: true
-  });
+  const form: BusinessCardData = {
+    ...montarCartaoDoMestre(masterCvData),
+    ...(value ?? {}),
+    ...(rascunho ?? {})
+  };
 
-  // Configuracoes visuais
-  const [theme, setTheme] = useState<"light" | "dark" | "blue" | "grey" | "green">("light");
-  const [qrTarget, setQrTarget] = useState<"whatsapp" | "linkedin" | "website">("linkedin");
+  // Os nomes abaixo sao mantidos identicos aos do estado anterior de proposito:
+  // todo o JSX e os manipuladores continuam funcionando sem alteracao.
+  const skipCard = form.skipCard ?? false;
+  const name = form.name ?? "";
+  const pitch = form.pitch ?? "";
+  const phone = form.phone ?? "";
+  const email = form.email ?? "";
+  const linkedin = form.linkedin ?? "";
+  const website = form.website ?? "";
+  const visibleFields = form.visibleFields ?? VISIBILIDADE_PADRAO;
+  const theme = form.theme ?? "light";
+  const qrTarget = form.qrTarget ?? "linkedin";
 
-  // Popula os dados iniciais do Master CV e do valor salvo
-  useEffect(() => {
-    if (value) {
-      setSkipCard(value.skipCard || false);
-      setName(value.name || "");
-      setPitch(value.pitch || "");
-      setPhone(value.phone || "");
-      setEmail(value.email || "");
-      setLinkedin(value.linkedin || "");
-      setWebsite(value.website || "");
-      if (value.visibleFields) {
-        setVisibleFields(value.visibleFields);
-      }
-      setTheme(value.theme || "light");
-      setQrTarget(value.qrTarget || "linkedin");
-    } else if (masterCvData) {
-      setName(String(masterCvData.nome_completo || ""));
-      setPhone(String(masterCvData.telefone || ""));
-      setEmail(String(masterCvData.email_profissional || ""));
-      setLinkedin(String(masterCvData.linkedin || ""));
-      setWebsite(String(masterCvData.portfolio || ""));
-    }
-  }, [value, masterCvData]);
+  const setSkipCard = (v: boolean) => setRascunho({ ...form, skipCard: v });
+  const setName = (v: string) => setRascunho({ ...form, name: v });
+  const setPitch = (v: string) => setRascunho({ ...form, pitch: v });
+  const setPhone = (v: string) => setRascunho({ ...form, phone: v });
+  const setEmail = (v: string) => setRascunho({ ...form, email: v });
+  const setLinkedin = (v: string) => setRascunho({ ...form, linkedin: v });
+  const setWebsite = (v: string) => setRascunho({ ...form, website: v });
+  const setVisibleFields = (v: typeof VISIBILIDADE_PADRAO) =>
+    setRascunho({ ...form, visibleFields: v });
+  const setTheme = (v: NonNullable<BusinessCardData["theme"]>) =>
+    setRascunho({ ...form, theme: v });
+  const setQrTarget = (v: NonNullable<BusinessCardData["qrTarget"]>) =>
+    setRascunho({ ...form, qrTarget: v });
+
+  // Nao ha efeito de sincronizacao aqui. O comportamento anterior nao propagava
+  // o preenchimento do curriculo mestre para o motor de formularios — so exibia,
+  // e a gravacao acontecia quando o usuario mexia em algo. A derivacao acima
+  // reproduz exatamente isso, sem precisar de efeito.
 
   // Propaga mudancas de volta para o SurveyEngine
   const triggerChange = (updates: Partial<BusinessCardData>) => {

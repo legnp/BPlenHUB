@@ -1,8 +1,8 @@
 # T-06 — Correção dos 16 erros de lint do React Compiler
 
-**Status:** Ondas 1, 2 e 3A concluídas. Restam 8 erros, em três frentes (3B, 3C, 3D).
+**Status:** Ondas 1, 2, 3A e 3B concluídas. **Restam 3 erros**, ambos em frentes que exigem aprovação do Gestor (3C e 3D).
 **Aberto em:** 2026-08-06
-**Última atualização:** 2026-08-06 — 3A concluída (`admin/partners` virou Server Component). 3C e 3D exigem aprovação do Gestor antes de implementar — ver 8.3.1 e 8.4.
+**Última atualização:** 2026-08-06 — 3B concluída: os 5 campos `Cv*` corrigidos, com 25 testes novos. Ver 8.1.
 
 ---
 
@@ -262,6 +262,48 @@ navegador (abrir o formulário com Master CV preenchido, conferir prefill; salva
 sair e voltar, conferir restauração), e só então replicar o padrão validado nos
 outros quatro.
 
+### 8.1.1. RESOLVIDO EM 2026-08-06 — os cinco campos
+
+**Padrão aplicado.** Em todos: o valor deixa de ser copiado para o estado dentro
+do efeito e passa a ser **derivado** das props, com precedência
+`rascunho > resposta salva > currículo mestre`. O estado local (`rascunho`) guarda
+apenas o que o usuário alterou nesta sessão. Onde havia propagação ao motor de
+formulários, o efeito permaneceu **só para isso** — sem ele o texto apareceria na
+tela mas não seria gravado como resposta.
+
+**Rede de segurança.** `@testing-library/react` foi adicionado como
+devDependency; o restante da infra já existia. Foram criados **25 testes**, cinco
+por campo, e todos foram escritos e validados **contra o código antigo** antes de
+qualquer refatoração, para provar que mediam o comportamento certo.
+
+**Três achados durante a execução:**
+
+1. **Mutação de props.** `CvEducationFilter` e `CvExperienceFilter` alteravam os
+   objetos no lugar dentro de uma cópia rasa do array (`updated[i].visible = ...`).
+   Isso mutava também o objeto vindo da prop `value` — inofensivo enquanto o
+   estado era uma cópia, mas corromperia a fonte com o estado derivado. Os toggles
+   passaram a criar objetos novos.
+2. **Código duplicado.** A montagem a partir do currículo mestre estava escrita
+   duas vezes em `CvContactFilter` (inicializador e efeito), com risco de
+   divergirem. Virou função de módulo, usada nos dois lugares.
+3. **`CvBusinessCardGenerator` nunca propagou o preenchimento do mestre.**
+   Diferente dos outros quatro, o ramo do currículo mestre só chamava os setters,
+   sem `onChange` — o cartão aparecia preenchido mas a resposta só era gravada
+   quando o usuário mexia em algo. Comportamento **preservado de propósito**, e há
+   teste fixando isso para que não seja "corrigido" por engano.
+
+**Sobre o `CvBusinessCardGenerator`:** era o mais invasivo, com nove estados
+escritos de uma vez. A correção manteve os **mesmos nomes** de variáveis e
+setters, trocando apenas a origem — de estado copiado para valor derivado — de
+modo que as ~35 chamadas espalhadas pelo JSX seguiram inalteradas. Com a
+derivação, o efeito desapareceu por completo.
+
+**Validação manual pendente.** O Gestor não pôde validar no navegador porque o
+usuário de teste já tem as etapas concluídas e não há como retroceder. Ficou
+combinado que a verificação acontece no teste de ponta a ponta pós-auditoria; se
+falhar, reportar e corrigir. Os 25 testes cobrem justamente o cenário que não é
+reproduzível à mão: o currículo mestre chegando **depois** da tela abrir.
+
 ### 8.2. `src/components/hub/MemberJourneyHero.tsx:34` — RESOLVIDO EM 2026-08-06
 
 Resolvido junto com a Onda 2, por necessidade: os dois erros viviam no **mesmo
@@ -442,12 +484,15 @@ atualização" no topo do documento.
 | 1 — purity (`ConfettiCheckbox`) | 5 | **Concluída** | `fix/lint-onda-1-purity-immutability` | 2026-08-06 |
 | 2 — `MemberJourneyHero` (memoização + efeito) | 2 | **Concluída** | `fix/lint-onda-2-memoizacao` | 2026-08-06 |
 | 3A — `admin/partners` para Server Component | 1 | **Concluída** | `fix/lint-onda-3a-partners-server` | 2026-08-06 |
-| 3B — 5 campos `Cv*` | 5 | Aberta | — | — |
+| 3B — 5 campos `Cv*` | 5 | **Concluída** | `fix/lint-onda-3b-campos-cv` | 2026-08-06 |
 | 3C — `hub/journey/[stepId]` | 2 | Aberta, **exige aprovação** | — | — |
-| 3D — `admin/marketing` | 1 | Bloqueada, **exige aprovação** | — | — |
+| 3D — `admin/marketing` | 1 | Aberta, **exige aprovação** | — | — |
 
-Contagem de erros: 16 na abertura, 11 após a Onda 1, 9 após a Onda 2, **8** após
-a 3A.
+Contagem de erros: 16 na abertura, 11 após a Onda 1, 9 após a Onda 2, 8 após a
+3A, **3** após a 3B. Testes: 485 na abertura, **510** após a 3B.
+
+**Os 3 erros restantes estão inteiramente nas duas frentes que dependem de
+aprovação do Gestor.** Nenhum trabalho de correção pode avançar sem ela.
 
 A Onda 3 foi subdividida ao ser executada: os 9 erros não formavam um grupo
 homogêneo. Duas frentes exigem aprovação do Gestor antes de implementar — 3C toca

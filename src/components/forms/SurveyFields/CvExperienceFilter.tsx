@@ -28,6 +28,40 @@ interface CvExperienceFilterProps {
   onChange: (val: ExperienciaFiltrada[]) => void;
 }
 
+/** Monta a lista de experiencias a partir do curriculo mestre. */
+const montarExperienciasDoMestre = (
+  masterCvData: Record<string, SurveyValue> | null | undefined
+): ExperienciaFiltrada[] => {
+  if (!masterCvData || !Array.isArray(masterCvData.experiencias)) return [];
+
+  return (masterCvData.experiencias as Record<string, unknown>[]).map((exp) => {
+    const conquistasRaw = exp.conquistas || [];
+    const conquistas: ConquistaItem[] = [];
+
+    // Conquistas podem vir como string ou como array de objetos dependendo de
+    // como foram salvas
+    if (Array.isArray(conquistasRaw)) {
+      conquistasRaw.forEach((c: unknown) => {
+        if (typeof c === "string") {
+          conquistas.push({ conquista: c, visible: true });
+        } else if (c && typeof c === "object") {
+          const co = c as Record<string, unknown>;
+          conquistas.push({ conquista: String(co.conquista || co.value || ""), visible: true });
+        }
+      });
+    }
+
+    return {
+      cargo: String(exp.cargo || ""),
+      empresa: String(exp.empresa || ""),
+      periodo: String(exp.periodo || ""),
+      contexto: String(exp.contexto || ""),
+      visible: true,
+      conquistas
+    };
+  });
+};
+
 export function CvExperienceFilter({
   value,
   masterCvData,
@@ -37,7 +71,18 @@ export function CvExperienceFilter({
   senioridadePretendida,
   onChange
 }: CvExperienceFilterProps) {
-  const [experiences, setExperiences] = useState<ExperienciaFiltrada[]>([]);
+  const respostaSalva =
+    value && Array.isArray(value) && value.length > 0
+      ? (value as unknown as ExperienciaFiltrada[])
+      : null;
+
+  // `rascunho` guarda so o que o usuario alterou nesta sessao. Enquanto for
+  // `null`, a lista e' DERIVADA das props: resposta salva tem prioridade, senao
+  // monta a partir do curriculo mestre. Derivar garante que as experiencias
+  // aparecam assim que `masterCvData` chegar, sem depender de uma segunda passada
+  // dentro de um efeito.
+  const [rascunho, setRascunho] = useState<ExperienciaFiltrada[] | null>(null);
+  const experiences = rascunho ?? respostaSalva ?? montarExperienciasDoMestre(masterCvData);
   const [showDesc, setShowDesc] = useState(false);
 
   // Determinar legenda dinâmica baseada na senioridade pretendida
@@ -46,51 +91,40 @@ export function CvExperienceFilter({
     senioridadePretendida === "Líder/C-Level" ||
     senioridadePretendida === "Dono do meu negócio";
 
+  // Permanece apenas para PROPAGAR o preenchimento ao motor de formularios: sem
+  // isto as experiencias apareceriam na tela mas nao seriam gravadas como
+  // resposta. Nao escreve estado local, so notifica o pai.
   useEffect(() => {
-    if (value && Array.isArray(value) && value.length > 0) {
-      setExperiences(value as unknown as ExperienciaFiltrada[]);
-    } else if (masterCvData && masterCvData.experiencias && Array.isArray(masterCvData.experiencias)) {
-      const initial: ExperienciaFiltrada[] = (masterCvData.experiencias as Record<string, unknown>[]).map((exp) => {
-        const conquistasRaw = exp.conquistas || [];
-        const conquistas: ConquistaItem[] = [];
-
-        // Conquistas podem vir como string ou como array de objetos dependendo de como foram salvas
-        if (Array.isArray(conquistasRaw)) {
-          conquistasRaw.forEach((c: unknown) => {
-            if (typeof c === "string") {
-              conquistas.push({ conquista: c, visible: true });
-            } else if (c && typeof c === "object") {
-              const co = c as Record<string, unknown>;
-              conquistas.push({ conquista: String(co.conquista || co.value || ""), visible: true });
-            }
-          });
-        }
-
-        return {
-          cargo: String(exp.cargo || ""),
-          empresa: String(exp.empresa || ""),
-          periodo: String(exp.periodo || ""),
-          contexto: String(exp.contexto || ""),
-          visible: true,
-          conquistas
-        };
-      });
-      setExperiences(initial);
-      onChange(initial);
+    const jaSalvo = value && Array.isArray(value) && value.length > 0;
+    if (!jaSalvo && masterCvData && Array.isArray(masterCvData.experiencias)) {
+      onChange(montarExperienciasDoMestre(masterCvData));
     }
-  }, [masterCvData, value]);
+  }, [masterCvData]);
 
+  // Os toggles criam objetos novos em vez de alterar os existentes no lugar. A
+  // versao anterior mutava dentro de uma copia rasa do array, o que alterava
+  // tambem o objeto vindo da prop `value` — inofensivo enquanto o estado era uma
+  // copia, mas corromperia a fonte agora que a lista e' derivada.
   const toggleExperience = (idx: number) => {
-    const updated = [...experiences];
-    updated[idx].visible = !updated[idx].visible;
-    setExperiences(updated);
+    const updated = experiences.map((item, i) =>
+      i === idx ? { ...item, visible: !item.visible } : item
+    );
+    setRascunho(updated);
     onChange(updated);
   };
 
   const toggleAchievement = (expIdx: number, acIdx: number) => {
-    const updated = [...experiences];
-    updated[expIdx].conquistas[acIdx].visible = !updated[expIdx].conquistas[acIdx].visible;
-    setExperiences(updated);
+    const updated = experiences.map((item, i) =>
+      i === expIdx
+        ? {
+            ...item,
+            conquistas: item.conquistas.map((c, j) =>
+              j === acIdx ? { ...c, visible: !c.visible } : c
+            )
+          }
+        : item
+    );
+    setRascunho(updated);
     onChange(updated);
   };
 

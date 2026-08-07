@@ -35,6 +35,52 @@ interface CvEducationFilterProps {
   onChange: (val: FilteredEducationState) => void;
 }
 
+/** Le a resposta ja salva do survey, ou `null` quando ainda nao existe. */
+const lerRespostaSalva = (value: SurveyValue): FilteredEducationState | null => {
+  const valueObj = value as Record<string, unknown> | null | undefined;
+  if (
+    valueObj &&
+    typeof valueObj === "object" &&
+    (Array.isArray(valueObj.formacoes) || Array.isArray(valueObj.certificacoes_projetos))
+  ) {
+    return {
+      formacoes: (valueObj.formacoes as FormacaoFiltrada[]) || [],
+      certificacoes_projetos: (valueObj.certificacoes_projetos as CertificacaoFiltrada[]) || []
+    };
+  }
+  return null;
+};
+
+/** Monta o estado inicial a partir do curriculo mestre. */
+const montarFormacaoDoMestre = (
+  masterCvData: Record<string, SurveyValue> | null | undefined
+): FilteredEducationState => {
+  if (!masterCvData) return { formacoes: [], certificacoes_projetos: [] };
+
+  const masterFormacoes = (masterCvData.formacoes as Record<string, unknown>[] | undefined) || [];
+  const formacoes: FormacaoFiltrada[] = masterFormacoes.map((form) => ({
+    grau: String(form.grau || ""),
+    curso: String(form.curso || ""),
+    instituicao: String(form.instituicao || ""),
+    ano_conclusao: String(form.ano_conclusao || ""),
+    destaques: String(form.destaques || ""),
+    visible: true
+  }));
+
+  const masterCertificacoes =
+    (masterCvData.certificacoes_projetos as Record<string, unknown>[] | undefined) || [];
+  const certificacoes_projetos: CertificacaoFiltrada[] = masterCertificacoes.map((cert) => ({
+    nome: String(cert.nome || ""),
+    instituicao: String(cert.instituicao || ""),
+    data: String(cert.data || ""),
+    objetivo: String(cert.objetivo || ""),
+    conquistas: (cert.conquistas as string[]) || [],
+    visible: true
+  }));
+
+  return { formacoes, certificacoes_projetos };
+};
+
 export function CvEducationFilter({
   value,
   masterCvData,
@@ -42,55 +88,47 @@ export function CvEducationFilter({
   targetEmpresaName,
   onChange
 }: CvEducationFilterProps) {
-  const [state, setState] = useState<FilteredEducationState>({ formacoes: [], certificacoes_projetos: [] });
+  const respostaSalva = lerRespostaSalva(value);
 
+  // `rascunho` guarda so o que o usuario alterou nesta sessao. Enquanto for
+  // `null`, o estado e' DERIVADO das props: resposta salva tem prioridade, senao
+  // monta a partir do curriculo mestre. Derivar garante que formacoes e
+  // certificacoes aparecam assim que `masterCvData` chegar, sem depender de uma
+  // segunda passada dentro de um efeito.
+  const [rascunho, setRascunho] = useState<FilteredEducationState | null>(null);
+  const state = rascunho ?? respostaSalva ?? montarFormacaoDoMestre(masterCvData);
+
+  // Permanece apenas para PROPAGAR o preenchimento ao motor de formularios: sem
+  // isto os itens apareceriam na tela mas nao seriam gravados como resposta.
   useEffect(() => {
-    const valueObj = value as Record<string, unknown> | null | undefined;
-    if (valueObj && typeof valueObj === "object" && (Array.isArray(valueObj.formacoes) || Array.isArray(valueObj.certificacoes_projetos))) {
-      setState({
-        formacoes: (valueObj.formacoes as FormacaoFiltrada[]) || [],
-        certificacoes_projetos: (valueObj.certificacoes_projetos as CertificacaoFiltrada[]) || []
-      });
-    } else if (masterCvData) {
-      const masterFormacoes = (masterCvData.formacoes as Record<string, unknown>[] | undefined) || [];
-      const formacoes: FormacaoFiltrada[] = masterFormacoes.map((form) => ({
-        grau: String(form.grau || ""),
-        curso: String(form.curso || ""),
-        instituicao: String(form.instituicao || ""),
-        ano_conclusao: String(form.ano_conclusao || ""),
-        destaques: String(form.destaques || ""),
-        visible: true
-      }));
-
-      const masterCertificacoes = (masterCvData.certificacoes_projetos as Record<string, unknown>[] | undefined) || [];
-      const certificacoes_projetos: CertificacaoFiltrada[] = masterCertificacoes.map((cert) => ({
-        nome: String(cert.nome || ""),
-        instituicao: String(cert.instituicao || ""),
-        data: String(cert.data || ""),
-        objetivo: String(cert.objetivo || ""),
-        conquistas: cert.conquistas || [],
-        visible: true
-      }));
-
-      const initial = { formacoes, certificacoes_projetos };
-      setState(initial);
-      onChange(initial);
+    if (masterCvData && !lerRespostaSalva(value)) {
+      onChange(montarFormacaoDoMestre(masterCvData));
     }
-  }, [masterCvData, value]);
+  }, [masterCvData]);
 
+  // Os toggles criam objetos novos em vez de alterar os existentes no lugar. A
+  // versao anterior mutava o item dentro de uma copia rasa do array, o que
+  // alterava tambem o objeto vindo da prop `value` — invisivel enquanto o estado
+  // era uma copia, mas corromperia a fonte agora que o estado e' derivado.
   const toggleFormacao = (idx: number) => {
-    const formacoes = [...state.formacoes];
-    formacoes[idx].visible = !formacoes[idx].visible;
-    const updated = { ...state, formacoes };
-    setState(updated);
+    const updated = {
+      ...state,
+      formacoes: state.formacoes.map((item, i) =>
+        i === idx ? { ...item, visible: !item.visible } : item
+      )
+    };
+    setRascunho(updated);
     onChange(updated);
   };
 
   const toggleCertificacao = (idx: number) => {
-    const certificacoes_projetos = [...state.certificacoes_projetos];
-    certificacoes_projetos[idx].visible = !certificacoes_projetos[idx].visible;
-    const updated = { ...state, certificacoes_projetos };
-    setState(updated);
+    const updated = {
+      ...state,
+      certificacoes_projetos: state.certificacoes_projetos.map((item, i) =>
+        i === idx ? { ...item, visible: !item.visible } : item
+      )
+    };
+    setRascunho(updated);
     onChange(updated);
   };
 
