@@ -415,6 +415,18 @@ export async function updateJourneySubStepAction(
     if (session.uid !== uid && !session.isAdmin) {
       throw new AuthorizationError("Voce nao pode alterar a jornada de outro membro.");
     }
+
+    // Guarda de integridade: um identificador vazio nunca corresponde a um
+    // sub-passo real. Sem esta verificacao ele seria empurrado para
+    // `completedSubSteps` e, como o status da etapa e' decidido pelo TAMANHO
+    // dessa lista (ver `newStatus` abaixo), uma entrada invalida inflaria a
+    // contagem e poderia marcar a etapa como concluida antes da hora.
+    // Protege tambem a jornada de parceiros, que chama esta mesma action.
+    if (typeof subStepId !== "string" || subStepId.trim() === "") {
+      console.error("[Journey] Tentativa de gravar sub-passo sem identificador.", { uid, stepId });
+      return { success: false };
+    }
+
     const db = getAdminDb();
 
     // 1. Resolver Matrícula

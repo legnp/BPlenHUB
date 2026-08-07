@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter, redirect } from "next/navigation";
 import { StepContainer } from "@/components/journey/StepContainer";
 import { SubStepRail } from "@/components/journey/SubStepRail";
 import { StepRenderer } from "@/components/journey/StepRenderer";
 import { useAuthContext } from "@/context/AuthContext";
 import { useJourney } from "@/hooks/useJourney";
+import { resolverSubPassoAtual } from "@/lib/journey/substep-atual";
 import { Loader2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import AtmosphericLoading from "@/components/shared/AtmosphericLoading";
@@ -26,37 +27,23 @@ export default function StepJourneyPage() {
   // Progress Logic
   const { stages, progress, loading, updateSubStep, getStepStatus, getStageTelemetry } = useJourney(user?.uid || "guest");
 
-  // Local state for current substep view
-  const [currentSubStepId, setCurrentSubStepId] = useState<string>("");
-  const [isInitialized, setIsInitialized] = useState(false);
+  // A escolha do usuario e' guardada COM a etapa de origem. Trocar de etapa
+  // invalida a escolha por construcao: nao existe efeito de reinicio, e fica
+  // impossivel exibir um sub-passo pertencente a outra etapa.
+  const [selecao, setSelecao] = useState<{ stepId: string; subStepId: string } | null>(null);
 
   const stepConfig = stages.find(s => s.id === stepId);
 
-  // Reset initialization state when stepId changes
-  useEffect(() => {
-    setIsInitialized(false);
-    setCurrentSubStepId("");
-  }, [stepId]);
+  // Regra extraida para `src/lib/journey/substep-atual.ts`, onde e' testada.
+  const subPassoDerivado = useMemo(
+    () => resolverSubPassoAtual(stepConfig?.substeps, progress?.steps[stepId]?.completedSubSteps),
+    [stepConfig, progress, stepId]
+  );
 
-  useEffect(() => {
-    if (!loading && stepConfig && !isInitialized) {
-      const completedSubStepIds = progress?.steps[stepId]?.completedSubSteps || [];
-      const firstIncomplete = stepConfig.substeps?.find(ss => !completedSubStepIds.includes(ss.id));
-      
-      let initialId = "";
-      if (firstIncomplete) {
-        initialId = firstIncomplete.id;
-      } else if (stepConfig.substeps && stepConfig.substeps.length > 0) {
-        // Fallback to last completed substep if everything is done
-        initialId = stepConfig.substeps[stepConfig.substeps.length - 1].id;
-      }
+  const currentSubStepId = selecao?.stepId === stepId ? selecao.subStepId : subPassoDerivado;
 
-      if (initialId) {
-        setCurrentSubStepId(initialId);
-        setIsInitialized(true);
-      }
-    }
-  }, [loading, stepConfig, isInitialized, progress, stepId]);
+  // Mantem o nome anterior de proposito: os pontos de chamada seguem inalterados.
+  const setCurrentSubStepId = (subStepId: string) => setSelecao({ stepId, subStepId });
 
   // Guided Tour State (Parte 2 do Flow de Onboarding)
   const [isTourOpen, setIsTourOpen] = useState(false);
