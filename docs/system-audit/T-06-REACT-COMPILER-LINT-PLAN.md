@@ -1,8 +1,8 @@
 # T-06 — Correção dos 16 erros de lint do React Compiler
 
-**Status:** Ondas 1 e 2 concluídas. Onda 3 aberta (9 erros restantes).
+**Status:** Ondas 1, 2 e 3A concluídas. Restam 8 erros, em três frentes (3B, 3C, 3D).
 **Aberto em:** 2026-08-06
-**Última atualização:** 2026-08-06 — Onda 2 concluída sem supressão e levando junto o `MemberJourneyHero:34` (ver 7.1, 8.2 e 8.2.1).
+**Última atualização:** 2026-08-06 — 3A concluída (`admin/partners` virou Server Component). 3C e 3D exigem aprovação do Gestor antes de implementar — ver 8.3.1 e 8.4.
 
 ---
 
@@ -296,24 +296,75 @@ pre-commit reprova o arquivo inteiro, a Onda 2 não podia ser commitada sozinha.
 tratar arquivo por arquivo até zerar. Um arquivo com erro remanescente não entra
 em commit nenhum.
 
-### 8.3. `src/app/admin/partners/page.tsx` (reclassificado da Onda 1)
+### 8.3. `src/app/admin/partners` — RESOLVIDO EM 2026-08-06
 
-Ver 6.1 para o histórico completo. A página carrega parceiros via
-`getPartnersAction()` dentro de um `useEffect`, e o arquivo está no estado
-original — a tentativa de correção foi revertida.
+Ver 6.1 para o histórico da tentativa anterior, revertida.
 
-Correção arquitetural: mover a carga inicial para Server Component com passagem
-por props, ou adotar biblioteca de data fetching. Ao refazer, vale reaproveitar a
-separação que já foi desenhada e descartada: `loadPartners` para a carga inicial
-(sem ligar `isLoading`, que já nasce `true`) e `refreshPartners` para a recarga
-por ação do usuário (ligando o indicador). Os pontos de chamada da recarga são
-`handleSave` e `handleDelete`.
+Correção aplicada: separação em Server Component + componente cliente.
 
-### 8.4. `src/app/hub/journey/[stepId]/page.tsx:37` e `:55`, `src/app/admin/marketing/page.tsx:92`
+- `page.tsx` passa a ser Server Component: chama `getPartnersAction()` e entrega
+  o resultado por prop.
+- `PartnersClient.tsx` (o antigo `page.tsx`, movido com `git mv` para preservar
+  histórico) recebe `initialPartners`, inicializa o estado com ele e mantém só a
+  interatividade. `isLoading` passa a nascer `false`, porque os dados já chegam
+  prontos. A recarga por ação do usuário virou `refreshPartners()`, chamada em
+  `handleSave` e `handleDelete`.
 
-Ainda não analisados em profundidade. Antes de corrigir, ler o efeito completo e
-classificar em qual dos padrões acima se encaixa (semeadura a partir de dado
-assíncrono, ou sincronização de prop para estado local).
+**Por que foi seguro chamar a action no servidor:** `src/app/admin/layout.tsx` já
+é Server Component com gate que **redireciona** sessão inválida, suspensa ou sem
+papel de admin antes de renderizar os filhos. O `requireAdmin()` dentro da action
+lança exceção, o que num Server Component viraria página de erro — mas isso nunca
+acontece, porque ninguém sem permissão chega a renderizar a página. Verificado:
+requisição sem sessão responde `307` para `/entrar?returnTo=/admin/partners`,
+igual ao comportamento anterior.
+
+Efeito colateral esperado e aceitável: a rota passa a ser renderizada
+dinamicamente (usa cookies no servidor), aparecendo no build junto de
+`/admin/partners-program`, que já era assim.
+
+### 8.3.1. `src/app/admin/marketing/page.tsx:92` — BLOQUEADO, EXIGE APROVAÇÃO
+
+Mesmo padrão de busca dentro de `useEffect`, mas **não** pode seguir o caminho de
+8.3, por dois motivos:
+
+1. **Autenticação diferente.** `fetchCoupons` faz `await user.getIdToken()` no
+   cliente e passa o token para `getAdminCouponsList(token)` e
+   `getAdminCouponsV2Action(token)`. Migrar para Server Component exige trocar o
+   mecanismo para cookie de sessão, alterando a assinatura dessas actions.
+2. **Regra do `CLAUDE.md`.** Mudanças que tocam fluxos financeiros — checkout,
+   **cupons**, cotas — exigem plano apresentado e aprovação explícita do Gestor
+   antes de implementar. Esta tela é a administração de cupons.
+
+Não implementar sem passar por essa aprovação.
+
+### 8.4. `src/app/hub/journey/[stepId]/page.tsx:37` e `:55` — EXIGE APROVAÇÃO
+
+Analisado em 2026-08-06. **É o caso mais delicado dos nove**, e o oposto do
+`MemberJourneyHero`: aqui o estado é genuinamente interativo e **não pode ser
+derivado**.
+
+`setCurrentSubStepId` é chamado pelo usuário em três pontos além dos efeitos:
+- linha 152, `onSelectSubStep={setCurrentSubStepId}` — clique na navegação
+- linha 175 — avanço automático após concluir um sub-passo
+- linha 202 — mesmo avanço, no fluxo de onboarding
+
+São dois efeitos entrelaçados:
+- **`:37`** — reset ao trocar de `stepId`: zera `isInitialized` e `currentSubStepId`.
+- **`:55`** — inicialização: quando os dados carregam, escolhe o primeiro
+  sub-passo incompleto, ou o último da lista se tudo estiver concluído.
+
+A dificuldade: a inicialização depende de dados assíncronos (`progress`,
+`stepConfig`), então não cabe em inicializador de `useState` — na primeira
+renderização os dados não existem.
+
+Caminhos possíveis, a decidir no plano de aprovação:
+1. Separar em componente pai que aguarda os dados e filho remontado por `key={stepId}`,
+   recebendo o sub-passo inicial já resolvido por prop.
+2. Padrão oficial de ajuste de estado durante o render (comparar `stepId` anterior
+   com o atual e ajustar antes de renderizar), que a regra aceita por não ser efeito.
+
+**`CLAUDE.md` exige plano aprovado** para mudanças em regras de gating de jornada.
+Apresentar arquivos afetados, abordagem e riscos, e aguardar aval explícito.
 
 ### 8.5. Definição de pronto da Onda 3
 
@@ -390,9 +441,17 @@ atualização" no topo do documento.
 | --- | --- | --- | --- | --- |
 | 1 — purity (`ConfettiCheckbox`) | 5 | **Concluída** | `fix/lint-onda-1-purity-immutability` | 2026-08-06 |
 | 2 — `MemberJourneyHero` (memoização + efeito) | 2 | **Concluída** | `fix/lint-onda-2-memoizacao` | 2026-08-06 |
-| 3 — set-state-in-effect + `admin/partners` | 9 | Aberta | — | — |
+| 3A — `admin/partners` para Server Component | 1 | **Concluída** | `fix/lint-onda-3a-partners-server` | 2026-08-06 |
+| 3B — 5 campos `Cv*` | 5 | Aberta | — | — |
+| 3C — `hub/journey/[stepId]` | 2 | Aberta, **exige aprovação** | — | — |
+| 3D — `admin/marketing` | 1 | Bloqueada, **exige aprovação** | — | — |
 
-Contagem de erros: 16 na abertura, 11 após a Onda 1, **9** após a Onda 2.
+Contagem de erros: 16 na abertura, 11 após a Onda 1, 9 após a Onda 2, **8** após
+a 3A.
+
+A Onda 3 foi subdividida ao ser executada: os 9 erros não formavam um grupo
+homogêneo. Duas frentes exigem aprovação do Gestor antes de implementar — 3C toca
+gating de jornada, 3D toca fluxo de cupons.
 
 Duas correções ao plano original, ambas descobertas ao executar:
 
