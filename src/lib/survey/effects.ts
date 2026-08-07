@@ -4,7 +4,7 @@ import { handleGestaoTempoEffect } from "@/actions/effects/gestao-tempo";
 import { handlePreferenciasAprendizadoEffect } from "@/actions/effects/preferencias-aprendizado";
 import { handlePreferenciasReconhecimentoEffect } from "@/actions/effects/preferencias-reconhecimento";
 import { handlePreAnaliseComportamentalEffect } from "@/actions/effects/pre-analise-comportamental";
-import { handleCheckInEffect, handleContentFeedbackEffect, handleCVReviewEffect, handleDesmistificandoCandidaturasEffect } from "@/actions/effects/misc-surveys";
+import { handleCheckInEffect, handleContentFeedbackEffect, handleDesmistificandoCandidaturasEffect } from "@/actions/effects/misc-surveys";
 
 /**
  * Dispatcher de efeitos colaterais de survey — modulo de servidor, NAO action.
@@ -111,10 +111,6 @@ export async function handleSurveySideEffects(
 
       case "desmistificando_candidaturas":
         await handleDesmistificandoCandidaturasEffect(responses, matricula);
-        break;
-
-      case "revisao_curriculo":
-        await handleCVReviewEffect(responses, matricula);
         break;
 
       default:

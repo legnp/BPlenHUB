@@ -7,7 +7,6 @@ import { preferenciasReconhecimentoSurvey } from "./definitions/preferencias-rec
 import { preAnaliseComportamentalSurvey } from "./definitions/pre-analise-comportamental";
 import { discSurvey } from "./definitions/disc";
 import { desmistificandoCandidaturasSurvey } from "./definitions/desmistificando-candidaturas";
-import { revisaoCurriculoSurvey } from "./definitions/revisao-curriculo";
 import { masterCvSurvey } from "./definitions/master-cv";
 
 // Career module surveys
@@ -45,7 +44,6 @@ export const surveys = {
   "pre_analise_comportamental": preAnaliseComportamentalSurvey,
   "disc": discSurvey,
   "desmistificando_candidaturas": desmistificandoCandidaturasSurvey,
-  "revisao_curriculo": revisaoCurriculoSurvey,
   "master_cv": masterCvSurvey,
   "cv_focado": cvFocadoSurvey,
   "perfil_profissional_publico": perfilProfissionalPublicoSurvey,

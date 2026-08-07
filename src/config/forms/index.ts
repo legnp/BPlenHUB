@@ -1,4 +1,3 @@
-import { showroomFormConfig } from "./showroom";
 import { themeSuggestionFormConfig } from "./theme-suggestion";
 import { bookingScreeningFormConfig } from "./booking-screening";
 import { devolutivaDiscFormConfig } from "./devolutiva-disc";
@@ -10,7 +9,6 @@ import { partnerDadosCadastraisForm } from "./definitions/partner-dados-cadastra
  * Centraliza todas as definicoes de formularios operacionais do projeto.
  */
 export const forms = {
-  showroom_interest: showroomFormConfig,
   theme_suggestion: themeSuggestionFormConfig,
   booking_screening: bookingScreeningFormConfig,
   devolutiva_disc: devolutivaDiscFormConfig,
