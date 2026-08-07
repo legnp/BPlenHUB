@@ -540,6 +540,27 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
     da auditoria; trabalho fora da grade usa nome próprio (`AUTH-PROVIDERS-EXPANSION.md`,
     `PARTNER-AREA-EXPANSION-PLAN.md` são os bons exemplos que já existiam no diretório).
 
+54. **Quando a frase da Gestora admite duas leituras OPOSTAS, confirme antes de projetar em
+    cima dela — e lembre que o modelo de dados diz o que é possível, não o que é verdade
+    sobre o mundo.** Ela pediu que o parceiro pudesse agendar 1 to 1 "sem problemas de
+    concorrer com o membro ou público". Este chat leu "sem concorrer" e produziu uma
+    recomendação inteira — grade dedicada ao parceiro, tipo novo, recorrência separada,
+    roteiro de 3 passos. Ela queria dizer o contrário: que a concorrência **não a
+    incomoda**. As duas leituras levam a trabalhos opostos (construir um mecanismo de
+    separação vs. não construir nada), que é exatamente o critério para perguntar antes de
+    seguir. **Corolário, e é a parte que dói:** a proposta errada era tecnicamente
+    impecável — `audiences[]` já suportava a separação, custo zero de código, tudo
+    verificado no código antes de recomendar. O que faltou não estava no repositório. A
+    Gestora recusou com um argumento que o modelo de dados não tem como conter: **um evento
+    no Google Calendar é uma hora real da agenda dela**, então duas grades no mesmo horário
+    seriam dois registros para uma hora só, exigindo exclusão mútua entre eventos distintos
+    — complexidade nova de código E retrabalho operacional, para resolver uma disputa
+    desejada. Ler o código responde "isto é possível?"; só quem opera o sistema responde
+    "isto corresponde a alguma coisa no mundo?". Ao propor mudança de modelo, enuncie a que
+    fato do mundo cada entidade corresponde e leve isso para a Gestora conferir. _(Caso
+    real: grade compartilhada de 1 to 1, ratificada em 2026-08-07; proposta de tipo
+    dedicado retirada.)_
+
 ---
 
 ## Melhorias sugeridas para o PLANO (para o chat de planejamento refinar)
@@ -586,6 +607,10 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
 
 ## Registro de revisões deste documento
 
+- 2026-08-07 — Lição 54 (frase que admite duas leituras opostas se confirma antes
+  de virar projeto; o modelo de dados diz o que é possível, não o que é verdade
+  sobre o mundo) adicionada, a partir da ratificação da grade compartilhada de
+  1 to 1 e da retirada da proposta de tipo dedicado ao parceiro.
 - 2026-08-07 — Lições 51 (reconciliação atrasada deixa o documento mentiroso, e a
   mentira se propaga pelo handoff — custo de não reconciliar é quadrático), 52
   (quem acha o bug registra o bug; "registrar depois" no `LOG.md` é dívida sem

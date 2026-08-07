@@ -430,4 +430,10 @@ cada uma está no `LOG.md`; esta tabela existe para que o plano não seja lido c
   invisível para a auditoria de superfície, e o teste acusou. Corrigido pondo `requireAuth()`
   no corpo de cada action.
 - **Risco de negócio** — membro que também é parceiro agenda 1 to 1 sem consumir crédito.
-  Registrado como risco aceito 6 no `00-PLAN.md`, aguardando ratificação formal.
+  **Ratificado como risco assumido pela Gestora em 2026-08-07**, com gatilho de revisão
+  (número de parceiros crescer, ou primeira reclamação de membro sobre falta de horário).
+  Na mesma conversa ela **recusou** a alternativa de grade dedicada ao parceiro que este
+  chat havia proposto, com o argumento decisivo de que **um evento no Google Calendar é
+  uma hora real da agenda dela**: duas grades no mesmo horário exigiriam exclusão mútua
+  entre eventos distintos e duplicariam a manutenção da recorrência, para resolver uma
+  disputa que é **desejada**. Detalhe completo no risco 6 do `00-PLAN.md`.
