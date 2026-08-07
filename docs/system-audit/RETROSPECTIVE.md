@@ -540,6 +540,46 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
     da auditoria; trabalho fora da grade usa nome próprio (`AUTH-PROVIDERS-EXPANSION.md`,
     `PARTNER-AREA-EXPANSION-PLAN.md` são os bons exemplos que já existiam no diretório).
 
+54. **Quando a frase da Gestora admite duas leituras OPOSTAS, confirme antes de projetar em
+    cima dela — e lembre que o modelo de dados diz o que é possível, não o que é verdade
+    sobre o mundo.** Ela pediu que o parceiro pudesse agendar 1 to 1 "sem problemas de
+    concorrer com o membro ou público". Este chat leu "sem concorrer" e produziu uma
+    recomendação inteira — grade dedicada ao parceiro, tipo novo, recorrência separada,
+    roteiro de 3 passos. Ela queria dizer o contrário: que a concorrência **não a
+    incomoda**. As duas leituras levam a trabalhos opostos (construir um mecanismo de
+    separação vs. não construir nada), que é exatamente o critério para perguntar antes de
+    seguir. **Corolário, e é a parte que dói:** a proposta errada era tecnicamente
+    impecável — `audiences[]` já suportava a separação, custo zero de código, tudo
+    verificado no código antes de recomendar. O que faltou não estava no repositório. A
+    Gestora recusou com um argumento que o modelo de dados não tem como conter: **um evento
+    no Google Calendar é uma hora real da agenda dela**, então duas grades no mesmo horário
+    seriam dois registros para uma hora só, exigindo exclusão mútua entre eventos distintos
+    — complexidade nova de código E retrabalho operacional, para resolver uma disputa
+    desejada. Ler o código responde "isto é possível?"; só quem opera o sistema responde
+    "isto corresponde a alguma coisa no mundo?". Ao propor mudança de modelo, enuncie a que
+    fato do mundo cada entidade corresponde e leve isso para a Gestora conferir. _(Caso
+    real: grade compartilhada de 1 to 1, ratificada em 2026-08-07; proposta de tipo
+    dedicado retirada.)_
+
+55. **Numa árvore de trabalho compartilhada, o branch pode mudar ENTRE a sua verificação e o
+    seu commit — confirme no instante do commit, ou trabalhe num `worktree`.** Este chat
+    conferiu `main == origin/main` no início da sessão e de novo antes do commit anterior;
+    ainda assim um commit de docs caiu no branch de código do outro chat, que trocou o branch
+    da árvore no meio do caminho. O detalhe operacional que fechou a armadilha: **`git status
+    --short` não mostra o branch** — parecia verificação, não era. Use `--branch` ou
+    `git branch --show-current` **na mesma chamada** do `git commit`. **Corolário sobre o
+    reparo, que é onde estava o dano real:** o instinto é `git reset --hard` para limpar o
+    branch alheio. Seria destrutivo — a outra conta tinha 4 arquivos de `src/` modificados e
+    **não commitados na mesma árvore**, e durante o próprio reparo apareceu um 5º, provando
+    que ela editava ao vivo. O reparo correto não toca a árvore: `git branch -f main <commit>`
+    (a `main` não está em checkout, então move de graça), push, `git reset --mixed <base>`
+    (devolve o branch sem mexer nos arquivos) e `git checkout <base> -- docs/` (restaura só o
+    que é seu). **Corolário estrutural:** a §5b já recomendava clones ou `worktree` separados
+    e mesmo assim o erro aconteceu, porque a recomendação era "quando possível" e o custo
+    parecia alto. Não é: `git worktree add <tmp> main`, commitar, `git worktree remove` custa
+    três comandos e elimina a classe inteira de problema. Disciplina falha; topologia não.
+    _(Caso real: 2026-08-07, incidente registrado no `LOG.md` com o reparo completo.)_
+
 ---
 
 ## Melhorias sugeridas para o PLANO (para o chat de planejamento refinar)
@@ -586,6 +626,16 @@ Regras práticas destiladas de erros e acertos reais. São diretivas, não teori
 
 ## Registro de revisões deste documento
 
+- 2026-08-07 — Lição 55 (numa árvore compartilhada o branch muda entre a
+  verificação e o commit; `git status --short` não mostra branch; reparo sem
+  `--hard` porque a outra conta tem trabalho não-commitado na mesma árvore)
+  adicionada, a partir do incidente em que um commit de docs caiu no branch do
+  chat de execução. §5b do `AGENTS-SCOPES.md` reforçada com a regra e a receita
+  de reparo.
+- 2026-08-07 — Lição 54 (frase que admite duas leituras opostas se confirma antes
+  de virar projeto; o modelo de dados diz o que é possível, não o que é verdade
+  sobre o mundo) adicionada, a partir da ratificação da grade compartilhada de
+  1 to 1 e da retirada da proposta de tipo dedicado ao parceiro.
 - 2026-08-07 — Lições 51 (reconciliação atrasada deixa o documento mentiroso, e a
   mentira se propaga pelo handoff — custo de não reconciliar é quadrático), 52
   (quem acha o bug registra o bug; "registrar depois" no `LOG.md` é dívida sem

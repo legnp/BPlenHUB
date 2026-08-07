@@ -24,6 +24,134 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-07] Chat de planejamento — grupo 4c esvaziado: 3 itens fechados, 1 movido para o Caminho B
+
+- Chat/sessão: chat de planejamento, escrito de um `git worktree` separado (§5b).
+  **Docs-only.** Nenhuma mudança de código.
+- **Configuração do `1-to-1` FEITA pela Gestora**: audiência "Parceiro" marcada e os 5
+  motivos do parceiro cadastrados. Era a única pendência de configuração que **bloqueava
+  funcionalidade** — sem ela, `audiences` ausente equivale a `["member"]` e o parceiro não
+  via nenhum slot de 1 to 1. A Gestão de Agenda do parceiro passa a ofertar horários; o
+  comportamento em si fica para conferir na rodada de validação.
+- **Validação da Área de Parceiros MOVIDA para o Caminho B** (item 5 novo), por decisão da
+  Gestora. Ela não vai correr como validação avulsa: entra junto com a validação e2e da
+  plataforma, depois da limpeza da conta de teste. O raciocínio que sustenta isso e ficou
+  registrado no documento: **os resíduos de dado da auditoria estão justamente em `BP-002`**
+  (os 3 órfãos de agendamento e os dois reparos pendentes), então validar antes da limpeza
+  seria validar contra dado sujo.
+  - *Consequência de escopo registrada*: a rodada do Caminho B deixa de ser só da auditoria
+    e passa a cobrir também a expansão fora da grade. **Não** muda o critério de fechamento
+    formal da auditoria — a Área de Parceiros continua não entrando em nenhuma %.
+- **Estado do grupo 4c**: das 6 linhas originais, 3 fecharam (slots do GDC, risco 6,
+  configuração do `1-to-1`) e 1 foi movida. **Nada no 4c depende mais de decisão da
+  Gestora.** O que resta se separa em duas naturezas: resíduos de dado em `BP-002`, que a
+  limpeza resolve de uma vez junto com o item que já existia no grupo 4b; e trabalho de
+  execução (Fase 3.4 da agenda + backfill de `subStepId`), que não depende dela.
+- **Correção de uma afirmação que este chat havia escrito sem base**: a reconciliação de
+  hoje afirmou que os dois reparos de dado tinham "alcance limitado à conta de teste
+  `BP-002`". Isso está medido e registrado para o `BUG-118`; para o **`BUG-117` não há
+  alcance registrado em lugar nenhum** — foi generalização indevida a partir do bug irmão.
+  O documento passa a pedir o dry-run antes da limpeza, em vez de assumir.
+
+## [2026-08-07] INCIDENTE — commit de docs caiu no branch do outro chat (árvore compartilhada)
+
+- Chat/sessão: chat de planejamento. Registrado por decisão do Gestor, que pediu o registro e
+  pôs o chat de execução em espera para esta escrita.
+- **O que aconteceu**: entre o início das edições de docs e o `git commit`, o chat de execução
+  **trocou o branch da árvore de trabalho compartilhada** (`main` →
+  `fix/progresso-jornada-colisao-audiencia`). O commit de docs caiu **no branch dele**. É
+  literalmente o cenário descrito na §5b do `AGENTS-SCOPES.md` como "o risco mais perigoso"
+  — a diretriz existia e mesmo assim o erro aconteceu.
+- **Por que a checagem inicial não pegou**: este chat confirmou `main == origin/main` no
+  começo da sessão e de novo antes do commit anterior, mas usou `git status --short` (sem
+  `--branch`) na verificação imediatamente anterior a este commit. A janela entre "conferi" e
+  "commitei" é justamente onde o outro agente atuou. **Confirmar cedo não substitui confirmar
+  no instante do commit.**
+- **Circunstância que tornou o reparo fácil, e que não se pode contar com ela**: o branch do
+  outro chat tinha sido criado a partir do `dd9fb70` (o commit de docs anterior, já na `main`)
+  e **ainda não tinha nenhum commit próprio**. O commit intruso era, portanto, um
+  fast-forward puro sobre a `main`.
+- **Reparo executado — sem `reset --hard`, de propósito** (o chat de execução tinha 4 arquivos
+  de `src/` modificados e NÃO commitados na mesma árvore; `--hard` os teria destruído):
+  1. `git branch -f main <commit>` — a `main` não estava em checkout, então dá para movê-la
+     sem tocar na árvore. Era fast-forward.
+  2. `git push origin main`.
+  3. `git reset --mixed <base>` — devolve o branch do outro chat ao ponto original **sem
+     alterar a árvore de trabalho**.
+  4. `git checkout <base> -- docs/system-audit/` — restaura só os documentos naquela árvore,
+     deixando `src/` intocado.
+  Resultado conferido: branch dele de volta na base, os 4 arquivos de `src/` ainda
+  modificados e íntegros, `main == origin/main`. Durante a operação apareceu um **5º arquivo
+  modificado** (`src/lib/journey/audience.ts`) — prova de que o outro chat estava editando ao
+  vivo, e de que `--hard` teria sido destrutivo de verdade, não hipoteticamente.
+- **Este registro foi escrito de dentro de um `git worktree` separado**, criado exatamente
+  para não repetir o problema — a árvore principal ficou o tempo todo no branch do outro
+  chat, sem nenhum comando deste chat sobre ela.
+- **Encaminhamento**: §5b do `AGENTS-SCOPES.md` reforçada com a regra do instante do commit e
+  com a receita de reparo acima. Lição 55 no `RETROSPECTIVE.md`. A saída estrutural continua
+  sendo a que a própria §5b já recomendava e que agora tem caso real para sustentá-la:
+  **clone ou `worktree` por conta**, deixando o `push` para `origin/main` como único ponto de
+  colisão.
+
+## [2026-08-07] Chat de planejamento — 2 decisões da Gestora sobre a agenda (grade compartilhada e slots do GDC)
+
+- Chat/sessão: chat de planejamento, mesma sessão da reconciliação abaixo. **Docs-only.**
+  Nenhuma mudança de código decorre destas decisões — as duas confirmam o comportamento
+  que já está em produção.
+
+### Decisão 1 — os 48 slots de Consultoria em Grupo NÃO são pendência
+
+A reconciliação de hoje havia elevado "atribuir os 48 slots às paradas do GDC" a pendência
+operacional de maior impacto, porque sem atribuição o GDC não oferta horário nenhum. **A
+Gestora corrigiu**: isso é um **fluxo de trabalho semanal dela**, feito conforme a
+programação avança, e não um atraso. O comportamento "sem atribuição, sem oferta" é o
+desejado, e o seletor âmbar do admin é a fila de trabalho dela funcionando como projetado
+(seção 8.2 do `AGENDA-SYNC-DESIGN.md`). Riscado no grupo 4c com o motivo registrado, para
+que nenhuma reconciliação futura reabra como problema.
+
+### Decisão 2 — grade de 1 to 1 compartilhada, ratificada; risco 6 assumido
+
+- **Este chat propôs a alternativa errada e ela foi recusada com um argumento melhor.**
+  A proposta era um tipo dedicado ao parceiro (`audiences: ["partner"]`) com recorrência
+  própria no Google — zero código, já suportado pelo modelo. A Gestora recusou: **um
+  evento no Google Calendar é uma hora real da agenda dela.** Duas grades no mesmo horário
+  significam dois horários no papel para uma hora só, e exigiriam **exclusão mútua entre
+  eventos distintos** — estado novo, transação nova e um modo de falha novo (dois
+  agendamentos no mesmo minuto por corrida) —, além de duplicar a manutenção da
+  recorrência. Ou seja: complexidade nova de código E retrabalho operacional, para
+  resolver uma disputa que ela **quer** que exista.
+- Registro da origem do mal-entendido, porque é instrutivo: ela pediu que o parceiro
+  agendasse "sem problemas de concorrer com o membro ou público", e este chat leu como
+  "sem concorrer". Ela queria dizer o oposto — que a concorrência não a incomoda. A
+  proposta de grade separada nasceu inteira dessa leitura. Ver Lição 54.
+- **Risco 6 RATIFICADO como risco de negócio assumido**, com **gatilho de revisão
+  explícito**: volta para a mesa quando o número de parceiros passar de um punhado, ou na
+  primeira reclamação de membro sobre falta de horário. Reescrito na seção "Riscos
+  Aceitos" do `00-PLAN.md` com o que se aceita junto (hora isenta é receita que deixa de
+  existir; não há como reservar parte da grade para membros; **não existe tela** que mostre
+  as sessões isentas — o dado está em `audience`/`quotaConsumed` no documento do
+  participante, mas só é legível por consulta manual ao banco).
+- Nenhuma porta fica fechada: grade dedicada, teto de sessões isentas e prioridade por
+  selo seguem viáveis depois, com histórico acumulado para decidir por número.
+
+### Achado desta conversa — a pendência que realmente bloqueia funcionalidade
+
+Investigando para responder à Gestora, ficou claro que a lista priorizada tinha a ênfase no
+lugar errado. `audiences` ausente equivale a `["member"]`
+(`src/lib/booking/session-demands.ts`), e marcar "Parceiro" no tipo `1-to-1` é configuração
+pendente **desde 2026-08-05, nunca feita**. Consequência: **hoje o parceiro não vê nenhum
+slot de 1 to 1** e a Gestão de Agenda dele está vazia. Não é bug — é a configuração que
+falta. Promovido no grupo 4c com essa consequência escrita, em vez de constar como um item
+neutro de "configuração que depende da Gestora".
+
+### Observação lateral, não registrada como bug
+
+`calendar-module/booking.ts:243` ainda classifica a reserva espelhada em `User_Bookings`
+com `summary.toLowerCase().includes("1 to 1")` — casamento por TEXTO, a classe que as
+Lições 19/30 mandaram aposentar e que o resto do subsistema já abandonou em favor do
+`tipoId`. Funciona hoje só porque o título genérico do Google coincide com a palavra-chave.
+Frágil, não quebrado. Levado à Gestora; sem decisão de registrar como bug até aqui.
+
 ## [2026-08-07] Chat de planejamento — reconciliação de 41 commits; a gestão de auditoria muda de máquina
 
 - Chat/sessão: chat de planejamento. **Docs-only, nenhum arquivo de `src/`, `scripts/` ou

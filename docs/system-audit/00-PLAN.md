@@ -1645,18 +1645,39 @@ Pontos que este processo **não cobre por limite estrutural**, não por omissão
    pela Gestora (2026-07-02) — fluxos logados são validados em produção. Reabrir
    só se QA de telas logadas em preview virar necessidade recorrente (aí avaliar
    staging com domínio próprio).
-6. **Membro que também é parceiro agenda 1 to 1 sem consumir crédito**
-   (registrado 2026-08-05, na entrega da grade compartilhada de 1 to 1). Decorre
-   diretamente da decisão da Gestora de ter **grade única disputada pelos três
-   fluxos** (membro, parceiro, funil público) com listas de motivo próprias: a
-   isenção de crédito é resolvida pelo selo (`audience: "partner"` só isenta quem
-   tem `partner_area_access`, conferido ao vivo no servidor). Quem tiver os **dois**
-   selos pode entrar pela área de parceiro e agendar sem debitar cota — o sistema
-   não tem como distinguir a intenção por trás do agendamento. **Não é defeito**, é
-   consequência da regra aprovada. Comunicado à Gestora na sessão de entrega;
-   **aguarda ratificação formal** como risco aceito. Se for recusado, a saída não é
-   código de detecção de intenção e sim uma decisão de negócio (ex.: parceiro que
-   também é membro não recebe isenção, ou recebe um teto de sessões isentas).
+6. **Membro que também é parceiro agenda 1 to 1 sem consumir crédito** —
+   **RATIFICADO como risco de negócio assumido pela Gestora em 2026-08-07**, com
+   gatilho de revisão definido (ver abaixo).
+
+   *A regra:* a grade de 1 to 1 é **única e disputada pelos três fluxos** (membro,
+   parceiro, funil público). A isenção de crédito é resolvida pelo selo —
+   `audience: "partner"` só isenta quem tem `partner_area_access`, conferido ao vivo
+   no servidor. Quem tiver os **dois** selos pode entrar pela área de parceiro e
+   agendar sem debitar cota; o sistema não tem como distinguir a intenção.
+
+   *Por que a grade compartilhada é a decisão certa, e não um resíduo:* **um evento
+   no Google Calendar é uma hora real da agenda da Gestora.** Grades separadas
+   criariam dois horários no papel para uma hora só, e exigiriam exclusão mútua
+   **entre eventos distintos** — estado novo, transação nova e um modo de falha novo
+   (dois agendamentos no mesmo minuto por corrida), além de duplicar a manutenção da
+   recorrência. Argumento da própria Gestora (2026-08-07), ao recusar a alternativa
+   de tipo dedicado que este chat havia proposto. A disputa pela vaga é **desejada**:
+   se o parceiro ocupa as 17h de terça, ninguém mais ocupa, porque a hora é uma só.
+
+   *O que se aceita junto:* (a) hora ocupada pelo fluxo de parceiro é hora que não
+   foi vendida — receita que deixa de existir, não saída de caixa; (b) não há como
+   reservar parte da grade para membros, o único remédio para escassez é publicar
+   mais horários; (c) **não existe tela** que mostre quantas sessões saíram isentas
+   — o dado está gravado (`audience` e `quotaConsumed` no documento do participante,
+   `calendar-module/booking.ts`), mas hoje só é legível por consulta manual ao banco.
+
+   *Gatilho de revisão (definido pela Gestora, 2026-08-07):* esta decisão volta para
+   a mesa quando **o número de parceiros passar de um punhado**, ou na **primeira
+   reclamação de membro sobre falta de horário disponível**. Nenhuma porta fica
+   fechada: grade dedicada, teto de sessões isentas por parceiro e prioridade por
+   selo continuam viáveis depois, e a trilha de auditoria já acumulada permite
+   decidir com número em vez de palpite. O risco de a escolha sair cara não está na
+   escolha em si — está em ela ser esquecida enquanto o número de parceiros cresce.
 
 Esses pontos ficam registrados como risco aceito e conhecido, não como pendência
 esquecida.
@@ -1816,6 +1837,17 @@ lá). Itens que compõem a rodada:
    real pode ser exercitado (item 1 depende disto).
 4. O que mais a limpeza da base revelar precisar de validação (não
    antecipável — registrar aqui quando surgir).
+5. **Validação ponta a ponta da Área de Parceiros** (jornada completa: check-in,
+   formalização, agenda, indicações, ciclos) — **incorporada a esta rodada por
+   decisão da Gestora em 2026-08-07**, em vez de correr como validação avulsa.
+   Motivo: depende do mesmo pré-requisito (conta de teste `BP-002` limpa) e, além
+   disso, **os resíduos de dado que sobraram da auditoria estão justamente nessa
+   conta** — 3 órfãos de agendamento e os dois reparos pendentes (`BUG-117`,
+   `BUG-118`). Validar antes da limpeza seria validar contra dado sujo.
+   *Consequência de escopo:* a rodada deixa de ser só da auditoria e passa a
+   cobrir também a expansão fora da grade. Isso **não** altera o critério de
+   fechamento formal da auditoria definido abaixo — a Área de Parceiros continua
+   não entrando em nenhuma %.
 
 **Decisão da Gestora (2026-07-29): a auditoria PERMANECE FORMALMENTE ABERTA**
 até esta rodada de validação humana acontecer — não fecha com `F3-03` +
@@ -1900,18 +1932,36 @@ a auditoria segue aberta.
 
 **4c. Pendências OPERACIONAIS e de decisão da Área de Parceiros e da agenda
    (não-código; fora da grade, acumuladas nas entregas de 2026-08-04 a 08-07):**
-   - **Atribuir os 48 slots de Consultoria em Grupo** às paradas do GDC, no admin.
-     Por decisão da Gestora, slot de grupo **sem atribuição não é ofertado** — até
-     que a atribuição seja feita, **o GDC não oferece nenhum horário**. É a
-     pendência operacional de maior impacto visível para o membro.
-   - **Validação funcional ponta a ponta da Área de Parceiros** com o usuário de
-     teste `BP-002` (jornada completa: check-in, formalização, agenda, indicações,
-     ciclos). Único item que falta para as Fases 0-5 estarem validadas, não só
-     entregues.
-   - **Ratificar (ou recusar) o risco aceito 6** — membro que também é parceiro
-     agenda 1 to 1 sem consumir crédito. Comunicado, ainda sem decisão formal.
-   - **Configuração de agenda que depende da Gestora**: marcar a audiência
-     "Parceiro" no tipo `1-to-1` e cadastrar os 5 motivos do parceiro.
+
+   > **Estado em 2026-08-07, após a rodada de decisões da Gestora:** das 6 linhas
+   > originais, 3 fecharam (slots do GDC, risco 6, configuração do `1-to-1`) e 1 foi
+   > movida para o Caminho B. **Nada aqui depende mais de decisão dela.** O que resta
+   > se separa em duas naturezas, e vale enxergar assim porque muda quem age:
+   > **(a) resíduos de dado na conta de teste `BP-002`** — os 3 órfãos e os dois
+   > reparos pendentes — que a limpeza da conta resolve de uma vez, junto com o item
+   > "limpar `BP-002`" que já estava no grupo 4b; e **(b) trabalho de execução**, a
+   > Fase 3.4 da agenda e o backfill de `subStepId`, que não dependem dela.
+   > Em outras palavras: **o grupo 4c virou uma operação só (a limpeza) mais um
+   > bloco de execução.**
+   - ~~Atribuir os 48 slots de Consultoria em Grupo às paradas do GDC~~ — **NÃO é
+     pendência. Decisão da Gestora (2026-08-07): virou fluxo de trabalho semanal
+     dela**, atribuindo os slots conforme a programação avança. O comportamento
+     "sem atribuição, sem oferta" é o desejado e o seletor âmbar do admin é a fila
+     de trabalho dela, funcionando como projetado (seção 8.2 do
+     `AGENDA-SYNC-DESIGN.md`). Registrado aqui para que nenhuma reconciliação
+     futura reabra isto como problema.
+   - ~~Validação funcional ponta a ponta da Área de Parceiros~~ — **MOVIDA para a
+     rodada de validação humana (Caminho B), item 5**, por decisão da Gestora em
+     2026-08-07. Depende do mesmo pré-requisito das demais e não faz sentido
+     correr antes da limpeza da conta de teste.
+   - ~~Ratificar o risco aceito 6~~ — **RATIFICADO em 2026-08-07**, com gatilho de
+     revisão. Ver o risco 6 na seção "Riscos Aceitos".
+   - ~~Marcar a audiência "Parceiro" no tipo `1-to-1` e cadastrar os 5 motivos do
+     parceiro~~ — **FEITO pela Gestora em 2026-08-07.** Era a única pendência de
+     configuração que bloqueava funcionalidade (`audiences` ausente equivale a
+     `["member"]`, então o parceiro não via nenhum slot de 1 to 1). Com isso, a
+     Gestão de Agenda do parceiro passa a ofertar horários — comportamento a
+     conferir na validação do Caminho B, item 5.
    - **3 órfãos de agendamento restantes**, todos na conta de teste `BP-002` (o 4º,
      do `BP-012`, foi apagado a pedido da Gestora em 2026-08-06 após conferência de
      conteúdo). Registrado que órfão é **inerte** — `UserBookings` tem guarda e o
@@ -1924,7 +1974,10 @@ a auditoria segue aberta.
    - **Reparos de dado ainda aguardando o `--apply` da Gestora**:
      `scripts/fix-cross-completed-sessions.js` (`BUG-118`) e
      `scripts/fix-dynamic-substep-order.js` (`BUG-117`). Ambos com dry-run já
-     conferido, alcance limitado à conta de teste `BP-002`.
+     conferido. O do `BUG-118` tem alcance medido e limitado a `BP-002`; **o do
+     `BUG-117` não tem alcance registrado em lugar nenhum** — rodar o dry-run
+     antes da limpeza para saber se toca alguma conta real, em vez de assumir que
+     também é só a de teste.
 
 ### Recomendação de por onde começar
 

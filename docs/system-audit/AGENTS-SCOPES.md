@@ -79,10 +79,36 @@ numa conta muda o que a outra vê. Regras:
   branch para commitar docs na `main` (ex.: a sessão está numa branch de código
   WIP), volte para o branch original ao terminar. (Foi o que esta reconciliação
   fez: `feat/drive-coverage-surveys` → `main` para os docs → devolvida.)
-- Preferir, quando possível, **clones separados ou `git worktree` por conta**, para
-  árvores independentes — aí o único ponto de colisão é o push para `origin/main`
-  (coberto pela regra 2).
+- **Confirme o branch NO INSTANTE do commit, não no início da sessão.** `git status
+  --short` sozinho **não mostra o branch** — use `git status --short --branch` ou
+  `git branch --show-current` na mesma chamada do `git commit`. A janela entre
+  "conferi" e "commitei" é onde a outra conta atua. _(Caso real, 2026-08-07: um
+  commit de docs caiu no branch de código do outro chat porque ele trocou o branch
+  da árvore no meio da sessão de planejamento. Ver LOG e Lição 55.)_
+- **Preferir clones separados ou `git worktree` por conta** — é a única solução
+  estrutural; o resto é disciplina, e disciplina falha. Com árvores independentes o
+  único ponto de colisão é o push para `origin/main` (coberto pela regra 2). Para
+  uma escrita de docs pontual: `git worktree add <caminho-temporário> main`, editar
+  e commitar lá, `git worktree remove <caminho>` ao fim — a árvore principal nem
+  fica sabendo.
 - Nunca deixar edições não-commitadas de uma conta ao trocar de contexto.
+
+### Reparo: commit que caiu no branch errado
+
+Receita conferida em 2026-08-07. **Não use `git reset --hard`** — a outra conta
+provavelmente tem trabalho não-commitado na mesma árvore, e `--hard` o destrói.
+
+1. `git branch -f main <commit-intruso>` — a `main` não está em checkout, então move
+   sem tocar na árvore. Só funciona se for fast-forward; se não for, use
+   `cherry-pick` a partir de um worktree.
+2. `git push origin main`.
+3. `git reset --mixed <base-original-do-branch>` — devolve o branch da outra conta
+   ao ponto de origem **sem alterar a árvore de trabalho**.
+4. `git checkout <base> -- docs/system-audit/` — restaura só os documentos naquela
+   árvore, deixando `src/` intocado.
+
+Confira ao final: branch da outra conta na base original, os arquivos de código dela
+ainda modificados, e `main == origin/main`.
 
 ## 5. Cadência recomendada
 
