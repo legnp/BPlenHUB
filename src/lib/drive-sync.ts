@@ -1,6 +1,7 @@
 import { getDriveClient, getSheetsClient } from "@/lib/google-auth";
 import { serverEnv } from "@/env";
 import { ensureFolder, getOrCreateSpreadsheet, syncDataToSheet, appendDataToSheet, getFirstColumnValues, fileExistsInFolder, getStandardFolderWithHealing, uploadFileToDrive, DRIVE_FOLDERS, LEGACY_FOLDERS } from "@/lib/drive-utils";
+import { JourneyAudience, journeySheetName } from "@/lib/journey/audience";
 
 /**
  * BPlen HUB — Drive Sync Service (🏁)
@@ -143,17 +144,26 @@ export async function syncOrderToUserDrive(matricula: string, rowData: (string |
 }
 
 /**
- * 🗺️ Sincroniza o Snapshot da Jornada (Progresso)
+ * Sincroniza o Snapshot da Jornada (Progresso).
+ *
+ * Uma planilha POR AUDIENCIA (ver `journeySheetName`): o espelho e' snapshot, e
+ * um nome unico para as duas trilhas fazia uma apagar o retrato da outra para
+ * quem e' membro e parceiro ao mesmo tempo. O `audience.ts` ja separava os dois
+ * documentos no Firestore; faltava replicar isso no acervo.
  */
-export async function syncJourneyToUserDrive(matricula: string, rowsData: (string | number | boolean | null)[][]) {
+export async function syncJourneyToUserDrive(
+  matricula: string,
+  rowsData: (string | number | boolean | null)[][],
+  audience: JourneyAudience = "member"
+) {
   try {
-    console.log(`[DriveSync:Journey] Iniciando sincronização do Snapshot para ${matricula}...`);
+    console.log(`[DriveSync:Journey] Iniciando sincronização do Snapshot para ${matricula} (${audience})...`);
     const drive = await getDriveClient();
     const sheets = await getSheetsClient();
     const userFolderId = await getUserRootFolder(matricula);
 
     const acompanhamentoFolderId = await getStandardFolderWithHealing(drive, userFolderId, DRIVE_FOLDERS.ACOMPANHAMENTO);
-    const fileName = `Progresso_Jornada - ${matricula}`;
+    const fileName = journeySheetName(matricula, audience);
 
     const { id: spreadsheetId } = await getOrCreateSpreadsheet(drive, acompanhamentoFolderId, fileName);
 

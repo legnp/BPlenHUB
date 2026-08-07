@@ -92,7 +92,10 @@ export async function triggerRetroactiveDriveSyncAction(targetMatricula: string,
       });
       
       if (rowsData.length > 0) {
-        await syncJourneyToUserDrive(targetMatricula, rowsData);
+        // Explicito: este resgate le somente o doc `progress` (membro) e monta as
+        // etapas com `getJourneyStagesAction()` sem audiencia. A trilha de parceiro
+        // tem resgate proprio a fazer, junto do espelhamento da area de parceiros.
+        await syncJourneyToUserDrive(targetMatricula, rowsData, "member");
       }
     }
 
