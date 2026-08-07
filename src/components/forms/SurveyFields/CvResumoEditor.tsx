@@ -11,23 +11,29 @@ interface CvResumoEditorProps {
 }
 
 export function CvResumoEditor({ value, masterCvData, onChange }: CvResumoEditorProps) {
-  const [text, setText] = useState<string>(() => {
-    if (typeof value === "string" && value.length > 0) {
-      return value;
-    }
-    return String(masterCvData?.resumo_profissional || "");
-  });
+  const respostaSalva = typeof value === "string" && value.length > 0 ? value : "";
+  const preenchimentoMestre = String(masterCvData?.resumo_profissional || "");
+
+  // `rascunho` guarda apenas o que o usuario digitou nesta sessao. Enquanto for
+  // `null`, o campo e' DERIVADO das props: resposta salva tem prioridade, senao
+  // cai no curriculo mestre. Derivar em vez de copiar para o estado dentro de um
+  // efeito e' o que evita render em cascata — e, principalmente, garante que o
+  // campo apareca preenchido assim que `masterCvData` chegar, sem depender de uma
+  // segunda passada.
+  const [rascunho, setRascunho] = useState<string | null>(null);
+  const text = rascunho ?? (respostaSalva || preenchimentoMestre);
 
   const handleTextChange = (newVal: string) => {
-    setText(newVal);
+    setRascunho(newVal);
     onChange(newVal);
   };
 
+  // O efeito permanece apenas para PROPAGAR o preenchimento ao motor de
+  // formularios: sem isto o texto apareceria na tela mas nao seria gravado como
+  // resposta. Nao escreve estado local, so notifica o pai.
   useEffect(() => {
-    if (masterCvData && (!value || (typeof value === "string" && value.length === 0))) {
-      const initial = String(masterCvData.resumo_profissional || "");
-      setText(initial);
-      onChange(initial);
+    if (masterCvData && !respostaSalva) {
+      onChange(String(masterCvData.resumo_profissional || ""));
     }
   }, [masterCvData]);
 
