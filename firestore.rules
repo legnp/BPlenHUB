@@ -47,8 +47,18 @@ service cloud.firestore {
     }
 
     // 🔒 [Configurações] Global
+    // Leitura fechada ao cliente: nenhum componente do SDK Web le `Settings`, e a
+    // subarvore guarda dado que nao pode circular — `Settings/PartnerDirectory`
+    // (matricula de cada parceiro) e `Settings/PartnerTerms/documents/{id}` (texto do
+    // Termo de Parceria, inclusive versao ainda NAO publicada). Quem consome tudo isto
+    // sao Server Actions via Admin SDK, que ignora estas regras.
+    //
+    // O contrato "a matricula do parceiro nunca chega ao navegador de terceiros" esta
+    // declarado em `actions/partners/directory.ts` e `types/partners.ts`; ate aqui ele
+    // valia so na porta da frente (a Server Action devolve apenas nomes) e era
+    // contornavel lendo o documento cru. Ver BUG-122.
     match /Settings/{document=**} {
-      allow read: if true;
+      allow read: if false;
       allow write: if false;
     }
 
