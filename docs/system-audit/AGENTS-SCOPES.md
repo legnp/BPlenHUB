@@ -110,6 +110,41 @@ provavelmente tem trabalho não-commitado na mesma árvore, e `--hard` o destró
 Confira ao final: branch da outra conta na base original, os arquivos de código dela
 ainda modificados, e `main == origin/main`.
 
+### 5c. Mapa de árvores: uma pasta por sessão, escrito
+
+O worktree é a solução estrutural, mas ele **só protege se cada sessão souber qual é a
+sua**. Em 2026-08-08 o incidente aconteceu pela terceira vez em dois dias, e desta vez
+com a diretriz sendo seguida: duas sessões estavam em árvores próprias, uma terceira foi
+criada e declarada isolada — e um quarto chat entrou na mesma pasta e commitou no branch
+alheio. Nada no ambiente amarra um chat a um diretório; o mapa existia só na cabeça da
+Gestora. Por isso ele passa a viver aqui.
+
+| Árvore | Sessão / uso | Observação |
+|---|---|---|
+| `C:\DevGeral\Projects\BPlenHUB` | árvore principal, fica em `main` | referência e leitura; merges locais saem daqui |
+| `C:\DevGeral\Projects\BPlenHUB-exec` | chat de execução — acervo e nomenclatura | `feat/acervo-naming` |
+| `C:\DevGeral\Projects\BPlenHUB-lis` | chat de execução — Área de Parceiros | criada em 2026-08-07 |
+| _(sem árvore)_ | chat "Universo MentoCoach" | **pendente** — trabalho em `feat/universo-mentocoach`; precisa de árvore própria antes de voltar a editar |
+
+**Manter esta tabela viva** é parte de abrir ou encerrar uma sessão. Linha desatualizada
+aqui é pior do que linha ausente: dá falsa confiança de isolamento, que foi exatamente o
+que falhou.
+
+Regras que acompanham o mapa:
+
+1. **Sessão nova não edita antes de ter a sua árvore.** Criar worktree é um comando e
+   leva segundos; recuperar commit no branch errado levou um reparo de quatro passos com
+   verificação byte a byte.
+2. **Declarar a pasta na primeira mensagem de trabalho** — a sessão diz em qual árvore
+   está, e a Gestora confere contra esta tabela. É a única checagem que não depende de
+   ninguém lembrar da diretriz.
+3. **Não confie no nome do chat para saber o que ele toca.** O chat que causou o
+   incidente se chamava "Planejamento conceitual" e estava criando módulo e alterando
+   cinco interfaces em `src/`. Papel declarado e papel exercido divergem; o que vale é o
+   que está no disco.
+4. **`git worktree list` é a fonte de verdade**, não esta tabela. A tabela diz a
+   *intenção*; o comando diz o *fato*. Divergiu, o fato ganha e a tabela se corrige.
+
 ## 5. Cadência recomendada
 
 - Execução trabalha em blocos (branch → entrega → LOG/BUGS).

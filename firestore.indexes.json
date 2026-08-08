@@ -7,6 +7,11 @@
         { "fieldPath": "surveyId", "order": "ASCENDING" },
         { "fieldPath": "status", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "Partner_Billing_Cycles",
+      "queryScope": "COLLECTION",
+      "fields": [{ "fieldPath": "__name__", "order": "DESCENDING" }]
     }
   ],
   "fieldOverrides": [

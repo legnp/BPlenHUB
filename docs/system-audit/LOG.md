@@ -24,6 +24,78 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
 
 ## Entradas
 
+## [2026-08-08] Chat de execução — home da Área de Parceiros, BUG-123 e BUG-124, e o 3o incidente de árvore compartilhada
+
+- Chat/sessão: chat de execução, worktree `C:\DevGeral\Projects\BPlenHUB-lis`, branch
+  `feat/home-parceiro-redesign` a partir da `main` em `1db62f0`. Continuação da sessão de
+  2026-08-07 (entrada abaixo).
+- **Redesenho da home do parceiro** (`/hub/partners`), pedido da Gestora. A tela mostrava
+  três cartões de atalho iguais entre si, sem nenhuma informação sobre o estado da
+  parceria. Passou a ter: trilha da jornada no topo, alerta de ciclo pendente em largura
+  cheia, e um grid de três colunas — métricas empilhadas, Gestão (Indicações acima,
+  Agenda abaixo) e Comunicação, esta última reservada e vazia por decisão, para a coluna
+  já existir no layout. Agenda mostra duas sessões: a última realizada e a próxima
+  agendada. Commits `3c71cae`, `84819b5`.
+- **Lição de design registrada: componente novo diverge, mesmo com a melhor das
+  intenções.** A primeira versão da trilha foi um componente compacto próprio, aprovado
+  como padrão visual novo. Ele divergiu do `JourneyNav` em tamanho, cor, densidade, farol,
+  rótulo e tooltip — e, o que importava, no SIGNIFICADO: pintava cadeado no lugar do ícone
+  da etapa travada, então a mesma etapa parecia mais bloqueada na home do que na jornada,
+  a dois cliques de distância. A Gestora viu as duas telas lado a lado e mandou unificar.
+  A home passou a renderizar o **mesmo** `JourneyNav`. Commit `d4c91de`.
+  - Detalhe que só apareceu ao unificar: sem `onSelectStep`, o `JourneyNav` monta href
+    para `/hub/journey/{id}` — a rota da jornada de MEMBRO. Na subárvore do parceiro o
+    clique precisa cair em `/hub/partners/journey/{id}`. A casca `PartnerJourneyNav`
+    existe para isso e para mais nada.
+- **Decisão de sistema que NÃO foi tomada, e isso é o resultado bom.** A Gestora achava os
+  `StatTile` grandes demais e cogitou uma variante `size="sm"`. Em vez de criar a variante
+  na especulação, reorganizamos primeiro e medimos depois: empilhadas na coluna estreita,
+  as métricas pararam de competir e ela decidiu manter. **O problema era o arranjo, não o
+  tamanho.** Nenhuma variante nova num componente canônico que existe justamente para
+  impedir que cada tela escolha o próprio tamanho.
+- **`BUG-123`** (Alto, corrigido) — `listCycles` ordena por `documentId()` decrescente e o
+  Firestore recusava a consulta sem índice; o `catch` devolvia lista vazia, então
+  "quebrado" e "sem ciclo" eram indistinguíveis na tela. Derrubava a Fase 4 inteira
+  (métrica, alerta de recibo, painel do parceiro e tela de admin), em produção inclusive.
+  Achado **no log do servidor durante a validação visual**, não por procura. Índice
+  declarado com a forma decodificada do próprio erro e criado pela Gestora no console.
+  Commit `14a801e`.
+- **`BUG-124`** (Alto, corrigido) — `"Lisandra Lencina"` era opção fixa da recepção desde
+  antes do programa de parceiros. Como a Fase 3 resolve a resposta POR NOME contra o
+  diretório, sem olhar de qual fonte a opção veio, cadastrar o mesmo nome no diretório fez
+  aquela opção — inalterada na tela — passar a registrar indicação com comissão. Decisão
+  da Gestora: **nome de pessoa nunca fica fixo no código**; a lista fixa guarda só canais.
+  8 testes novos rodam contra a configuração real da recepção (não fixture), então
+  reintroduzir um nome quebra o teste e diz o motivo. Commit `f26d8ac`.
+- **INCIDENTE — 3o caso de árvore compartilhada em dois dias.** O chat "Universo
+  MentoCoach", que a Gestora não sabia estar ativo, trabalhou dentro de
+  `BPlenHUB-lis` e **commitou na branch desta sessão** (`ef307ff`, 8 arquivos, 598
+  inserções). A branch própria dele, `feat/universo-mentocoach`, existia e estava vazia.
+  - Reparo pela receita da §5b, com autorização explícita da Gestora e nesta ordem:
+    `branch -f` movendo a branch dele para o commit dele (não estava em checkout, nada no
+    disco se moveu) → conferência de que os 8 arquivos estavam lá → `reset --mixed`
+    (**nunca `--hard`**: havia trabalho não-commitado dos dois lados) → `checkout` dos 5
+    arquivos modificados e remoção dos 3 novos, só depois de `git hash-object` provar que
+    disco e branch eram **byte a byte idênticos**.
+  - `git branch --contains ef307ff` ao final devolve só a branch dele.
+  - **A lição não é "a diretriz falhou".** A §5b prescreve worktree por sessão e estava
+    sendo seguida por duas das três sessões. Falhou porque **nada amarra um chat a uma
+    pasta**: eu criei a terceira árvore e declarei isolamento, e um quarto chat entrou na
+    mesma pasta. Worktree só protege se cada sessão souber qual é a sua, e esse mapa hoje
+    existe só na cabeça da Gestora. Proposta de linha nova no `AGENTS-SCOPES.md` entregue
+    a ela para decidir — este chat é execução e não escreve documento de governança.
+- **Nota de verificação, reutilizável:** o `preview_logs` é buffer acumulado. Conferir
+  "o erro parou" sem reiniciar o servidor não prova nada — erro velho e novo ficam
+  indistinguíveis. Reiniciar para zerar o log antes de medir foi o que deu valor à
+  verificação do `BUG-123`. Mesmo raciocínio do par negado/permitido usado no `BUG-122`.
+- **Não verificado por mim, de propósito:** a renderização da home logada. `/hub/partners`
+  exige o selo `partner_area_access`, e eu não tenho sessão — para mim a rota sempre
+  devolve 307 para `/entrar`. Confirmei o que dava: compila, sobe, rota responde, log sem
+  erro. A conferência visual foi da Gestora, em `localhost:3100`.
+- Itens do `00-PLAN.md` atualizados: **nenhum** — estado agregado é do chat de
+  planejamento. Rastro em `BUGS.md` e aqui, para reconciliação posterior. Fica o aviso de
+  que a contagem de bugs do plano (119) está defasada: hoje são **124** registrados.
+
 ## [2026-08-07] Chat de execução — varredura de conformidade da Área de Parceiros + BUG-122
 
 - Chat/sessão: chat de execução, em `git worktree` próprio

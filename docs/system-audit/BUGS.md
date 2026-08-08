@@ -3708,6 +3708,109 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
     verificação de regra futura — medir o negado E o permitido.
 - Commit/PR: `2ffb223` (branch `fix/settings-leitura-publica`)
 
+### BUG-123 Ciclos de repasse nunca carregam — índice ausente no Firestore derruba `listCycles` em silêncio
+
+- Severidade: Alto
+- Área/fase onde foi achado: Área de Parceiros, Fase 4 (ciclos de repasse) — achado pela
+  execução em 2026-08-08, no log do servidor local durante a validação visual do
+  redesenho da home. Não foi procurado: apareceu sozinho.
+- Arquivo(s) afetado(s): `src/actions/partners/billing-cycles.ts` (`listCycles`, linha
+  112) e `firestore.indexes.json` (sem nenhuma entrada para `Partner_Billing_Cycles`)
+- Cenário de falha: `listCycles` consulta
+  `User/{matricula}/Partner_Billing_Cycles` ordenando por `FieldPath.documentId()` em
+  ordem **decrescente**. O Firestore exige índice explícito para essa ordenação e recusa
+  a consulta inteira:
+  `9 FAILED_PRECONDITION: The query requires an index`. Como
+  `getPartnerCyclesAction` e `getPartnerCyclesAdminAction` capturam o erro e devolvem
+  `{ cycles: [] }`, **a falha é silenciosa**: nenhuma tela acusa erro, todas mostram
+  "nenhum ciclo".
+- Efeito visível, tudo simultaneamente:
+  - métrica "Ciclos em aberto" na home do parceiro presa em **0**, sempre;
+  - alerta "emita o recibo" **nunca** aparece, mesmo com ciclo aguardando nota;
+  - painel de ciclos na Gestão de Indicações sempre vazio;
+  - a tela `/admin/partners-program` idem, pelo mesmo caminho (`getPartnerCyclesAdminAction`).
+  Ou seja: **a Fase 4 da Área de Parceiros não funciona**, apesar de entregue.
+- Alcance: **não é só ambiente local.** O índice é do projeto `bplenhub`, o mesmo a que o
+  `.env.local` aponta. Faltando no projeto, falta em produção. E o
+  `firestore.indexes.json` do repositório nunca declarou nada para essa coleção —
+  conferido.
+- Por que passou pela entrega: o `catch` que devolve lista vazia é fail-soft correto para
+  não derrubar a tela, mas transforma indisponibilidade em "nada aqui". Sem dado de ciclo
+  real na conta de teste, "vazio" e "quebrado" são indistinguíveis na interface. É o
+  mesmo formato do `BUG-114`/`BUG-115` (índice ausente medido só depois) e teria sido
+  pego pela validação ponta a ponta da Área de Parceiros, que está no Caminho B.
+- Status: **Corrigido** (índice criado pela Gestora no console em 2026-08-08, verificado
+  por log limpo — ver "Verificação" abaixo)
+- Decisão de execução: índice declarado em `firestore.indexes.json` **com a forma lida do
+  próprio erro**, não deduzida — o payload base64 do link de criação decodifica para
+  escopo `COLLECTION`, campo único `__name__` `DESCENDING`. Criação feita pela Gestora no
+  console do Firebase; vale a Lição 49 (credencial de proprietário, operação manual), e o
+  merge do arquivo **não** corrige produção sozinho. O papel do commit é impedir que o
+  repositório siga mentindo sobre quais índices o sistema precisa.
+- Alternativa registrada e NÃO adotada: ordenar em memória em vez de no Firestore. O
+  volume é de um ciclo por mês por parceiro, então um `sort` no servidor resolveria sem
+  índice e sem operação manual. A Gestora optou pelo índice. Fica anotada porque, se o
+  índice algum dia for perdido numa migração de projeto, a saída de uma linha continua
+  disponível.
+- Verificação (2026-08-08): servidor de desenvolvimento reiniciado **para zerar o buffer
+  de log** — sem isso, erros antigos e novos são indistinguíveis e a conferência não vale
+  nada. Após o reinício e um acesso autenticado à home, `partner-cycles` não aparece
+  nenhuma vez no log. A consulta que era recusada passa. "Ciclos em aberto" seguir em zero
+  na conta de teste é ausência de dado, não falha.
+- Commit/PR: `14a801e` (branch `feat/home-parceiro-redesign`)
+
+### BUG-124 Nome de pessoa fixo no código vira indicação com comissão ao ser cadastrado no diretório de parceiros
+
+- Severidade: Alto
+- Área/fase onde foi achado: Área de Parceiros, Fase 3 (captura da indicação) — levantado
+  pela Gestora em 2026-08-08 ao cadastrar "Lisandra Lencina" como parceira da conta de
+  teste e perceber que o mesmo nome já existia fixo na recepção.
+- Arquivo(s) afetado(s): `src/config/surveys/welcome.ts` (opções de `origin`),
+  `src/lib/survey/welcome-origin.ts` (injeção), `src/lib/partners/referrals.ts`
+  (`resolvePartnerByDisplayName`, `registerReferralFromOrigin`)
+- Cenário de falha: a pergunta "Como você nos conheceu?" tinha `"Lisandra Lencina"` como
+  opção **fixa no código**, desde antes do programa de parceiros — ali significava "vim
+  pela fundadora". Com a Fase 3, o servidor passou a resolver a resposta **por nome**
+  contra `Settings/PartnerDirectory`, sem olhar de qual fonte a opção veio. No momento em
+  que o mesmo nome foi cadastrado no diretório, aquela opção — inalterada na tela —
+  passou a **registrar indicação e copiar o percentual de comissão vigente**.
+  A opção não mudou de aparência; mudou de efeito.
+- Efeito: cliente novo que escolhesse a origem de sempre geraria indicação para a conta
+  cadastrada sob aquele nome — no caso levantado, a **conta de teste**. Em produção seria
+  atribuição indevida de indicação e repasse. **Não é retroativo** (o registro só corre
+  no efeito da recepção, no primeiro acesso) e a auto-indicação já era bloqueada.
+- Causa-raiz: duas fontes de verdade para a mesma opção. Nome de pessoa fixo no código é
+  exatamente o hardcoded que a regra 3 do `CLAUDE.md` manda evitar; a Fase 3 introduziu a
+  fonte dinâmica sem retirar a estática, e o acoplamento ficou implícito.
+- Status: **Corrigido**
+- Decisão de execução (Gestora, 2026-08-08): **nome de pessoa nunca fica fixo no código.**
+  `"Lisandra Lencina"` sai das opções; nomes entram exclusivamente pelo diretório de
+  parceiros. Os demais itens permanecem fixos por serem **canais** (Instagram, LinkedIn,
+  TikTok, Pesquisa do Google, Indicação, Outro), não pessoas — a distinção canal/pessoa é
+  o critério.
+  - Efeito colateral aceito: se `getPartnerDirectoryOptionsAction` falhar ou o diretório
+    vier vazio, a lista cai só nos canais e o nome não aparece. Antes a opção fixa
+    garantia a presença. É fail-soft coerente com o resto da recepção, que nunca pode
+    travar por causa da lista.
+  - 8 testes novos (`src/__tests__/welcome-origin.test.ts`) rodam contra a configuração
+    **real** da recepção, não contra fixture: travam a ausência de nome de pessoa na lista
+    fixa, a posição dos parceiros antes de "Outro", a não-duplicação e o retorno intacto
+    sem parceiros. O módulo declarava no cabeçalho ser "testável sem banco e sem React" e
+    não tinha um teste sequer.
+- Pendência conhecida, NÃO corrigida aqui (armadilha adormecida): a deduplicação da tela
+  compara nomes só por espaço e caixa (`trim`/`toLowerCase`), enquanto
+  `resolvePartnerByDisplayName` compara **também sem acento** (normalização NFD). Um
+  diretório com `"Lisandra Lencína"` contra uma fixa `"Lisandra Lencina"` exibiria **as
+  duas** opções, e ambas resolveriam para a mesma parceira. Hoje inerte — depois desta
+  correção não há nome fixo com que colidir —, mas volta a morder se algum nome de pessoa
+  for reintroduzido na lista fixa. Alinhar as duas normalizações fica registrado como
+  melhoria, sem dono definido.
+- Pendência de DADO, fora do código: a correção arruma a arquitetura, não o cadastro. Se a
+  entrada do diretório seguir apontando para a **conta de teste** sob o nome da fundadora,
+  cliente real que entrar daqui em diante continua gerando indicação para lá. O ajuste é
+  renomear ou desativar a entrada no admin — decisão da Gestora, não passa por código.
+- Commit/PR: `f26d8ac` (branch `feat/home-parceiro-redesign`)
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em

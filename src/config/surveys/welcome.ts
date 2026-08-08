@@ -150,12 +150,18 @@ export const welcomeSurveyConfig: SurveyConfig = {
           id: "origin",
           type: "choice",
           label: "Origem",
+          // Apenas CANAIS ficam aqui. Nome de pessoa nunca — pessoa entra pelo
+          // diretorio de parceiros (`Settings/PartnerDirectory`), injetado em tempo de
+          // render por `withPartnerOriginOptions`. "Lisandra Lencina" era fixa aqui
+          // desde antes do programa de parceiros; com a fundadora tambem cadastrada no
+          // diretorio, a mesma opcao passou a existir em duas fontes e a resolucao por
+          // nome no servidor a transformou, em silencio, em indicacao com comissao.
+          // Ver BUG-124.
           options: [
             "Instagram",
             "LinkedIn",
             "TikTok",
             "Pesquisa do Google",
-            "Lisandra Lencina",
             "Indicação",
             "Outro"
           ],

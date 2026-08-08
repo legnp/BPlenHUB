@@ -80,14 +80,17 @@ export async function getPartnerIndicationsAction(): Promise<{
         typeof data.commissionPercent === "number" ? data.commissionPercent : 0;
 
       // Status da jornada do indicado — projetado, nao devolvido cru.
-      let journeyStatus = "Ainda nao iniciou";
+      // Copy de interface: acentuada de proposito (Licao 11 do RETROSPECTIVE — nunca
+      // remover acento PT-BR de texto que o usuario le). Aparece na tabela de indicacoes
+      // e, desde o redesenho da home, tambem na porta de entrada da area.
+      let journeyStatus = "Ainda não iniciou";
       let journeyProgress = 0;
       try {
         const progressSnap = await db.doc(`User/${referredMatricula}/User_Journey/progress`).get();
         if (progressSnap.exists) {
           const progress = progressSnap.data();
           journeyProgress = typeof progress?.overallProgress === "number" ? progress.overallProgress : 0;
-          journeyStatus = journeyProgress >= 100 ? "Jornada concluida" : "Jornada em andamento";
+          journeyStatus = journeyProgress >= 100 ? "Jornada concluída" : "Jornada em andamento";
         }
       } catch (progressErr) {
         console.error("[partner-referrals] Falha ao projetar a jornada do indicado:", progressErr);
