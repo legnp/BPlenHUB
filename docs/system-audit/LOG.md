@@ -92,6 +92,23 @@ trabalhado, achados, decisões, e mudanças de status no `00-PLAN.md`.
   exige o selo `partner_area_access`, e eu não tenho sessão — para mim a rota sempre
   devolve 307 para `/entrar`. Confirmei o que dava: compila, sobe, rota responde, log sem
   erro. A conferência visual foi da Gestora, em `localhost:3100`.
+- **PARA A RECONCILIAÇÃO — item novo para a limpeza da `BP-002` (grupo 4b do
+  `00-PLAN.md`).** Ao limpar a conta de teste, é preciso **remover também a entrada dela
+  no diretório de parceiros** (`Settings/PartnerDirectory`). Ela não sai junto: revogar o
+  selo apenas desativa a entrada, e apagar a conta deixaria a entrada apontando para uma
+  matrícula inexistente. Não quebra tela (`getPartnersProgramListAction` cai no
+  `displayName` quando não acha o usuário), mas é resíduo silencioso num documento que
+  **todo cliente novo lê na recepção**. Registrado aqui, e não escrito no `00-PLAN.md`,
+  porque aquele documento é do chat de planejamento (§3 desta diretriz).
+- **Contexto da Gestora sobre o diretório, para a reconciliação não reabrir como
+  problema:** a entrada "Lisandra Lencina" aponta hoje para a conta de teste **por
+  decisão dela**, não por acidente — foi cadastrada à mão. Não há risco em produção
+  porque nenhuma indicação real acontece antes do fim da validação e2e; a virada para a
+  conta real dela está prevista para depois disso. Duas notas operacionais levantadas na
+  mesma conversa: o sistema **recusa dois parceiros ativos com o mesmo nome** (proteção
+  contra resolução ambígua), então a virada exige renomear/desativar a entrada de teste
+  **antes** de cadastrar na conta real; e as indicações ficam sob a matrícula do parceiro,
+  então trocar o nome **não migra histórico** — a conta real começa do zero.
 - Itens do `00-PLAN.md` atualizados: **nenhum** — estado agregado é do chat de
   planejamento. Rastro em `BUGS.md` e aqui, para reconciliação posterior. Fica o aviso de
   que a contagem de bugs do plano (119) está defasada: hoje são **124** registrados.
