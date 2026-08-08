@@ -3708,6 +3708,47 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
     verificação de regra futura — medir o negado E o permitido.
 - Commit/PR: `2ffb223` (branch `fix/settings-leitura-publica`)
 
+### BUG-123 Ciclos de repasse nunca carregam — índice ausente no Firestore derruba `listCycles` em silêncio
+
+- Severidade: Alto
+- Área/fase onde foi achado: Área de Parceiros, Fase 4 (ciclos de repasse) — achado pela
+  execução em 2026-08-08, no log do servidor local durante a validação visual do
+  redesenho da home. Não foi procurado: apareceu sozinho.
+- Arquivo(s) afetado(s): `src/actions/partners/billing-cycles.ts` (`listCycles`, linha
+  112) e `firestore.indexes.json` (sem nenhuma entrada para `Partner_Billing_Cycles`)
+- Cenário de falha: `listCycles` consulta
+  `User/{matricula}/Partner_Billing_Cycles` ordenando por `FieldPath.documentId()` em
+  ordem **decrescente**. O Firestore exige índice explícito para essa ordenação e recusa
+  a consulta inteira:
+  `9 FAILED_PRECONDITION: The query requires an index`. Como
+  `getPartnerCyclesAction` e `getPartnerCyclesAdminAction` capturam o erro e devolvem
+  `{ cycles: [] }`, **a falha é silenciosa**: nenhuma tela acusa erro, todas mostram
+  "nenhum ciclo".
+- Efeito visível, tudo simultaneamente:
+  - métrica "Ciclos em aberto" na home do parceiro presa em **0**, sempre;
+  - alerta "emita o recibo" **nunca** aparece, mesmo com ciclo aguardando nota;
+  - painel de ciclos na Gestão de Indicações sempre vazio;
+  - a tela `/admin/partners-program` idem, pelo mesmo caminho (`getPartnerCyclesAdminAction`).
+  Ou seja: **a Fase 4 da Área de Parceiros não funciona**, apesar de entregue.
+- Alcance: **não é só ambiente local.** O índice é do projeto `bplenhub`, o mesmo a que o
+  `.env.local` aponta. Faltando no projeto, falta em produção. E o
+  `firestore.indexes.json` do repositório nunca declarou nada para essa coleção —
+  conferido.
+- Por que passou pela entrega: o `catch` que devolve lista vazia é fail-soft correto para
+  não derrubar a tela, mas transforma indisponibilidade em "nada aqui". Sem dado de ciclo
+  real na conta de teste, "vazio" e "quebrado" são indistinguíveis na interface. É o
+  mesmo formato do `BUG-114`/`BUG-115` (índice ausente medido só depois) e teria sido
+  pego pela validação ponta a ponta da Área de Parceiros, que está no Caminho B.
+- Status: **Aberto** — registro apenas. Correção adiada por decisão da Gestora
+  (2026-08-08): só depois de fechado o redesenho da home.
+- Correção proposta (não implementada): declarar o índice em `firestore.indexes.json` e
+  criá-lo no console do Firebase — o próprio erro do servidor emite o link pronto. Vale a
+  Lição 49: criar índice exige credencial de proprietário, é operação manual da Gestora, e
+  o merge do arquivo **não** corrige produção sozinho. Alternativa a avaliar na hora:
+  ordenar em memória em vez de no Firestore, já que o volume de ciclos por parceiro é
+  baixo — troca um índice por um `sort`, e nenhuma operação manual.
+- Commit/PR: (a preencher)
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em
