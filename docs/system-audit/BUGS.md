@@ -3749,6 +3749,54 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   baixo — troca um índice por um `sort`, e nenhuma operação manual.
 - Commit/PR: (a preencher)
 
+### BUG-124 Nome de pessoa fixo no código vira indicação com comissão ao ser cadastrado no diretório de parceiros
+
+- Severidade: Alto
+- Área/fase onde foi achado: Área de Parceiros, Fase 3 (captura da indicação) — levantado
+  pela Gestora em 2026-08-08 ao cadastrar "Lisandra Lencina" como parceira da conta de
+  teste e perceber que o mesmo nome já existia fixo na recepção.
+- Arquivo(s) afetado(s): `src/config/surveys/welcome.ts` (opções de `origin`),
+  `src/lib/survey/welcome-origin.ts` (injeção), `src/lib/partners/referrals.ts`
+  (`resolvePartnerByDisplayName`, `registerReferralFromOrigin`)
+- Cenário de falha: a pergunta "Como você nos conheceu?" tinha `"Lisandra Lencina"` como
+  opção **fixa no código**, desde antes do programa de parceiros — ali significava "vim
+  pela fundadora". Com a Fase 3, o servidor passou a resolver a resposta **por nome**
+  contra `Settings/PartnerDirectory`, sem olhar de qual fonte a opção veio. No momento em
+  que o mesmo nome foi cadastrado no diretório, aquela opção — inalterada na tela —
+  passou a **registrar indicação e copiar o percentual de comissão vigente**.
+  A opção não mudou de aparência; mudou de efeito.
+- Efeito: cliente novo que escolhesse a origem de sempre geraria indicação para a conta
+  cadastrada sob aquele nome — no caso levantado, a **conta de teste**. Em produção seria
+  atribuição indevida de indicação e repasse. **Não é retroativo** (o registro só corre
+  no efeito da recepção, no primeiro acesso) e a auto-indicação já era bloqueada.
+- Causa-raiz: duas fontes de verdade para a mesma opção. Nome de pessoa fixo no código é
+  exatamente o hardcoded que a regra 3 do `CLAUDE.md` manda evitar; a Fase 3 introduziu a
+  fonte dinâmica sem retirar a estática, e o acoplamento ficou implícito.
+- Status: **Corrigido**
+- Decisão de execução (Gestora, 2026-08-08): **nome de pessoa nunca fica fixo no código.**
+  `"Lisandra Lencina"` sai das opções; nomes entram exclusivamente pelo diretório de
+  parceiros. Os demais itens permanecem fixos por serem **canais** (Instagram, LinkedIn,
+  TikTok, Pesquisa do Google, Indicação, Outro), não pessoas — a distinção canal/pessoa é
+  o critério.
+  - Efeito colateral aceito: se `getPartnerDirectoryOptionsAction` falhar ou o diretório
+    vier vazio, a lista cai só nos canais e o nome não aparece. Antes a opção fixa
+    garantia a presença. É fail-soft coerente com o resto da recepção, que nunca pode
+    travar por causa da lista.
+  - 8 testes novos (`src/__tests__/welcome-origin.test.ts`) rodam contra a configuração
+    **real** da recepção, não contra fixture: travam a ausência de nome de pessoa na lista
+    fixa, a posição dos parceiros antes de "Outro", a não-duplicação e o retorno intacto
+    sem parceiros. O módulo declarava no cabeçalho ser "testável sem banco e sem React" e
+    não tinha um teste sequer.
+- Pendência conhecida, NÃO corrigida aqui (armadilha adormecida): a deduplicação da tela
+  compara nomes só por espaço e caixa (`trim`/`toLowerCase`), enquanto
+  `resolvePartnerByDisplayName` compara **também sem acento** (normalização NFD). Um
+  diretório com `"Lisandra Lencína"` contra uma fixa `"Lisandra Lencina"` exibiria **as
+  duas** opções, e ambas resolveriam para a mesma parceira. Hoje inerte — depois desta
+  correção não há nome fixo com que colidir —, mas volta a morder se algum nome de pessoa
+  for reintroduzido na lista fixa. Alinhar as duas normalizações fica registrado como
+  melhoria, sem dono definido.
+- Commit/PR: (a preencher)
+
 ---
 
 *Bugs já corrigidos em sessões anteriores a este processo formal (Timestamp em
