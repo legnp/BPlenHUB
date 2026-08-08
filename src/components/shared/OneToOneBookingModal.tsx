@@ -6,27 +6,43 @@ import Calendar, { CalendarEvent } from "@/components/ui/Calendar";
 import { getMemberQuotasAction } from "@/actions/quotas";
 import { useAuthContext } from "@/context/AuthContext";
 import { Loader2, Briefcase, Info } from "lucide-react";
+import type { SessionAudience } from "@/lib/booking/session-demands";
 
 interface OneToOneBookingModalProps {
   isOpen: boolean;
   onClose: () => void;
   allEvents: CalendarEvent[];
   onSuccess: () => void;
+  /**
+   * Audiencia do fluxo. Decide a lista de motivos e se a sessao consome credito — o
+   * `Calendar` ja sabe fazer isso, este modal e' que nao repassava e caia no padrao
+   * (membro). Sintoma: o parceiro abria o 1 to 1 pelo menu e via os motivos do membro
+   * ("Plano de Carreira", "Analise de Curriculo") mais um banner de carteira de creditos
+   * que ele nao consome.
+   */
+  audience?: SessionAudience;
 }
 
 /**
- * One-to-One Booking Modal — BPlen HUB 🧬
- * Includes visual quota tracking (dots) and filtered calendar.
+ * One-to-One Booking Modal — BPlen HUB.
+ *
+ * A GRADE e' a mesma para as duas audiencias, de proposito (decisao da Gestora,
+ * 2026-08-05: grade unica e disputada). O que muda por audiencia e' a lista de motivos e
+ * o credito — sessao de parceria e' LIVRE, sem carteira e sem penalidade, e a isencao e'
+ * aplicada no servidor pelo selo.
  */
-export default function OneToOneBookingModal({ 
-  isOpen, 
-  onClose, 
+export default function OneToOneBookingModal({
+  isOpen,
+  onClose,
   allEvents,
-  onSuccess 
+  onSuccess,
+  audience = "member"
 }: OneToOneBookingModalProps) {
   const { user } = useAuthContext();
   const [quotas, setQuotas] = useState<{ total: number; used: number } | null>(null);
   const [isLoadingQuotas, setIsLoadingQuotas] = useState(true);
+
+  const isParceria = audience === "partner";
 
   // Acima deste total, as bolinhas dariam overflow no card — troca por barra de
   // progresso compacta (o visual de bolinhas segue no caso típico, de poucos créditos).
@@ -40,9 +56,10 @@ export default function OneToOneBookingModal({
     );
   }, [allEvents]);
 
-  // 2. Buscar cotas do membro
+  // 2. Buscar cotas do membro. Nao corre na parceria: nao ha carteira a consultar, e
+  // pedir cota de quem nao consome cota seria leitura inutil a cada abertura do modal.
   useEffect(() => {
-    if (!isOpen || !user?.uid) return;
+    if (!isOpen || !user?.uid || isParceria) return;
 
     async function loadQuotas() {
       setIsLoadingQuotas(true);
@@ -65,19 +82,26 @@ export default function OneToOneBookingModal({
       }
     }
     loadQuotas();
-  }, [isOpen, user]);
+  }, [isOpen, user, isParceria]);
 
   return (
     <GlassModal
        isOpen={isOpen}
        onClose={onClose}
        title="Agendamento 1 to 1"
-       subtitle="Consultoria individual de Gestão e Desenvolvimento de Carreira"
+       subtitle={
+         isParceria
+           ? "Sessão individual da sua parceria com a BPlen"
+           : "Consultoria individual de Gestão e Desenvolvimento de Carreira"
+       }
        maxWidth="max-w-5xl"
     >
       <div className="space-y-5 py-1">
 
-        {/* Banner de Créditos */}
+        {/* Banner de Créditos — só na audiência de membro. Na parceria não existe
+            carteira: mostrar "0 de 56 sessões realizadas" para quem não consome crédito
+            é informação falsa, não apenas irrelevante. */}
+        {!isParceria && (
         <div className="p-4 bg-[var(--input-bg)]/50 border border-[var(--border-primary)] rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
            {/* shrink-0: o rótulo nunca é espremido pelo indicador de créditos */}
            <div className="flex items-center gap-3 shrink-0">
@@ -135,6 +159,7 @@ export default function OneToOneBookingModal({
               )}
            </div>
         </div>
+        )}
 
         {/* Calendário de Escolha — herda a política única do `Calendar`. O texto
             próprio daqui foi aposentado: com o crédito e o prazo de 24h na
@@ -142,6 +167,7 @@ export default function OneToOneBookingModal({
         <div className="min-h-[440px]">
            <Calendar
               events={oneToOneEvents}
+              audience={audience}
               onBookingSuccess={() => {
                 onSuccess();
                 onClose();
@@ -150,7 +176,9 @@ export default function OneToOneBookingModal({
         </div>
 
         <p className="text-[9px] text-[var(--text-muted)] opacity-50 font-bold uppercase tracking-widest text-center">
-           Ao agendar, um crédito é debitado da sua carteira
+           {isParceria
+             ? "Sessões de parceria não consomem créditos"
+             : "Ao agendar, um crédito é debitado da sua carteira"}
         </p>
       </div>
     </GlassModal>
