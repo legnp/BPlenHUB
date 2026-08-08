@@ -3739,15 +3739,25 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   real na conta de teste, "vazio" e "quebrado" são indistinguíveis na interface. É o
   mesmo formato do `BUG-114`/`BUG-115` (índice ausente medido só depois) e teria sido
   pego pela validação ponta a ponta da Área de Parceiros, que está no Caminho B.
-- Status: **Aberto** — registro apenas. Correção adiada por decisão da Gestora
-  (2026-08-08): só depois de fechado o redesenho da home.
-- Correção proposta (não implementada): declarar o índice em `firestore.indexes.json` e
-  criá-lo no console do Firebase — o próprio erro do servidor emite o link pronto. Vale a
-  Lição 49: criar índice exige credencial de proprietário, é operação manual da Gestora, e
-  o merge do arquivo **não** corrige produção sozinho. Alternativa a avaliar na hora:
-  ordenar em memória em vez de no Firestore, já que o volume de ciclos por parceiro é
-  baixo — troca um índice por um `sort`, e nenhuma operação manual.
-- Commit/PR: (a preencher)
+- Status: **Corrigido** (índice criado pela Gestora no console em 2026-08-08, verificado
+  por log limpo — ver "Verificação" abaixo)
+- Decisão de execução: índice declarado em `firestore.indexes.json` **com a forma lida do
+  próprio erro**, não deduzida — o payload base64 do link de criação decodifica para
+  escopo `COLLECTION`, campo único `__name__` `DESCENDING`. Criação feita pela Gestora no
+  console do Firebase; vale a Lição 49 (credencial de proprietário, operação manual), e o
+  merge do arquivo **não** corrige produção sozinho. O papel do commit é impedir que o
+  repositório siga mentindo sobre quais índices o sistema precisa.
+- Alternativa registrada e NÃO adotada: ordenar em memória em vez de no Firestore. O
+  volume é de um ciclo por mês por parceiro, então um `sort` no servidor resolveria sem
+  índice e sem operação manual. A Gestora optou pelo índice. Fica anotada porque, se o
+  índice algum dia for perdido numa migração de projeto, a saída de uma linha continua
+  disponível.
+- Verificação (2026-08-08): servidor de desenvolvimento reiniciado **para zerar o buffer
+  de log** — sem isso, erros antigos e novos são indistinguíveis e a conferência não vale
+  nada. Após o reinício e um acesso autenticado à home, `partner-cycles` não aparece
+  nenhuma vez no log. A consulta que era recusada passa. "Ciclos em aberto" seguir em zero
+  na conta de teste é ausência de dado, não falha.
+- Commit/PR: `14a801e` (branch `feat/home-parceiro-redesign`)
 
 ### BUG-124 Nome de pessoa fixo no código vira indicação com comissão ao ser cadastrado no diretório de parceiros
 
@@ -3795,7 +3805,11 @@ Nenhum foi corrigido aqui — este chat só planeja, conforme instrução do Ges
   correção não há nome fixo com que colidir —, mas volta a morder se algum nome de pessoa
   for reintroduzido na lista fixa. Alinhar as duas normalizações fica registrado como
   melhoria, sem dono definido.
-- Commit/PR: (a preencher)
+- Pendência de DADO, fora do código: a correção arruma a arquitetura, não o cadastro. Se a
+  entrada do diretório seguir apontando para a **conta de teste** sob o nome da fundadora,
+  cliente real que entrar daqui em diante continua gerando indicação para lá. O ajuste é
+  renomear ou desativar a entrada no admin — decisão da Gestora, não passa por código.
+- Commit/PR: `f26d8ac` (branch `feat/home-parceiro-redesign`)
 
 ---
 
