@@ -7,7 +7,7 @@ import { parseISO, isAfter, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { StatTile } from "@/components/admin/StatTile";
 import AtmosphericLoading from "@/components/shared/AtmosphericLoading";
-import { PartnerJourneyRail } from "@/components/hub/partners/PartnerJourneyRail";
+import { PartnerJourneyNav } from "@/components/hub/partners/PartnerJourneyNav";
 import { useAuthContext } from "@/context/AuthContext";
 import { getPartnerIndicationsAction, PartnerIndication } from "@/actions/partners/referrals";
 import { getPartnerCyclesAction, PartnerBillingCycle } from "@/actions/partners/billing-cycles";
@@ -140,7 +140,7 @@ export function PartnerHomeView({ nickname }: { nickname?: string | null }) {
         </p>
       </section>
 
-      <PartnerJourneyRail />
+      <PartnerJourneyNav />
 
       {cicloPendente ? (
         <Link
