@@ -71,38 +71,76 @@ export function HubHeader() {
   // é carregada sob demanda no primeiro clique (o modal filtra os eventos 1-to-1).
   const [isOneToOneOpen, setIsOneToOneOpen] = useState(false);
   const [oneToOneEvents, setOneToOneEvents] = useState<ProgramacaoEntry[]>([]);
-  const [oneToOneLoaded, setOneToOneLoaded] = useState(false);
+  // Guarda a AUDIENCIA ja carregada, nao um booleano: a grade de 1 to 1 e' unica e
+  // disputada, mas os slots sao filtrados por audiencia. Com um booleano, quem
+  // alternasse de contexto sem recarregar a pagina veria os horarios do contexto
+  // anterior — e a lista de motivos tambem e' por audiencia.
+  const [oneToOneLoadedFor, setOneToOneLoadedFor] = useState<HubContext | null>(null);
   const themeMenuRef = useRef<HTMLDivElement>(null);
   const socialMenuRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
 
+  // Contexto Membro/Parceiro (Fase 0 da Área de Parceiros).
+  //
+  // A AUTORIZAÇÃO continua sendo só o selo `partner_area_access` — resolvido em tempo
+  // real pelo AuthContext aqui e no servidor pelo gate de /hub/partners. A store nunca
+  // concede nada: ela guarda a PREFERÊNCIA de navegação, e o `!hasPartnerArea` abaixo
+  // corta qualquer valor forjado no navegador antes de ele ser considerado.
+  //
+  // Por que a store passou a ser lida (antes era só escrita): o caminho sozinho não
+  // consegue dizer o contexto. Existem rotas que servem aos DOIS públicos — networking
+  // (área comum por decisão da Gestora) e o perfil. Enquanto o contexto era
+  // `startsWith("/hub/partners")`, abrir qualquer uma delas jogava o parceiro de volta
+  // para "membro": o menu inteiro trocava e o "Agendar 1 to 1" passava a carregar a
+  // audiência errada. A regra agora é: o caminho manda quando é inequívoco, a
+  // preferência decide quando o caminho é neutro.
+  //
+  // `hasHydrated` existe na store desde o começo e é o que torna a leitura segura — sem
+  // ele, o servidor renderizaria "membro" e o navegador poderia renderizar "parceiro" no
+  // mesmo passo. Antes de hidratar, o neutro cai em "membro".
+  const hasPartnerArea = services?.partner_area_access === true;
+  const storedContext = usePartnerContextStore((s) => s.activeContext);
+  const hasHydratedContext = usePartnerContextStore((s) => s.hasHydrated);
+
+  /** Rotas que servem aos dois públicos — não dizem nada sobre o contexto. */
+  const ROTAS_NEUTRAS = ["/hub/networking", "/hub/profile_settings"];
+  const isPartnerPath = pathname.startsWith("/hub/partners");
+  const isNeutralPath = ROTAS_NEUTRAS.some((rota) => pathname.startsWith(rota));
+
+  const activeContext: HubContext = !hasPartnerArea
+    ? "member"
+    : isPartnerPath
+      ? "partner"
+      : isNeutralPath && hasHydratedContext && storedContext === "partner"
+        ? "partner"
+        : "member";
+
   const handleOpenOneToOne = async () => {
     setIsSocialMenuOpen(false);
     setIsOneToOneOpen(true);
-    if (!oneToOneLoaded) {
+    if (oneToOneLoadedFor !== activeContext) {
       try {
-        const data = await getProgramacaoForMemberAction();
+        const data = await getProgramacaoForMemberAction(activeContext);
         setOneToOneEvents(data);
-        setOneToOneLoaded(true);
+        setOneToOneLoadedFor(activeContext);
       } catch (error) {
         console.error("Erro ao carregar programacao para agendamento 1 to 1:", error);
       }
     }
   };
 
-  // Contexto Membro/Parceiro (Fase 0 da Área de Parceiros).
-  // A AUTORIZAÇÃO é o selo `partner_area_access` — resolvido em tempo real pelo
-  // AuthContext aqui e no servidor pelo gate de /hub/partners. A store Zustand só
-  // guarda a preferência de navegação; por isso nunca é lida para decidir o que
-  // renderizar (evita divergir do selo e evita mismatch de hidratação).
-  const hasPartnerArea = services?.partner_area_access === true;
-  const activeContext: HubContext = pathname.startsWith("/hub/partners") ? "partner" : "member";
-
-  // A rota é a fonte do contexto; a preferência guardada apenas a acompanha. Quem
-  // perde o selo volta a "member" sem depender de limpar o navegador.
+  // A preferência só é GRAVADA a partir de rota inequívoca. Em rota neutra ela é
+  // preservada — escrever ali apagaria justamente o que precisamos lembrar (e, antes de
+  // hidratar, gravaria "member" por cima da preferência real, zerando-a a cada visita ao
+  // networking). Quem perde o selo volta a "member" sem depender de limpar o navegador.
   useEffect(() => {
-    usePartnerContextStore.getState().setActiveContext(hasPartnerArea ? activeContext : "member");
-  }, [hasPartnerArea, activeContext]);
+    if (!hasPartnerArea) {
+      usePartnerContextStore.getState().setActiveContext("member");
+      return;
+    }
+    if (isNeutralPath) return;
+    usePartnerContextStore.getState().setActiveContext(isPartnerPath ? "partner" : "member");
+  }, [hasPartnerArea, isNeutralPath, isPartnerPath]);
 
   // Escuta de Eventos do Tour
   useEffect(() => {
@@ -152,11 +190,34 @@ export function HubHeader() {
     return pathname.startsWith(href);
   };
 
-  // Links do menu sanduiche agrupados em secoes (paths internos relativos).
-  const menuSections: {
-    label: string;
-    items: { icon: React.ElementType; label: string; href?: string; onClick?: () => void }[];
-  }[] = [
+  /**
+   * Links do menu sanduiche, POR CONTEXTO.
+   *
+   * Antes o menu era uma lista fixa com a secao de Parceria acrescentada no fim, entao o
+   * parceiro via a navegacao inteira de membro somada a dele — longo, e pior: oferecia
+   * destinos que ele podia nao conseguir abrir, porque toda a subarvore `/hub/membro/*`
+   * exige o selo `member_area_access` no layout de servidor.
+   *
+   * Filtrar por contexto e' seguro porque o SELETOR Membro/Parceiro vive neste mesmo
+   * menu, logo acima: nada fica inalcancavel, muda-se de contexto num clique. O gate de
+   * servidor continua sendo a autoridade — o menu apenas para de convidar para portas
+   * que nao abrem.
+   *
+   * Networking, "Meus Contratos" e o "Agendar 1 to 1" aparecem nos DOIS contextos por
+   * requisito da Gestora (2026-08-08): parceiro tem acesso a rede, precisa reler os
+   * contratos de parceria, e agenda 1 to 1 pela grade da audiencia dele.
+   */
+  type MenuItem = { icon: React.ElementType; label: string; href?: string; onClick?: () => void };
+  type MenuSection = { label: string; items: MenuItem[] };
+
+  const secaoNetworking: MenuSection = {
+    label: BPLEN_NOMENCLATURE.navigation.networking,
+    items: [
+      { href: "/hub/networking", icon: Users, label: BPLEN_NOMENCLATURE.navigation.networking },
+    ],
+  };
+
+  const menuSectionsMembro: MenuSection[] = [
     {
       label: "Geral",
       items: [
@@ -173,25 +234,18 @@ export function HubHeader() {
         { onClick: handleOpenOneToOne, icon: Plus, label: "Agendar 1 to 1" },
       ],
     },
-    // Seção exclusiva de quem tem o selo de parceiro — some por completo para os demais.
+    // Porta de entrada para a area de parceria — so para quem tem o selo.
     ...(hasPartnerArea
       ? [
           {
             label: BPLEN_NOMENCLATURE.navigation.partnership_section,
             items: [
               { href: "/hub/partners", icon: Handshake, label: BPLEN_NOMENCLATURE.navigation.partner_area },
-              { href: "/hub/partners/gestao_agenda", icon: CalendarDays, label: "Gestão de Agenda" },
-              { href: "/hub/partners/gestao_indicacoes", icon: Users, label: "Gestão de Indicações" },
             ],
           },
         ]
       : []),
-    {
-      label: BPLEN_NOMENCLATURE.navigation.networking,
-      items: [
-        { href: "/hub/networking", icon: Users, label: BPLEN_NOMENCLATURE.navigation.networking },
-      ],
-    },
+    secaoNetworking,
     {
       label: "Gestão da Conta",
       items: [
@@ -200,6 +254,33 @@ export function HubHeader() {
       ],
     },
   ];
+
+  const menuSectionsParceiro: MenuSection[] = [
+    {
+      label: "Geral",
+      // "Inicio" aponta para a home DA PARCERIA. Nao repete um item "Area de Parceiros"
+      // na secao abaixo: seria o mesmo destino duas vezes no mesmo menu.
+      items: [{ href: "/hub/partners", icon: Home, label: BPLEN_NOMENCLATURE.navigation.home }],
+    },
+    {
+      label: BPLEN_NOMENCLATURE.navigation.partnership_section,
+      items: [
+        { href: "/hub/partners/gestao_agenda", icon: CalendarDays, label: "Gestão de Agenda" },
+        { href: "/hub/partners/gestao_indicacoes", icon: Users, label: "Gestão de Indicações" },
+        { onClick: handleOpenOneToOne, icon: Plus, label: "Agendar 1 to 1" },
+      ],
+    },
+    secaoNetworking,
+    {
+      label: "Gestão da Conta",
+      items: [
+        { href: "/hub/profile_settings", icon: UserCog, label: BPLEN_NOMENCLATURE.navigation.profile },
+        { href: "/hub/membro/contratos", icon: ScrollText, label: "Meus Contratos" },
+      ],
+    },
+  ];
+
+  const menuSections = activeContext === "partner" ? menuSectionsParceiro : menuSectionsMembro;
 
   return (
     <>
@@ -448,7 +529,8 @@ export function HubHeader() {
         isOpen={isOneToOneOpen}
         onClose={() => setIsOneToOneOpen(false)}
         allEvents={oneToOneEvents}
-        onSuccess={() => setOneToOneLoaded(false)}
+        audience={activeContext}
+        onSuccess={() => setOneToOneLoadedFor(null)}
       />
     </>
   );
