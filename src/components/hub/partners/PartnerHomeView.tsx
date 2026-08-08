@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, CalendarDays, Handshake, Users, Wallet } from "lucide-react";
+import { ArrowRight, CalendarDays, Handshake, Megaphone, Users, Wallet } from "lucide-react";
 import { parseISO, isAfter, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { StatTile } from "@/components/admin/StatTile";
@@ -159,78 +159,121 @@ export function PartnerHomeView({ nickname }: { nickname?: string | null }) {
         </Link>
       ) : null}
 
-      <div id="partner-home-metricas" className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <StatTile label="Indicações registradas" value={indications.length} icon={<Users size={16} />} tone="accent" />
-        <StatTile
-          label="Repasse acumulado"
-          value={money(totalCommission)}
-          icon={<Wallet size={16} />}
-          tone="accent"
-        />
-        <StatTile
-          label="Ciclos em aberto"
-          value={emAberto.length}
-          detail={emAberto.length > 0 ? "Acompanhe em Gestão de Indicações" : "Nada pendente por aqui"}
-          icon={<Handshake size={16} />}
-          tone={emAberto.length > 0 ? "warning" : "success"}
-        />
-      </div>
+      {/* Tres colunas: metricas empilhadas, gestao (o miolo, por isso quase o dobro de
+          largura) e o espaco de comunicacao. Colapsa para uma coluna abaixo de `lg`. */}
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.75fr)_minmax(0,1fr)] gap-10">
+        <div id="partner-home-metricas" className="space-y-5">
+          <ColunaTitulo texto="Métricas gerais" />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-        <section id="partner-home-agenda" className="space-y-5">
-          <SecaoHeader
-            icon={<CalendarDays size={20} />}
-            title="Gestão de Agenda"
-            href="/hub/partners/gestao_agenda"
-          />
-
-          <div className="space-y-3">
-            {proxima ? (
-              <LinhaSessao booking={proxima} rotulo="Próxima sessão" destaque />
-            ) : null}
-            {ultima ? <LinhaSessao booking={ultima} rotulo="Última realizada" /> : null}
-            {!proxima && !ultima ? (
-              <EstadoVazio texto="Suas sessões de parceria aparecerão aqui" />
-            ) : null}
+          <div className="space-y-4">
+            <StatTile
+              label="Indicações registradas"
+              value={indications.length}
+              icon={<Users size={16} />}
+              tone="accent"
+            />
+            <StatTile
+              label="Repasse acumulado"
+              value={money(totalCommission)}
+              icon={<Wallet size={16} />}
+              tone="accent"
+            />
+            <StatTile
+              label="Ciclos em aberto"
+              value={emAberto.length}
+              detail={emAberto.length > 0 ? "Acompanhe em Gestão de Indicações" : "Nada pendente por aqui"}
+              icon={<Handshake size={16} />}
+              tone={emAberto.length > 0 ? "warning" : "success"}
+            />
           </div>
-        </section>
+        </div>
 
-        <section id="partner-home-indicacoes" className="space-y-5">
-          <SecaoHeader
-            icon={<Users size={20} />}
-            title="Gestão de Indicações"
-            href="/hub/partners/gestao_indicacoes"
-          />
+        <div className="space-y-5">
+          <ColunaTitulo texto="Gestão" />
 
-          <div className="space-y-3">
-            {indicacoesRecentes.length > 0 ? (
-              indicacoesRecentes.map((indicacao) => (
-                <LinhaIndicacao key={indicacao.referredMatricula} indicacao={indicacao} />
-              ))
-            ) : (
-              <EstadoVazio texto="Nenhuma indicação registrada ainda" />
-            )}
-          </div>
-        </section>
+          <section id="partner-home-indicacoes" className="space-y-5">
+            <SecaoHeader
+              icon={<Users size={20} />}
+              title="Gestão de Indicações"
+              href="/hub/partners/gestao_indicacoes"
+            />
+
+            <div className="space-y-3">
+              {indicacoesRecentes.length > 0 ? (
+                indicacoesRecentes.map((indicacao) => (
+                  <LinhaIndicacao key={indicacao.referredMatricula} indicacao={indicacao} />
+                ))
+              ) : (
+                <EstadoVazio texto="Nenhuma indicação registrada ainda" />
+              )}
+            </div>
+          </section>
+
+          <section id="partner-home-agenda" className="space-y-5 pt-3">
+            <SecaoHeader
+              icon={<CalendarDays size={20} />}
+              title="Gestão de Agenda"
+              href="/hub/partners/gestao_agenda"
+            />
+
+            <div className="space-y-3">
+              {proxima ? (
+                <LinhaSessao booking={proxima} rotulo="Próxima sessão" destaque />
+              ) : null}
+              {ultima ? <LinhaSessao booking={ultima} rotulo="Última realizada" /> : null}
+              {!proxima && !ultima ? (
+                <EstadoVazio texto="Suas sessões de parceria aparecerão aqui" />
+              ) : null}
+            </div>
+          </section>
+        </div>
+
+        {/* Comunicacao — espaco reservado. Sem fonte de dado ainda: a rotina de
+            comunicados da BPlen entra aqui numa proxima etapa. Fica visivel e vazio de
+            proposito, para a coluna existir no layout desde ja. */}
+        <div id="partner-home-comunicacao" className="space-y-5">
+          <ColunaTitulo texto="Comunicação" />
+
+          <section className="space-y-5">
+            <SecaoHeader icon={<Megaphone size={20} />} title="Comunicados" />
+
+            <div className="space-y-3">
+              <EstadoVazio texto="Os comunicados da BPlen aparecerão aqui" />
+            </div>
+          </section>
+        </div>
       </div>
     </div>
   );
 }
 
-function SecaoHeader({ icon, title, href }: { icon: React.ReactNode; title: string; href: string }) {
+/** Rotulo da coluna do grid. Micro-label, nao titulo — a coluna Gestao ja carrega dois
+ *  cabecalhos de secao por dentro, e um terceiro nivel grande pesaria a leitura. */
+function ColunaTitulo({ texto }: { texto: string }) {
+  return (
+    <p className="text-[9px] font-black uppercase tracking-[0.28em] text-[var(--text-muted)]">
+      {texto}
+    </p>
+  );
+}
+
+/** `href` e' opcional: a secao de Comunicados ainda nao tem destino para "ver tudo". */
+function SecaoHeader({ icon, title, href }: { icon: React.ReactNode; title: string; href?: string }) {
   return (
     <div className="flex items-center justify-between gap-4 border-b border-[var(--border-primary)] pb-4">
       <h2 className="text-xl font-bold text-[var(--text-primary)] flex items-center gap-3">
         <span className="text-[var(--accent-start)]">{icon}</span>
         {title}
       </h2>
-      <Link
-        href={href}
-        className="text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all flex items-center gap-2 group shrink-0"
-      >
-        Ver tudo
-        <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-      </Link>
+      {href ? (
+        <Link
+          href={href}
+          className="text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all flex items-center gap-2 group shrink-0"
+        >
+          Ver tudo
+          <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+        </Link>
+      ) : null}
     </div>
   );
 }
